@@ -1,0 +1,791 @@
+# Manually reviewed semantic overlays, not a hardware-validation claim.
+# Register-level classification is conservative; conditional/mixed field behavior is in description.
+# Access corrections and unresolved source conflicts are in full-peripheral-semantics.md.
+- block: adc
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 25.12.10; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: atim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 17.10.6; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: btim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 14.10.6; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: dma
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 8.8.2; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: flash
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 7.10.6; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: gpio
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 9.6.11; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: gtim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 16.10.6; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: halltim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 18.8.8; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: lptim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 15.7.8; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: ram
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 6.6.4; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: rtc
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 13.5.15; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: sysctrl
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 4.7.10; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: uart
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 21.9.12; RM1.4 1.2
+  description: 'Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific.'
+- block: i2c
+  register: MICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 23.8.16; SDK I2C_MasterClearFlag/I2C_SlaveClearFlag
+  description: R1W0 interrupt-clear fields. FIFO level/status conditions are not all software-clearable and must
+    be serviced through their data ports.
+- block: i2c
+  register: SICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 23.8.29; SDK I2C_MasterClearFlag/I2C_SlaveClearFlag
+  description: R1W0 interrupt-clear fields. FIFO level/status conditions are not all software-clearable and must
+    be serviced through their data ports.
+- block: spi
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 22.7.7; SDK SPI_ClearFlag
+  description: R1W0 flags plus FLUSH bit 0. Writing zero to FLUSH empties the TX buffer and shift register and sets
+    TXE. A zero-initialized flag write can accidentally flush an in-flight frame.
+- block: sysctrl
+  register: RESETFLAG
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 4.7.17; SDK SYSCTRL_ClearRstFlag
+  description: 'RW0 reset-cause flags: reads report actual causes, unlike R1W0 ICR. Zero clears, one preserves.
+    Generic RMW can lose a newly asserted flag.'
+- block: sysctrl
+  register: CR0
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.1; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.2; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.3; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: IER
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.8; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: AHBEN
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.11; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: APBEN1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.12; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: APBEN2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 4.7.13; SDK cw32l012_sysctrl.c
+  description: Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK;
+    CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST.
+- block: sysctrl
+  register: LSE
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 4.7.7
+  description: PINLOCK becomes sticky until power-on reset when enabled; effective with CR1.LSELOCK. Other fields
+    are configuration/status. No unrestricted generic modify contract.
+- block: flash
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 7.10.1; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages
+  description: Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked,
+    one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing
+    flag.
+- block: flash
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 7.10.2; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages
+  description: Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked,
+    one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing
+    flag.
+- block: flash
+  register: PAGELOCK
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 7.10.3; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages
+  description: Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked,
+    one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing
+    flag.
+- block: btim
+  register: EGR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 14.10.7
+  description: Writing selected event bits generates update/trigger/capture or brake events; hardware clears event
+    bits. Events can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE.
+    Do not use generic RMW.
+- block: gtim
+  register: EGR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 16.10.7
+  description: Writing selected event bits generates update/trigger/capture or brake events; hardware clears event
+    bits. Events can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE.
+    Do not use generic RMW.
+- block: atim
+  register: EGR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 17.10.7
+  description: Writing selected event bits generates update/trigger/capture or brake events; hardware clears event
+    bits. Events can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE.
+    Do not use generic RMW.
+- block: gtim
+  register: CCR1
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 16.4; 16.7; 16.10.16-19
+  description: In input-capture mode, reading CCR1 clears ISR.CC1IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: gtim
+  register: CCR2
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 16.4; 16.7; 16.10.16-19
+  description: In input-capture mode, reading CCR2 clears ISR.CC2IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: gtim
+  register: CCR3
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 16.4; 16.7; 16.10.16-19
+  description: In input-capture mode, reading CCR3 clears ISR.CC3IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: gtim
+  register: CCR4
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 16.4; 16.7; 16.10.16-19
+  description: In input-capture mode, reading CCR4 clears ISR.CC4IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR1
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR1 clears ISR.CC1IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR2
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR2 clears ISR.CC2IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR3
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR3 clears ISR.CC3IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR4
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR4 clears ISR.CC4IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR5
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR5 clears ISR.CC5IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: CCR6
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 17.4; 17.7; 17.10.19-24
+  description: In input-capture mode, reading CCR6 clears ISR.CC6IF; overcapture is separately cleared via ICR.
+    In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify
+    are not semantically neutral.
+- block: atim
+  register: BDTR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 17.10.25; SDK ATIM_Brake1Config/ATIM_Brake2Config
+  description: LOCK is writable only once after reset and selects increasing write-protection levels for BDTR and
+    other timer registers. MOE/other control fields have separate semantics, so the whole register is not simply
+    write_once. A HAL must configure the protected set before locking and account for brake-driven MOE clearing.
+- block: gpio
+  register: BRR
+  write_behavior: one_to_clear
+  read_behavior: ordinary
+  source: RM1.4 9.6.15; SDK GPIO_WritePin
+  description: 'R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output
+    bits, not interrupt flags.'
+- block: gpio
+  register: BSRR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 9.6.16; SDK GPIO_WritePin
+  description: 'R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW.'
+- block: gpio
+  register: TOG
+  write_behavior: toggle
+  read_behavior: ordinary
+  source: RM1.4 9.6.17; SDK GPIO_TogglePin
+  description: 'R0W1 output action: each written one toggles the corresponding ODR latch; zero does nothing.'
+- block: adc
+  register: START
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 25.4.1; 25.12.2; SDK ADC_SoftwareStartConvCmd
+  description: Write one starts conversion; write zero stops conversion and resets the sequence channel. Completion
+    clears START in the documented conversion mode. Do not treat it as an ordinary software-owned state bit.
+- block: cordic
+  register: X
+  write_behavior: command
+  read_behavior: clear
+  source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation
+  description: 'Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input
+    function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely
+    define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start
+    strobe.'
+- block: cordic
+  register: Y
+  write_behavior: command
+  read_behavior: clear
+  source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation
+  description: 'Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input
+    function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely
+    define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start
+    strobe.'
+- block: cordic
+  register: Z
+  write_behavior: command
+  read_behavior: clear
+  source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation
+  description: 'Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input
+    function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely
+    define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start
+    strobe.'
+- block: crc
+  register: CR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 10.4.1; SDK CRC16_Calc_8bit
+  description: Programming MODE initializes the CRC algorithm/initial value for a new calculation; do not assume
+    rewriting the current MODE is harmless.
+- block: crc
+  register: DR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 10.3.2; 10.6.2; SDK CRC16_Calc_8bit
+  description: Each write feeds an 8-bit input into the running CRC calculation. A read-write access tag does not
+    permit a meaningful modify operation.
+- block: eau
+  register: DIVIDEND
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation
+  description: In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write
+    starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported.
+- block: eau
+  register: DIVISOR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation
+  description: In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write
+    starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported.
+- block: dac
+  register: SWTRGR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.10.2; SDK DAC_SoftwareTrigger
+  description: Write one triggers the selected DAC channel; hardware clears the trigger after transfer of its data-holding
+    value. Do not RMW.
+- block: dac
+  register: DHR12R1
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR12L1
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR8R1
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR12R2
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR12L2
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR8R2
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR12RD
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR12LD
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DHR8RD
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData
+  description: Data-holding port write with format/channel-specific packing; when triggering is disabled a write
+    transfers the value to the output after the documented delay. Not a generic software storage register.
+- block: dac
+  register: DOR1
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 26.10.12-13; SDK DAC_ClearFlag
+  description: Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate
+    a writable data-output field.
+- block: dac
+  register: DOR2
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 26.10.12-13; SDK DAC_ClearFlag
+  description: Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate
+    a writable data-output field.
+- block: dma
+  register: TRIG1
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 8.8.4; SDK DMA_StartTransfer
+  description: 'SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer
+    activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger.'
+- block: dma
+  register: TRIG2
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 8.8.4; SDK DMA_StartTransfer
+  description: 'SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer
+    activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger.'
+- block: dma
+  register: TRIG3
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 8.8.4; SDK DMA_StartTransfer
+  description: 'SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer
+    activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger.'
+- block: dma
+  register: TRIG4
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 8.8.4; SDK DMA_StartTransfer
+  description: 'SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer
+    activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger.'
+- block: dmachannel
+  register: TRIG
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 8.8.4; SDK DMA_StartTransfer
+  description: Alias view of DMA.TRIG1..4. SOFTSRC write one triggers; zero does nothing; TYPE/HARDSRC are configuration.
+    Must share ownership with parent DMA channel registers.
+- block: halltim
+  register: CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 18.8.1; SDK HALLTIM_GenerateSoftTrigger
+  description: SOFTCAP bit 23 is R0W1 software capture/trigger action; remaining implemented fields are configuration.
+- block: halltim
+  register: CNT
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 18.8.3; SDK HALLTIM_GetCounterValue
+  description: Manual classifies 24-bit DATA as RW0 although header/SVD say RW. Treat as readable counter with zero-clearing
+    semantics; arbitrary counter preload writes are not established by the sources.
+- block: i2c
+  register: MCR0
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 23.8.2; 23.8.17; SDK I2C_MasterTxFIFOReset/I2C_SlaveRxFIFOReset
+  description: TXFIFORST/RXFIFORST are R0W1 FIFO reset strobes. RESET is a retained reset-mode control, not the
+    same strobe. Other fields are configuration.
+- block: i2c
+  register: SCR0
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 23.8.2; 23.8.17; SDK I2C_MasterTxFIFOReset/I2C_SlaveRxFIFOReset
+  description: TXFIFORST/RXFIFORST are R0W1 FIFO reset strobes. RESET is a retained reset-mode control, not the
+    same strobe. Other fields are configuration.
+- block: i2c
+  register: MTDR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSend/I2C_SlaveSend
+  description: Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE
+    allows it. Writes have FIFO/bus side effects.
+- block: i2c
+  register: STDR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSend/I2C_SlaveSend
+  description: Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE
+    allows it. Writes have FIFO/bus side effects.
+- block: i2c
+  register: MRDR
+  write_behavior: ordinary
+  read_behavior: fifo
+  source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceive/I2C_SlaveReceive
+  description: Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do
+    not perform generic register dumps or repeated field-by-field reads.
+- block: i2c
+  register: SRDR
+  write_behavior: ordinary
+  read_behavior: fifo
+  source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceive/I2C_SlaveReceive
+  description: Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do
+    not perform generic register dumps or repeated field-by-field reads.
+- block: i2c
+  register: SASR
+  write_behavior: ordinary
+  read_behavior: clear
+  source: RM1.4 23.4.4 slave operation; 23.6 slave examples; 23.8.25
+  description: Reading address status acknowledges/clears slave address-valid and associated address-match state;
+    read only when ADDR is set. The read permits the documented slave transfer to proceed.
+- block: iwdt
+  register: KR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 19.3.4-5; 19.6.1; SDK __IWDT_UNLOCK/__IWDT_REFRESH/__IWDT_STOP
+  description: 'Write-only keys: 0x5555 unlock; non-0x5555 locks. 0xCCCC starts, 0xAAAA reloads, 0x5A5A then 0xA5A5
+    stops. These operating commands also lock the protected registers.'
+- block: iwdt
+  register: CR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init
+  description: Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the
+    watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset
+    the chip.
+- block: iwdt
+  register: ARR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init
+  description: Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the
+    watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset
+    the chip.
+- block: iwdt
+  register: WINR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init
+  description: Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the
+    watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset
+    the chip.
+- block: iwdt
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 19.6.6; SDK IWDT_ClearOVFlag
+  description: OV bit 3 is RW0; RUN/RELOAD/CRF/ARRF/WINRF are RO. Do not treat the status register as a normal RW
+    value.
+- block: lptim
+  register: CR0
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 15.7.2
+  description: ARST/SRST are write-zero reset commands and read completion state; write zero only after read one.
+    CNTSTART/SNGSTART are write-one start commands; EN is ordinary control. Reset value 0x18 is not a universal
+    write initializer.
+- block: opa
+  register: CAL
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 29.3.3; 29.6.2; SDK OPA_AutoZeroTrig_SoftEvent/OPA_AutoZeroSoft_Start
+  description: SOFTTRIG bit 3 write one starts timed calibration; zero does nothing. START is a level-calibration
+    control; AZRUN is RO and only meaningful in triggered mode. Other fields configure routing and timing.
+- block: rtc
+  register: KEY
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 13.3.5; 13.5.1; SDK RTC_DeInit
+  description: Write-only unlock sequence 0xCA then 0x53; lock with 0xCA then a value other than 0x53. SDK RTC_LOCK
+    macro instead writes 0x55 twice and conflicts with the manual; do not copy that macro.
+- block: rtc
+  register: CR0
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: PSC
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: DATE
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: TIME
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: ALARMA
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: ALARMB
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: IER
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: AWTARR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: rtc
+  register: COMPCFR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate
+  description: Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally
+    require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not
+    become writable when unlocked.
+- block: spi
+  register: DR
+  write_behavior: command
+  read_behavior: clear
+  source: RM1.4 22.3.8; 22.7.6; 22.7.8; SDK SPI_SendData/SPI_ReceiveData
+  description: Write transmits buffered data; reading receives data and clears ISR.RXNE. Access is mode/width dependent.
+    Generic modify performs a receive acknowledgement followed by transmission.
+- block: uart
+  register: TDR
+  write_behavior: command
+  read_behavior: ordinary
+  source: RM1.4 21.9.8; SDK UART_SendData/UART_LINSendBreak
+  description: Write-only transmit/data/break/idle command port; a write consumes TX availability. RDR reads do
+    NOT clear RC, unlike SPI.DR; software must explicitly clear ICR.RC.
+- block: vc
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 27.7.6; SDK VC_ClearInterruptFlag
+  description: INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately
+    assert it again.
+- block: lvd
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 28.7.3; SDK LVD_ClearIrq
+  description: INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately
+    assert it again.
+- block: wwdt
+  register: CR0
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 20.6.1; SDK WWDT_Init/WWDT_Feed
+  description: EN bit 7 is RW1, cannot be disabled once enabled. WCNT reads the live counter; writes refresh it,
+    and refresh outside the valid window can reset the system.
+- block: wwdt
+  register: CR1
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 20.6.2; SDK WWDT_Init
+  description: IE bit 10 is labelled RW but manual explicitly says it cannot be cleared after setting. PRS/WINR
+    are ordinary configuration; no unrestricted toggle-IE API.
+- block: wwdt
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: RM1.4 20.6.3
+  description: POV bit 0 is RW0 pre-overflow status; write zero clears it.
+- block: i2c
+  register: MCR1
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: RM1.4 23.8.3 and 23.4.1.5; SDK I2C_MasterRxDataMatch
+  description: RDMO has an unresolved access conflict. The table labels it R0W1, but its own prose and SDK require both enable and disable operations; CIRFIFO is normal configuration. Do not infer a safe generic RMW or a write-one-only action from the label alone.

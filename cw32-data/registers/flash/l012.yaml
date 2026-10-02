@@ -1,0 +1,305 @@
+name: flash
+version: l012
+registers:
+- name: CR1
+  offset: 0
+  access: rw
+  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.1; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: SECURITY
+    bit_offset: 5
+    bit_size: 2
+    access: ro
+    kind: raw
+    description: Field SECURITY; raw encoding retained unless explicitly audited.
+  - name: MODE
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field MODE; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 4
+  access: rw
+  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.2; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: CACHEINVALID
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CACHEINVALID; raw encoding retained unless explicitly audited.
+  - name: CACHE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CACHE; raw encoding retained unless explicitly audited.
+  - name: FETCH
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FETCH; raw encoding retained unless explicitly audited.
+  - name: WAIT
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field WAIT; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: PAGELOCK
+  offset: 8
+  access: rw
+  description: 'Register PAGELOCK; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.3; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: LOCK15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK15; raw encoding retained unless explicitly audited.
+  - name: LOCK14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK14; raw encoding retained unless explicitly audited.
+  - name: LOCK13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK13; raw encoding retained unless explicitly audited.
+  - name: LOCK12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK12; raw encoding retained unless explicitly audited.
+  - name: LOCK11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK11; raw encoding retained unless explicitly audited.
+  - name: LOCK10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK10; raw encoding retained unless explicitly audited.
+  - name: LOCK9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK9; raw encoding retained unless explicitly audited.
+  - name: LOCK8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK8; raw encoding retained unless explicitly audited.
+  - name: LOCK7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK7; raw encoding retained unless explicitly audited.
+  - name: LOCK6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK6; raw encoding retained unless explicitly audited.
+  - name: LOCK5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK5; raw encoding retained unless explicitly audited.
+  - name: LOCK4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK4; raw encoding retained unless explicitly audited.
+  - name: LOCK3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK3; raw encoding retained unless explicitly audited.
+  - name: LOCK2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK2; raw encoding retained unless explicitly audited.
+  - name: LOCK1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK1; raw encoding retained unless explicitly audited.
+  - name: LOCK0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCK0; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: IER
+  offset: 32
+  access: rw
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PROG; raw encoding retained unless explicitly audited.
+  - name: CACHEON
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CACHEON; raw encoding retained unless explicitly audited.
+  - name: SDKERR
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SDKERR; raw encoding retained unless explicitly audited.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PAGELOCK; raw encoding retained unless explicitly audited.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PC; raw encoding retained unless explicitly audited.
+- name: ISR
+  offset: 36
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: BUSY
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field BUSY; raw encoding retained unless explicitly audited.
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PROG; raw encoding retained unless explicitly audited.
+  - name: CACHEON
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CACHEON; raw encoding retained unless explicitly audited.
+  - name: SDKERR
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field SDKERR; raw encoding retained unless explicitly audited.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PAGELOCK; raw encoding retained unless explicitly audited.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PC; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 40
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 7.10.6; RM1.4 1.2'
+  fields:
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PROG; raw encoding retained unless explicitly audited.
+  - name: CACHEON
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CACHEON; raw encoding retained unless explicitly audited.
+  - name: SDKERR
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SDKERR; raw encoding retained unless explicitly audited.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PAGELOCK; raw encoding retained unless explicitly audited.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PC; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: SDKCFR
+  offset: 112
+  access: ro
+  description: Register SDKCFR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: END
+    bit_offset: 8
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: Field END; raw encoding retained unless explicitly audited.
+  - name: START
+    bit_offset: 0
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: Field START; raw encoding retained unless explicitly audited.
+constants: []

@@ -1,0 +1,1019 @@
+name: atim
+version: f030
+registers:
+- name: ARR
+  offset: 0
+  access: rw
+  description: CW32F030 ATIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.ARR.ARR; raw encoding.
+- name: CNT
+  offset: 4
+  access: rw
+  description: CW32F030 ATIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CNT.CNT; raw encoding.
+- name: CR
+  offset: 12
+  access: rw
+  description: 'CW32F030 ATIM.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. BG, UG and TG are self-clearing software commands. UG also initializes the counter, loads enabled shadows and resets the prescaler. DIR is writable only in edge-aligned mode; other bits configure counting and interrupts. Source: CW32x030 RM Rev 2.5 15.7.1'
+  fields:
+  - name: UNDE
+    bit_offset: 29
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.UNDE; raw encoding.
+  - name: OVE
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.OVE; raw encoding.
+  - name: DIR
+    bit_offset: 27
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.DIR; raw encoding.
+  - name: BG
+    bit_offset: 26
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.BG; raw encoding.
+  - name: UG
+    bit_offset: 25
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.UG; raw encoding.
+  - name: TG
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.TG; raw encoding.
+  - name: OCCE
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.OCCE; raw encoding.
+  - name: CISA
+    bit_offset: 21
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CR.CISA; raw encoding.
+  - name: BIE
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.BIE; raw encoding.
+  - name: TIE
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.TIE; raw encoding.
+  - name: URS
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.URS; raw encoding.
+  - name: OCCS
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.OCCS; raw encoding.
+  - name: ONESHOT
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.ONESHOT; raw encoding.
+  - name: MODE
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CR.MODE; raw encoding.
+  - name: UIE
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.UIE; raw encoding.
+  - name: BUFPEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.BUFPEN; raw encoding.
+  - name: PRS
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CR.PRS; raw encoding.
+  - name: PWM2S
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.PWM2S; raw encoding.
+  - name: CT
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.CT; raw encoding.
+  - name: COMP
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.COMP; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CR.EN; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: ISR
+  offset: 16
+  access: ro
+  description: CW32F030 ATIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: C4AF
+    bit_offset: 18
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C4AF; raw encoding.
+  - name: UNDF
+    bit_offset: 17
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.UNDF; raw encoding.
+  - name: OVF
+    bit_offset: 16
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.OVF; raw encoding.
+  - name: TIF
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.TIF; raw encoding.
+  - name: BIF
+    bit_offset: 14
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.BIF; raw encoding.
+  - name: C3BE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C3BE; raw encoding.
+  - name: C2BE
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C2BE; raw encoding.
+  - name: C1BE
+    bit_offset: 11
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C1BE; raw encoding.
+  - name: C3AE
+    bit_offset: 10
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C3AE; raw encoding.
+  - name: C2AE
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C2AE; raw encoding.
+  - name: C1AE
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C1AE; raw encoding.
+  - name: C3BF
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C3BF; raw encoding.
+  - name: C2BF
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C2BF; raw encoding.
+  - name: C1BF
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C1BF; raw encoding.
+  - name: C3AF
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C3AF; raw encoding.
+  - name: C2AF
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C2AF; raw encoding.
+  - name: C1AF
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.C1AF; raw encoding.
+  - name: UIF
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ATIM.ISR.UIF; raw encoding.
+- name: ICR
+  offset: 20
+  access: rw
+  description: 'CW32F030 ATIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 15.7.5; 1.2'
+  fields:
+  - name: C4AF
+    bit_offset: 18
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C4AF; raw encoding.
+  - name: UNDF
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.UNDF; raw encoding.
+  - name: OVF
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.OVF; raw encoding.
+  - name: TIF
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.TIF; raw encoding.
+  - name: BIF
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.BIF; raw encoding.
+  - name: C3BE
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C3BE; raw encoding.
+  - name: C2BE
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C2BE; raw encoding.
+  - name: C1BE
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C1BE; raw encoding.
+  - name: C3AE
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C3AE; raw encoding.
+  - name: C2AE
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C2AE; raw encoding.
+  - name: C1AE
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C1AE; raw encoding.
+  - name: C3BF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C3BF; raw encoding.
+  - name: C2BF
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C2BF; raw encoding.
+  - name: C1BF
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C1BF; raw encoding.
+  - name: C3AF
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C3AF; raw encoding.
+  - name: C2AF
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C2AF; raw encoding.
+  - name: C1AF
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.C1AF; raw encoding.
+  - name: UIF
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.ICR.UIF; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: MSCR
+  offset: 24
+  access: rw
+  description: CW32F030 ATIM.MSCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: IB1S
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.MSCR.IB1S; raw encoding.
+  - name: IA1S
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.MSCR.IA1S; raw encoding.
+  - name: SMS
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.MSCR.SMS; raw encoding.
+  - name: TS
+    bit_offset: 5
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.MSCR.TS; raw encoding.
+  - name: CCDS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.MSCR.CCDS; raw encoding.
+  - name: MMS
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.MSCR.MMS; raw encoding.
+- name: FLTR
+  offset: 28
+  access: rw
+  description: CW32F030 ATIM.FLTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ETP
+    bit_offset: 31
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.ETP; raw encoding.
+  - name: FLTET
+    bit_offset: 28
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.FLTET; raw encoding.
+  - name: BKP
+    bit_offset: 27
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.BKP; raw encoding.
+  - name: FLTBK
+    bit_offset: 24
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.FLTBK; raw encoding.
+  - name: CCP3B
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP3B; raw encoding.
+  - name: OCM3BFLT3B
+    bit_offset: 20
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM3BFLT3B; raw encoding.
+  - name: CCP3A
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP3A; raw encoding.
+  - name: OCM3AFLT3A
+    bit_offset: 16
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM3AFLT3A; raw encoding.
+  - name: CCP2B
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP2B; raw encoding.
+  - name: OCM2BFLT2B
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM2BFLT2B; raw encoding.
+  - name: CCP2A
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP2A; raw encoding.
+  - name: OCM2AFLT2A
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM2AFLT2A; raw encoding.
+  - name: CCP1B
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP1B; raw encoding.
+  - name: OCM1BFLT1B
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM1BFLT1B; raw encoding.
+  - name: CCP1A
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.FLTR.CCP1A; raw encoding.
+  - name: OCM1AFLT1A
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.FLTR.OCM1AFLT1A; raw encoding.
+- name: TRIG
+  offset: 32
+  access: rw
+  description: CW32F030 ATIM.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADTE
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.ADTE; raw encoding.
+  - name: CM3BE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM3BE; raw encoding.
+  - name: CM2BE
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM2BE; raw encoding.
+  - name: CM1BE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM1BE; raw encoding.
+  - name: CM3AE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM3AE; raw encoding.
+  - name: CM2AE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM2AE; raw encoding.
+  - name: CM1AE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.CM1AE; raw encoding.
+  - name: UEVE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.TRIG.UEVE; raw encoding.
+- name: CH1CR
+  offset: 36
+  access: rw
+  description: 'CW32F030 ATIM.CH1CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+  fields:
+  - name: CCGB
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CCGB; raw encoding.
+  - name: CCGA
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CCGA; raw encoding.
+  - name: CISB
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH1CR.CISB; raw encoding.
+  - name: CDEB
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CDEB; raw encoding.
+  - name: CDEA
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CDEA; raw encoding.
+  - name: CIEB
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CIEB; raw encoding.
+  - name: CIEA
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CIEA; raw encoding.
+  - name: BUFEB
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.BUFEB; raw encoding.
+  - name: BUFEA
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.BUFEA; raw encoding.
+  - name: CSB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CSB; raw encoding.
+  - name: CSA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH1CR.CSA; raw encoding.
+  - name: BKSB
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH1CR.BKSB; raw encoding.
+  - name: BKSA
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH1CR.BKSA; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CH2CR
+  offset: 40
+  access: rw
+  description: 'CW32F030 ATIM.CH2CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+  fields:
+  - name: CCGB
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CCGB; raw encoding.
+  - name: CCGA
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CCGA; raw encoding.
+  - name: CISB
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH2CR.CISB; raw encoding.
+  - name: CDEB
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CDEB; raw encoding.
+  - name: CDEA
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CDEA; raw encoding.
+  - name: CIEB
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CIEB; raw encoding.
+  - name: CIEA
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CIEA; raw encoding.
+  - name: BUFEB
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.BUFEB; raw encoding.
+  - name: BUFEA
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.BUFEA; raw encoding.
+  - name: CSB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CSB; raw encoding.
+  - name: CSA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH2CR.CSA; raw encoding.
+  - name: BKSB
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH2CR.BKSB; raw encoding.
+  - name: BKSA
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH2CR.BKSA; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CH3CR
+  offset: 44
+  access: rw
+  description: 'CW32F030 ATIM.CH3CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+  fields:
+  - name: CCGB
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CCGB; raw encoding.
+  - name: CCGA
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CCGA; raw encoding.
+  - name: CISB
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH3CR.CISB; raw encoding.
+  - name: CDEB
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CDEB; raw encoding.
+  - name: CDEA
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CDEA; raw encoding.
+  - name: CIEB
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CIEB; raw encoding.
+  - name: CIEA
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CIEA; raw encoding.
+  - name: BUFEB
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.BUFEB; raw encoding.
+  - name: BUFEA
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.BUFEA; raw encoding.
+  - name: CSB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CSB; raw encoding.
+  - name: CSA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH3CR.CSA; raw encoding.
+  - name: BKSB
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH3CR.BKSB; raw encoding.
+  - name: BKSA
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH3CR.BKSA; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: DTR
+  offset: 48
+  access: rw
+  description: CW32F030 ATIM.DTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: VCE
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.VCE; raw encoding.
+  - name: SAFEEN
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.SAFEEN; raw encoding.
+  - name: MOE
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.MOE; raw encoding.
+  - name: AOE
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.AOE; raw encoding.
+  - name: BKE
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.BKE; raw encoding.
+  - name: DTEN
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.DTR.DTEN; raw encoding.
+  - name: DTR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.DTR.DTR; raw encoding.
+- name: RCR
+  offset: 52
+  access: rw
+  description: CW32F030 ATIM.RCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: UD
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.RCR.UD; raw encoding.
+  - name: OV
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.RCR.OV; raw encoding.
+  - name: RCR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.RCR.RCR; raw encoding.
+- name: CH1CCRA
+  offset: 60
+  access: rw
+  description: CW32F030 ATIM.CH1CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR1A
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH1CCRA.CCR1A; raw encoding.
+- name: CH1CCRB
+  offset: 64
+  access: rw
+  description: CW32F030 ATIM.CH1CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR1B
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH1CCRB.CCR1B; raw encoding.
+- name: CH2CCRA
+  offset: 68
+  access: rw
+  description: CW32F030 ATIM.CH2CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR2A
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH2CCRA.CCR2A; raw encoding.
+- name: CH2CCRB
+  offset: 72
+  access: rw
+  description: CW32F030 ATIM.CH2CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR2B
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH2CCRB.CCR2B; raw encoding.
+- name: CH3CCRA
+  offset: 76
+  access: rw
+  description: CW32F030 ATIM.CH3CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR3A
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH3CCRA.CCR3A; raw encoding.
+- name: CH3CCRB
+  offset: 80
+  access: rw
+  description: CW32F030 ATIM.CH3CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR3B
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH3CCRB.CCR3B; raw encoding.
+- name: CH4CCR
+  offset: 84
+  access: rw
+  description: CW32F030 ATIM.CH4CCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR4
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH4CCR.CCR4; raw encoding.
+- name: CH4CR
+  offset: 88
+  access: rw
+  description: CW32F030 ATIM.CH4CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: C4EN
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH4CR.C4EN; raw encoding.
+  - name: CIS
+    bit_offset: 3
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ATIM.CH4CR.CIS; raw encoding.
+  - name: CDE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH4CR.CDE; raw encoding.
+  - name: CIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH4CR.CIE; raw encoding.
+  - name: BUFE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ATIM.CH4CR.BUFE; raw encoding.
+constants: []

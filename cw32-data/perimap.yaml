@@ -1,0 +1,555 @@
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: ADC
+    block: adc
+    version: sdk_v2_2
+    vendor_ip: ADC
+    vendor_version: '2.2'
+  normalize:
+    kind: adc
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: ATIM
+    block: atim
+    version: sdk_v2_2
+    vendor_ip: ATIM
+    vendor_version: '2.2'
+  normalize:
+    kind: atim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: AWT
+    block: awt
+    version: sdk_v2_2
+    vendor_ip: AWT
+    vendor_version: '2.2'
+  normalize:
+    kind: awt
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: BTIM1
+    block: btim
+    version: sdk_v2_2
+    vendor_ip: BTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: btim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: BTIM2
+    block: btim
+    version: sdk_v2_2
+    vendor_ip: BTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: btim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: BTIM3
+    block: btim
+    version: sdk_v2_2
+    vendor_ip: BTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: btim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: CRC
+    block: crc
+    version: sdk_v2_2
+    vendor_ip: CRC
+    vendor_version: '2.2'
+  normalize:
+    kind: crc
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMA
+    block: dma
+    version: sdk_v2_2
+    vendor_ip: DMA
+    vendor_version: '2.2'
+  normalize:
+    kind: dma
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMACHANNEL1
+    block: dmachannel
+    version: sdk_v2_2
+    vendor_ip: DMACHANNEL
+    vendor_version: '2.2'
+  normalize:
+    kind: dmachannel
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMACHANNEL2
+    block: dmachannel
+    version: sdk_v2_2
+    vendor_ip: DMACHANNEL
+    vendor_version: '2.2'
+  normalize:
+    kind: dmachannel
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMACHANNEL3
+    block: dmachannel
+    version: sdk_v2_2
+    vendor_ip: DMACHANNEL
+    vendor_version: '2.2'
+  normalize:
+    kind: dmachannel
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMACHANNEL4
+    block: dmachannel
+    version: sdk_v2_2
+    vendor_ip: DMACHANNEL
+    vendor_version: '2.2'
+  normalize:
+    kind: dmachannel
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: DMACHANNEL5
+    block: dmachannel
+    version: sdk_v2_2
+    vendor_ip: DMACHANNEL
+    vendor_version: '2.2'
+  normalize:
+    kind: dmachannel
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: FLASH
+    block: flash
+    version: sdk_v2_2
+    vendor_ip: FLASH
+    vendor_version: '2.2'
+  normalize:
+    kind: flash
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GPIOA
+    block: gpio
+    version: sdk_v2_2
+    vendor_ip: GPIO
+    vendor_version: '2.2'
+  normalize:
+    kind: gpio
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GPIOB
+    block: gpio
+    version: sdk_v2_2
+    vendor_ip: GPIO
+    vendor_version: '2.2'
+  normalize:
+    kind: gpio
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GPIOC
+    block: gpio
+    version: sdk_v2_2
+    vendor_ip: GPIO
+    vendor_version: '2.2'
+  normalize:
+    kind: gpio
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GPIOF
+    block: gpio
+    version: sdk_v2_2
+    vendor_ip: GPIO
+    vendor_version: '2.2'
+  normalize:
+    kind: gpio
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GTIM1
+    block: gtim
+    version: sdk_v2_2
+    vendor_ip: GTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: gtim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GTIM2
+    block: gtim
+    version: sdk_v2_2
+    vendor_ip: GTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: gtim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GTIM3
+    block: gtim
+    version: sdk_v2_2
+    vendor_ip: GTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: gtim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: GTIM4
+    block: gtim
+    version: sdk_v2_2
+    vendor_ip: GTIM
+    vendor_version: '2.2'
+  normalize:
+    kind: gtim
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: I2C1
+    block: i2c
+    version: sdk_v2_2
+    vendor_ip: I2C
+    vendor_version: '2.2'
+  normalize:
+    kind: i2c
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: I2C2
+    block: i2c
+    version: sdk_v2_2
+    vendor_ip: I2C
+    vendor_version: '2.2'
+  normalize:
+    kind: i2c
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: IWDT
+    block: iwdt
+    version: sdk_v2_2
+    vendor_ip: IWDT
+    vendor_version: '2.2'
+  normalize:
+    kind: iwdt
+    version: l012
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: Header/SVD layout and F030 manual watchdog side effects match the existing l012 model; the audit compares every field and access policy.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: LVD
+    block: lvd
+    version: sdk_v2_2
+    vendor_ip: LVD
+    vendor_version: '2.2'
+  normalize:
+    kind: lvd
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: RAM
+    block: ram
+    version: sdk_v2_2
+    vendor_ip: RAM
+    vendor_version: '2.2'
+  normalize:
+    kind: ram
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: RTC
+    block: rtc
+    version: sdk_v2_2
+    vendor_ip: RTC
+    vendor_version: '2.2'
+  normalize:
+    kind: rtc
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: SPI1
+    block: spi
+    version: sdk_v2_2
+    vendor_ip: SPI
+    vendor_version: '2.2'
+  normalize:
+    kind: spi
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: SPI2
+    block: spi
+    version: sdk_v2_2
+    vendor_ip: SPI
+    vendor_version: '2.2'
+  normalize:
+    kind: spi
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: SYSCTRL
+    block: sysctrl
+    version: sdk_v2_2
+    vendor_ip: SYSCTRL
+    vendor_version: '2.2'
+  normalize:
+    kind: sysctrl
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: UART1
+    block: uart
+    version: sdk_v2_2
+    vendor_ip: UART
+    vendor_version: '2.2'
+  normalize:
+    kind: uart
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: UART2
+    block: uart
+    version: sdk_v2_2
+    vendor_ip: UART
+    vendor_version: '2.2'
+  normalize:
+    kind: uart
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: UART3
+    block: uart
+    version: sdk_v2_2
+    vendor_ip: UART
+    vendor_version: '2.2'
+  normalize:
+    kind: uart
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: VC1
+    block: vc
+    version: sdk_v2_2
+    vendor_ip: VC
+    vendor_version: '2.2'
+  normalize:
+    kind: vc
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: VC2
+    block: vc
+    version: sdk_v2_2
+    vendor_ip: VC
+    vendor_version: '2.2'
+  normalize:
+    kind: vc
+    version: f030
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: F030 register layout differs from L012; retain the peripheral kind and select its independently audited F030 revision.
+- mode: select
+  target:
+    chip: CW32F030C8
+    instance: WWDT
+    block: wwdt
+    version: sdk_v2_2
+    vendor_ip: WWDT
+    vendor_version: '2.2'
+  normalize:
+    kind: wwdt
+    version: l012
+    block: RegisterBlock
+  provenance:
+    source: vendor/cw32f030/CW32F030.svd; cw32f030.h; side-effects.yaml
+    reason: Header/SVD layout and F030 manual watchdog side effects match the existing l012 model; the audit compares every field and access policy.

@@ -1,0 +1,182 @@
+name: vc
+version: f030
+registers:
+- name: DIV
+  offset: 0
+  access: rw
+  description: CW32F030 VC.DIV; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: VIN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.DIV.VIN; raw encoding.
+  - name: EN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.DIV.EN; raw encoding.
+  - name: DIV
+    bit_offset: 0
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: CW32F030 VC.DIV.DIV; raw encoding.
+- name: CR0
+  offset: 4
+  access: rw
+  description: CW32F030 VC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: INN
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR0.INN; raw encoding.
+  - name: INP
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR0.INP; raw encoding.
+  - name: WINDOW
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR0.WINDOW; raw encoding.
+  - name: POL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR0.POL; raw encoding.
+  - name: IE
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR0.IE; raw encoding.
+  - name: HYS
+    bit_offset: 3
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR0.HYS; raw encoding.
+  - name: RESP
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR0.RESP; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR0.EN; raw encoding.
+- name: CR1
+  offset: 8
+  access: rw
+  description: CW32F030 VC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BLANKFLT
+    bit_offset: 13
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR1.BLANKFLT; raw encoding.
+  - name: BLANKCH3B
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.BLANKCH3B; raw encoding.
+  - name: BLANKCH2B
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.BLANKCH2B; raw encoding.
+  - name: BLANKCH1B
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.BLANKCH1B; raw encoding.
+  - name: ATIMBK
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.ATIMBK; raw encoding.
+  - name: ATIMCLR
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.ATIMCLR; raw encoding.
+  - name: HIGHIE
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.HIGHIE; raw encoding.
+  - name: RISEIE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.RISEIE; raw encoding.
+  - name: FALLIE
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.FALLIE; raw encoding.
+  - name: FLTCLK
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.FLTCLK; raw encoding.
+  - name: FLTTIME
+    bit_offset: 1
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 VC.CR1.FLTTIME; raw encoding.
+  - name: FLTEN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.CR1.FLTEN; raw encoding.
+- name: SR
+  offset: 12
+  access: rw
+  description: 'CW32F030 VC.SR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. INTF is cleared by writing zero; READY and FLTV are read-only status. Preserve the clearable flag when no clear is intended. Source: CW32x030 RM Rev 2.5 23.7.4'
+  fields:
+  - name: READY
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 VC.SR.READY; raw encoding.
+  - name: FLTV
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 VC.SR.FLTV; raw encoding.
+  - name: INTF
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 VC.SR.INTF; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

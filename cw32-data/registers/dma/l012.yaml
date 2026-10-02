@@ -1,0 +1,856 @@
+name: dma
+version: l012
+registers:
+- name: ISR
+  offset: 0
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: TE4
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE4; raw encoding retained unless explicitly audited.
+  - name: TC4
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC4; raw encoding retained unless explicitly audited.
+  - name: TE3
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE3; raw encoding retained unless explicitly audited.
+  - name: TC3
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC3; raw encoding retained unless explicitly audited.
+  - name: TE2
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE2; raw encoding retained unless explicitly audited.
+  - name: TC2
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC2; raw encoding retained unless explicitly audited.
+  - name: TE1
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE1; raw encoding retained unless explicitly audited.
+  - name: TC1
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC1; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 4
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 8.8.2; RM1.4 1.2'
+  fields:
+  - name: TE4
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TE4; raw encoding retained unless explicitly audited.
+  - name: TC4
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TC4; raw encoding retained unless explicitly audited.
+  - name: TE3
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TE3; raw encoding retained unless explicitly audited.
+  - name: TC3
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TC3; raw encoding retained unless explicitly audited.
+  - name: TE2
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TE2; raw encoding retained unless explicitly audited.
+  - name: TC2
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TC2; raw encoding retained unless explicitly audited.
+  - name: TE1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TE1; raw encoding retained unless explicitly audited.
+  - name: TC1
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TC1; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: CSR1
+  offset: 32
+  access: rw
+  description: Register CSR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTLOAD
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTLOAD; raw encoding retained unless explicitly audited.
+  - name: SRCLOAD
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCLOAD; raw encoding retained unless explicitly audited.
+  - name: TE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE; raw encoding retained unless explicitly audited.
+  - name: TC
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC; raw encoding retained unless explicitly audited.
+  - name: RESTART
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RESTART; raw encoding retained unless explicitly audited.
+  - name: STATUS
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field STATUS; raw encoding retained unless explicitly audited.
+  - name: SIZE
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field SIZE; raw encoding retained unless explicitly audited.
+  - name: DSTINC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTINC; raw encoding retained unless explicitly audited.
+  - name: SRCINC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCINC; raw encoding retained unless explicitly audited.
+  - name: TRANS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TRANS; raw encoding retained unless explicitly audited.
+  - name: TEIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEIE; raw encoding retained unless explicitly audited.
+  - name: TCIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TCIE; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: TRIG1
+  offset: 48
+  access: rw
+  description: 'Register TRIG1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
+  fields:
+  - name: HARDSRC
+    bit_offset: 2
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HARDSRC; raw encoding retained unless explicitly audited.
+  - name: SOFTSRC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTSRC; raw encoding retained unless explicitly audited.
+  - name: TYPE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TYPE; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CNT1
+  offset: 36
+  access: rw
+  description: Register CNT1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: REPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field REPEAT; raw encoding retained unless explicitly audited.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: SRCADDR1
+  offset: 40
+  access: rw
+  description: Register SRCADDR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field SRCADDR; raw encoding retained unless explicitly audited.
+- name: DSTADDR1
+  offset: 44
+  access: rw
+  description: Register DSTADDR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DSTADDR; raw encoding retained unless explicitly audited.
+- name: CCNT1
+  offset: 52
+  access: ro
+  description: Register CCNT1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CREPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: ro
+    kind: raw
+    description: Field CREPEAT; raw encoding retained unless explicitly audited.
+  - name: CCNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CCNT; raw encoding retained unless explicitly audited.
+- name: CSRCADDR1
+  offset: 56
+  access: ro
+  description: Register CSRCADDR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CSRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CSRCADDR; raw encoding retained unless explicitly audited.
+- name: CDSTADDR1
+  offset: 60
+  access: ro
+  description: Register CDSTADDR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CDSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CDSTADDR; raw encoding retained unless explicitly audited.
+- name: CSR2
+  offset: 64
+  access: rw
+  description: Register CSR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTLOAD
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTLOAD; raw encoding retained unless explicitly audited.
+  - name: SRCLOAD
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCLOAD; raw encoding retained unless explicitly audited.
+  - name: TE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE; raw encoding retained unless explicitly audited.
+  - name: TC
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC; raw encoding retained unless explicitly audited.
+  - name: RESTART
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RESTART; raw encoding retained unless explicitly audited.
+  - name: STATUS
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field STATUS; raw encoding retained unless explicitly audited.
+  - name: SIZE
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field SIZE; raw encoding retained unless explicitly audited.
+  - name: DSTINC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTINC; raw encoding retained unless explicitly audited.
+  - name: SRCINC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCINC; raw encoding retained unless explicitly audited.
+  - name: TRANS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TRANS; raw encoding retained unless explicitly audited.
+  - name: TEIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEIE; raw encoding retained unless explicitly audited.
+  - name: TCIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TCIE; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: CNT2
+  offset: 68
+  access: rw
+  description: Register CNT2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: REPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field REPEAT; raw encoding retained unless explicitly audited.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: SRCADDR2
+  offset: 72
+  access: rw
+  description: Register SRCADDR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field SRCADDR; raw encoding retained unless explicitly audited.
+- name: DSTADDR2
+  offset: 76
+  access: rw
+  description: Register DSTADDR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DSTADDR; raw encoding retained unless explicitly audited.
+- name: TRIG2
+  offset: 80
+  access: rw
+  description: 'Register TRIG2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
+  fields:
+  - name: HARDSRC
+    bit_offset: 2
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HARDSRC; raw encoding retained unless explicitly audited.
+  - name: SOFTSRC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTSRC; raw encoding retained unless explicitly audited.
+  - name: TYPE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TYPE; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CCNT2
+  offset: 84
+  access: ro
+  description: Register CCNT2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CREPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: ro
+    kind: raw
+    description: Field CREPEAT; raw encoding retained unless explicitly audited.
+  - name: CCNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CCNT; raw encoding retained unless explicitly audited.
+- name: CSRCADDR2
+  offset: 88
+  access: ro
+  description: Register CSRCADDR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CSRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CSRCADDR; raw encoding retained unless explicitly audited.
+- name: CDSTADDR2
+  offset: 92
+  access: ro
+  description: Register CDSTADDR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CDSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CDSTADDR; raw encoding retained unless explicitly audited.
+- name: CSR3
+  offset: 96
+  access: rw
+  description: Register CSR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTLOAD
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTLOAD; raw encoding retained unless explicitly audited.
+  - name: SRCLOAD
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCLOAD; raw encoding retained unless explicitly audited.
+  - name: TE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE; raw encoding retained unless explicitly audited.
+  - name: TC
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC; raw encoding retained unless explicitly audited.
+  - name: RESTART
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RESTART; raw encoding retained unless explicitly audited.
+  - name: STATUS
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field STATUS; raw encoding retained unless explicitly audited.
+  - name: SIZE
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field SIZE; raw encoding retained unless explicitly audited.
+  - name: DSTINC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTINC; raw encoding retained unless explicitly audited.
+  - name: SRCINC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCINC; raw encoding retained unless explicitly audited.
+  - name: TRANS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TRANS; raw encoding retained unless explicitly audited.
+  - name: TEIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEIE; raw encoding retained unless explicitly audited.
+  - name: TCIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TCIE; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: CNT3
+  offset: 100
+  access: rw
+  description: Register CNT3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: REPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field REPEAT; raw encoding retained unless explicitly audited.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: SRCADDR3
+  offset: 104
+  access: rw
+  description: Register SRCADDR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field SRCADDR; raw encoding retained unless explicitly audited.
+- name: DSTADDR3
+  offset: 108
+  access: rw
+  description: Register DSTADDR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DSTADDR; raw encoding retained unless explicitly audited.
+- name: TRIG3
+  offset: 112
+  access: rw
+  description: 'Register TRIG3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
+  fields:
+  - name: HARDSRC
+    bit_offset: 2
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HARDSRC; raw encoding retained unless explicitly audited.
+  - name: SOFTSRC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTSRC; raw encoding retained unless explicitly audited.
+  - name: TYPE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TYPE; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CCNT3
+  offset: 116
+  access: ro
+  description: Register CCNT3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CREPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: ro
+    kind: raw
+    description: Field CREPEAT; raw encoding retained unless explicitly audited.
+  - name: CCNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CCNT; raw encoding retained unless explicitly audited.
+- name: CSRCADDR3
+  offset: 120
+  access: ro
+  description: Register CSRCADDR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CSRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CSRCADDR; raw encoding retained unless explicitly audited.
+- name: CDSTADDR3
+  offset: 124
+  access: ro
+  description: Register CDSTADDR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CDSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CDSTADDR; raw encoding retained unless explicitly audited.
+- name: CSR4
+  offset: 128
+  access: rw
+  description: Register CSR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTLOAD
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTLOAD; raw encoding retained unless explicitly audited.
+  - name: SRCLOAD
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCLOAD; raw encoding retained unless explicitly audited.
+  - name: TE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TE; raw encoding retained unless explicitly audited.
+  - name: TC
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TC; raw encoding retained unless explicitly audited.
+  - name: RESTART
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RESTART; raw encoding retained unless explicitly audited.
+  - name: STATUS
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field STATUS; raw encoding retained unless explicitly audited.
+  - name: SIZE
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field SIZE; raw encoding retained unless explicitly audited.
+  - name: DSTINC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSTINC; raw encoding retained unless explicitly audited.
+  - name: SRCINC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRCINC; raw encoding retained unless explicitly audited.
+  - name: TRANS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TRANS; raw encoding retained unless explicitly audited.
+  - name: TEIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEIE; raw encoding retained unless explicitly audited.
+  - name: TCIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TCIE; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: CNT4
+  offset: 132
+  access: rw
+  description: Register CNT4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: REPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field REPEAT; raw encoding retained unless explicitly audited.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: SRCADDR4
+  offset: 136
+  access: rw
+  description: Register SRCADDR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field SRCADDR; raw encoding retained unless explicitly audited.
+- name: DSTADDR4
+  offset: 140
+  access: rw
+  description: Register DSTADDR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DSTADDR; raw encoding retained unless explicitly audited.
+- name: TRIG4
+  offset: 144
+  access: rw
+  description: 'Register TRIG4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTSRC bit 1: write one immediately triggers transfer, write zero has no effect; reads report transfer activity. TYPE/HARDSRC are normal configuration. A read-modify-write could retrigger. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
+  fields:
+  - name: HARDSRC
+    bit_offset: 2
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HARDSRC; raw encoding retained unless explicitly audited.
+  - name: SOFTSRC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTSRC; raw encoding retained unless explicitly audited.
+  - name: TYPE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TYPE; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CCNT4
+  offset: 148
+  access: ro
+  description: Register CCNT4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CREPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: ro
+    kind: raw
+    description: Field CREPEAT; raw encoding retained unless explicitly audited.
+  - name: CCNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CCNT; raw encoding retained unless explicitly audited.
+- name: CSRCADDR4
+  offset: 152
+  access: ro
+  description: Register CSRCADDR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CSRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CSRCADDR; raw encoding retained unless explicitly audited.
+- name: CDSTADDR4
+  offset: 156
+  access: ro
+  description: Register CDSTADDR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CDSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field CDSTADDR; raw encoding retained unless explicitly audited.
+constants: []

@@ -1,0 +1,1126 @@
+name: sysctrl
+version: l012
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: 'System-clock source and bus prescalers; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.1; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: HCLKPRS
+    bit_offset: 5
+    bit_size: 3
+    access: rw
+    description: AHB prescaler selector.
+  - name: PCLKPRS
+    bit_offset: 3
+    bit_size: 2
+    access: rw
+    description: Peripheral-bus prescaler selector.
+  - name: SYSCLK
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    description: System-clock source selector.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR1
+  offset: 4
+  access: rw
+  description: 'Clock-source enables; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.2; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: CLKCCS
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CLKCCS; raw encoding retained unless explicitly audited.
+  - name: HSECCS
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSECCS; raw encoding retained unless explicitly audited.
+  - name: LSECCS
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSECCS; raw encoding retained unless explicitly audited.
+  - name: LSELOCK
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSELOCK; raw encoding retained unless explicitly audited.
+  - name: LSEEN
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEEN; raw encoding retained unless explicitly audited.
+  - name: LSIEN
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSIEN; raw encoding retained unless explicitly audited.
+  - name: HSEEN
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEEN; raw encoding retained unless explicitly audited.
+  - name: HSIEN
+    bit_offset: 0
+    bit_size: 1
+    kind: bool
+    access: rw
+    description: Internal high-speed oscillator enable.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 8
+  access: rw
+  description: 'System control including SWD and Flash wait states; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.3; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: RAMBRKEN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RAMBRKEN; raw encoding retained unless explicitly audited.
+  - name: LVDBRKEN
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LVDBRKEN; raw encoding retained unless explicitly audited.
+  - name: DSBRKEN
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DSBRKEN; raw encoding retained unless explicitly audited.
+  - name: CLLBRKEN
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CLLBRKEN; raw encoding retained unless explicitly audited.
+  - name: LSEBRKEN
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEBRKEN; raw encoding retained unless explicitly audited.
+  - name: HSEBRKEN
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEBRKEN; raw encoding retained unless explicitly audited.
+  - name: FLASHWAIT
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    description: Flash wait-state configuration.
+  - name: WAKEUPCLK
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WAKEUPCLK; raw encoding retained unless explicitly audited.
+  - name: LOCKUP
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCKUP; raw encoding retained unless explicitly audited.
+  - name: SWDIO
+    bit_offset: 1
+    bit_size: 1
+    kind: bool
+    access: rw
+    description: Set to disable SWD and release its GPIO pins.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: HSI
+  offset: 24
+  access: rw
+  description: Internal high-speed oscillator trim, divider and stability fields.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    kind: bool
+    access: ro
+    description: Internal high-speed oscillator stable flag.
+  - name: DIV
+    bit_offset: 11
+    bit_size: 4
+    access: rw
+    description: Internal high-speed oscillator divider; encoding 14 means /24.
+  - name: TRIM
+    bit_offset: 0
+    bit_size: 11
+    access: rw
+    description: Internal high-speed oscillator calibration code.
+- name: LSI
+  offset: 32
+  access: rw
+  description: Internal low-speed oscillator trim and stability fields.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    kind: bool
+    access: ro
+    description: Internal low-speed oscillator stable flag.
+  - name: WAITCYCLE
+    bit_offset: 10
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field WAITCYCLE; raw encoding retained unless explicitly audited.
+  - name: TRIM
+    bit_offset: 0
+    bit_size: 9
+    access: rw
+    description: Internal low-speed oscillator calibration code.
+- name: HSE
+  offset: 28
+  access: rw
+  description: External high-speed oscillator control.
+  fields:
+  - name: DIGFLT
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DIGFLT; raw encoding retained unless explicitly audited.
+  - name: PDRIVER
+    bit_offset: 20
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PDRIVER; raw encoding retained unless explicitly audited.
+  - name: STABLE
+    bit_offset: 19
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field STABLE; raw encoding retained unless explicitly audited.
+  - name: DETCNT
+    bit_offset: 8
+    bit_size: 11
+    access: rw
+    kind: raw
+    description: Field DETCNT; raw encoding retained unless explicitly audited.
+  - name: HEXENPOL
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HEXENPOL; raw encoding retained unless explicitly audited.
+  - name: MODE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MODE; raw encoding retained unless explicitly audited.
+  - name: WAITCYCLE
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field WAITCYCLE; raw encoding retained unless explicitly audited.
+  - name: DRIVER
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field DRIVER; raw encoding retained unless explicitly audited.
+- name: LSE
+  offset: 36
+  access: rw
+  description: 'External low-speed oscillator control. PINLOCK becomes sticky until power-on reset when enabled; effective with CR1.LSELOCK. Other fields are configuration/status. No unrestricted generic modify contract. Source: RM1.4 4.7.7'
+  fields:
+  - name: STABLE
+    bit_offset: 18
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field STABLE; raw encoding retained unless explicitly audited.
+  - name: PINLOCK
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PINLOCK; raw encoding retained unless explicitly audited.
+  - name: PDRIVER
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PDRIVER; raw encoding retained unless explicitly audited.
+  - name: MODE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MODE; raw encoding retained unless explicitly audited.
+  - name: WAITCYCLE
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field WAITCYCLE; raw encoding retained unless explicitly audited.
+  - name: DRIVER
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field DRIVER; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: IER
+  offset: 12
+  access: rw
+  description: 'System-controller interrupt enable. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.8; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEFAULT; raw encoding retained unless explicitly audited.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEFAULT; raw encoding retained unless explicitly audited.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSERDY; raw encoding retained unless explicitly audited.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSIRDY; raw encoding retained unless explicitly audited.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSERDY; raw encoding retained unless explicitly audited.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSIRDY; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ISR
+  offset: 16
+  access: ro
+  description: Read-only system-controller interrupt status.
+  fields:
+  - name: LSESTABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSESTABLE; raw encoding retained unless explicitly audited.
+  - name: LSISTABLE
+    bit_offset: 14
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSISTABLE; raw encoding retained unless explicitly audited.
+  - name: HSESTABLE
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSESTABLE; raw encoding retained unless explicitly audited.
+  - name: HSISTABLE
+    bit_offset: 11
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSISTABLE; raw encoding retained unless explicitly audited.
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSEFAULT; raw encoding retained unless explicitly audited.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSEFAULT; raw encoding retained unless explicitly audited.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSERDY; raw encoding retained unless explicitly audited.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field LSIRDY; raw encoding retained unless explicitly audited.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSERDY; raw encoding retained unless explicitly audited.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field HSIRDY; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 20
+  access: rw
+  description: 'System-controller interrupt clear; follow vendor field semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 4.7.10; RM1.4 1.2'
+  fields:
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEFAULT; raw encoding retained unless explicitly audited.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEFAULT; raw encoding retained unless explicitly audited.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSEFAIL; raw encoding retained unless explicitly audited.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSERDY; raw encoding retained unless explicitly audited.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LSIRDY; raw encoding retained unless explicitly audited.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSERDY; raw encoding retained unless explicitly audited.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HSIRDY; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: AHBEN
+  offset: 48
+  access: rw
+  description: 'AHB clock enable; GPIO clocks use bits 4 through 7; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.11; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: CORDIC
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CORDIC; raw encoding retained unless explicitly audited.
+  - name: GPIOF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOF; raw encoding retained unless explicitly audited.
+  - name: GPIOC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOC; raw encoding retained unless explicitly audited.
+  - name: GPIOB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOB; raw encoding retained unless explicitly audited.
+  - name: GPIOA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOA; raw encoding retained unless explicitly audited.
+  - name: EAU
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EAU; raw encoding retained unless explicitly audited.
+  - name: CRC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CRC; raw encoding retained unless explicitly audited.
+  - name: FLASH
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FLASH; raw encoding retained unless explicitly audited.
+  - name: DMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMA; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: APBEN1
+  offset: 56
+  access: rw
+  description: 'APB1 clock enable; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.12; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: SPI3
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI3; raw encoding retained unless explicitly audited.
+  - name: SPI2
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI2; raw encoding retained unless explicitly audited.
+  - name: GTIM4
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4; raw encoding retained unless explicitly audited.
+  - name: GTIM3
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3; raw encoding retained unless explicitly audited.
+  - name: UART3
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART3; raw encoding retained unless explicitly audited.
+  - name: GTIM2
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2; raw encoding retained unless explicitly audited.
+  - name: GTIM1
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1; raw encoding retained unless explicitly audited.
+  - name: ATIM
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM; raw encoding retained unless explicitly audited.
+  - name: UART2
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART2; raw encoding retained unless explicitly audited.
+  - name: UART1
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART1; raw encoding retained unless explicitly audited.
+  - name: SPI1
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI1; raw encoding retained unless explicitly audited.
+  - name: VC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field VC; raw encoding retained unless explicitly audited.
+  - name: ADC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ADC; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: APBEN2
+  offset: 52
+  access: rw
+  description: 'APB2 clock enable; BTIM1/2/3 share bit 2; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.13; SDK cw32l012_sysctrl.c'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  - name: HALLTIM
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HALLTIM; raw encoding retained unless explicitly audited.
+  - name: I2C2
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field I2C2; raw encoding retained unless explicitly audited.
+  - name: DAC
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DAC; raw encoding retained unless explicitly audited.
+  - name: OPA
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OPA; raw encoding retained unless explicitly audited.
+  - name: LPTIM
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LPTIM; raw encoding retained unless explicitly audited.
+  - name: I2C1
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field I2C1; raw encoding retained unless explicitly audited.
+  - name: WWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WWDT; raw encoding retained unless explicitly audited.
+  - name: IWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IWDT; raw encoding retained unless explicitly audited.
+  - name: BTIM123
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM123; raw encoding retained unless explicitly audited.
+  - name: RTC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RTC; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: AHBRST
+  offset: 64
+  access: rw
+  description: 'AHB peripheral reset is active LOW: clear to assert, set to release.'
+  fields:
+  - name: CORDIC
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CORDIC; raw encoding retained unless explicitly audited.
+  - name: GPIOF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOF; raw encoding retained unless explicitly audited.
+  - name: GPIOC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOC; raw encoding retained unless explicitly audited.
+  - name: GPIOB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOB; raw encoding retained unless explicitly audited.
+  - name: GPIOA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GPIOA; raw encoding retained unless explicitly audited.
+  - name: EAU
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EAU; raw encoding retained unless explicitly audited.
+  - name: CRC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CRC; raw encoding retained unless explicitly audited.
+  - name: FLASH
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FLASH; raw encoding retained unless explicitly audited.
+  - name: DMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMA; raw encoding retained unless explicitly audited.
+- name: APBRST1
+  offset: 72
+  access: rw
+  description: 'APB1 peripheral reset is active LOW: clear to assert, set to release.'
+  fields:
+  - name: SPI3
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI3; raw encoding retained unless explicitly audited.
+  - name: SPI2
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI2; raw encoding retained unless explicitly audited.
+  - name: GTIM4
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4; raw encoding retained unless explicitly audited.
+  - name: GTIM3
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3; raw encoding retained unless explicitly audited.
+  - name: UART3
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART3; raw encoding retained unless explicitly audited.
+  - name: GTIM2
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2; raw encoding retained unless explicitly audited.
+  - name: GTIM1
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1; raw encoding retained unless explicitly audited.
+  - name: ATIM
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM; raw encoding retained unless explicitly audited.
+  - name: UART2
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART2; raw encoding retained unless explicitly audited.
+  - name: UART1
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UART1; raw encoding retained unless explicitly audited.
+  - name: SPI1
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SPI1; raw encoding retained unless explicitly audited.
+  - name: VC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field VC; raw encoding retained unless explicitly audited.
+  - name: ADC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ADC; raw encoding retained unless explicitly audited.
+- name: APBRST2
+  offset: 68
+  access: rw
+  description: 'APB2 peripheral reset is active LOW: clear to assert, set to release.'
+  fields:
+  - name: HALLTIM
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HALLTIM; raw encoding retained unless explicitly audited.
+  - name: I2C2
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field I2C2; raw encoding retained unless explicitly audited.
+  - name: DAC
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DAC; raw encoding retained unless explicitly audited.
+  - name: OPA
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OPA; raw encoding retained unless explicitly audited.
+  - name: LPTIM
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LPTIM; raw encoding retained unless explicitly audited.
+  - name: I2C1
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field I2C1; raw encoding retained unless explicitly audited.
+  - name: WWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WWDT; raw encoding retained unless explicitly audited.
+  - name: IWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IWDT; raw encoding retained unless explicitly audited.
+  - name: BTIM123
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM123; raw encoding retained unless explicitly audited.
+  - name: RTC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RTC; raw encoding retained unless explicitly audited.
+- name: RESETFLAG
+  offset: 76
+  access: rw
+  description: 'Reset-source flags. RW0 reset-cause flags: reads report actual causes, unlike R1W0 ICR. Zero clears, one preserves. Generic RMW can lose a newly asserted flag. Source: RM1.4 4.7.17; SDK SYSCTRL_ClearRstFlag'
+  fields:
+  - name: SYSRESETREQ
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SYSRESETREQ; raw encoding retained unless explicitly audited.
+  - name: LOCKUP
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LOCKUP; raw encoding retained unless explicitly audited.
+  - name: RSTB
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RSTB; raw encoding retained unless explicitly audited.
+  - name: WWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WWDT; raw encoding retained unless explicitly audited.
+  - name: IWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IWDT; raw encoding retained unless explicitly audited.
+  - name: LVD
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LVD; raw encoding retained unless explicitly audited.
+  - name: POR
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field POR; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: DEBUG
+  offset: 44
+  access: rw
+  description: Debug control.
+  fields:
+  - name: HALLTIM
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HALLTIM; raw encoding retained unless explicitly audited.
+  - name: WWDT
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WWDT; raw encoding retained unless explicitly audited.
+  - name: IWDT
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IWDT; raw encoding retained unless explicitly audited.
+  - name: RTC
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field RTC; raw encoding retained unless explicitly audited.
+  - name: LPTIM
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field LPTIM; raw encoding retained unless explicitly audited.
+  - name: BTIM123
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM123; raw encoding retained unless explicitly audited.
+  - name: GTIM4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4; raw encoding retained unless explicitly audited.
+  - name: GTIM3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3; raw encoding retained unless explicitly audited.
+  - name: GTIM2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2; raw encoding retained unless explicitly audited.
+  - name: GTIM1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1; raw encoding retained unless explicitly audited.
+  - name: ATIM
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM; raw encoding retained unless explicitly audited.
+- name: MCO
+  offset: 112
+  access: rw
+  description: Microcontroller clock output selection.
+  fields:
+  - name: DIV
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field DIV; raw encoding retained unless explicitly audited.
+  - name: SOURCE
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SOURCE; raw encoding retained unless explicitly audited.
+constants:
+- name: CR0_SYSCLK_MASK
+  value: 7
+  description: CR0 system-clock source mask.
+- name: CR0_PCLKPRS_MASK
+  value: 24
+  description: CR0 peripheral-bus prescaler mask.
+- name: CR0_HCLKPRS_MASK
+  value: 224
+  description: CR0 AHB prescaler mask.
+- name: CR1_HSIEN
+  value: 1
+  description: CR1 internal high-speed oscillator enable.
+- name: CR2_SWDIO
+  value: 2
+  description: CR2 SWD disable bit; setting this makes SWD pins available as GPIO.
+- name: CR2_FLASHWAIT_MASK
+  value: 112
+  description: CR2 Flash wait-state mask.
+- name: HSI_TRIM_MASK
+  value: 2047
+  description: HSI oscillator calibration field, bits 10 through 0.
+- name: HSI_DIV_MASK
+  value: 30720
+  description: HSI oscillator divider field, bits 14 through 11.
+- name: HSI_DIV_SHIFT
+  value: 11
+  description: Least significant bit of the HSI divider field.
+- name: HSI_DIV24
+  value: 28672
+  description: Divider encoding 14 shifted to bit 11 selects HSI /24, nominally 4 MHz.
+- name: HSI_STABLE
+  value: 32768
+  description: HSI oscillator stable flag.
+- name: LSI_TRIM_MASK
+  value: 511
+  description: LSI oscillator calibration field, bits 8 through 0.
+- name: LSI_STABLE
+  value: 32768
+  description: LSI oscillator stable flag.
+- name: GPIOA
+  value: 16
+  description: GPIOA clock enable and active-low reset mask for AHBEN/AHBRST.
+- name: GPIOB
+  value: 32
+  description: GPIOB clock enable and active-low reset mask for AHBEN/AHBRST.
+- name: GPIOC
+  value: 64
+  description: GPIOC clock enable and active-low reset mask for AHBEN/AHBRST.
+- name: GPIOF
+  value: 128
+  description: GPIOF clock enable and active-low reset mask for AHBEN/AHBRST.
+- name: BTIM123
+  value: 4
+  description: Shared BTIM1/2/3 clock-enable and active-low reset mask for APBEN2/APBRST2.

@@ -1,0 +1,540 @@
+name: rtc
+version: l012
+registers:
+- name: KEY
+  offset: 0
+  access: wo
+  description: 'Register KEY; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write-only unlock sequence 0xCA then 0x53; lock with 0xCA then a value other than 0x53. SDK RTC_LOCK macro instead writes 0x55 twice and conflicts with the manual; do not copy that macro. Source: RM1.4 13.3.5; 13.5.1; SDK RTC_DeInit'
+  fields:
+  - name: KEY
+    bit_offset: 0
+    bit_size: 8
+    access: wo
+    kind: raw
+    description: Field KEY; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: CR0
+  offset: 4
+  access: rw
+  description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: START
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field START; raw encoding retained unless explicitly audited.
+  - name: RTC1HZ
+    bit_offset: 5
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field RTC1HZ; raw encoding retained unless explicitly audited.
+  - name: H24
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field H24; raw encoding retained unless explicitly audited.
+  - name: INTERVAL
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field INTERVAL; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR1
+  offset: 8
+  access: rw
+  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: SOURCE
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field SOURCE; raw encoding retained unless explicitly audited.
+  - name: WAIT
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field WAIT; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 12
+  access: rw
+  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: ALARMBEN
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMBEN; raw encoding retained unless explicitly audited.
+  - name: ALARMAEN
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMAEN; raw encoding retained unless explicitly audited.
+  - name: AWTEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWTEN; raw encoding retained unless explicitly audited.
+  - name: TAMPEN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMPEN; raw encoding retained unless explicitly audited.
+  - name: RTCOUT
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field RTCOUT; raw encoding retained unless explicitly audited.
+  - name: TAMPEDGE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMPEDGE; raw encoding retained unless explicitly audited.
+  - name: AWTSRC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWTSRC; raw encoding retained unless explicitly audited.
+  - name: AWTPRS
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field AWTPRS; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: PSC
+  offset: 64
+  access: rw
+  description: 'Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: PSC1
+    bit_offset: 20
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field PSC1; raw encoding retained unless explicitly audited.
+  - name: PSC2
+    bit_offset: 0
+    bit_size: 20
+    access: rw
+    kind: raw
+    description: Field PSC2; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: DATE
+  offset: 20
+  access: rw
+  description: 'Register DATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: WEEK
+    bit_offset: 24
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field WEEK; raw encoding retained unless explicitly audited.
+  - name: YEAR
+    bit_offset: 16
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field YEAR; raw encoding retained unless explicitly audited.
+  - name: MONTH
+    bit_offset: 8
+    bit_size: 5
+    access: rw
+    kind: raw
+    description: Field MONTH; raw encoding retained unless explicitly audited.
+  - name: DAY
+    bit_offset: 0
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field DAY; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: TIME
+  offset: 24
+  access: rw
+  description: 'Register TIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HOUR; raw encoding retained unless explicitly audited.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field MINUTE; raw encoding retained unless explicitly audited.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field SECOND; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: SSCNT
+  offset: 68
+  access: ro
+  description: Register SSCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SSCNT1
+    bit_offset: 20
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field SSCNT1; raw encoding retained unless explicitly audited.
+  - name: SSCNT0
+    bit_offset: 0
+    bit_size: 20
+    access: ro
+    kind: raw
+    description: Field SSCNT0; raw encoding retained unless explicitly audited.
+- name: ALARMA
+  offset: 28
+  access: rw
+  description: 'Register ALARMA; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: WEEKMASK
+    bit_offset: 24
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field WEEKMASK; raw encoding retained unless explicitly audited.
+  - name: HOUREN
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HOUREN; raw encoding retained unless explicitly audited.
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HOUR; raw encoding retained unless explicitly audited.
+  - name: MINUTEEN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MINUTEEN; raw encoding retained unless explicitly audited.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field MINUTE; raw encoding retained unless explicitly audited.
+  - name: SECONDEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SECONDEN; raw encoding retained unless explicitly audited.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field SECOND; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ALARMB
+  offset: 32
+  access: rw
+  description: 'Register ALARMB; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: WEEKMASK
+    bit_offset: 24
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field WEEKMASK; raw encoding retained unless explicitly audited.
+  - name: HOUREN
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HOUREN; raw encoding retained unless explicitly audited.
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: Field HOUR; raw encoding retained unless explicitly audited.
+  - name: MINUTEEN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MINUTEEN; raw encoding retained unless explicitly audited.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field MINUTE; raw encoding retained unless explicitly audited.
+  - name: SECONDEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SECONDEN; raw encoding retained unless explicitly audited.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field SECOND; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: TAMPDATE
+  offset: 36
+  access: ro
+  description: Register TAMPDATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: WEEK
+    bit_offset: 13
+    bit_size: 3
+    access: ro
+    kind: raw
+    description: Field WEEK; raw encoding retained unless explicitly audited.
+  - name: MONTH
+    bit_offset: 8
+    bit_size: 5
+    access: ro
+    kind: raw
+    description: Field MONTH; raw encoding retained unless explicitly audited.
+  - name: DAY
+    bit_offset: 0
+    bit_size: 6
+    access: ro
+    kind: raw
+    description: Field DAY; raw encoding retained unless explicitly audited.
+- name: TAMPTIME
+  offset: 40
+  access: ro
+  description: Register TAMPTIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: ro
+    kind: raw
+    description: Field HOUR; raw encoding retained unless explicitly audited.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: Field MINUTE; raw encoding retained unless explicitly audited.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: Field SECOND; raw encoding retained unless explicitly audited.
+- name: IER
+  offset: 48
+  access: rw
+  description: 'Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INTERVAL; raw encoding retained unless explicitly audited.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMPOV; raw encoding retained unless explicitly audited.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMP; raw encoding retained unless explicitly audited.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWTIMER; raw encoding retained unless explicitly audited.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMB; raw encoding retained unless explicitly audited.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMA; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ISR
+  offset: 52
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field INTERVAL; raw encoding retained unless explicitly audited.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TAMPOV; raw encoding retained unless explicitly audited.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field TAMP; raw encoding retained unless explicitly audited.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field AWTIMER; raw encoding retained unless explicitly audited.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ALARMB; raw encoding retained unless explicitly audited.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ALARMA; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 56
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 13.5.15; RM1.4 1.2'
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INTERVAL; raw encoding retained unless explicitly audited.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMPOV; raw encoding retained unless explicitly audited.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TAMP; raw encoding retained unless explicitly audited.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWTIMER; raw encoding retained unless explicitly audited.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMB; raw encoding retained unless explicitly audited.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ALARMA; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: AWTARR
+  offset: 44
+  access: rw
+  description: 'Register AWTARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field ARR; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: AWTCNT
+  offset: 60
+  access: ro
+  description: Register AWTCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: COMPCFR1
+  offset: 16
+  access: rw
+  description: 'Register COMPCFR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: EN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  - name: SIGN
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SIGN; raw encoding retained unless explicitly audited.
+  - name: PERIOD
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field PERIOD; raw encoding retained unless explicitly audited.
+  - name: COMP
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field COMP; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+constants: []

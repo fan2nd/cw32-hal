@@ -1,0 +1,499 @@
+name: rtc
+version: f030
+registers:
+- name: KEY
+  offset: 0
+  access: wo
+  description: 'CW32F030 RTC.KEY; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Write 0xCA then 0x53 to unlock RTC writes. Write 0xCA then another value to lock all registers except KEY and ICR. Source: CW32x030 RM Rev 2.5 12.5.1'
+  fields:
+  - name: KEY
+    bit_offset: 0
+    bit_size: 8
+    access: wo
+    kind: raw
+    description: CW32F030 RTC.KEY.KEY; raw encoding.
+  write_behavior: command
+  read_behavior: ordinary
+- name: CR0
+  offset: 4
+  access: rw
+  description: 'CW32F030 RTC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: START
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR0.START; raw encoding.
+  - name: RTC1HZ
+    bit_offset: 5
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.CR0.RTC1HZ; raw encoding.
+  - name: H24
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR0.H24; raw encoding.
+  - name: INTERVAL
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.CR0.INTERVAL; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR1
+  offset: 8
+  access: rw
+  description: 'CW32F030 RTC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: SOURCE
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.CR1.SOURCE; raw encoding.
+  - name: WINDOW
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.CR1.WINDOW; raw encoding.
+  - name: ACCESS
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR1.ACCESS; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 12
+  access: rw
+  description: 'CW32F030 RTC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: ALARMBEN
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR2.ALARMBEN; raw encoding.
+  - name: ALARMAEN
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR2.ALARMAEN; raw encoding.
+  - name: AWTEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR2.AWTEN; raw encoding.
+  - name: TAMPEN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR2.TAMPEN; raw encoding.
+  - name: RTCOUT
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.CR2.RTCOUT; raw encoding.
+  - name: TAMPEDGE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.CR2.TAMPEDGE; raw encoding.
+  - name: AWTSRC
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.CR2.AWTSRC; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: COMPEN
+  offset: 16
+  access: rw
+  description: 'CW32F030 RTC.COMPEN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: FREQ
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.COMPEN.FREQ; raw encoding.
+  - name: EN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.COMPEN.EN; raw encoding.
+  - name: SIGN
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.COMPEN.SIGN; raw encoding.
+  - name: STEP
+    bit_offset: 12
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.COMPEN.STEP; raw encoding.
+  - name: COMP
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.COMPEN.COMP; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: DATE
+  offset: 20
+  access: rw
+  description: 'CW32F030 RTC.DATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: WEEK
+    bit_offset: 24
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.DATE.WEEK; raw encoding.
+  - name: YEAR
+    bit_offset: 16
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.DATE.YEAR; raw encoding.
+  - name: MONTH
+    bit_offset: 8
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.DATE.MONTH; raw encoding.
+  - name: DAY
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.DATE.DAY; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: TIME
+  offset: 24
+  access: rw
+  description: 'CW32F030 RTC.TIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.TIME.HOUR; raw encoding.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.TIME.MINUTE; raw encoding.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.TIME.SECOND; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ALARMA
+  offset: 28
+  access: rw
+  description: 'CW32F030 RTC.ALARMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: WEEKMASK
+    bit_offset: 24
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMA.WEEKMASK; raw encoding.
+  - name: HOUREN
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMA.HOUREN; raw encoding.
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMA.HOUR; raw encoding.
+  - name: MINUTEEN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMA.MINUTEEN; raw encoding.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMA.MINUTE; raw encoding.
+  - name: SECONDEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMA.SECONDEN; raw encoding.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMA.SECOND; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ALARMB
+  offset: 32
+  access: rw
+  description: 'CW32F030 RTC.ALARMB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: WEEKMASK
+    bit_offset: 24
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMB.WEEKMASK; raw encoding.
+  - name: HOUREN
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMB.HOUREN; raw encoding.
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMB.HOUR; raw encoding.
+  - name: MINUTEEN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMB.MINUTEEN; raw encoding.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMB.MINUTE; raw encoding.
+  - name: SECONDEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ALARMB.SECONDEN; raw encoding.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.ALARMB.SECOND; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: TAMPDATE
+  offset: 36
+  access: ro
+  description: CW32F030 RTC.TAMPDATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: WEEK
+    bit_offset: 13
+    bit_size: 3
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPDATE.WEEK; raw encoding.
+  - name: MONTH
+    bit_offset: 8
+    bit_size: 5
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPDATE.MONTH; raw encoding.
+  - name: DAY
+    bit_offset: 0
+    bit_size: 6
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPDATE.DAY; raw encoding.
+- name: TAMPTIME
+  offset: 40
+  access: ro
+  description: CW32F030 RTC.TAMPTIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: HOUR
+    bit_offset: 16
+    bit_size: 6
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPTIME.HOUR; raw encoding.
+  - name: MINUTE
+    bit_offset: 8
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPTIME.MINUTE; raw encoding.
+  - name: SECOND
+    bit_offset: 0
+    bit_size: 7
+    access: ro
+    kind: raw
+    description: CW32F030 RTC.TAMPTIME.SECOND; raw encoding.
+- name: AWTARR
+  offset: 44
+  access: rw
+  description: 'CW32F030 RTC.AWTARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 RTC.AWTARR.ARR; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: IER
+  offset: 48
+  access: rw
+  description: 'CW32F030 RTC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.INTERVAL; raw encoding.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.TAMPOV; raw encoding.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.TAMP; raw encoding.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.AWTIMER; raw encoding.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.ALARMB; raw encoding.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.IER.ALARMA; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ISR
+  offset: 52
+  access: ro
+  description: CW32F030 RTC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.INTERVAL; raw encoding.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.TAMPOV; raw encoding.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.TAMP; raw encoding.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.AWTIMER; raw encoding.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.ALARMB; raw encoding.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RTC.ISR.ALARMA; raw encoding.
+- name: ICR
+  offset: 56
+  access: rw
+  description: 'CW32F030 RTC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 12.5.15; 1.2'
+  fields:
+  - name: INTERVAL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.INTERVAL; raw encoding.
+  - name: TAMPOV
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.TAMPOV; raw encoding.
+  - name: TAMP
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.TAMP; raw encoding.
+  - name: AWTIMER
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.AWTIMER; raw encoding.
+  - name: ALARMB
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.ALARMB; raw encoding.
+  - name: ALARMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RTC.ICR.ALARMA; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

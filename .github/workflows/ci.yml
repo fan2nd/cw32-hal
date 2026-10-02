@@ -1,0 +1,25 @@
+name: generated-cw32
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: thumbv6m-none-eabi
+          components: rustfmt
+      # JSON, PAC output and Cargo.lock are generated from the source checkout.
+      - run: cargo run -p xtask -- regenerate
+      - run: cargo fmt --all -- --check
+      - run: cargo run --locked -p xtask -- regenerate --check
+      - name: Build HAL for both chips
+        run: |
+          for chip in cw32l012c8 cw32f030c8; do
+            cargo build --locked --release -p embassy-cw32 --no-default-features --features "$chip" --target thumbv6m-none-eabi
+            cargo build --locked --release -p embassy-cw32 --features "$chip,memory-x,metadata,unstable-pac,defmt,time-driver-any" --target thumbv6m-none-eabi
+          done
+      - name: Build the six board firmware binaries
+        run: cargo build --locked --release --target thumbv6m-none-eabi -p cw32-bldc-01-gpio -p cw32-bldc-02-sampling -p cw32-bldc-03-six-step -p cw32-bldc-04-sensorless -p cw32-bldc-05-startup -p cw32-bldc-06-application
+      - name: Build startup and application with motor output enabled
+        run: cargo build --locked --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup -p cw32-bldc-06-application --features motor-output-enable

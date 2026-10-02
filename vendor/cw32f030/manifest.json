@@ -1,0 +1,40 @@
+{
+  "family": "CW32F030",
+  "downloaded": "2026-10-02",
+  "sdk": {
+    "url": "https://www.whxy.com/uploads/files/20241111/CW32F030_StandardPeripheralLib_V2.2.zip",
+    "version": "2.2",
+    "sha256": "7c431df43d7075b817a51d818ea4c9aba55f83b7c9c77bf0065976758954b780"
+  },
+  "header": {
+    "path": "cw32f030.h",
+    "archive_path": "Libraries/inc/cw32f030.h",
+    "sha256": "7060347a4cb18d8550708ce8c488cdbdb8e58c0e9d6ecf6f1e6467e139328862"
+  },
+  "svd": {
+    "path": "CW32F030.svd",
+    "archive_path": "IdeSupport/EWARM/arm/config/debugger/CW/CW32F030.svd",
+    "version": "1.2",
+    "sha256": "c59bdc211510db5a8117d4d7610c2ef9b7ba328d9221c166354766f07e079aaa"
+  },
+  "rcc_header": {
+    "path": "cw32f030_rcc.h",
+    "archive_path": "Libraries/inc/cw32f030_rcc.h",
+    "sha256": "de32996b8f852c456ada827bc5c13fe64a29fc12115489d98e2d3ddf6133d184"
+  },
+  "startup_evidence": {
+    "path": "system_cw32f030.c",
+    "archive_path": "Libraries/src/system_cw32f030.c",
+    "sha256": "62f27339a1dce8dc8fc67c37a0dc4f2b91ca3f0c8767a657533655aab46d8454"
+  },
+  "manual": {
+    "url": "https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf",
+    "version": "Rev 2.5",
+    "sha256": "1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2"
+  },
+  "datasheet": {
+    "url": "https://www.whxy.com/uploads/files/20251229/CW32F030_DataSheet_CN_V1.9.pdf",
+    "version": "Rev 1.9",
+    "sha256": "04ef91434320e5d05a3b6690fead0fedb31a7d9bad28c96b655a6e13a22e46b2"
+  }
+}

@@ -1,0 +1,121 @@
+name: dmachannel
+version: f030
+registers:
+- name: CSR
+  offset: 0
+  access: rw
+  description: CW32F030 DMACHANNEL.CSR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STATUS
+    bit_offset: 8
+    bit_size: 3
+    access: ro
+    kind: raw
+    description: CW32F030 DMACHANNEL.CSR.STATUS; raw encoding.
+  - name: SIZE
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.CSR.SIZE; raw encoding.
+  - name: DSTINC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.DSTINC; raw encoding.
+  - name: SRCINC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.SRCINC; raw encoding.
+  - name: TRANS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.TRANS; raw encoding.
+  - name: TEIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.TEIE; raw encoding.
+  - name: TCIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.TCIE; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.CSR.EN; raw encoding.
+- name: CNT
+  offset: 4
+  access: rw
+  description: CW32F030 DMACHANNEL.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: REPEAT
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.CNT.REPEAT; raw encoding.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.CNT.CNT; raw encoding.
+- name: SRCADDR
+  offset: 8
+  access: rw
+  description: CW32F030 DMACHANNEL.SRCADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: SRCADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.SRCADDR.SRCADDR; raw encoding.
+- name: DSTADDR
+  offset: 12
+  access: rw
+  description: CW32F030 DMACHANNEL.DSTADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: DSTADDR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.DSTADDR.DSTADDR; raw encoding.
+- name: TRIG
+  offset: 16
+  access: rw
+  description: 'CW32F030 DMACHANNEL.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration. Source: CW32x030 RM Rev 2.5 8.8.4'
+  fields:
+  - name: HARDSRC
+    bit_offset: 2
+    bit_size: 6
+    access: rw
+    kind: raw
+    description: CW32F030 DMACHANNEL.TRIG.HARDSRC; raw encoding.
+  - name: SOFTSRC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.TRIG.SOFTSRC; raw encoding.
+  - name: TYPE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 DMACHANNEL.TRIG.TYPE; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+constants: []

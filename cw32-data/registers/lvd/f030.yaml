@@ -1,0 +1,99 @@
+name: lvd
+version: f030
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: CW32F030 LVD.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: IE
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR0.IE; raw encoding.
+  - name: VTH
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 LVD.CR0.VTH; raw encoding.
+  - name: SOURCE
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 LVD.CR0.SOURCE; raw encoding.
+  - name: ACTION
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR0.ACTION; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR0.EN; raw encoding.
+- name: CR1
+  offset: 4
+  access: rw
+  description: CW32F030 LVD.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: LEVEL
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR1.LEVEL; raw encoding.
+  - name: FALL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR1.FALL; raw encoding.
+  - name: RISE
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR1.RISE; raw encoding.
+  - name: FLTCLK
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR1.FLTCLK; raw encoding.
+  - name: FLTTIME
+    bit_offset: 1
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 LVD.CR1.FLTTIME; raw encoding.
+  - name: FLTEN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.CR1.FLTEN; raw encoding.
+- name: SR
+  offset: 8
+  access: rw
+  description: 'CW32F030 LVD.SR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. INTF is cleared by writing zero; FLTV is read-only status. Source: CW32x030 RM Rev 2.5 24.7.3'
+  fields:
+  - name: FLTV
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 LVD.SR.FLTV; raw encoding.
+  - name: INTF
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 LVD.SR.INTF; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

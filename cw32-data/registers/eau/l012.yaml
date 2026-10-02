@@ -1,0 +1,81 @@
+name: eau
+version: l012
+registers:
+- name: CSR
+  offset: 0
+  access: rw
+  description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: BUSY
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field BUSY; raw encoding retained unless explicitly audited.
+  - name: ZERO
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ZERO; raw encoding retained unless explicitly audited.
+  - name: OVR
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field OVR; raw encoding retained unless explicitly audited.
+  - name: MODE
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field MODE; raw encoding retained unless explicitly audited.
+- name: DIVIDEND
+  offset: 4
+  access: rw
+  description: 'Register DIVIDEND; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported. Source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation'
+  fields:
+  - name: DIVIDEND
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DIVIDEND; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DIVISOR
+  offset: 8
+  access: rw
+  description: 'Register DIVISOR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported. Source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation'
+  fields:
+  - name: DIVISOR
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field DIVISOR; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: QUOTIENT
+  offset: 12
+  access: ro
+  description: Register QUOTIENT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: QUOTIENT
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field QUOTIENT; raw encoding retained unless explicitly audited.
+- name: REMAINDER
+  offset: 16
+  access: ro
+  description: Register REMAINDER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: REMAINDER
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: Field REMAINDER; raw encoding retained unless explicitly audited.
+constants: []

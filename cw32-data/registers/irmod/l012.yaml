@@ -1,0 +1,27 @@
+name: irmod
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: INV
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INV; raw encoding retained unless explicitly audited.
+  - name: IRSW
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IRSW; raw encoding retained unless explicitly audited.
+  - name: MOD
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field MOD; raw encoding retained unless explicitly audited.
+constants: []

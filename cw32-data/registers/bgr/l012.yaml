@@ -1,0 +1,21 @@
+name: bgr
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: TSEN
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TSEN; raw encoding retained unless explicitly audited.
+  - name: BGREN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BGREN; raw encoding retained unless explicitly audited.
+constants: []

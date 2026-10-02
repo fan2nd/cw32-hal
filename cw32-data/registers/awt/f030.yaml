@@ -1,0 +1,90 @@
+name: awt
+version: f030
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: CW32F030 AWT.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: SRC
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 AWT.CR.SRC; raw encoding.
+  - name: PRS
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 AWT.CR.PRS; raw encoding.
+  - name: MD
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 AWT.CR.MD; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 AWT.CR.EN; raw encoding.
+- name: ARR
+  offset: 4
+  access: rw
+  description: CW32F030 AWT.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 AWT.ARR.ARR; raw encoding.
+- name: CNT
+  offset: 8
+  access: ro
+  description: CW32F030 AWT.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 AWT.CNT.CNT; raw encoding.
+- name: IER
+  offset: 16
+  access: rw
+  description: CW32F030 AWT.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: UD
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 AWT.IER.UD; raw encoding.
+- name: ISR
+  offset: 20
+  access: ro
+  description: CW32F030 AWT.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: UD
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 AWT.ISR.UD; raw encoding.
+- name: ICR
+  offset: 28
+  access: rw
+  description: 'CW32F030 AWT.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 11.8.6; 1.2'
+  fields:
+  - name: UD
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 AWT.ICR.UD; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

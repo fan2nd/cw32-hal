@@ -1,0 +1,33 @@
+[package]
+name = "embassy-cw32"
+version = "0.11.4"
+edition = "2021"
+rust-version = "1.99"
+license = "MIT OR Apache-2.0"
+description = "Metadata-driven experimental Embassy HAL for CW32L012C8 and CW32F030C8"
+publish = false
+
+[features]
+default = ["rt"]
+rt = ["cw32-metapac/rt", "dep:cortex-m-rt"]
+memory-x = []
+metadata = ["cw32-metapac/metadata"]
+unstable-pac = []
+defmt = ["dep:defmt", "embassy-hal-internal/defmt"]
+cw32l012c8 = ["cw32-metapac/cw32l012c8"]
+cw32f030c8 = ["cw32-metapac/cw32f030c8"]
+time-driver-any = ["time-driver-gtim1"]
+time-driver-gtim1 = ["rt", "dep:embassy-time-driver", "dep:cortex-m", "dep:cortex-m-rt"]
+
+[dependencies]
+embassy-hal-internal = { version = "=0.5.0", features = ["cortex-m", "prio-bits-2"] }
+defmt = { version = "=1.0.1", optional = true }
+cw32-metapac = { path = "../cw32-metapac", default-features = false }
+critical-section = "=1.2.0"
+embedded-hal = "=1.0.0"
+embassy-time-driver = { version = "=0.2.2", optional = true, features = ["tick-hz-1_000_000"] }
+cortex-m = { version = "=0.7.7", optional = true, features = ["critical-section-single-core"] }
+cortex-m-rt = { version = "=0.7.5", optional = true }
+
+[build-dependencies]
+cw32-metapac = { path = "../cw32-metapac", default-features = false, features = ["metadata"] }

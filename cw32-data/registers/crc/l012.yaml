@@ -1,0 +1,41 @@
+name: crc
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: 'Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Programming MODE initializes the CRC algorithm/initial value for a new calculation; do not assume rewriting the current MODE is harmless. Source: RM1.4 10.4.1; SDK CRC16_Calc_8bit'
+  fields:
+  - name: MODE
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field MODE; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DR
+  offset: 8
+  access: rw
+  description: 'Register DR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Each write feeds an 8-bit input into the running CRC calculation. A read-write access tag does not permit a meaningful modify operation. Source: RM1.4 10.3.2; 10.6.2; SDK CRC16_Calc_8bit'
+  fields:
+  - name: DR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field DR; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: RESULT
+  offset: 12
+  access: ro
+  description: Register RESULT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+constants: []

@@ -1,0 +1,489 @@
+# Independent CW32x030 User Manual Rev 2.5 review. No L012 overlay is applied.
+# Conditional/mixed semantics are conservative register-level classifications.
+
+- block: adc
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 22.13.11; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: atim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 15.7.5; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: awt
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 11.8.6; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: btim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 13.7.7; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: dma
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.2; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: flash
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 7.9.6; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: gpio
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 9.6.15; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: gtim
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 14.8.13; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: ram
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 6.6.4; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: rtc
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.5.15; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: sysctrl
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.11; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: uart
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 18.9.9; 1.2"
+  description: "Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific."
+
+- block: sysctrl
+  register: RESETFLAG
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.18"
+  description: "Reset-cause flags are RW0: reads report actual causes; zero clears and one preserves."
+
+- block: sysctrl
+  register: CR0
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.1"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: sysctrl
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.2"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only. LSELOCK can make LSEEN set-only; LSEEN is reset only by power-on reset. CLKCCS, HSECCS and LSECCS must remain one per this manual revision. This does not impose a key on other registers."
+
+- block: sysctrl
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.3"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: sysctrl
+  register: IER
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 4.7.9"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: flash
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 7.9.1"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: flash
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 7.9.2"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: flash
+  register: PAGELOCK
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 7.9.3"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: gpio
+  register: LOCK
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 9.6.16"
+  description: "Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers."
+
+- block: gpio
+  register: BRR
+  write_behavior: one_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 9.6.20"
+  description: "Writing a one clears the corresponding ODR pin. Reads return zero; zero writes do nothing."
+
+- block: gpio
+  register: BSRR
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 9.6.21"
+  description: "Writing one in bits 15:0 sets the corresponding ODR pin; writing one in bits 31:16 clears it. Set takes priority when both are selected. Reads return zero."
+
+- block: gpio
+  register: TOG
+  write_behavior: toggle
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 9.6.22"
+  description: "Writing a one toggles the corresponding ODR pin; zero has no effect and reads return zero."
+
+- block: adc
+  register: START
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 22.4.1; 22.13.8"
+  description: "START=1 starts conversion and START=0 stops it; hardware clears START when the selected mode completes. AUTOSTOP is configuration and can disable ADC at completion."
+
+- block: adc
+  register: CR2
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 22.13.3"
+  description: "ACCRST is R0W1: writing one clears the RESULTACC accumulation register, while zero has no effect. ACCEN and CNT are ordinary configuration."
+
+- block: atim
+  register: CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 15.7.1"
+  description: "BG, UG and TG are self-clearing software commands. UG also initializes the counter, loads enabled shadows and resets the prescaler. DIR is writable only in edge-aligned mode; other bits configure counting and interrupts."
+
+- block: atim
+  register: CH1CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 15.7.11-13"
+  description: "CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA."
+
+- block: atim
+  register: CH2CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 15.7.11-13"
+  description: "CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA."
+
+- block: atim
+  register: CH3CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 15.7.11-13"
+  description: "CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA."
+
+- block: crc
+  register: CR
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 10.4; 10.6.1"
+  description: "Selecting the CRC algorithm initializes the calculation state; it is not an ordinary software-owned latch."
+
+- block: crc
+  register: DR8
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 10.3; 10.6.2"
+  description: "Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width."
+
+- block: crc
+  register: DR16
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 10.3; 10.6.2"
+  description: "Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width."
+
+- block: crc
+  register: DR32
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 10.3; 10.6.2"
+  description: "Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width."
+
+- block: dma
+  register: TRIG1
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: dma
+  register: TRIG2
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: dma
+  register: TRIG3
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: dma
+  register: TRIG4
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: dma
+  register: TRIG5
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: dmachannel
+  register: TRIG
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 8.8.4"
+  description: "SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration."
+
+- block: i2c
+  register: CR
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 20.7.3"
+  description: "STA requests START and must be cleared by software. STO requests STOP and self-clears. SI is zero-to-clear and clearing it advances the bus state machine. Preserve configuration and status intentionally."
+
+- block: i2c
+  register: DR
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 20.7.4"
+  description: "Writes prepare the next transmit byte and reads obtain the received byte. SI clearing separately advances the transfer; this is not the L012 FIFO controller."
+
+- block: spi
+  register: ICR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 19.8.6"
+  description: "R1W0 interrupt clears plus FLUSH bit zero: writing zero to FLUSH clears the transmit buffer and shift register and sets TXE. Unselected bits must remain one to avoid an unintended flush."
+
+- block: spi
+  register: DR
+  write_behavior: command
+  read_behavior: clear
+  source: "CW32x030 RM Rev 2.5 19.6.1; 19.8.7"
+  description: "A write queues transmit data and clears TXE. Reading receives buffered data and clears RXNE; a generic read-modify-write is invalid."
+
+- block: uart
+  register: TDR
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 18.5; 18.9.5-6"
+  description: "Writing queues a transmit frame and clears TXE. RDR does not automatically clear RC; software clears RC separately through ICR."
+
+- block: vc
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 23.7.4"
+  description: "INTF is cleared by writing zero; READY and FLTV are read-only status. Preserve the clearable flag when no clear is intended."
+
+- block: lvd
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 24.7.3"
+  description: "INTF is cleared by writing zero; FLTV is read-only status."
+
+- block: rtc
+  register: KEY
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.5.1"
+  description: "Write 0xCA then 0x53 to unlock RTC writes. Write 0xCA then another value to lock all registers except KEY and ICR."
+
+- block: rtc
+  register: CR0
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: CR1
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: CR2
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: COMPEN
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: DATE
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: TIME
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: ALARMA
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: ALARMB
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: AWTARR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: rtc
+  register: IER
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13"
+  description: "RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error."
+
+- block: iwdt
+  register: KR
+  write_behavior: command
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 16.6.1"
+  description: "0x5555 unlocks protected registers; another value locks them. 0xCCCC starts, 0xAAAA reloads, and 0x5A5A then 0xA5A5 stops. Commands also close write access."
+
+- block: iwdt
+  register: CR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 16.3.4; 16.6.2-6"
+  description: "Requires KR=0x5555 and the matching update flag cleared before writing. Poll completion across the watchdog clock domain. WINR update reloads the counter; a window violation may reset the chip."
+
+- block: iwdt
+  register: ARR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 16.3.4; 16.6.2-6"
+  description: "Requires KR=0x5555 and the matching update flag cleared before writing. Poll completion across the watchdog clock domain. WINR update reloads the counter; a window violation may reset the chip."
+
+- block: iwdt
+  register: WINR
+  write_behavior: keyed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 16.3.4; 16.6.2-6"
+  description: "Requires KR=0x5555 and the matching update flag cleared before writing. Poll completion across the watchdog clock domain. WINR update reloads the counter; a window violation may reset the chip."
+
+- block: iwdt
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 16.6.6"
+  description: "OV bit 3 is RW0; RUN, RELOAD and update flags are read-only."
+
+- block: wwdt
+  register: CR0
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 17.6.1"
+  description: "EN is RW1 and cannot be disabled after enabling. WCNT reads the current count and writes refresh it; refresh outside the window may reset the chip."
+
+- block: wwdt
+  register: CR1
+  write_behavior: mixed
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 17.6.2"
+  description: "IE cannot be cleared once set, although labelled RW. PRS and WINR are ordinary configuration."
+
+- block: wwdt
+  register: SR
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+  source: "CW32x030 RM Rev 2.5 17.6.3"
+  description: "POV reports pre-overflow; writing zero clears it."
+
+- block: adc
+  register: RESULT0
+  write_behavior: ordinary
+  read_behavior: latch
+  source: 'CW32x030 RM Rev 2.5 22.13.2; 22.13.10; 22.5.1'
+  description: 'Reading consumes the unread-result state used by overrun detection and DISCARD result retention. The latch classification records this state change; it does not mean the value is a FIFO or that reading clears EOC, EOS or OVW. Clear interrupt flags explicitly through ICR.'
+- block: adc
+  register: RESULT1
+  write_behavior: ordinary
+  read_behavior: latch
+  source: 'CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  description: 'Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR.'
+- block: adc
+  register: RESULT2
+  write_behavior: ordinary
+  read_behavior: latch
+  source: 'CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  description: 'Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR.'
+- block: adc
+  register: RESULT3
+  write_behavior: ordinary
+  read_behavior: latch
+  source: 'CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  description: 'Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR.'

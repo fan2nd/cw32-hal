@@ -1,0 +1,518 @@
+name: adc
+version: f030
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: CW32F030 ADC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BIAS
+    bit_offset: 14
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR0.BIAS; raw encoding.
+  - name: BUF
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR0.BUF; raw encoding.
+  - name: SAM
+    bit_offset: 11
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR0.SAM; raw encoding.
+  - name: CLK
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR0.CLK; raw encoding.
+  - name: REF
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR0.REF; raw encoding.
+  - name: TSEN
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR0.TSEN; raw encoding.
+  - name: BGREN
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR0.BGREN; raw encoding.
+  - name: MODE
+    bit_offset: 1
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR0.MODE; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR0.EN; raw encoding.
+- name: CR1
+  offset: 4
+  access: rw
+  description: CW32F030 ADC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: WDTALL
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR1.WDTALL; raw encoding.
+  - name: WDTCH
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR1.WDTCH; raw encoding.
+  - name: DMAEN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR1.DMAEN; raw encoding.
+  - name: ALIGN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR1.ALIGN; raw encoding.
+  - name: DISCARD
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR1.DISCARD; raw encoding.
+  - name: CHMUX
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR1.CHMUX; raw encoding.
+- name: START
+  offset: 8
+  access: rw
+  description: 'CW32F030 ADC.START; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. START=1 starts conversion and START=0 stops it; hardware clears START when the selected mode completes. AUTOSTOP is configuration and can disable ADC at completion. Source: CW32x030 RM Rev 2.5 22.4.1; 22.13.8'
+  fields:
+  - name: AUTOSTOP
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.START.AUTOSTOP; raw encoding.
+  - name: START
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.START.START; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: SQR
+  offset: 12
+  access: rw
+  description: CW32F030 ADC.SQR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ENS
+    bit_offset: 16
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.SQR.ENS; raw encoding.
+  - name: SQR3
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.SQR.SQR3; raw encoding.
+  - name: SQR2
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.SQR.SQR2; raw encoding.
+  - name: SQR1
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.SQR.SQR1; raw encoding.
+  - name: SQR0
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.SQR.SQR0; raw encoding.
+- name: CR2
+  offset: 16
+  access: rw
+  description: 'CW32F030 ADC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. ACCRST is R0W1: writing one clears the RESULTACC accumulation register, while zero has no effect. ACCEN and CNT are ordinary configuration. Source: CW32x030 RM Rev 2.5 22.13.3'
+  fields:
+  - name: ACCRST
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR2.ACCRST; raw encoding.
+  - name: ACCEN
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.CR2.ACCEN; raw encoding.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.CR2.CNT; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: VTH
+  offset: 20
+  access: rw
+  description: CW32F030 ADC.VTH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: VTH
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.VTH.VTH; raw encoding.
+- name: VTL
+  offset: 24
+  access: rw
+  description: CW32F030 ADC.VTL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: VTL
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: CW32F030 ADC.VTL.VTL; raw encoding.
+- name: TRIGGER
+  offset: 28
+  access: rw
+  description: CW32F030 ADC.TRIGGER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: DMA
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.DMA; raw encoding.
+  - name: I2C2
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.I2C2; raw encoding.
+  - name: I2C1
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.I2C1; raw encoding.
+  - name: SPI2
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.SPI2; raw encoding.
+  - name: SPI1
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.SPI1; raw encoding.
+  - name: UART3
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.UART3; raw encoding.
+  - name: UART2
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.UART2; raw encoding.
+  - name: UART1
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.UART1; raw encoding.
+  - name: BTIM3
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.BTIM3; raw encoding.
+  - name: BTIM2
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.BTIM2; raw encoding.
+  - name: BTIM1
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.BTIM1; raw encoding.
+  - name: GTIM4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.GTIM4; raw encoding.
+  - name: GTIM3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.GTIM3; raw encoding.
+  - name: GTIM2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.GTIM2; raw encoding.
+  - name: GTIM1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.GTIM1; raw encoding.
+  - name: ATIM
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.TRIGGER.ATIM; raw encoding.
+- name: RESULT0
+  offset: 32
+  access: ro
+  description: 'CW32F030 ADC.RESULT0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention. The latch classification records this state change; it does not mean the value is a FIFO or that reading clears EOC, EOS or OVW. Clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10; 22.5.1'
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 ADC.RESULT0.RESULT; raw encoding.
+  write_behavior: ordinary
+  read_behavior: latch
+- name: RESULT1
+  offset: 36
+  access: ro
+  description: 'CW32F030 ADC.RESULT1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 ADC.RESULT1.RESULT; raw encoding.
+  write_behavior: ordinary
+  read_behavior: latch
+- name: RESULT2
+  offset: 40
+  access: ro
+  description: 'CW32F030 ADC.RESULT2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 ADC.RESULT2.RESULT; raw encoding.
+  write_behavior: ordinary
+  read_behavior: latch
+- name: RESULT3
+  offset: 44
+  access: ro
+  description: 'CW32F030 ADC.RESULT3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 ADC.RESULT3.RESULT; raw encoding.
+  write_behavior: ordinary
+  read_behavior: latch
+- name: RESULTACC
+  offset: 48
+  access: ro
+  description: CW32F030 ADC.RESULTACC; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 24
+    access: ro
+    kind: raw
+    description: CW32F030 ADC.RESULTACC.RESULT; raw encoding.
+- name: IER
+  offset: 52
+  access: rw
+  description: CW32F030 ADC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: OVW
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.OVW; raw encoding.
+  - name: WDTR
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.WDTR; raw encoding.
+  - name: WDTH
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.WDTH; raw encoding.
+  - name: WDTL
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.WDTL; raw encoding.
+  - name: EOA
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.EOA; raw encoding.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.EOS; raw encoding.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.IER.EOC; raw encoding.
+- name: ICR
+  offset: 56
+  access: rw
+  description: 'CW32F030 ADC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 22.13.11; 1.2'
+  fields:
+  - name: OVW
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.OVW; raw encoding.
+  - name: WDTR
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.WDTR; raw encoding.
+  - name: WDTH
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.WDTH; raw encoding.
+  - name: WDTL
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.WDTL; raw encoding.
+  - name: EOA
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.EOA; raw encoding.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.EOS; raw encoding.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 ADC.ICR.EOC; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: ISR
+  offset: 60
+  access: ro
+  description: CW32F030 ADC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: READY
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.READY; raw encoding.
+  - name: OVW
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.OVW; raw encoding.
+  - name: WDTR
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.WDTR; raw encoding.
+  - name: WDTH
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.WDTH; raw encoding.
+  - name: WDTL
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.WDTL; raw encoding.
+  - name: EOA
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.EOA; raw encoding.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.EOS; raw encoding.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 ADC.ISR.EOC; raw encoding.
+constants: []

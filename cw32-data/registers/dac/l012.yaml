@@ -1,0 +1,302 @@
+name: dac
+version: l012
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DMAUDRIE2
+    bit_offset: 29
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAUDRIE2; raw encoding retained unless explicitly audited.
+  - name: DMAEN2
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAEN2; raw encoding retained unless explicitly audited.
+  - name: MAMP2
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field MAMP2; raw encoding retained unless explicitly audited.
+  - name: WAVE2
+    bit_offset: 22
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field WAVE2; raw encoding retained unless explicitly audited.
+  - name: TSEL2
+    bit_offset: 18
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TSEL2; raw encoding retained unless explicitly audited.
+  - name: TEN2
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEN2; raw encoding retained unless explicitly audited.
+  - name: EN2
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN2; raw encoding retained unless explicitly audited.
+  - name: DMAUDRIE1
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAUDRIE1; raw encoding retained unless explicitly audited.
+  - name: DMAEN1
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAEN1; raw encoding retained unless explicitly audited.
+  - name: MAMP1
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field MAMP1; raw encoding retained unless explicitly audited.
+  - name: WAVE1
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field WAVE1; raw encoding retained unless explicitly audited.
+  - name: TSEL1
+    bit_offset: 2
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TSEL1; raw encoding retained unless explicitly audited.
+  - name: TEN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TEN1; raw encoding retained unless explicitly audited.
+  - name: EN1
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN1; raw encoding retained unless explicitly audited.
+- name: SWTRGR
+  offset: 4
+  access: rw
+  description: 'Register SWTRGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write one triggers the selected DAC channel; hardware clears the trigger after transfer of its data-holding value. Do not RMW. Source: RM1.4 26.10.2; SDK DAC_SoftwareTriggerCmd'
+  fields:
+  - name: SWTRIG2
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SWTRIG2; raw encoding retained unless explicitly audited.
+  - name: SWTRIG1
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SWTRIG1; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12R1
+  offset: 8
+  access: rw
+  description: 'Register DHR12R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12L1
+  offset: 12
+  access: rw
+  description: 'Register DHR12L1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 4
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR8R1
+  offset: 16
+  access: rw
+  description: 'Register DHR8R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12R2
+  offset: 20
+  access: rw
+  description: 'Register DHR12R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12L2
+  offset: 24
+  access: rw
+  description: 'Register DHR12L2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 4
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR8R2
+  offset: 28
+  access: rw
+  description: 'Register DHR8R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12RD
+  offset: 32
+  access: rw
+  description: 'Register DHR12RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: C2DATA
+    bit_offset: 16
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field C2DATA; raw encoding retained unless explicitly audited.
+  - name: C1DATA
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field C1DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR12LD
+  offset: 36
+  access: rw
+  description: 'Register DHR12LD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: C2DATA
+    bit_offset: 20
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field C2DATA; raw encoding retained unless explicitly audited.
+  - name: C1DATA
+    bit_offset: 4
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field C1DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DHR8RD
+  offset: 40
+  access: rw
+  description: 'Register DHR8RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  fields:
+  - name: C2DATA
+    bit_offset: 8
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field C2DATA; raw encoding retained unless explicitly audited.
+  - name: C1DATA
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: Field C1DATA; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DOR1
+  offset: 44
+  access: rw
+  description: 'Register DOR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
+  fields:
+  - name: DMAUDR
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAUDR; raw encoding retained unless explicitly audited.
+  - name: DATA
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: DOR2
+  offset: 48
+  access: rw
+  description: 'Register DOR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
+  fields:
+  - name: DMAUDR
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAUDR; raw encoding retained unless explicitly audited.
+  - name: DATA
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: CR1
+  offset: 52
+  access: rw
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: C2OUT
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field C2OUT; raw encoding retained unless explicitly audited.
+  - name: C1OUT
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field C1OUT; raw encoding retained unless explicitly audited.
+constants: []

@@ -1,0 +1,226 @@
+name: opa
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: BIAS
+    bit_offset: 13
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field BIAS; raw encoding retained unless explicitly audited.
+  - name: AMP
+    bit_offset: 10
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field AMP; raw encoding retained unless explicitly audited.
+  - name: INN2EN
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INN2EN; raw encoding retained unless explicitly audited.
+  - name: INN1EN
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INN1EN; raw encoding retained unless explicitly audited.
+  - name: INP4EN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INP4EN; raw encoding retained unless explicitly audited.
+  - name: INP3EN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INP3EN; raw encoding retained unless explicitly audited.
+  - name: INP2EN
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INP2EN; raw encoding retained unless explicitly audited.
+  - name: INP1EN
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field INP1EN; raw encoding retained unless explicitly audited.
+  - name: MODE
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field MODE; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: CAL
+  offset: 4
+  access: rw
+  description: 'Register CAL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTTRIG bit 3 write one starts timed calibration; zero does nothing. START is a level-calibration control; AZRUN is RO and only meaningful in triggered mode. Other fields configure routing and timing. Source: RM1.4 29.3.3; 29.6.2; SDK OPA_AutoZeroTrig_SoftEvent/OPA_AutoZeroSoft_Start'
+  fields:
+  - name: GTIM4OC2
+    bit_offset: 31
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC2; raw encoding retained unless explicitly audited.
+  - name: GTIM4OC1
+    bit_offset: 30
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC1; raw encoding retained unless explicitly audited.
+  - name: GTIM4TRGO
+    bit_offset: 29
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC2
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC2; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC1
+    bit_offset: 27
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC1; raw encoding retained unless explicitly audited.
+  - name: GTIM3TRGO
+    bit_offset: 26
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC2
+    bit_offset: 25
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC2; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC1
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC1; raw encoding retained unless explicitly audited.
+  - name: GTIM2TRGO
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC2
+    bit_offset: 22
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC2; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC1
+    bit_offset: 21
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC1; raw encoding retained unless explicitly audited.
+  - name: GTIM1TRGO
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
+  - name: ATIM1OC6
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM1OC6; raw encoding retained unless explicitly audited.
+  - name: ATIM1OC5
+    bit_offset: 18
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM1OC5; raw encoding retained unless explicitly audited.
+  - name: ATIM1OC4
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM1OC4; raw encoding retained unless explicitly audited.
+  - name: ATIM1TRGO
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIM1TRGO; raw encoding retained unless explicitly audited.
+  - name: ADC2START1
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ADC2START1; raw encoding retained unless explicitly audited.
+  - name: ADC1START1
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ADC1START1; raw encoding retained unless explicitly audited.
+  - name: CLKDIV
+    bit_offset: 11
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field CLKDIV; raw encoding retained unless explicitly audited.
+  - name: AZRUN
+    bit_offset: 10
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field AZRUN; raw encoding retained unless explicitly audited.
+  - name: CALPERIOD
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field CALPERIOD; raw encoding retained unless explicitly audited.
+  - name: SOFTTRIG
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTTRIG; raw encoding retained unless explicitly audited.
+  - name: START
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field START; raw encoding retained unless explicitly audited.
+  - name: CALMODE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CALMODE; raw encoding retained unless explicitly audited.
+  - name: CALEN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CALEN; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+constants: []

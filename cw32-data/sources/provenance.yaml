@@ -1,0 +1,135 @@
+# Audited CW32L012 subset. See sources/provenance.yaml for evidence and limits.
+schema_version: 1
+scope: Complete CW32L012 register-model coverage with explicit source discrepancies, all 32 external IRQs, chip memory and separately audited package maps. Experimental; not hardware validated.
+sources:
+- id: sdk
+  kind: standard-peripheral-library
+  version: 1.0.5
+  date: '2026-07-01'
+  url: https://www.whxy.com/uploads/files/20260701/CW32L012_StandardPeripheralLib_V1.0.5.zip
+  sha256: 8b0a4c0ee865642d08f353aec98906c900a8b10f672120e649e6b1bf5e29c18f
+- id: cmsis-header
+  kind: cmsis-header
+  version: '1.2'
+  date: '2026-06-24'
+  path: vendor/cw32l012.h
+  upstream_path: Libraries/inc/cw32l012.h
+  sha256: 3758779c7b9e60fda1aa80dfd2848b6986074d91a6763076fa6777d55b1ad000
+  derived_from: sdk
+- id: mdk-svd
+  kind: cmsis-svd
+  path: vendor/CW32L012.svd
+  upstream_path: IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2.pack
+  sha256: fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942
+  derived_from: sdk
+- id: sdk-gpio-header
+  kind: sdk-gpio-header
+  path: vendor/cw32l012_gpio.h
+  upstream_path: Libraries/inc/cw32l012_gpio.h
+  sha256: 45f356e8028475c2e25d135c5fdd0b75babb6b1c83f1d5534038e9355822d717
+  derived_from: sdk
+- id: reference-manual
+  kind: reference-manual
+  version: '1.4'
+  date: 2026-06
+  url: https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  sha256: a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340
+  sections:
+  - 2.2.2
+  - '4.7'
+  - '9.4'
+  - '9.5'
+  - '9.6'
+- id: datasheet
+  kind: datasheet
+  version: '1.0'
+  date: 2026-01
+  url: https://www.whxy.com/uploads/files/20260115/CW32L012_DataSheet_EN_V1.0.pdf
+  sha256: f15a7a3515eafde618cc572f358b89faa7fbcf7ec65a476484eaa00993d7d94f
+  page: 32
+  figures:
+  - 5-1
+  - 5-2
+evidence:
+- applies_to: registers/*/l012.yaml registers; families/cw32l012.yaml peripheral addresses
+  sources:
+  - cmsis-header
+  - mdk-svd
+  detail: Offsets/access and bases compared to the pinned CMSIS header and SVD; derived GPIOB/C/F
+    register blocks resolve to GPIOA.
+- applies_to: registers/sysctrl/l012.yaml bit masks and positions
+  sources:
+  - cmsis-header
+  - mdk-svd
+  detail: Mask and shift values match the CMSIS *_Msk and *_Pos definitions and SVD bitfields. HSI_DIV24
+    additionally uses the SDK/manual encoding 14, shifted by 11.
+- applies_to: families/cw32l012.yaml interrupts
+  sources:
+  - cmsis-header
+  - mdk-svd
+  detail: All 32 external IRQs come from CMSIS IRQn_Type. Pinned SVD contains the same 31 distinct
+    IRQs for 0..30 but omits CLKFAULT (31); header authority retains it.
+- applies_to: families/cw32l012.yaml constants and GPIO masks
+  sources:
+  - sdk
+  - reference-manual
+  detail: SYSCTRL key, factory trim addresses, reset polarity, implemented pin masks and PF03-only
+    pull-down were retained from the existing manual audit. SDK gpio.h pin-function macros plus RM
+    DIR reset masks establish logical pins, not package bonding.
+- applies_to: chips/cw32l012c8.yaml memory
+  sources:
+  - sdk
+  - reference-manual
+  detail: 'RM table 2-1 agrees with SDK Template MDK project and CW32L012x8.icf: main Flash at 0x00000000,
+    65536 bytes; SRAM at 0x20000000, 8192 bytes.'
+- applies_to: chips/*.yaml pins
+  sources:
+  - datasheet
+  detail: Figures 5-1 and 5-2 on printed page 32 (PDF page 36) visually establish identical 48-position layouts for LQFP48/C8T6 and QFN48/C8U6; all 40 GPIO bonds are modeled. See docs/pin-route-evidence.md for complete numbered mapping and the 82 FOC-route audit.
+cautions:
+- pins:
+  - PA13
+  - PA14
+  reason: SWD by default; GPIO unavailable while SYSCTRL.CR2.SWDIO=0. The HAL must not silently disable
+    SWD.
+- pins:
+  - PF03
+  reason: BOOT selection pin and the only internal pull-down-capable GPIO; boot circuitry must be
+    considered.
+limitations:
+- Both C8T6 and C8U6 package GPIO pin maps are audited (40 GPIO each). Only 82 FOC-related routes are audited; other alternate functions remain unmodeled.
+- No claimed UART/SPI/I2C/ADC/DMA/timer driver implementation follows from the IRQ metadata.
+- Hardware timing, oscillator accuracy and physical GPIO operation have not been tested.
+- RM1.4 HSI reset-value line 0x0001F772 conflicts with its reserved-upper-bits and TRIM-default text;
+  use defined field semantics and factory trim, not a whole-register reset assumption.
+- RM1.4 table 2-1 lists boot-ROM end 0x001009FF while labeling it 2KB; this conflicted region is deliberately
+  omitted from executable linker memory.
+- Device SVDs may differ between IDE packages; implementation was verified against current Libraries/inc/cw32l012.h
+  and RM1.4.
+- FOC pin routes include verified ATIM AF values and ADC/OPA/VC/DAC analog functions. Non-FOC pin multiplexing remains unmodeled.
+- Access tags follow the vendor header/SVD. A read-write tag on ICR, BRR, BSRR or TOG does not make
+  read-modify-write safe for these action registers.
+- Pinned CMSIS header/SVD files remain available for offline audit. Reference-manual, SDK source-function
+  semantics, memory-map and datasheet pin claims are attributed manual audits, not independent
+  hardware verification.
+full_register_audit:
+  instances: 50
+  ip_models: 28
+  logical_register_views: 306
+  fields: 1713
+  layout_evidence: docs/full-register-coverage.md
+  semantics_evidence: docs/full-peripheral-semantics.md
+  clock_irq_evidence: docs/peripheral-instances.md
+  status: Complete modeled register layout with explicit source discrepancies; no hardware validation.
+  raw_svd_fields_rejected: 15
+  corrections:
+  - ATIM header IER renamed DIER using RM and SVD/macro names.
+  - ADC ISR word/fields use RO per RM25.12.9 despite header/SVD word RW and erroneous AWDH child; DAC DOR1/2 DATA child fields use RO.
+  - DMA and DMACHANNEL CCNT registers and fields use conservative RO from RM 8.8.8 despite header/SVD RW.
+  - GPIO PDR retains only PIN3; 15 fictitious SVD fields are rejected.
+  - VCREF headerStructName and macro-prefix defects normalized without changing bit layout.
+  - Timer CCMR capture/compare and I2C MCR2/SCR2 overlapping views use explicit alias_of.
+  unresolved_source_conflicts:
+  - VCREF DIV width is 3 bits in header/SVD and SDK encodings, 4 bits in RM prose; retain narrower evidenced model.
+  - I2C RXWATER/RXCNT width is 2 bits in header/SVD, 12 bits in manual tables; retain narrower evidenced model.
+  - GTIM ISR manual RW conflicts with header/SVD RO and separate ICR; retain read-only API.

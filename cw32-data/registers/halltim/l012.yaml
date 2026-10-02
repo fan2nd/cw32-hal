@@ -1,0 +1,229 @@
+name: halltim
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: 'Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTCAP bit 23 is R0W1 software capture/trigger action; remaining implemented fields are configuration. Source: RM1.4 18.8.1; SDK HALLTIM_GenerateSoftTrigger'
+  fields:
+  - name: SOFTCAP
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTCAP; raw encoding retained unless explicitly audited.
+  - name: FLT2LEN
+    bit_offset: 8
+    bit_size: 15
+    access: rw
+    kind: raw
+    description: Field FLT2LEN; raw encoding retained unless explicitly audited.
+  - name: MMS
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field MMS; raw encoding retained unless explicitly audited.
+  - name: DIV
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field DIV; raw encoding retained unless explicitly audited.
+  - name: FLT1EN
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FLT1EN; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: DIER
+  offset: 4
+  access: rw
+  description: Register DIER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SOFTDMA
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SOFTDMA; raw encoding retained unless explicitly audited.
+  - name: MATCHDMA
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MATCHDMA; raw encoding retained unless explicitly audited.
+  - name: OVDMA
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OVDMA; raw encoding retained unless explicitly audited.
+  - name: CAPDMA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CAPDMA; raw encoding retained unless explicitly audited.
+  - name: MATCHIE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MATCHIE; raw encoding retained unless explicitly audited.
+  - name: OVIE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OVIE; raw encoding retained unless explicitly audited.
+  - name: CAPIE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CAPIE; raw encoding retained unless explicitly audited.
+- name: CNT
+  offset: 8
+  access: rw
+  description: 'Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Manual classifies 24-bit DATA as RW0 although header/SVD say RW. Treat as readable counter with zero-clearing semantics; arbitrary counter preload writes are not established by the sources. Source: RM1.4 18.8.3; SDK HALLTIM_GetCounterValue'
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 24
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: ARR
+  offset: 12
+  access: rw
+  description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 24
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+- name: WIDTH
+  offset: 16
+  access: ro
+  description: Register WIDTH; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 24
+    access: ro
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+- name: CCR
+  offset: 20
+  access: rw
+  description: Register CCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DATA
+    bit_offset: 0
+    bit_size: 24
+    access: rw
+    kind: raw
+    description: Field DATA; raw encoding retained unless explicitly audited.
+- name: ISR
+  offset: 24
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: MATCHF
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field MATCHF; raw encoding retained unless explicitly audited.
+  - name: OVF
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field OVF; raw encoding retained unless explicitly audited.
+  - name: CAPF
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CAPF; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 28
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 18.8.8; RM1.4 1.2'
+  fields:
+  - name: MATCHF
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field MATCHF; raw encoding retained unless explicitly audited.
+  - name: OVF
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OVF; raw encoding retained unless explicitly audited.
+  - name: CAPF
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CAPF; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: STATE
+  offset: 32
+  access: ro
+  description: Register STATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CH3S
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH3S; raw encoding retained unless explicitly audited.
+  - name: CH2S
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH2S; raw encoding retained unless explicitly audited.
+  - name: CH1S
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH1S; raw encoding retained unless explicitly audited.
+  - name: CH3F
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH3F; raw encoding retained unless explicitly audited.
+  - name: CH2F
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH2F; raw encoding retained unless explicitly audited.
+  - name: CH1F
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CH1F; raw encoding retained unless explicitly audited.
+constants: []

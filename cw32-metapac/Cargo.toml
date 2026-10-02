@@ -1,0 +1,18 @@
+[package]
+name = "cw32-metapac"
+version = "0.11.4"
+edition = "2021"
+rust-version = "1.99"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[features]
+default = []
+cw32l012c8 = []
+cw32f030c8 = []
+metadata = []
+rt = ["dep:cortex-m-rt"]
+
+[dependencies]
+cortex-m = "=0.7.7"
+cortex-m-rt = { version = "=0.7.5", optional = true, features = ["device"] }

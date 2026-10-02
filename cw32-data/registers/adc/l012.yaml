@@ -1,0 +1,662 @@
+name: adc
+version: l012
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SLAVE
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SLAVE; raw encoding retained unless explicitly audited.
+  - name: ENS
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field ENS; raw encoding retained unless explicitly audited.
+  - name: CLK
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field CLK; raw encoding retained unless explicitly audited.
+  - name: CONT
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CONT; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+- name: START
+  offset: 4
+  access: rw
+  description: 'Register START; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write one starts conversion; write zero stops conversion and resets the sequence channel. Completion clears START in the documented conversion mode. Do not treat it as an ordinary software-owned state bit. Source: RM1.4 25.4.3; 25.12.2; SDK ADC_SoftwareStartConvCmd Write one starts conversion; write zero stops conversion and resets the sequence channel. Completion clears START in the documented conversion mode. Do not treat it as an ordinary software-owned state bit. Source: RM1.4 25.4.1; 25.12.2; SDK ADC_SoftwareStartConvCmd'
+  fields:
+  - name: START
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field START; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: SAMPLE
+  offset: 24
+  access: rw
+  description: Register SAMPLE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SQRCH7
+    bit_offset: 28
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH7; raw encoding retained unless explicitly audited.
+  - name: SQRCH6
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH6; raw encoding retained unless explicitly audited.
+  - name: SQRCH5
+    bit_offset: 20
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH5; raw encoding retained unless explicitly audited.
+  - name: SQRCH4
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH4; raw encoding retained unless explicitly audited.
+  - name: SQRCH3
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH3; raw encoding retained unless explicitly audited.
+  - name: SQRCH2
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH2; raw encoding retained unless explicitly audited.
+  - name: SQRCH1
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH1; raw encoding retained unless explicitly audited.
+  - name: SQRCH0
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH0; raw encoding retained unless explicitly audited.
+- name: SQRCFR
+  offset: 32
+  access: rw
+  description: Register SQRCFR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: SQRCH7
+    bit_offset: 28
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH7; raw encoding retained unless explicitly audited.
+  - name: SQRCH6
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH6; raw encoding retained unless explicitly audited.
+  - name: SQRCH5
+    bit_offset: 20
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH5; raw encoding retained unless explicitly audited.
+  - name: SQRCH4
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH4; raw encoding retained unless explicitly audited.
+  - name: SQRCH3
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH3; raw encoding retained unless explicitly audited.
+  - name: SQRCH2
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH2; raw encoding retained unless explicitly audited.
+  - name: SQRCH1
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH1; raw encoding retained unless explicitly audited.
+  - name: SQRCH0
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field SQRCH0; raw encoding retained unless explicitly audited.
+- name: AWDTR
+  offset: 8
+  access: rw
+  description: Register AWDTR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: VTH
+    bit_offset: 16
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field VTH; raw encoding retained unless explicitly audited.
+  - name: VTL
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field VTL; raw encoding retained unless explicitly audited.
+- name: AWDCR
+  offset: 12
+  access: rw
+  description: Register AWDCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: IN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN15; raw encoding retained unless explicitly audited.
+  - name: IN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN14; raw encoding retained unless explicitly audited.
+  - name: IN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN13; raw encoding retained unless explicitly audited.
+  - name: IN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN12; raw encoding retained unless explicitly audited.
+  - name: IN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN11; raw encoding retained unless explicitly audited.
+  - name: IN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN10; raw encoding retained unless explicitly audited.
+  - name: IN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN9; raw encoding retained unless explicitly audited.
+  - name: IN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN8; raw encoding retained unless explicitly audited.
+  - name: IN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN7; raw encoding retained unless explicitly audited.
+  - name: IN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN6; raw encoding retained unless explicitly audited.
+  - name: IN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN5; raw encoding retained unless explicitly audited.
+  - name: IN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN4; raw encoding retained unless explicitly audited.
+  - name: IN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN3; raw encoding retained unless explicitly audited.
+  - name: IN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN2; raw encoding retained unless explicitly audited.
+  - name: IN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN1; raw encoding retained unless explicitly audited.
+  - name: IN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IN0; raw encoding retained unless explicitly audited.
+- name: TRIGGER
+  offset: 16
+  access: rw
+  description: Register TRIGGER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: HALLTIMTRGO
+    bit_offset: 31
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field HALLTIMTRGO; raw encoding retained unless explicitly audited.
+  - name: BTIM3TRGO
+    bit_offset: 30
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM3TRGO; raw encoding retained unless explicitly audited.
+  - name: BTIM2TRGO
+    bit_offset: 29
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM2TRGO; raw encoding retained unless explicitly audited.
+  - name: BTIM1TRGO
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BTIM1TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM4OC4REFC
+    bit_offset: 27
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC4REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM4OC3REFC
+    bit_offset: 26
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC3REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM4OC2REFC
+    bit_offset: 25
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC2REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM4OC1REFC
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4OC1REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM4TRGO
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC4REFC
+    bit_offset: 22
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC4REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC3REFC
+    bit_offset: 21
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC3REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC2REFC
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC2REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM3OC1REFC
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3OC1REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM3TRGO
+    bit_offset: 18
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC4REFC
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC4REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC3REFC
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC3REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC2REFC
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC2REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM2OC1REFC
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2OC1REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM2TRGO
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC4REFC
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC4REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC3REFC
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC3REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC2REFC
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC2REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM1OC1REFC
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1OC1REFC; raw encoding retained unless explicitly audited.
+  - name: GTIM1TRGO
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
+  - name: ATIMOC6REFC
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC6REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMOC5REFC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC5REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMOC4REFC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC4REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMOC3REFC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC3REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMOC2REFC
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC2REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMOC1REFC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMOC1REFC; raw encoding retained unless explicitly audited.
+  - name: ATIMTRGO2
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMTRGO2; raw encoding retained unless explicitly audited.
+  - name: ATIMTRGO
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ATIMTRGO; raw encoding retained unless explicitly audited.
+- name: IER
+  offset: 112
+  access: rw
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DMAEOS
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAEOS; raw encoding retained unless explicitly audited.
+  - name: DMAEOC
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAEOC; raw encoding retained unless explicitly audited.
+  - name: AWDH
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWDH; raw encoding retained unless explicitly audited.
+  - name: AWDL
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWDL; raw encoding retained unless explicitly audited.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EOS; raw encoding retained unless explicitly audited.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EOC; raw encoding retained unless explicitly audited.
+- name: ISR
+  offset: 120
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: AWDH
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field AWDH; raw encoding retained unless explicitly audited.
+  - name: AWDL
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field AWDL; raw encoding retained unless explicitly audited.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field EOS; raw encoding retained unless explicitly audited.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field EOC; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 116
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 25.12.10; RM1.4 1.2'
+  fields:
+  - name: AWDH
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWDH; raw encoding retained unless explicitly audited.
+  - name: AWDL
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field AWDL; raw encoding retained unless explicitly audited.
+  - name: EOS
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EOS; raw encoding retained unless explicitly audited.
+  - name: EOC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EOC; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: RESULT0
+  offset: 48
+  access: ro
+  description: Register RESULT0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT1
+  offset: 52
+  access: ro
+  description: Register RESULT1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT2
+  offset: 56
+  access: ro
+  description: Register RESULT2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT3
+  offset: 60
+  access: ro
+  description: Register RESULT3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT4
+  offset: 64
+  access: ro
+  description: Register RESULT4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT5
+  offset: 68
+  access: ro
+  description: Register RESULT5; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT6
+  offset: 72
+  access: ro
+  description: Register RESULT6; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+- name: RESULT7
+  offset: 76
+  access: ro
+  description: Register RESULT7; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: RESULT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field RESULT; raw encoding retained unless explicitly audited.
+constants: []

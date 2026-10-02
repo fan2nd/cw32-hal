@@ -1,0 +1,108 @@
+name: cordic
+version: l012
+registers:
+- name: CSR
+  offset: 0
+  access: rw
+  description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: BUSY
+    bit_offset: 17
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field BUSY; raw encoding retained unless explicitly audited.
+  - name: EOC
+    bit_offset: 16
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field EOC; raw encoding retained unless explicitly audited.
+  - name: DMAIDLE
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAIDLE; raw encoding retained unless explicitly audited.
+  - name: DMAEOC
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DMAEOC; raw encoding retained unless explicitly audited.
+  - name: IE
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IE; raw encoding retained unless explicitly audited.
+  - name: COMP
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field COMP; raw encoding retained unless explicitly audited.
+  - name: ITER
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field ITER; raw encoding retained unless explicitly audited.
+  - name: FORMAT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FORMAT; raw encoding retained unless explicitly audited.
+  - name: SCALE
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field SCALE; raw encoding retained unless explicitly audited.
+  - name: FUNC
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field FUNC; raw encoding retained unless explicitly audited.
+- name: X
+  offset: 4
+  access: rw
+  description: 'Register X; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'
+  fields:
+  - name: X
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field X; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: clear
+- name: Y
+  offset: 8
+  access: rw
+  description: 'Register Y; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'
+  fields:
+  - name: Y
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field Y; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: clear
+- name: Z
+  offset: 12
+  access: rw
+  description: 'Register Z; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'
+  fields:
+  - name: Z
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: Field Z; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: clear
+constants: []

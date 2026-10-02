@@ -1,0 +1,916 @@
+# All 50 vendor peripheral views; see docs/peripheral-instances.md for audit and alias limits.
+name: cw32l012
+core: Cortex-M0+
+target: thumbv6m-none-eabi
+peripherals:
+- name: ADC1
+  block: adc
+  version: l012
+  address: 0x40000000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: ADC
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: ADC
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ADC1
+- name: ADC2
+  block: adc
+  version: l012
+  address: 0x40000100
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: ADC
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: ADC
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ADC2_DAC
+- name: ATIM
+  block: atim
+  version: l012
+  address: 0x40001400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: ATIM
+    bit: 5
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: ATIM
+    bit: 5
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ATIM
+- name: BGR
+  block: bgr
+  version: l012
+  address: 0x400000fc
+  clock_gate: null
+  reset: null
+  interrupts: []
+- name: BTIM1
+  block: btim
+  version: l012
+  address: 0x40004800
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM123
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM123
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM1
+- name: BTIM2
+  block: btim
+  version: l012
+  address: 0x40004840
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM123
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM123
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM2
+- name: BTIM3
+  block: btim
+  version: l012
+  address: 0x40004880
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM123
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM123
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM3_HALLTIM
+- name: CORDIC
+  block: cordic
+  version: l012
+  address: 0x40023400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: CORDIC
+    bit: 8
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: CORDIC
+    bit: 8
+  interrupts:
+  - signal: GLOBAL
+    interrupt: CORDIC
+- name: CRC
+  block: crc
+  version: l012
+  address: 0x40023000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: CRC
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: CRC
+    bit: 2
+  interrupts: []
+- name: DAC
+  block: dac
+  version: l012
+  address: 0x400000c0
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: DAC
+    bit: 10
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: DAC
+    bit: 10
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ADC2_DAC
+- name: DMA
+  block: dma
+  version: l012
+  address: 0x40020000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: CH1
+    interrupt: DMACH12
+  - signal: CH2
+    interrupt: DMACH12
+  - signal: CH3
+    interrupt: DMACH34
+  - signal: CH4
+    interrupt: DMACH34
+- name: DMACHANNEL1
+  block: dmachannel
+  version: l012
+  address: 0x40020020
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  ownership_parent: DMA
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH12
+- name: DMACHANNEL2
+  block: dmachannel
+  version: l012
+  address: 0x40020040
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  ownership_parent: DMA
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH12
+- name: DMACHANNEL3
+  block: dmachannel
+  version: l012
+  address: 0x40020060
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  ownership_parent: DMA
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH34
+- name: DMACHANNEL4
+  block: dmachannel
+  version: l012
+  address: 0x40020080
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  ownership_parent: DMA
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH34
+- name: EAU
+  block: eau
+  version: l012
+  address: 0x40023200
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: EAU
+    bit: 3
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: EAU
+    bit: 3
+  interrupts: []
+- name: FLASH
+  block: flash
+  version: l012
+  address: 0x40022000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: FLASH
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: FLASH
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: FLASHRAM
+- name: GPIOA
+  block: gpio
+  version: l012
+  address: 0x48000000
+  clock_bit: 4
+  implemented_mask: 0x0000ffff
+  pulldown_mask: 0x00000000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOA
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOA
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOA
+- name: GPIOB
+  block: gpio
+  version: l012
+  address: 0x48000100
+  clock_bit: 5
+  implemented_mask: 0x0000ffff
+  pulldown_mask: 0x00000000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOB
+    bit: 5
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOB
+    bit: 5
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOB
+- name: GPIOC
+  block: gpio
+  version: l012
+  address: 0x48000200
+  clock_bit: 6
+  implemented_mask: 0x0000e000
+  pulldown_mask: 0x00000000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOC
+    bit: 6
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOC
+    bit: 6
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOC
+- name: GPIOF
+  block: gpio
+  version: l012
+  address: 0x48000300
+  clock_bit: 7
+  implemented_mask: 0x000000cb
+  pulldown_mask: 0x00000008
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOF
+    bit: 7
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOF
+    bit: 7
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOF
+- name: GTIM1
+  block: gtim
+  version: l012
+  address: 0x40001800
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM1
+    bit: 6
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM1
+    bit: 6
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM1
+- name: GTIM2
+  block: gtim
+  version: l012
+  address: 0x40001c00
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM2
+    bit: 7
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM2
+    bit: 7
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM2
+- name: GTIM3
+  block: gtim
+  version: l012
+  address: 0x40002400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM3
+    bit: 11
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM3
+    bit: 11
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM34
+- name: GTIM4
+  block: gtim
+  version: l012
+  address: 0x40002800
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM4
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM4
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM34
+- name: HALLTIM
+  block: halltim
+  version: l012
+  address: 0x40006400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: HALLTIM
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: HALLTIM
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM3_HALLTIM
+- name: I2C1
+  block: i2c
+  version: l012
+  address: 0x40005800
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: I2C1
+    bit: 6
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: I2C1
+    bit: 6
+  interrupts:
+  - signal: GLOBAL
+    interrupt: I2C1
+- name: I2C2
+  block: i2c
+  version: l012
+  address: 0x40005c00
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: I2C2
+    bit: 11
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: I2C2
+    bit: 11
+  interrupts:
+  - signal: GLOBAL
+    interrupt: I2C2
+- name: IRMOD
+  block: irmod
+  version: l012
+  address: 0x40004080
+  clock_gate: null
+  reset: null
+  interrupts: []
+- name: IWDT
+  block: iwdt
+  version: l012
+  address: 0x40005000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: IWDT
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: IWDT
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: WDT
+- name: LPTIM
+  block: lptim
+  version: l012
+  address: 0x40006000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: LPTIM
+    bit: 7
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: LPTIM
+    bit: 7
+  interrupts:
+  - signal: GLOBAL
+    interrupt: LPTIM
+- name: LVD
+  block: lvd
+  version: l012
+  address: 0x400000a4
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: GLOBAL
+    interrupt: LVD
+- name: OPA1
+  block: opa
+  version: l012
+  address: 0x400000b0
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: OPA
+    bit: 9
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: OPA
+    bit: 9
+  interrupts: []
+- name: OPA2
+  block: opa
+  version: l012
+  address: 0x400000b8
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: OPA
+    bit: 9
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: OPA
+    bit: 9
+  interrupts: []
+- name: RAM
+  block: ram
+  version: l012
+  address: 0x40022400
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: GLOBAL
+    interrupt: FLASHRAM
+- name: RTC
+  block: rtc
+  version: l012
+  address: 0x40004400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: RTC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: RTC
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: RTC
+- name: SPI1
+  block: spi
+  version: l012
+  address: 0x40000800
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: SPI1
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: SPI1
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SPI1
+- name: SPI2
+  block: spi
+  version: l012
+  address: 0x40000400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: SPI2
+    bit: 13
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: SPI2
+    bit: 13
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SPI23
+- name: SPI3
+  block: spi
+  version: l012
+  address: 0x40003400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: SPI3
+    bit: 14
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: SPI3
+    bit: 14
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SPI23
+- name: SYSCTRL
+  block: sysctrl
+  version: l012
+  address: 0x40004000
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SYSCTRL
+  - signal: CLKFAULT
+    interrupt: CLKFAULT
+- name: UART1
+  block: uart
+  version: l012
+  address: 0x40000c00
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: UART1
+    bit: 3
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: UART1
+    bit: 3
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART1
+- name: UART2
+  block: uart
+  version: l012
+  address: 0x40001000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: UART2
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: UART2
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART2
+- name: UART3
+  block: uart
+  version: l012
+  address: 0x40002000
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: UART3
+    bit: 8
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: UART3
+    bit: 8
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART3
+- name: VC1
+  block: vc
+  version: l012
+  address: 0x40000084
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC13
+- name: VC12REF
+  block: vcref
+  version: l012
+  address: 0x40000080
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts: []
+- name: VC2
+  block: vc
+  version: l012
+  address: 0x40000094
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC24
+- name: VC3
+  block: vc
+  version: l012
+  address: 0x40000184
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC13
+- name: VC34REF
+  block: vcref
+  version: l012
+  address: 0x40000180
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts: []
+- name: VC4
+  block: vc
+  version: l012
+  address: 0x40000194
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: VC
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: VC
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC24
+- name: WWDT
+  block: wwdt
+  version: l012
+  address: 0x40005400
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: WWDT
+    bit: 5
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: WWDT
+    bit: 5
+  interrupts:
+  - signal: GLOBAL
+    interrupt: WDT
+interrupts:
+- name: WDT
+  number: 0
+- name: LVD
+  number: 1
+- name: RTC
+  number: 2
+- name: FLASHRAM
+  number: 3
+- name: SYSCTRL
+  number: 4
+- name: GPIOA
+  number: 5
+- name: GPIOB
+  number: 6
+- name: GPIOC
+  number: 7
+- name: GPIOF
+  number: 8
+- name: DMACH12
+  number: 9
+- name: DMACH34
+  number: 10
+- name: CORDIC
+  number: 11
+- name: ADC1
+  number: 12
+- name: ATIM
+  number: 13
+- name: VC13
+  number: 14
+- name: VC24
+  number: 15
+- name: GTIM1
+  number: 16
+- name: GTIM2
+  number: 17
+- name: GTIM34
+  number: 18
+- name: LPTIM
+  number: 19
+- name: BTIM1
+  number: 20
+- name: BTIM2
+  number: 21
+- name: BTIM3_HALLTIM
+  number: 22
+- name: I2C1
+  number: 23
+- name: I2C2
+  number: 24
+- name: SPI1
+  number: 25
+- name: SPI23
+  number: 26
+- name: UART1
+  number: 27
+- name: UART2
+  number: 28
+- name: UART3
+  number: 29
+- name: ADC2_DAC
+  number: 30
+- name: CLKFAULT
+  number: 31
+constants:
+- name: SYSCTRL_KEY
+  value: 0x5a5a0000
+  description: Required upper halfword for keyed SYSCTRL writes.
+- name: SYSCTRL_KEY_MASK
+  value: 0xffff0000
+  description: Mask for the write-only SYSCTRL key field.
+- name: HSI_TRIM_ADDRESS
+  value: 0x001007c0
+  description: Readable 16-bit factory HSI calibration code address.
+- name: LSI_TRIM_ADDRESS
+  value: 0x001007c2
+  description: Readable 16-bit factory LSI calibration code address.
+- name: HSI_TRIM_FALLBACK
+  value: 0x0000077a
+  description: Vendor startup fallback when the factory HSI trim halfword is blank.
+- name: LSI_TRIM_FALLBACK
+  value: 0x00000059
+  description: Vendor startup fallback when the factory LSI trim halfword is blank.
+- name: RESET_SYSCLK_HZ
+  value: 4000000
+  description: 'Nominal reset SYSCLK frequency: 96 MHz HSI divided by 24; not a measured rate.'
+- name: RESET_HCLK_HZ
+  value: 4000000
+  description: 'Nominal reset HCLK frequency: undivided SYSCLK; not a measured rate.'
+- name: RESET_PCLK_HZ
+  value: 4000000
+  description: 'Nominal reset PCLK frequency: undivided HCLK; not a measured rate.'

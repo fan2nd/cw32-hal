@@ -1,0 +1,56 @@
+name: ram
+version: f030
+registers:
+- name: IER
+  offset: 0
+  access: rw
+  description: CW32F030 RAM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: PARITY
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RAM.IER.PARITY; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RAM.IER.EN; raw encoding.
+- name: ADDR
+  offset: 4
+  access: ro
+  description: CW32F030 RAM.ADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: CW32F030 RAM.ADDR.ADDR; raw encoding.
+- name: ISR
+  offset: 8
+  access: ro
+  description: CW32F030 RAM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: PARITY
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 RAM.ISR.PARITY; raw encoding.
+- name: ICR
+  offset: 12
+  access: rw
+  description: 'CW32F030 RAM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 6.6.4; 1.2'
+  fields:
+  - name: PARITY
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 RAM.ICR.PARITY; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

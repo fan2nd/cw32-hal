@@ -1,0 +1,61 @@
+name: wwdt
+version: l012
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. EN bit 7 is RW1, cannot be disabled once enabled. WCNT reads the live counter; writes refresh it, and refresh outside the valid window can reset the system. Source: RM1.4 20.6.1; SDK WWDT_Init/WWDT_Feed'
+  fields:
+  - name: EN
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  - name: WCNT
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field WCNT; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: CR1
+  offset: 4
+  access: rw
+  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. IE bit 10 is labelled RW but manual explicitly says it cannot be cleared after setting. PRS/WINR are ordinary configuration; no unrestricted toggle-IE API. Source: RM1.4 20.6.2; SDK WWDT_Init'
+  fields:
+  - name: IE
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IE; raw encoding retained unless explicitly audited.
+  - name: PRS
+    bit_offset: 7
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field PRS; raw encoding retained unless explicitly audited.
+  - name: WINR
+    bit_offset: 0
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: Field WINR; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: SR
+  offset: 8
+  access: rw
+  description: 'Register SR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. POV bit 0 is RW0 pre-overflow status; write zero clears it. Source: RM1.4 20.6.3'
+  fields:
+  - name: POV
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field POV; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

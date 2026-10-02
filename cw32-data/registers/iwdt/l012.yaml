@@ -1,0 +1,128 @@
+name: iwdt
+version: l012
+registers:
+- name: KR
+  offset: 0
+  access: wo
+  description: 'Register KR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write-only keys: 0x5555 unlock; non-0x5555 locks. 0xCCCC starts, 0xAAAA reloads, 0x5A5A then 0xA5A5 stops. These operating commands also lock the protected registers. Source: RM1.4 19.3.4-5; 19.6.1; SDK __IWDT_UNLOCK/__IWDT_REFRESH/__IWDT_STOP'
+  fields:
+  - name: KR
+    bit_offset: 0
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: Field KR; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: CR
+  offset: 4
+  access: rw
+  description: 'Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset the chip. Source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init'
+  fields:
+  - name: PAUSE
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PAUSE; raw encoding retained unless explicitly audited.
+  - name: IE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IE; raw encoding retained unless explicitly audited.
+  - name: ACTION
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ACTION; raw encoding retained unless explicitly audited.
+  - name: PRS
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field PRS; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ARR
+  offset: 8
+  access: rw
+  description: 'Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset the chip. Source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init'
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field ARR; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CNT
+  offset: 36
+  access: ro
+  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 12
+    access: ro
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: WINR
+  offset: 16
+  access: rw
+  description: 'Register WINR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Requires prior KR=0x5555 unlock and corresponding update flag clear before access. Writes cross the watchdog clock domain; poll completion. WINR update also reloads the counter and window violations can reset the chip. Source: RM1.4 19.3.4; 19.6.2-6; SDK IWDT_Init'
+  fields:
+  - name: WINR
+    bit_offset: 0
+    bit_size: 12
+    access: rw
+    kind: raw
+    description: Field WINR; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: SR
+  offset: 12
+  access: rw
+  description: 'Register SR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. OV bit 3 is RW0; RUN/RELOAD/CRF/ARRF/WINRF are RO. Do not treat the status register as a normal RW value. Source: RM1.4 19.6.6; SDK IWDT_ClearOVFlag'
+  fields:
+  - name: RELOAD
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field RELOAD; raw encoding retained unless explicitly audited.
+  - name: RUN
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field RUN; raw encoding retained unless explicitly audited.
+  - name: OV
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field OV; raw encoding retained unless explicitly audited.
+  - name: WINRF
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field WINRF; raw encoding retained unless explicitly audited.
+  - name: ARRF
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ARRF; raw encoding retained unless explicitly audited.
+  - name: CRF
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CRF; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

@@ -1,0 +1,27 @@
+name: vcref
+version: l012
+registers:
+- name: REF
+  offset: 0
+  access: rw
+  description: Register REF; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: VIN
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field VIN; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  - name: DIV
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field DIV; raw encoding retained unless explicitly audited.
+constants: []

@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["cw32-gen", "cw32-metapac", "embassy-cw32", "xtask", "example/l012-bldc/01-gpio", "example/l012-bldc/02-sampling", "example/l012-bldc/03-six-step", "example/l012-bldc/04-sensorless", "example/l012-bldc/05-startup", "example/l012-bldc/06-application"]
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+debug = 2

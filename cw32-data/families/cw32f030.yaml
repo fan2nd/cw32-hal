@@ -1,0 +1,814 @@
+name: cw32f030
+core: Cortex-M0+
+target: thumbv6m-none-eabi
+peripherals:
+- name: ADC
+  block: adc
+  version: sdk_v2_2
+  vendor_ip: ADC
+  vendor_version: '2.2'
+  address: 1073816576
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: ADC
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: ADC
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ADC
+- name: ATIM
+  block: atim
+  version: sdk_v2_2
+  vendor_ip: ATIM
+  vendor_version: '2.2'
+  address: 1073818624
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: ATIM
+    bit: 7
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: ATIM
+    bit: 7
+  interrupts:
+  - signal: GLOBAL
+    interrupt: ATIM
+- name: AWT
+  block: awt
+  version: sdk_v2_2
+  vendor_ip: AWT
+  vendor_version: '2.2'
+  address: 1073826816
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: AWT
+    bit: 13
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: AWT
+    bit: 13
+  interrupts:
+  - signal: GLOBAL
+    interrupt: AWT
+- name: BTIM1
+  block: btim
+  version: sdk_v2_2
+  vendor_ip: BTIM
+  vendor_version: '2.2'
+  address: 1073825792
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM1
+- name: BTIM2
+  block: btim
+  version: sdk_v2_2
+  vendor_ip: BTIM
+  vendor_version: '2.2'
+  address: 1073826048
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM2
+- name: BTIM3
+  block: btim
+  version: sdk_v2_2
+  vendor_ip: BTIM
+  vendor_version: '2.2'
+  address: 1073826304
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: BTIM
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: BTIM
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: BTIM3
+- name: CRC
+  block: crc
+  version: sdk_v2_2
+  vendor_ip: CRC
+  vendor_version: '2.2'
+  address: 1073885184
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: CRC
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: CRC
+    bit: 2
+  interrupts: []
+- name: DMA
+  block: dma
+  version: sdk_v2_2
+  vendor_ip: DMA
+  vendor_version: '2.2'
+  address: 1073872896
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: DMACH1
+    interrupt: DMACH1
+  - signal: DMACH23
+    interrupt: DMACH23
+  - signal: DMACH45
+    interrupt: DMACH45
+- name: DMACHANNEL1
+  block: dmachannel
+  version: sdk_v2_2
+  vendor_ip: DMACHANNEL
+  vendor_version: '2.2'
+  address: 1073872928
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH1
+  ownership_parent: DMA
+- name: DMACHANNEL2
+  block: dmachannel
+  version: sdk_v2_2
+  vendor_ip: DMACHANNEL
+  vendor_version: '2.2'
+  address: 1073872960
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH23
+  ownership_parent: DMA
+- name: DMACHANNEL3
+  block: dmachannel
+  version: sdk_v2_2
+  vendor_ip: DMACHANNEL
+  vendor_version: '2.2'
+  address: 1073872992
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH23
+  ownership_parent: DMA
+- name: DMACHANNEL4
+  block: dmachannel
+  version: sdk_v2_2
+  vendor_ip: DMACHANNEL
+  vendor_version: '2.2'
+  address: 1073873024
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH45
+  ownership_parent: DMA
+- name: DMACHANNEL5
+  block: dmachannel
+  version: sdk_v2_2
+  vendor_ip: DMACHANNEL
+  vendor_version: '2.2'
+  address: 1073873056
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: DMA
+    bit: 0
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: DMA
+    bit: 0
+  interrupts:
+  - signal: GLOBAL
+    interrupt: DMACH45
+  ownership_parent: DMA
+- name: FLASH
+  block: flash
+  version: sdk_v2_2
+  vendor_ip: FLASH
+  vendor_version: '2.2'
+  address: 1073881088
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: FLASH
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: FLASH
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: FLASHRAM
+- name: GPIOA
+  block: gpio
+  version: sdk_v2_2
+  vendor_ip: GPIO
+  vendor_version: '2.2'
+  address: 1207959552
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOA
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOA
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOA
+  implemented_mask: 65535
+  pulldown_mask: 65535
+  quirks:
+  - name: canonical_port_union
+    description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
+    source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
+- name: GPIOB
+  block: gpio
+  version: sdk_v2_2
+  vendor_ip: GPIO
+  vendor_version: '2.2'
+  address: 1207960576
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOB
+    bit: 5
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOB
+    bit: 5
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOB
+  implemented_mask: 65535
+  pulldown_mask: 65535
+  quirks:
+  - name: canonical_port_union
+    description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
+    source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
+- name: GPIOC
+  block: gpio
+  version: sdk_v2_2
+  vendor_ip: GPIO
+  vendor_version: '2.2'
+  address: 1207961600
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOC
+    bit: 6
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOC
+    bit: 6
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOC
+  implemented_mask: 57344
+  pulldown_mask: 57344
+  quirks:
+  - name: canonical_port_union
+    description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
+    source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
+- name: GPIOF
+  block: gpio
+  version: sdk_v2_2
+  vendor_ip: GPIO
+  vendor_version: '2.2'
+  address: 1207964672
+  clock_gate:
+    peripheral: SYSCTRL
+    register: AHBEN
+    field: GPIOF
+    bit: 9
+  reset:
+    peripheral: SYSCTRL
+    register: AHBRST
+    field: GPIOF
+    bit: 9
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GPIOF
+  implemented_mask: 203
+  pulldown_mask: 203
+  quirks:
+  - name: canonical_port_union
+    description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
+    source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
+  - name: boot_pad_restriction
+    description: Raw GPIOF registers describe PF3, but datasheet Rev 1.9 classifies PF03/BOOT as dedicated BOOT. The family mask is register capability only; CW32F030C8 die pins exclude PF3 and safe HAL must not expose it as GPIO.
+    source: CW32F030 DS Rev 1.9 Table 3-1 versus RM Rev 2.5 GPIO AF table and SDK GPIOF struct
+- name: GTIM1
+  block: gtim
+  version: sdk_v2_2
+  vendor_ip: GTIM
+  vendor_version: '2.2'
+  address: 1073742848
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM1
+    bit: 1
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM1
+    bit: 1
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM1
+- name: GTIM2
+  block: gtim
+  version: sdk_v2_2
+  vendor_ip: GTIM
+  vendor_version: '2.2'
+  address: 1073745920
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: GTIM2
+    bit: 2
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: GTIM2
+    bit: 2
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM2
+- name: GTIM3
+  block: gtim
+  version: sdk_v2_2
+  vendor_ip: GTIM
+  vendor_version: '2.2'
+  address: 1073823744
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: GTIM3
+    bit: 10
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: GTIM3
+    bit: 10
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM3
+- name: GTIM4
+  block: gtim
+  version: sdk_v2_2
+  vendor_ip: GTIM
+  vendor_version: '2.2'
+  address: 1073824768
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: GTIM4
+    bit: 11
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: GTIM4
+    bit: 11
+  interrupts:
+  - signal: GLOBAL
+    interrupt: GTIM4
+- name: I2C1
+  block: i2c
+  version: sdk_v2_2
+  vendor_ip: I2C
+  vendor_version: '2.2'
+  address: 1073763328
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: I2C1
+    bit: 11
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: I2C1
+    bit: 11
+  interrupts:
+  - signal: GLOBAL
+    interrupt: I2C1
+- name: I2C2
+  block: i2c
+  version: sdk_v2_2
+  vendor_ip: I2C
+  vendor_version: '2.2'
+  address: 1073764352
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: I2C2
+    bit: 12
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: I2C2
+    bit: 12
+  interrupts:
+  - signal: GLOBAL
+    interrupt: I2C2
+- name: IWDT
+  block: iwdt
+  version: sdk_v2_2
+  vendor_ip: IWDT
+  vendor_version: '2.2'
+  address: 1073754112
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: IWDT
+    bit: 5
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: IWDT
+    bit: 5
+  interrupts:
+  - signal: GLOBAL
+    interrupt: WDT
+- name: LVD
+  block: lvd
+  version: sdk_v2_2
+  vendor_ip: LVD
+  vendor_version: '2.2'
+  address: 1073818240
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: GLOBAL
+    interrupt: LVD
+- name: RAM
+  block: ram
+  version: sdk_v2_2
+  vendor_ip: RAM
+  vendor_version: '2.2'
+  address: 1073882112
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: GLOBAL
+    interrupt: FLASHRAM
+- name: RTC
+  block: rtc
+  version: sdk_v2_2
+  vendor_ip: RTC
+  vendor_version: '2.2'
+  address: 1073752064
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: RTC
+    bit: 3
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: RTC
+    bit: 3
+  interrupts:
+  - signal: GLOBAL
+    interrupt: RTC
+- name: SPI1
+  block: spi
+  version: sdk_v2_2
+  vendor_ip: SPI
+  vendor_version: '2.2'
+  address: 1073819648
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: SPI1
+    bit: 8
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: SPI1
+    bit: 8
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SPI1
+- name: SPI2
+  block: spi
+  version: sdk_v2_2
+  vendor_ip: SPI
+  vendor_version: '2.2'
+  address: 1073756160
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: SPI2
+    bit: 6
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: SPI2
+    bit: 6
+  interrupts:
+  - signal: GLOBAL
+    interrupt: SPI2
+- name: SYSCTRL
+  block: sysctrl
+  version: sdk_v2_2
+  vendor_ip: SYSCTRL
+  vendor_version: '2.2'
+  address: 1073807360
+  clock_gate: null
+  reset: null
+  interrupts:
+  - signal: RCC
+    interrupt: RCC
+  - signal: FAULT
+    interrupt: FAULT
+- name: UART1
+  block: uart
+  version: sdk_v2_2
+  vendor_ip: UART
+  vendor_version: '2.2'
+  address: 1073821696
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: UART1
+    bit: 9
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: UART1
+    bit: 9
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART1
+- name: UART2
+  block: uart
+  version: sdk_v2_2
+  vendor_ip: UART
+  vendor_version: '2.2'
+  address: 1073759232
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: UART2
+    bit: 7
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: UART2
+    bit: 7
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART2
+- name: UART3
+  block: uart
+  version: sdk_v2_2
+  vendor_ip: UART
+  vendor_version: '2.2'
+  address: 1073760256
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: UART3
+    bit: 8
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: UART3
+    bit: 8
+  interrupts:
+  - signal: GLOBAL
+    interrupt: UART3
+- name: VC1
+  block: vc
+  version: sdk_v2_2
+  vendor_ip: VC
+  vendor_version: '2.2'
+  address: 1073818112
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: VC
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: VC
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC1
+  quirks:
+  - name: shared_reference_divider
+    description: VC1 and VC2 share the reference divider and ADC bandgap resource; raw per-instance DIV views do not grant independent ownership of shared configuration.
+    source: CW32x030 RM Rev 2.5 23.3 and 23.7.1
+- name: VC2
+  block: vc
+  version: sdk_v2_2
+  vendor_ip: VC
+  vendor_version: '2.2'
+  address: 1073818128
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN2
+    field: VC
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST2
+    field: VC
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: VC2
+  quirks:
+  - name: shared_reference_divider
+    description: VC1 and VC2 share the reference divider and ADC bandgap resource; raw per-instance DIV views do not grant independent ownership of shared configuration.
+    source: CW32x030 RM Rev 2.5 23.3 and 23.7.1
+- name: WWDT
+  block: wwdt
+  version: sdk_v2_2
+  vendor_ip: WWDT
+  vendor_version: '2.2'
+  address: 1073753088
+  clock_gate:
+    peripheral: SYSCTRL
+    register: APBEN1
+    field: WWDT
+    bit: 4
+  reset:
+    peripheral: SYSCTRL
+    register: APBRST1
+    field: WWDT
+    bit: 4
+  interrupts:
+  - signal: GLOBAL
+    interrupt: WDT
+interrupts:
+- name: ADC
+  number: 12
+- name: ATIM
+  number: 13
+- name: AWT
+  number: 30
+- name: BTIM1
+  number: 20
+- name: BTIM2
+  number: 21
+- name: BTIM3
+  number: 22
+- name: DMACH1
+  number: 9
+- name: DMACH23
+  number: 10
+- name: DMACH45
+  number: 11
+- name: FAULT
+  number: 31
+- name: FLASHRAM
+  number: 3
+- name: GPIOA
+  number: 5
+- name: GPIOB
+  number: 6
+- name: GPIOC
+  number: 7
+- name: GPIOF
+  number: 8
+- name: GTIM1
+  number: 16
+- name: GTIM2
+  number: 17
+- name: GTIM3
+  number: 18
+- name: GTIM4
+  number: 19
+- name: I2C1
+  number: 23
+- name: I2C2
+  number: 24
+- name: LVD
+  number: 1
+- name: RCC
+  number: 4
+- name: RTC
+  number: 2
+- name: SPI1
+  number: 25
+- name: SPI2
+  number: 26
+- name: UART1
+  number: 27
+- name: UART2
+  number: 28
+- name: UART3
+  number: 29
+- name: VC1
+  number: 14
+- name: VC2
+  number: 15
+- name: WDT
+  number: 0
+constants:
+- name: SYSCTRL_KEY
+  value: 1515847680
+  description: Upper halfword key for SYSCTRL CR0/CR1/CR2/IER only; AHB/APB gate and reset registers are not keyed.
+- name: SYSCTRL_KEY_MASK
+  value: 4294901760
+  description: Mask of write-only KEY field in keyed SYSCTRL registers.
+- name: HSI_TRIM_ADDRESS
+  value: 75264
+  description: Readable factory calibration halfword; SDK V2.2 cw32f030_rcc.h.
+- name: LSI_TRIM_ADDRESS
+  value: 75266
+  description: Readable factory calibration halfword; SDK V2.2 cw32f030_rcc.h.
+- name: RESET_SYSCLK_HZ
+  value: 8000000
+  description: Nominal reset clock, HSI 48 MHz divided by six; SDK SystemCoreClock.
+- name: RESET_HCLK_HZ
+  value: 8000000
+  description: Nominal reset undivided HCLK; not a measured rate.
+- name: RESET_PCLK_HZ
+  value: 8000000
+  description: Nominal reset undivided PCLK; not a measured rate.

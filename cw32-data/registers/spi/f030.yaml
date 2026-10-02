@@ -1,0 +1,295 @@
+name: spi
+version: f030
+registers:
+- name: CR1
+  offset: 0
+  access: rw
+  description: CW32F030 SPI.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: MISOHD
+    bit_offset: 18
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.MISOHD; raw encoding.
+  - name: DMATX
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.DMATX; raw encoding.
+  - name: DMARX
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.DMARX; raw encoding.
+  - name: MODE
+    bit_offset: 14
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SPI.CR1.MODE; raw encoding.
+  - name: WIDTH
+    bit_offset: 10
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 SPI.CR1.WIDTH; raw encoding.
+  - name: SSM
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.SSM; raw encoding.
+  - name: SMP
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.SMP; raw encoding.
+  - name: LSBF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.LSBF; raw encoding.
+  - name: EN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.EN; raw encoding.
+  - name: BR
+    bit_offset: 3
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SPI.CR1.BR; raw encoding.
+  - name: MSTR
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.MSTR; raw encoding.
+  - name: CPOL
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.CPOL; raw encoding.
+  - name: CPHA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR1.CPHA; raw encoding.
+- name: IER
+  offset: 4
+  access: rw
+  description: CW32F030 SPI.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: MODF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.MODF; raw encoding.
+  - name: SSERR
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.SSERR; raw encoding.
+  - name: OV
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.OV; raw encoding.
+  - name: UD
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.UD; raw encoding.
+  - name: SSR
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.SSR; raw encoding.
+  - name: SSF
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.SSF; raw encoding.
+  - name: RXNE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.RXNE; raw encoding.
+  - name: TXE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.IER.TXE; raw encoding.
+- name: CR2
+  offset: 8
+  access: rw
+  description: CW32F030 SPI.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: HDOE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.CR2.HDOE; raw encoding.
+- name: SSI
+  offset: 12
+  access: rw
+  description: CW32F030 SPI.SSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: SSI
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.SSI.SSI; raw encoding.
+- name: ISR
+  offset: 16
+  access: ro
+  description: CW32F030 SPI.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: SSLVL
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.SSLVL; raw encoding.
+  - name: BUSY
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.BUSY; raw encoding.
+  - name: MODF
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.MODF; raw encoding.
+  - name: SSERR
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.SSERR; raw encoding.
+  - name: OV
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.OV; raw encoding.
+  - name: UD
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.UD; raw encoding.
+  - name: SSR
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.SSR; raw encoding.
+  - name: SSF
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.SSF; raw encoding.
+  - name: RXNE
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.RXNE; raw encoding.
+  - name: TXE
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SPI.ISR.TXE; raw encoding.
+- name: ICR
+  offset: 20
+  access: rw
+  description: 'CW32F030 SPI.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. R1W0 interrupt clears plus FLUSH bit zero: writing zero to FLUSH clears the transmit buffer and shift register and sets TXE. Unselected bits must remain one to avoid an unintended flush. Source: CW32x030 RM Rev 2.5 19.8.6'
+  fields:
+  - name: MODF
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.MODF; raw encoding.
+  - name: SSERR
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.SSERR; raw encoding.
+  - name: OV
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.OV; raw encoding.
+  - name: UD
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.UD; raw encoding.
+  - name: SSR
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.SSR; raw encoding.
+  - name: SSF
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.SSF; raw encoding.
+  - name: RXNE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.RXNE; raw encoding.
+  - name: FLUSH
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SPI.ICR.FLUSH; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: DR
+  offset: 24
+  access: rw
+  description: 'CW32F030 SPI.DR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. A write queues transmit data and clears TXE. Reading receives buffered data and clears RXNE; a generic read-modify-write is invalid. Source: CW32x030 RM Rev 2.5 19.6.1; 19.8.7'
+  fields:
+  - name: DR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 SPI.DR.DR; raw encoding.
+  write_behavior: command
+  read_behavior: clear
+constants: []

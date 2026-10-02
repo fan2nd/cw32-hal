@@ -1,0 +1,329 @@
+name: lptim
+version: l012
+registers:
+- name: CFGR
+  offset: 12
+  access: rw
+  description: Register CFGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: ICLKSRC
+    bit_offset: 25
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field ICLKSRC; raw encoding retained unless explicitly audited.
+  - name: ENC
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ENC; raw encoding retained unless explicitly audited.
+  - name: COUNTMD
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field COUNTMD; raw encoding retained unless explicitly audited.
+  - name: PRELOAD
+    bit_offset: 22
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PRELOAD; raw encoding retained unless explicitly audited.
+  - name: WAVPOL
+    bit_offset: 21
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WAVPOL; raw encoding retained unless explicitly audited.
+  - name: WAVE
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field WAVE; raw encoding retained unless explicitly audited.
+  - name: TIMOUT
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TIMOUT; raw encoding retained unless explicitly audited.
+  - name: TRIGEN
+    bit_offset: 17
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field TRIGEN; raw encoding retained unless explicitly audited.
+  - name: TRIGSEL
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TRIGSEL; raw encoding retained unless explicitly audited.
+  - name: PRS
+    bit_offset: 9
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field PRS; raw encoding retained unless explicitly audited.
+  - name: TRIGFLT
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field TRIGFLT; raw encoding retained unless explicitly audited.
+  - name: CHFLT
+    bit_offset: 3
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field CHFLT; raw encoding retained unless explicitly audited.
+  - name: ENCMD_CKPOL
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field ENCMD_CKPOL; raw encoding retained unless explicitly audited.
+  - name: CKSEL
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CKSEL; raw encoding retained unless explicitly audited.
+- name: CR0
+  offset: 16
+  access: rw
+  description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. ARST/SRST are write-zero reset commands and read completion state; write zero only after read one. CNTSTART/SNGSTART are write-one start commands; EN is ordinary control. Reset value 0x18 is not a universal write initializer. Source: RM1.4 15.7.2'
+  fields:
+  - name: ARST
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ARST; raw encoding retained unless explicitly audited.
+  - name: SRST
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SRST; raw encoding retained unless explicitly audited.
+  - name: CNTSTART
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CNTSTART; raw encoding retained unless explicitly audited.
+  - name: SNGSTART
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SNGSTART; raw encoding retained unless explicitly audited.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: ARR
+  offset: 24
+  access: rw
+  description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field ARR; raw encoding retained unless explicitly audited.
+- name: CNT
+  offset: 28
+  access: ro
+  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: CMP
+  offset: 20
+  access: rw
+  description: Register CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CMP
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CMP; raw encoding retained unless explicitly audited.
+- name: IER
+  offset: 8
+  access: rw
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DOWN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DOWN; raw encoding retained unless explicitly audited.
+  - name: UP
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UP; raw encoding retained unless explicitly audited.
+  - name: ARROK
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ARROK; raw encoding retained unless explicitly audited.
+  - name: CMPOK
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CMPOK; raw encoding retained unless explicitly audited.
+  - name: EXTTRIG
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EXTTRIG; raw encoding retained unless explicitly audited.
+  - name: ARRM
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ARRM; raw encoding retained unless explicitly audited.
+  - name: CMPM
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CMPM; raw encoding retained unless explicitly audited.
+- name: ISR
+  offset: 0
+  access: ro
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: DIR
+    bit_offset: 7
+    bit_size: 2
+    access: ro
+    kind: raw
+    description: Field DIR; raw encoding retained unless explicitly audited.
+  - name: DOWN
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field DOWN; raw encoding retained unless explicitly audited.
+  - name: UP
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field UP; raw encoding retained unless explicitly audited.
+  - name: ARROK
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ARROK; raw encoding retained unless explicitly audited.
+  - name: CMPOK
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CMPOK; raw encoding retained unless explicitly audited.
+  - name: EXTTRIG
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field EXTTRIG; raw encoding retained unless explicitly audited.
+  - name: ARRM
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field ARRM; raw encoding retained unless explicitly audited.
+  - name: CMPM
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field CMPM; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 4
+  access: rw
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 15.7.8; RM1.4 1.2'
+  fields:
+  - name: DOWN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field DOWN; raw encoding retained unless explicitly audited.
+  - name: UP
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UP; raw encoding retained unless explicitly audited.
+  - name: ARROK
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ARROK; raw encoding retained unless explicitly audited.
+  - name: CMPOK
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CMPOK; raw encoding retained unless explicitly audited.
+  - name: EXTTRIG
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EXTTRIG; raw encoding retained unless explicitly audited.
+  - name: ARRM
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field ARRM; raw encoding retained unless explicitly audited.
+  - name: CMPM
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CMPM; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: CR1
+  offset: 32
+  access: rw
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  fields:
+  - name: CH2SRC
+    bit_offset: 3
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field CH2SRC; raw encoding retained unless explicitly audited.
+  - name: CH1SRC
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field CH1SRC; raw encoding retained unless explicitly audited.
+constants: []

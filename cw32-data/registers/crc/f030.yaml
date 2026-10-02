@@ -1,0 +1,84 @@
+name: crc
+version: f030
+registers:
+- name: CR
+  offset: 0
+  access: rw
+  description: 'CW32F030 CRC.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Selecting the CRC algorithm initializes the calculation state; it is not an ordinary software-owned latch. Source: CW32x030 RM Rev 2.5 10.4; 10.6.1'
+  fields:
+  - name: MODE
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 CRC.CR.MODE; raw encoding.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DR32
+  offset: 8
+  access: rw
+  description: 'CW32F030 CRC.DR32; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
+  fields:
+  - name: DR32
+    bit_offset: 0
+    bit_size: 32
+    access: rw
+    kind: raw
+    description: CW32F030 CRC.DR32.DR32; raw encoding.
+  write_behavior: command
+  read_behavior: ordinary
+- name: DR16
+  offset: 8
+  access: rw
+  description: 'CW32F030 CRC.DR16; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
+  fields:
+  - name: DR16
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 CRC.DR16.DR16; raw encoding.
+  bit_size: 16
+  alias_of: DR32
+  write_behavior: command
+  read_behavior: ordinary
+- name: DR8
+  offset: 8
+  access: rw
+  description: 'CW32F030 CRC.DR8; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
+  fields:
+  - name: DR8
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 CRC.DR8.DR8; raw encoding.
+  bit_size: 8
+  alias_of: DR32
+  write_behavior: command
+  read_behavior: ordinary
+- name: RESULT32
+  offset: 12
+  access: ro
+  description: CW32F030 CRC.RESULT32; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: RESULT32
+    bit_offset: 0
+    bit_size: 32
+    access: ro
+    kind: raw
+    description: CW32F030 CRC.RESULT32.RESULT32; raw encoding.
+- name: RESULT16
+  offset: 12
+  access: ro
+  description: CW32F030 CRC.RESULT16; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: RESULT16
+    bit_offset: 0
+    bit_size: 16
+    access: ro
+    kind: raw
+    description: CW32F030 CRC.RESULT16.RESULT16; raw encoding.
+  bit_size: 16
+  alias_of: RESULT32
+constants: []

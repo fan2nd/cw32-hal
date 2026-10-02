@@ -1,0 +1,1218 @@
+name: sysctrl
+version: f030
+registers:
+- name: CR0
+  offset: 0
+  access: rw
+  description: 'CW32F030 SYSCTRL.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.1'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 SYSCTRL.CR0.KEY; raw encoding.
+  - name: HCLKPRS
+    bit_offset: 5
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.CR0.HCLKPRS; raw encoding.
+  - name: PCLKPRS
+    bit_offset: 3
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.CR0.PCLKPRS; raw encoding.
+  - name: SYSCLK
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.CR0.SYSCLK; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR1
+  offset: 4
+  access: rw
+  description: 'CW32F030 SYSCTRL.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only. LSELOCK can make LSEEN set-only; LSEEN is reset only by power-on reset. CLKCCS, HSECCS and LSECCS must remain one per this manual revision. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.2'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 SYSCTRL.CR1.KEY; raw encoding.
+  - name: CLKCCS
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.CLKCCS; raw encoding.
+  - name: HSECCS
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.HSECCS; raw encoding.
+  - name: LSECCS
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.LSECCS; raw encoding.
+  - name: LSELOCK
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.LSELOCK; raw encoding.
+  - name: LSEEN
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.LSEEN; raw encoding.
+  - name: LSIEN
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.LSIEN; raw encoding.
+  - name: PLLEN
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.PLLEN; raw encoding.
+  - name: HSEEN
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.HSEEN; raw encoding.
+  - name: HSIEN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR1.HSIEN; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 8
+  access: rw
+  description: 'CW32F030 SYSCTRL.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.3'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 SYSCTRL.CR2.KEY; raw encoding.
+  - name: WAKEUPCLK
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR2.WAKEUPCLK; raw encoding.
+  - name: LOCKUP
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR2.LOCKUP; raw encoding.
+  - name: SWDIO
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.CR2.SWDIO; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: IER
+  offset: 12
+  access: rw
+  description: 'CW32F030 SYSCTRL.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.9'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 SYSCTRL.IER.KEY; raw encoding.
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.HSEFAULT; raw encoding.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.LSEFAULT; raw encoding.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.HSEFAIL; raw encoding.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.LSEFAIL; raw encoding.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.LSERDY; raw encoding.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.LSIRDY; raw encoding.
+  - name: PLLRDY
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.PLLRDY; raw encoding.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.HSERDY; raw encoding.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.IER.HSIRDY; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: ISR
+  offset: 16
+  access: ro
+  description: CW32F030 SYSCTRL.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: LSESTABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSESTABLE; raw encoding.
+  - name: LSISTABLE
+    bit_offset: 14
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSISTABLE; raw encoding.
+  - name: PLLSTABLE
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.PLLSTABLE; raw encoding.
+  - name: HSESTABLE
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSESTABLE; raw encoding.
+  - name: HSISTABLE
+    bit_offset: 11
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSISTABLE; raw encoding.
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSEFAULT; raw encoding.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSEFAULT; raw encoding.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSEFAIL; raw encoding.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSEFAIL; raw encoding.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSERDY; raw encoding.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.LSIRDY; raw encoding.
+  - name: PLLRDY
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.PLLRDY; raw encoding.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSERDY; raw encoding.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.ISR.HSIRDY; raw encoding.
+- name: ICR
+  offset: 20
+  access: rw
+  description: 'CW32F030 SYSCTRL.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 4.7.11; 1.2'
+  fields:
+  - name: HSEFAULT
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.HSEFAULT; raw encoding.
+  - name: LSEFAULT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.LSEFAULT; raw encoding.
+  - name: HSEFAIL
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.HSEFAIL; raw encoding.
+  - name: LSEFAIL
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.LSEFAIL; raw encoding.
+  - name: LSERDY
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.LSERDY; raw encoding.
+  - name: LSIRDY
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.LSIRDY; raw encoding.
+  - name: PLLRDY
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.PLLRDY; raw encoding.
+  - name: HSERDY
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.HSERDY; raw encoding.
+  - name: HSIRDY
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.ICR.HSIRDY; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: HSI
+  offset: 24
+  access: rw
+  description: CW32F030 SYSCTRL.HSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.HSI.STABLE; raw encoding.
+  - name: DIV
+    bit_offset: 11
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSI.DIV; raw encoding.
+  - name: TRIM
+    bit_offset: 0
+    bit_size: 11
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSI.TRIM; raw encoding.
+- name: HSE
+  offset: 28
+  access: rw
+  description: CW32F030 SYSCTRL.HSE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STABLE
+    bit_offset: 19
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.HSE.STABLE; raw encoding.
+  - name: DETCNT
+    bit_offset: 8
+    bit_size: 11
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSE.DETCNT; raw encoding.
+  - name: FLT
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.HSE.FLT; raw encoding.
+  - name: MODE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.HSE.MODE; raw encoding.
+  - name: WAITCYCLE
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSE.WAITCYCLE; raw encoding.
+  - name: FREQRANGE
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSE.FREQRANGE; raw encoding.
+  - name: DRIVER
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.HSE.DRIVER; raw encoding.
+- name: LSI
+  offset: 32
+  access: rw
+  description: CW32F030 SYSCTRL.LSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.LSI.STABLE; raw encoding.
+  - name: WAITCYCLE
+    bit_offset: 10
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.LSI.WAITCYCLE; raw encoding.
+  - name: TRIM
+    bit_offset: 0
+    bit_size: 10
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.LSI.TRIM; raw encoding.
+- name: LSE
+  offset: 36
+  access: rw
+  description: CW32F030 SYSCTRL.LSE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.LSE.STABLE; raw encoding.
+  - name: MODE
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.LSE.MODE; raw encoding.
+  - name: WAITCYCLE
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.LSE.WAITCYCLE; raw encoding.
+  - name: AMP
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.LSE.AMP; raw encoding.
+  - name: DRIVER
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.LSE.DRIVER; raw encoding.
+- name: PLL
+  offset: 40
+  access: rw
+  description: CW32F030 SYSCTRL.PLL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STABLE
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 SYSCTRL.PLL.STABLE; raw encoding.
+  - name: WAITCYCLE
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.PLL.WAITCYCLE; raw encoding.
+  - name: FREQOUT
+    bit_offset: 9
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.PLL.FREQOUT; raw encoding.
+  - name: MUL
+    bit_offset: 4
+    bit_size: 5
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.PLL.MUL; raw encoding.
+  - name: FREQIN
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.PLL.FREQIN; raw encoding.
+  - name: SOURCE
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.PLL.SOURCE; raw encoding.
+- name: DEBUG
+  offset: 44
+  access: rw
+  description: CW32F030 SYSCTRL.DEBUG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: WWDT
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.WWDT; raw encoding.
+  - name: IWDT
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.IWDT; raw encoding.
+  - name: RTC
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.RTC; raw encoding.
+  - name: AWT
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.AWT; raw encoding.
+  - name: BTIM123
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.BTIM123; raw encoding.
+  - name: GTIM4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.GTIM4; raw encoding.
+  - name: GTIM3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.GTIM3; raw encoding.
+  - name: GTIM2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.GTIM2; raw encoding.
+  - name: GTIM1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.GTIM1; raw encoding.
+  - name: ATIM
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.DEBUG.ATIM; raw encoding.
+- name: AHBEN
+  offset: 48
+  access: rw
+  description: CW32F030 SYSCTRL.AHBEN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: GPIOF
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.GPIOF; raw encoding.
+  - name: GPIOC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.GPIOC; raw encoding.
+  - name: GPIOB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.GPIOB; raw encoding.
+  - name: GPIOA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.GPIOA; raw encoding.
+  - name: CRC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.CRC; raw encoding.
+  - name: FLASH
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.FLASH; raw encoding.
+  - name: DMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBEN.DMA; raw encoding.
+- name: APBEN2
+  offset: 52
+  access: rw
+  description: CW32F030 SYSCTRL.APBEN2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: AWT
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.AWT; raw encoding.
+  - name: BTIM
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.BTIM; raw encoding.
+  - name: GTIM4
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.GTIM4; raw encoding.
+  - name: GTIM3
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.GTIM3; raw encoding.
+  - name: UART1
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.UART1; raw encoding.
+  - name: SPI1
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.SPI1; raw encoding.
+  - name: ATIM
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.ATIM; raw encoding.
+  - name: VC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.VC; raw encoding.
+  - name: ADC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN2.ADC; raw encoding.
+- name: APBEN1
+  offset: 56
+  access: rw
+  description: CW32F030 SYSCTRL.APBEN1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: I2C2
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.I2C2; raw encoding.
+  - name: I2C1
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.I2C1; raw encoding.
+  - name: UART3
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.UART3; raw encoding.
+  - name: UART2
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.UART2; raw encoding.
+  - name: SPI2
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.SPI2; raw encoding.
+  - name: IWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.IWDT; raw encoding.
+  - name: WWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.WWDT; raw encoding.
+  - name: RTC
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.RTC; raw encoding.
+  - name: GTIM2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.GTIM2; raw encoding.
+  - name: GTIM1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBEN1.GTIM1; raw encoding.
+- name: AHBRST
+  offset: 64
+  access: rw
+  description: CW32F030 SYSCTRL.AHBRST; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: GPIOF
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.GPIOF; raw encoding.
+  - name: GPIOC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.GPIOC; raw encoding.
+  - name: GPIOB
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.GPIOB; raw encoding.
+  - name: GPIOA
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.GPIOA; raw encoding.
+  - name: CRC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.CRC; raw encoding.
+  - name: FLASH
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.FLASH; raw encoding.
+  - name: DMA
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.AHBRST.DMA; raw encoding.
+- name: APBRST2
+  offset: 68
+  access: rw
+  description: CW32F030 SYSCTRL.APBRST2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: AWT
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.AWT; raw encoding.
+  - name: BTIM
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.BTIM; raw encoding.
+  - name: GTIM4
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.GTIM4; raw encoding.
+  - name: GTIM3
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.GTIM3; raw encoding.
+  - name: UART1
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.UART1; raw encoding.
+  - name: SPI1
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.SPI1; raw encoding.
+  - name: ATIM
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.ATIM; raw encoding.
+  - name: VC
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.VC; raw encoding.
+  - name: ADC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST2.ADC; raw encoding.
+- name: APBRST1
+  offset: 72
+  access: rw
+  description: CW32F030 SYSCTRL.APBRST1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: I2C2
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.I2C2; raw encoding.
+  - name: I2C1
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.I2C1; raw encoding.
+  - name: UART3
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.UART3; raw encoding.
+  - name: UART2
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.UART2; raw encoding.
+  - name: SPI2
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.SPI2; raw encoding.
+  - name: IWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.IWDT; raw encoding.
+  - name: WWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.WWDT; raw encoding.
+  - name: RTC
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.RTC; raw encoding.
+  - name: GTIM2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.GTIM2; raw encoding.
+  - name: GTIM1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.APBRST1.GTIM1; raw encoding.
+- name: RESETFLAG
+  offset: 76
+  access: rw
+  description: 'CW32F030 SYSCTRL.RESETFLAG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reset-cause flags are RW0: reads report actual causes; zero clears and one preserves. Source: CW32x030 RM Rev 2.5 4.7.18'
+  fields:
+  - name: SYSRESETREQ
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.SYSRESETREQ; raw encoding.
+  - name: LOCKUP
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.LOCKUP; raw encoding.
+  - name: RSTB
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.RSTB; raw encoding.
+  - name: WWDT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.WWDT; raw encoding.
+  - name: IWDT
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.IWDT; raw encoding.
+  - name: LVD
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.LVD; raw encoding.
+  - name: POR
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 SYSCTRL.RESETFLAG.POR; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: GTIM1CAP
+  offset: 80
+  access: rw
+  description: CW32F030 SYSCTRL.GTIM1CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CH4
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM1CAP.CH4; raw encoding.
+  - name: CH3
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM1CAP.CH3; raw encoding.
+  - name: CH2
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM1CAP.CH2; raw encoding.
+  - name: CH1
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM1CAP.CH1; raw encoding.
+- name: GTIM2CAP
+  offset: 84
+  access: rw
+  description: CW32F030 SYSCTRL.GTIM2CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CH4
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM2CAP.CH4; raw encoding.
+  - name: CH3
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM2CAP.CH3; raw encoding.
+  - name: CH2
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM2CAP.CH2; raw encoding.
+  - name: CH1
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM2CAP.CH1; raw encoding.
+- name: GTIM3CAP
+  offset: 88
+  access: rw
+  description: CW32F030 SYSCTRL.GTIM3CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CH4
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM3CAP.CH4; raw encoding.
+  - name: CH3
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM3CAP.CH3; raw encoding.
+  - name: CH2
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM3CAP.CH2; raw encoding.
+  - name: CH1
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM3CAP.CH1; raw encoding.
+- name: GTIM4CAP
+  offset: 92
+  access: rw
+  description: CW32F030 SYSCTRL.GTIM4CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CH4
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM4CAP.CH4; raw encoding.
+  - name: CH3
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM4CAP.CH3; raw encoding.
+  - name: CH2
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM4CAP.CH2; raw encoding.
+  - name: CH1
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIM4CAP.CH1; raw encoding.
+- name: ATIMETR
+  offset: 96
+  access: rw
+  description: CW32F030 SYSCTRL.ATIMETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ATIMETR
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.ATIMETR.ATIMETR; raw encoding.
+- name: GTIMETR
+  offset: 100
+  access: rw
+  description: CW32F030 SYSCTRL.GTIMETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: GTIM4ETR
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIMETR.GTIM4ETR; raw encoding.
+  - name: GTIM3ETR
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIMETR.GTIM3ETR; raw encoding.
+  - name: GTIM2ETR
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIMETR.GTIM2ETR; raw encoding.
+  - name: GTIM1ETR
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.GTIMETR.GTIM1ETR; raw encoding.
+- name: TIMITR
+  offset: 108
+  access: rw
+  description: CW32F030 SYSCTRL.TIMITR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BTIM3ITR
+    bit_offset: 21
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.BTIM3ITR; raw encoding.
+  - name: BTIM2ITR
+    bit_offset: 18
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.BTIM2ITR; raw encoding.
+  - name: BTIM1ITR
+    bit_offset: 15
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.BTIM1ITR; raw encoding.
+  - name: GTIM4ITR
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.GTIM4ITR; raw encoding.
+  - name: GTIM3ITR
+    bit_offset: 9
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.GTIM3ITR; raw encoding.
+  - name: GTIM2ITR
+    bit_offset: 6
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.GTIM2ITR; raw encoding.
+  - name: GTIM1ITR
+    bit_offset: 3
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.GTIM1ITR; raw encoding.
+  - name: ATIMITR
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.TIMITR.ATIMITR; raw encoding.
+- name: MCO
+  offset: 112
+  access: rw
+  description: CW32F030 SYSCTRL.MCO; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: DIV
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.MCO.DIV; raw encoding.
+  - name: SOURCE
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.MCO.SOURCE; raw encoding.
+- name: IRMOD
+  offset: 116
+  access: rw
+  description: CW32F030 SYSCTRL.IRMOD; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: MOD
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 SYSCTRL.IRMOD.MOD; raw encoding.
+constants:
+- name: HSI_DIV6
+  value: 10240
+  description: HSI divide by six; CW32x030 RM Rev 2.5 section 4.7.4.
+- name: HSI_STABLE
+  value: 32768
+  description: HSI stable flag; CW32x030 RM Rev 2.5 section 4.7.4.

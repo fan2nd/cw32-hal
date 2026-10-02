@@ -1,0 +1,1654 @@
+name: gpio
+version: l012
+registers:
+- name: DIR
+  offset: 0
+  access: rw
+  description: 'Direction: 0 = output, 1 = input.'
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: OPENDRAIN
+  offset: 4
+  access: rw
+  description: 'Output type: 0 = push-pull, 1 = open-drain.'
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: PDR
+  offset: 12
+  access: rw
+  description: Pull-down enable; only PF03 implements an internal pull-down.
+  fields:
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+- name: PUR
+  offset: 16
+  access: rw
+  description: Per-pin internal pull-up enable.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: AFRH
+  offset: 20
+  access: rw
+  description: Alternate function for pins 8 through 15, four bits per pin; GPIO encoding is zero.
+  fields:
+  - name: PIN15
+    bit_offset: 28
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 20
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+- name: AFRL
+  offset: 24
+  access: rw
+  description: Alternate function for pins 0 through 7, four bits per pin; GPIO encoding is zero.
+  fields:
+  - name: PIN7
+    bit_offset: 28
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 20
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: ANALOG
+  offset: 28
+  access: rw
+  description: 'Pin mode: 0 = digital, 1 = analog.'
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: RISEIE
+  offset: 36
+  access: rw
+  description: Per-pin rising-edge interrupt enable.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: FALLIE
+  offset: 40
+  access: rw
+  description: Per-pin falling-edge interrupt enable.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: ISR
+  offset: 52
+  access: ro
+  description: Read-only GPIO interrupt status.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: ICR
+  offset: 56
+  access: rw
+  description: 'Interrupt flags are cleared by writing ZERO to the relevant bit; not W1C. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 9.6.11; RM1.4 1.2'
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: FILTER
+  offset: 64
+  access: rw
+  description: GPIO interrupt filter configuration.
+  fields:
+  - name: FLTCLK
+    bit_offset: 16
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field FLTCLK; raw encoding retained unless explicitly audited.
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: IDR
+  offset: 80
+  access: ro
+  description: Read-only pin input data.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: ODR
+  offset: 84
+  access: rw
+  description: Output latch data.
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+- name: BRR
+  offset: 88
+  access: rw
+  description: 'Write 1 to a low-halfword bit to reset its output latch; vendor access is read-write. R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_ResetBits R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_WritePin'
+  fields:
+  - name: BRR15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR15; raw encoding retained unless explicitly audited.
+  - name: BRR14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR14; raw encoding retained unless explicitly audited.
+  - name: BRR13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR13; raw encoding retained unless explicitly audited.
+  - name: BRR12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR12; raw encoding retained unless explicitly audited.
+  - name: BRR11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR11; raw encoding retained unless explicitly audited.
+  - name: BRR10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR10; raw encoding retained unless explicitly audited.
+  - name: BRR9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR9; raw encoding retained unless explicitly audited.
+  - name: BRR8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR8; raw encoding retained unless explicitly audited.
+  - name: BRR7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR7; raw encoding retained unless explicitly audited.
+  - name: BRR6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR6; raw encoding retained unless explicitly audited.
+  - name: BRR5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR5; raw encoding retained unless explicitly audited.
+  - name: BRR4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR4; raw encoding retained unless explicitly audited.
+  - name: BRR3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR3; raw encoding retained unless explicitly audited.
+  - name: BRR2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR2; raw encoding retained unless explicitly audited.
+  - name: BRR1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR1; raw encoding retained unless explicitly audited.
+  - name: BRR0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR0; raw encoding retained unless explicitly audited.
+  write_behavior: one_to_clear
+  read_behavior: ordinary
+- name: BSRR
+  offset: 92
+  access: rw
+  description: 'Low halfword sets output latch bits; upper halfword resets them; vendor access is read-write. R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK GPIO_SetBits/GPIO_ResetBits R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK GPIO_WritePin'
+  fields:
+  - name: BRR15
+    bit_offset: 31
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR15; raw encoding retained unless explicitly audited.
+  - name: BRR14
+    bit_offset: 30
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR14; raw encoding retained unless explicitly audited.
+  - name: BRR13
+    bit_offset: 29
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR13; raw encoding retained unless explicitly audited.
+  - name: BRR12
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR12; raw encoding retained unless explicitly audited.
+  - name: BRR11
+    bit_offset: 27
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR11; raw encoding retained unless explicitly audited.
+  - name: BRR10
+    bit_offset: 26
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR10; raw encoding retained unless explicitly audited.
+  - name: BRR9
+    bit_offset: 25
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR9; raw encoding retained unless explicitly audited.
+  - name: BRR8
+    bit_offset: 24
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR8; raw encoding retained unless explicitly audited.
+  - name: BRR7
+    bit_offset: 23
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR7; raw encoding retained unless explicitly audited.
+  - name: BRR6
+    bit_offset: 22
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR6; raw encoding retained unless explicitly audited.
+  - name: BRR5
+    bit_offset: 21
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR5; raw encoding retained unless explicitly audited.
+  - name: BRR4
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR4; raw encoding retained unless explicitly audited.
+  - name: BRR3
+    bit_offset: 19
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR3; raw encoding retained unless explicitly audited.
+  - name: BRR2
+    bit_offset: 18
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR2; raw encoding retained unless explicitly audited.
+  - name: BRR1
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR1; raw encoding retained unless explicitly audited.
+  - name: BRR0
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BRR0; raw encoding retained unless explicitly audited.
+  - name: BSS15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS15; raw encoding retained unless explicitly audited.
+  - name: BSS14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS14; raw encoding retained unless explicitly audited.
+  - name: BSS13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS13; raw encoding retained unless explicitly audited.
+  - name: BSS12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS12; raw encoding retained unless explicitly audited.
+  - name: BSS11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS11; raw encoding retained unless explicitly audited.
+  - name: BSS10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS10; raw encoding retained unless explicitly audited.
+  - name: BSS9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS9; raw encoding retained unless explicitly audited.
+  - name: BSS8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS8; raw encoding retained unless explicitly audited.
+  - name: BSS7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS7; raw encoding retained unless explicitly audited.
+  - name: BSS6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS6; raw encoding retained unless explicitly audited.
+  - name: BSS5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS5; raw encoding retained unless explicitly audited.
+  - name: BSS4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS4; raw encoding retained unless explicitly audited.
+  - name: BSS3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS3; raw encoding retained unless explicitly audited.
+  - name: BSS2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS2; raw encoding retained unless explicitly audited.
+  - name: BSS1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS1; raw encoding retained unless explicitly audited.
+  - name: BSS0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field BSS0; raw encoding retained unless explicitly audited.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: TOG
+  offset: 96
+  access: rw
+  description: 'Write 1 to toggle the corresponding output latch bit; vendor access is read-write. R0W1 output action: each written one toggles the corresponding ODR latch; zero does nothing. Source: RM1.4 9.6.17; SDK GPIO_TogglePin'
+  fields:
+  - name: PIN15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN15; raw encoding retained unless explicitly audited.
+  - name: PIN14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN14; raw encoding retained unless explicitly audited.
+  - name: PIN13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN13; raw encoding retained unless explicitly audited.
+  - name: PIN12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN12; raw encoding retained unless explicitly audited.
+  - name: PIN11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN11; raw encoding retained unless explicitly audited.
+  - name: PIN10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN10; raw encoding retained unless explicitly audited.
+  - name: PIN9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN9; raw encoding retained unless explicitly audited.
+  - name: PIN8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN8; raw encoding retained unless explicitly audited.
+  - name: PIN7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN7; raw encoding retained unless explicitly audited.
+  - name: PIN6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN6; raw encoding retained unless explicitly audited.
+  - name: PIN5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN5; raw encoding retained unless explicitly audited.
+  - name: PIN4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN4; raw encoding retained unless explicitly audited.
+  - name: PIN3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN3; raw encoding retained unless explicitly audited.
+  - name: PIN2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN2; raw encoding retained unless explicitly audited.
+  - name: PIN1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN1; raw encoding retained unless explicitly audited.
+  - name: PIN0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field PIN0; raw encoding retained unless explicitly audited.
+  write_behavior: toggle
+  read_behavior: ordinary
+constants:
+- name: AF_BITS
+  value: 4
+  description: Four alternate-function selector bits per pin.
+- name: AF_GPIO
+  value: 0
+  description: Alternate-function encoding for ordinary GPIO.
+- name: PINS_PER_AFR
+  value: 8
+  description: Eight pin selectors in each AFRL/AFRH register.

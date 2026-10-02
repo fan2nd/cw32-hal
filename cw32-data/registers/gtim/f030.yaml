@@ -1,0 +1,442 @@
+name: gtim
+version: f030
+registers:
+- name: ARR
+  offset: 768
+  access: rw
+  description: CW32F030 GTIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.ARR.ARR; raw encoding.
+- name: CNT
+  offset: 772
+  access: rw
+  description: CW32F030 GTIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CNT.CNT; raw encoding.
+- name: CMMR
+  offset: 776
+  access: rw
+  description: CW32F030 GTIM.CMMR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CC4M
+    bit_offset: 12
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CMMR.CC4M; raw encoding.
+  - name: CC3M
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CMMR.CC3M; raw encoding.
+  - name: CC2M
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CMMR.CC2M; raw encoding.
+  - name: CC1M
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CMMR.CC1M; raw encoding.
+- name: ETR
+  offset: 780
+  access: rw
+  description: CW32F030 GTIM.ETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ETRFLT
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.ETR.ETRFLT; raw encoding.
+- name: CR0
+  offset: 784
+  access: rw
+  description: CW32F030 GTIM.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ENCRELOAD
+    bit_offset: 19
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR0.ENCRELOAD; raw encoding.
+  - name: ENCRESET
+    bit_offset: 17
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR0.ENCRESET; raw encoding.
+  - name: ENCMODE
+    bit_offset: 15
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR0.ENCMODE; raw encoding.
+  - name: PRSSTATUS
+    bit_offset: 11
+    bit_size: 4
+    access: ro
+    kind: raw
+    description: CW32F030 GTIM.CR0.PRSSTATUS; raw encoding.
+  - name: PRS
+    bit_offset: 7
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR0.PRS; raw encoding.
+  - name: TOGEN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR0.TOGEN; raw encoding.
+  - name: ONESHOT
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR0.ONESHOT; raw encoding.
+  - name: POL
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR0.POL; raw encoding.
+  - name: TRS
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR0.TRS; raw encoding.
+  - name: MODE
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR0.MODE; raw encoding.
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR0.EN; raw encoding.
+- name: IER
+  offset: 788
+  access: rw
+  description: CW32F030 GTIM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: DIRCHANGE
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.DIRCHANGE; raw encoding.
+  - name: CC4
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.CC4; raw encoding.
+  - name: CC3
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.CC3; raw encoding.
+  - name: CC2
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.CC2; raw encoding.
+  - name: CC1
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.CC1; raw encoding.
+  - name: UD
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.UD; raw encoding.
+  - name: TI
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.TI; raw encoding.
+  - name: OV
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.IER.OV; raw encoding.
+- name: ISR
+  offset: 792
+  access: rw
+  description: CW32F030 GTIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: DIR
+    bit_offset: 10
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.DIR; raw encoding.
+  - name: DIRCHANGE
+    bit_offset: 9
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.DIRCHANGE; raw encoding.
+  - name: CC4
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.CC4; raw encoding.
+  - name: CC3
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.CC3; raw encoding.
+  - name: CC2
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.CC2; raw encoding.
+  - name: CC1
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.CC1; raw encoding.
+  - name: UD
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.UD; raw encoding.
+  - name: TI
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.TI; raw encoding.
+  - name: OV
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 GTIM.ISR.OV; raw encoding.
+- name: ICR
+  offset: 796
+  access: rw
+  description: 'CW32F030 GTIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 14.8.13; 1.2'
+  fields:
+  - name: DIRCHANGE
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.DIRCHANGE; raw encoding.
+  - name: CC4
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.CC4; raw encoding.
+  - name: CC3
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.CC3; raw encoding.
+  - name: CC2
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.CC2; raw encoding.
+  - name: CC1
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.CC1; raw encoding.
+  - name: UD
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.UD; raw encoding.
+  - name: TI
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.TI; raw encoding.
+  - name: OV
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.ICR.OV; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: CCR1
+  offset: 800
+  access: rw
+  description: CW32F030 GTIM.CCR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CCR1.CCR; raw encoding.
+- name: CCR2
+  offset: 804
+  access: rw
+  description: CW32F030 GTIM.CCR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CCR2.CCR; raw encoding.
+- name: CCR3
+  offset: 808
+  access: rw
+  description: CW32F030 GTIM.CCR3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CCR3.CCR; raw encoding.
+- name: CCR4
+  offset: 812
+  access: rw
+  description: CW32F030 GTIM.CCR4; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CCR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CCR4.CCR; raw encoding.
+- name: CR1
+  offset: 816
+  access: rw
+  description: CW32F030 GTIM.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CH4POL
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR1.CH4POL; raw encoding.
+  - name: CH4FLT
+    bit_offset: 12
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR1.CH4FLT; raw encoding.
+  - name: CH3POL
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR1.CH3POL; raw encoding.
+  - name: CH3FLT
+    bit_offset: 8
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR1.CH3FLT; raw encoding.
+  - name: CH2POL
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR1.CH2POL; raw encoding.
+  - name: CH2FLT
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR1.CH2FLT; raw encoding.
+  - name: CH1POL
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.CR1.CH1POL; raw encoding.
+  - name: CH1FLT
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 GTIM.CR1.CH1FLT; raw encoding.
+- name: DMA
+  offset: 832
+  access: rw
+  description: CW32F030 GTIM.DMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CC4
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.CC4; raw encoding.
+  - name: CC3
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.CC3; raw encoding.
+  - name: CC2
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.CC2; raw encoding.
+  - name: CC1
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.CC1; raw encoding.
+  - name: TRS
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.TRS; raw encoding.
+  - name: OV
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 GTIM.DMA.OV; raw encoding.
+constants: []

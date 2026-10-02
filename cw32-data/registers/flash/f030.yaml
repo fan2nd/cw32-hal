@@ -1,0 +1,252 @@
+name: flash
+version: f030
+registers:
+- name: CR1
+  offset: 0
+  access: rw
+  description: 'CW32F030 FLASH.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.1'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 FLASH.CR1.KEY; raw encoding.
+  - name: SECURITY
+    bit_offset: 6
+    bit_size: 2
+    access: ro
+    kind: raw
+    description: CW32F030 FLASH.CR1.SECURITY; raw encoding.
+  - name: BUSY
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 FLASH.CR1.BUSY; raw encoding.
+  - name: STANDBY
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.CR1.STANDBY; raw encoding.
+  - name: MODE
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 FLASH.CR1.MODE; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: CR2
+  offset: 4
+  access: rw
+  description: 'CW32F030 FLASH.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.2'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 FLASH.CR2.KEY; raw encoding.
+  - name: CACHE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.CR2.CACHE; raw encoding.
+  - name: FETCH
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.CR2.FETCH; raw encoding.
+  - name: WAIT
+    bit_offset: 0
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: CW32F030 FLASH.CR2.WAIT; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: PAGELOCK
+  offset: 8
+  access: rw
+  description: 'CW32F030 FLASH.PAGELOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.3'
+  fields:
+  - name: KEY
+    bit_offset: 16
+    bit_size: 16
+    access: wo
+    kind: raw
+    description: CW32F030 FLASH.PAGELOCK.KEY; raw encoding.
+  - name: LOCK15
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK15; raw encoding.
+  - name: LOCK14
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK14; raw encoding.
+  - name: LOCK13
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK13; raw encoding.
+  - name: LOCK12
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK12; raw encoding.
+  - name: LOCK11
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK11; raw encoding.
+  - name: LOCK10
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK10; raw encoding.
+  - name: LOCK9
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK9; raw encoding.
+  - name: LOCK8
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK8; raw encoding.
+  - name: LOCK7
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK7; raw encoding.
+  - name: LOCK6
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK6; raw encoding.
+  - name: LOCK5
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK5; raw encoding.
+  - name: LOCK4
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK4; raw encoding.
+  - name: LOCK3
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK3; raw encoding.
+  - name: LOCK2
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK2; raw encoding.
+  - name: LOCK1
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK1; raw encoding.
+  - name: LOCK0
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.PAGELOCK.LOCK0; raw encoding.
+  write_behavior: keyed
+  read_behavior: ordinary
+- name: IER
+  offset: 32
+  access: rw
+  description: CW32F030 FLASH.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.IER.PROG; raw encoding.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.IER.PAGELOCK; raw encoding.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.IER.PC; raw encoding.
+- name: ISR
+  offset: 36
+  access: ro
+  description: CW32F030 FLASH.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 FLASH.ISR.PROG; raw encoding.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 FLASH.ISR.PAGELOCK; raw encoding.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 FLASH.ISR.PC; raw encoding.
+- name: ICR
+  offset: 40
+  access: rw
+  description: 'CW32F030 FLASH.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 7.9.6; 1.2'
+  fields:
+  - name: PROG
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.ICR.PROG; raw encoding.
+  - name: PAGELOCK
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.ICR.PAGELOCK; raw encoding.
+  - name: PC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 FLASH.ICR.PC; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+constants: []

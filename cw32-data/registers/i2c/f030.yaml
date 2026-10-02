@@ -1,0 +1,155 @@
+name: i2c
+version: f030
+registers:
+- name: BRREN
+  offset: 0
+  access: rw
+  description: CW32F030 I2C.BRREN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: EN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.BRREN.EN; raw encoding.
+- name: BRR
+  offset: 4
+  access: rw
+  description: CW32F030 I2C.BRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BRR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 I2C.BRR.BRR; raw encoding.
+- name: CR
+  offset: 8
+  access: rw
+  description: 'CW32F030 I2C.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. STA requests START and must be cleared by software. STO requests STOP and self-clears. SI is zero-to-clear and clearing it advances the bus state machine. Preserve configuration and status intentionally. Source: CW32x030 RM Rev 2.5 20.7.3'
+  fields:
+  - name: EN
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.EN; raw encoding.
+  - name: STA
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.STA; raw encoding.
+  - name: STO
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.STO; raw encoding.
+  - name: SI
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.SI; raw encoding.
+  - name: AA
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.AA; raw encoding.
+  - name: FLT
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.CR.FLT; raw encoding.
+  write_behavior: mixed
+  read_behavior: ordinary
+- name: DR
+  offset: 12
+  access: rw
+  description: 'CW32F030 I2C.DR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writes prepare the next transmit byte and reads obtain the received byte. SI clearing separately advances the transfer; this is not the L012 FIFO controller. Source: CW32x030 RM Rev 2.5 20.7.4'
+  fields:
+  - name: DR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 I2C.DR.DR; raw encoding.
+  write_behavior: command
+  read_behavior: ordinary
+- name: ADDR0
+  offset: 16
+  access: rw
+  description: CW32F030 I2C.ADDR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR0
+    bit_offset: 1
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 I2C.ADDR0.ADDR0; raw encoding.
+  - name: GC
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 I2C.ADDR0.GC; raw encoding.
+- name: STAT
+  offset: 20
+  access: ro
+  description: CW32F030 I2C.STAT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: STAT
+    bit_offset: 0
+    bit_size: 8
+    access: ro
+    kind: raw
+    description: CW32F030 I2C.STAT.STAT; raw encoding.
+- name: ADDR1
+  offset: 32
+  access: rw
+  description: CW32F030 I2C.ADDR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR1
+    bit_offset: 1
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 I2C.ADDR1.ADDR1; raw encoding.
+- name: ADDR2
+  offset: 36
+  access: rw
+  description: CW32F030 I2C.ADDR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR2
+    bit_offset: 1
+    bit_size: 7
+    access: rw
+    kind: raw
+    description: CW32F030 I2C.ADDR2.ADDR2; raw encoding.
+- name: MATCH
+  offset: 40
+  access: ro
+  description: CW32F030 I2C.MATCH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR2
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 I2C.MATCH.ADDR2; raw encoding.
+  - name: ADDR1
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 I2C.MATCH.ADDR1; raw encoding.
+  - name: ADDR0
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 I2C.MATCH.ADDR0; raw encoding.
+constants: []

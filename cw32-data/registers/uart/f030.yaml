@@ -1,0 +1,315 @@
+name: uart
+version: f030
+registers:
+- name: CR1
+  offset: 0
+  access: rw
+  description: CW32F030 UART.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: OVER
+    bit_offset: 9
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 UART.CR1.OVER; raw encoding.
+  - name: START
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR1.START; raw encoding.
+  - name: SYNC
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR1.SYNC; raw encoding.
+  - name: STOP
+    bit_offset: 4
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 UART.CR1.STOP; raw encoding.
+  - name: PARITY
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 UART.CR1.PARITY; raw encoding.
+  - name: RXEN
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR1.RXEN; raw encoding.
+  - name: TXEN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR1.TXEN; raw encoding.
+- name: CR2
+  offset: 4
+  access: rw
+  description: CW32F030 UART.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: SOURCE
+    bit_offset: 8
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: CW32F030 UART.CR2.SOURCE; raw encoding.
+  - name: DMATX
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.DMATX; raw encoding.
+  - name: DMARX
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.DMARX; raw encoding.
+  - name: TXINV
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.TXINV; raw encoding.
+  - name: RXINV
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.RXINV; raw encoding.
+  - name: RTSEN
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.RTSEN; raw encoding.
+  - name: CTSEN
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.CTSEN; raw encoding.
+  - name: SIGNAL
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.SIGNAL; raw encoding.
+  - name: ADDREN
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.CR2.ADDREN; raw encoding.
+- name: IER
+  offset: 8
+  access: rw
+  description: CW32F030 UART.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: CTS
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.CTS; raw encoding.
+  - name: PE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.PE; raw encoding.
+  - name: FE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.FE; raw encoding.
+  - name: RC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.RC; raw encoding.
+  - name: TC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.TC; raw encoding.
+  - name: TXE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.IER.TXE; raw encoding.
+- name: BRRI
+  offset: 12
+  access: rw
+  description: CW32F030 UART.BRRI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BRRI
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: CW32F030 UART.BRRI.BRRI; raw encoding.
+- name: BRRF
+  offset: 16
+  access: rw
+  description: CW32F030 UART.BRRF; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: BRRF
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: CW32F030 UART.BRRF.BRRF; raw encoding.
+- name: ISR
+  offset: 28
+  access: ro
+  description: CW32F030 UART.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: TXBUSY
+    bit_offset: 8
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.TXBUSY; raw encoding.
+  - name: CTSLV
+    bit_offset: 7
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.CTSLV; raw encoding.
+  - name: CTS
+    bit_offset: 6
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.CTS; raw encoding.
+  - name: MATCH
+    bit_offset: 5
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.MATCH; raw encoding.
+  - name: PE
+    bit_offset: 4
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.PE; raw encoding.
+  - name: FE
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.FE; raw encoding.
+  - name: RC
+    bit_offset: 2
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.RC; raw encoding.
+  - name: TC
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.TC; raw encoding.
+  - name: TXE
+    bit_offset: 0
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: CW32F030 UART.ISR.TXE; raw encoding.
+- name: ICR
+  offset: 32
+  access: rw
+  description: 'CW32F030 UART.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 18.9.9; 1.2'
+  fields:
+  - name: CTS
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.ICR.CTS; raw encoding.
+  - name: PE
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.ICR.PE; raw encoding.
+  - name: FE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.ICR.FE; raw encoding.
+  - name: RC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.ICR.RC; raw encoding.
+  - name: TC
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: CW32F030 UART.ICR.TC; raw encoding.
+  write_behavior: zero_to_clear
+  read_behavior: ordinary
+- name: RDR
+  offset: 36
+  access: ro
+  description: CW32F030 UART.RDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: RDR
+    bit_offset: 0
+    bit_size: 9
+    access: ro
+    kind: raw
+    description: CW32F030 UART.RDR.RDR; raw encoding.
+- name: TDR
+  offset: 40
+  access: wo
+  description: 'CW32F030 UART.TDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing queues a transmit frame and clears TXE. RDR does not automatically clear RC; software clears RC separately through ICR. Source: CW32x030 RM Rev 2.5 18.5; 18.9.5-6'
+  fields:
+  - name: TDR
+    bit_offset: 0
+    bit_size: 9
+    access: wo
+    kind: raw
+    description: CW32F030 UART.TDR.TDR; raw encoding.
+  write_behavior: command
+  read_behavior: ordinary
+- name: ADDR
+  offset: 48
+  access: rw
+  description: CW32F030 UART.ADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: ADDR
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 UART.ADDR.ADDR; raw encoding.
+- name: MASK
+  offset: 52
+  access: rw
+  description: CW32F030 UART.MASK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  fields:
+  - name: MASK
+    bit_offset: 0
+    bit_size: 8
+    access: rw
+    kind: raw
+    description: CW32F030 UART.MASK.MASK; raw encoding.
+constants: []
