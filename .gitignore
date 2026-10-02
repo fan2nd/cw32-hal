@@ -1,0 +1,24 @@
+# Rebuildable intermediate data and pre-generated consumer artifacts.
+/generated-data/
+/cw32-metapac/src/chips/
+/generated/
+# Cargo resolves the lock locally. Source-only archives exclude it too.
+Cargo.lock
+target/
+# Local download caches; pinned vendor headers, SVD and manifest
+# are audited source evidence, not caches, and intentionally remain visible.
+/vendor/cache/
+/vendor/downloads/
+/vendor/*.zip
+/vendor/*.pack
+# Editor and distribution output.
+/tmp/
+/dist/
+*.zip
+*.log
+*.tmp
+*.swp
+*~
+.DS_Store
+__pycache__/
+*.pyc
