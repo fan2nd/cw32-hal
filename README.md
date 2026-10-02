@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.11.4**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版在 Embassy 风格的所有权、初始化、metadata 专化与中断运行时之上，增加 ADC、VC、ATIM 事件及 CORDIC 的真实 IRQ 异步接口；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.11.5**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版在 Embassy 风格的所有权、初始化、metadata 专化与中断运行时之上，增加 ADC、VC、ATIM 事件及 CORDIC 的真实 IRQ 异步接口；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -138,7 +138,7 @@ F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存�
 
 启用 `time-driver-any` 或 `time-driver-gtim1` 后，HAL 初始化自动启动专用 16-bit GTIM1；`Config.time_interrupt_priority` 默认 P0。GTIM1 从交给应用的 `Peripherals` 字段中移除，保留给时间驱动，不占用 FOC 的 ATIM；关闭时间驱动时仍可安全取得 GTIM1。旧 `time-driver-systick` 和手动转交 `core.SYST` 的接口已撤销，。
 
-L012 的4 MHz PCLK 经 PSC=3 得到标称1 MHz计数；F030用8 MHz PCLK及CR0.PRS=3的2ⁿ分频也得到标称1 MHz计数，其OV/CNT/OV一致快照算法不依赖不存在的UIFREMAP，ARR=65535，每 65.536 ms 溢出。从 overflow 到 ISR 清除 UIF 必须严格小于一个完整周期，包含 IRQ/critical-section/优先级阻塞时间。compare 写入实际 deadline，写后重读计数并在必要时 pend IRQ，避免错过已到期限。短 sleep 仍受所选芯片 CPU、MMIO、IRQ 和 executor 实际延迟影响。**1 μs timestamp 分辨率不等于 HSI 实测精度，也不保证 1 μs 唤醒准确度。** 未支持 STOP 或动态调频。实际算法、链接与测试结果见 [验证记录](docs/validation-v0.11.4.md)，不能从 API 文档推断已经完成硅验证。
+L012 的4 MHz PCLK 经 PSC=3 得到标称1 MHz计数；F030用8 MHz PCLK及CR0.PRS=3的2ⁿ分频也得到标称1 MHz计数，其OV/CNT/OV一致快照算法不依赖不存在的UIFREMAP，ARR=65535，每 65.536 ms 溢出。从 overflow 到 ISR 清除 UIF 必须严格小于一个完整周期，包含 IRQ/critical-section/优先级阻塞时间。compare 写入实际 deadline，写后重读计数并在必要时 pend IRQ，避免错过已到期限。短 sleep 仍受所选芯片 CPU、MMIO、IRQ 和 executor 实际延迟影响。**1 μs timestamp 分辨率不等于 HSI 实测精度，也不保证 1 μs 唤醒准确度。** 未支持 STOP 或动态调频。实际算法、链接与测试结果见 [验证记录](docs/validation-v0.11.5.md)，不能从 API 文档推断已经完成硅验证。
 
 L012 的 FOC 对应硬件为：ATIM、ADC1/2、OPA1/2、VC1～4、DAC、CORDIC，另有 EAU 数学运算接口。保留 `atim`、`analog`、`eau` 模块，不为外形相似而虚构 STM32 `timer`/`opamp` API 兼容性。CW32 只有两路 OPA，不把 STM32G431 的 OPAMP3 虚构为对应外设。原阻塞接口继续保留；ADC、VC、ATIM 事件和 CORDIC 可显式转换为 IRQ-driven async owner。ADC/CORDIC 还可 `into_blocking()`，VC/ATIM 当前没有该逆转换。并不宣称连续 DMA 采样或硬实时 FOC 闭环。
 
@@ -177,8 +177,8 @@ serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的
 
 `--check` 是只读漂移检查，可捕获缺失文件、多余文件和内容变化。生成工具仅替换两个明确拥有的生成目录，不能用于存放手写代码。临时校验和变异测试使用独立临时目录并自动清理。离线命令需要提前缓存所有 Rust 依赖与目标工具链；缺缓存时先联网执行正常 Cargo 命令。
 
-## 上传 C 工程的递进 Rust 例程（v0.11.4）
+## 上传 C 工程的递进 Rust 例程（v0.11.5）
 
-新增根目录 [`example/`](example/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `example/`。
+新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 
-例程为六个独立、仅有 main.rs 入口的 binary crate（无 lib.rs），位于 [`example/l012-bldc/`](example/l012-bldc/)，每级的业务源码都在自己的 src 内，使用普通 mod 声明，仅引入必要代码、依赖与外设，不保留主机入口、例程测试或目标平台条件分支。只有 05/06 保留 `motor-output-enable` 输出授权开关。01–04 不初始化、不持有、不写入六个桥臂引脚，实验须物理断开母线或禁用驱动；GPIO 例程仅初始化 LED/按键；采样例程不初始化 UART 或换相定时器。构建与所有权边界见[板级 README](example/l012-bldc/README.md)，验证与 v0.11.4 直接 PAC/IRQ 所有权说明见 [验证记录](docs/validation-v0.11.4.md)。
+例程为六个独立、仅有 main.rs 入口的 binary crate（无 lib.rs），位于 [`examples/l012-bldc/`](examples/l012-bldc/)，每级的业务源码都在自己的 src 内，使用普通 mod 声明，仅引入必要代码、依赖与外设，不保留主机入口、例程测试或目标平台条件分支。只有 05/06 保留 `motor-output-enable` 输出授权开关。01–04 不初始化、不写入六个桥臂引脚，实验须物理断开母线或禁用驱动；GPIO 例程仅初始化 LED/按键；采样例程不初始化 UART 或换相定时器。构建与所有权边界见[板级 README](examples/l012-bldc/README.md)，验证与 v0.11.5 直接 main/ISR 说明见 [验证记录](docs/validation-v0.11.5.md)。

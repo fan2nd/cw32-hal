@@ -9,7 +9,7 @@
 - ADC参考标定换算、原电压/电流/NTC门限与计数、按键六档、100ms速度/保护、500ms遥测、10s闲置关机、5s堵转；未使用的原PI独立保留，不宣称速度闭环。
 - 默认禁止功率输出；01–04即使启用输出feature也不能打开桥臂。05/06需显式feature才授权。
 - 完整06使用真实Embassy executor；电机外设/pin tokens转移到IRQ域，PA3/PC13/UART及引脚独立转移给task，有界值邮箱交接，无steal、无重复外设所有权。
-- 确认的96MHzCPU/48MHzPCLK、20kHzPWM、8MHzBTIM、6MHzADC、保留寄存器位与OC4REFC PWM2触发适配详见[板说明](../example/l012-bldc/README.md)。默认HAL4MHz/F0308MHz保持不变。
+- 确认的96MHzCPU/48MHzPCLK、20kHzPWM、8MHzBTIM、6MHzADC、保留寄存器位与OC4REFC PWM2触发适配详见[板说明](../examples/l012-bldc/README.md)。默认HAL4MHz/F0308MHz保持不变。
 
 ## 安全修正
 

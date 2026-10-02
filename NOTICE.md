@@ -19,7 +19,7 @@ Cargo.lock 在本地解析生成，不进入源码交付；Cargo.toml 固定直�
 
 ## User-supplied BLDC example application
 
-The numbered `example/` application is a Rust adaptation of the user-supplied
+The numbered `examples/` application is a Rust adaptation of the user-supplied
 `10 XUNLIANYING 260726 LAST.zip`, especially `BLDC CONTROL/MOTOR CONTORL`
 and `BLDC CONTROL/User/main.c`. The uploaded archive is not redistributed.
 No independent license grant for that application was found in the supplied
@@ -27,4 +27,4 @@ application files. The repository licenses do not purport to relicense any
 third-party rights in the original application; confirm rights before external
 redistribution or commercial use. Included vendor headers remain governed by
 their existing notices. Original names, pins, constants and behavior are
-identified in `example/l012-bldc/README.md` for traceability, not hardware certification.
+identified in `examples/l012-bldc/README.md` for traceability, not hardware certification.

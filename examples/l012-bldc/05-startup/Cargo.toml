@@ -1,0 +1,23 @@
+[package]
+name = "cw32-bldc-05-startup"
+version = "0.11.5"
+edition = "2021"
+rust-version = "1.99"
+publish = false
+license = "MIT OR Apache-2.0"
+description = "Stage 05: protected nonblocking sensorless motor startup"
+
+[features]
+default = []
+# Permission only: reset is still off and the key must request a start.
+motor-output-enable = []
+
+[dependencies]
+critical-section = { version = "=1.2.0" }
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x", "unstable-pac"] }
+cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = { version = "=0.7.5" }
+
+[[bin]]
+name = "bldc_05_startup"
+path = "src/main.rs"

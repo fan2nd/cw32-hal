@@ -1,0 +1,19 @@
+[package]
+name = "cw32-bldc-04-sensorless"
+version = "0.11.5"
+edition = "2021"
+rust-version = "1.99"
+publish = false
+license = "MIT OR Apache-2.0"
+description = "Incremental CW32L012 BLDC stage 04: sensorless"
+autobins = false
+
+[dependencies]
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x", "unstable-pac"] }
+
+cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = { version = "=0.7.5" }
+
+[[bin]]
+name = "bldc_04_sensorless"
+path = "src/main.rs"

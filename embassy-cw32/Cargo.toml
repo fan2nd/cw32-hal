@@ -1,6 +1,6 @@
 [package]
 name = "embassy-cw32"
-version = "0.11.4"
+version = "0.11.5"
 edition = "2021"
 rust-version = "1.99"
 license = "MIT OR Apache-2.0"
