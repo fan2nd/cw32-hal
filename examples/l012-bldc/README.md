@@ -11,9 +11,9 @@
 - `03-six-step`：增加六步桥图和按键选择扇区，只观察，不输出功率。
 - `04-sensorless`：增加原浮相/边沿/阈值的被动过零观察，不自动换相。
 - `05-startup`：完整启动、换相、保护；电机前台连续运行，ADC1和BTIM中断独立，无UART或Embassy执行器。
-- `06-application`：同样的电机前台和IRQ算法，UI独立使用真正的Embassy低优先级中断执行器与值邮箱。
+- `06-application`：同样的控制/保护算法；高优先级InterruptExecutor运行事件驱动电机任务，普通线程executor运行按键/LED/UART任务。
 
-每级都有自己的 `Cargo.toml`、`src/main.rs` 和 `build.rs`，只有一个binary，无lib target、跨例程源文件导入或共享业务crate。初始化、主循环和ISR直接位于各自main；只将换相/控制/保护及实际UI邮箱等独立逻辑留成普通本地模块。没有Board、State、Ui硬件包装或未调用的PI。
+每级都有自己的 `Cargo.toml`、`src/main.rs` 和 `build.rs`，只有一个binary，无lib target、跨例程源文件导入或共享业务crate。01–05的初始化、主循环和ISR直接位于各自main；06按实际职责分为main入口与共享引脚初始化、motor电机PAC/任务/ISR、ui按键/LED/UART与软件命令/状态交换，控制/保护/协议/帧队列是本地独立逻辑模块。没有Board、State、Ui硬件包装或未调用的PI。
 
 ## 构建
 
@@ -55,7 +55,7 @@ CH4恢复原PWM1。官方RM §25.12.7指定触发为OC4REFC上升沿，不能把
 
 05/06电机前台是连续循环，不由Embassy或1 ms定时任务调度。BTIM1仅做原按键/ADC2启动/计数工作；100 ms电压电流温度检查在前台。原阻塞启动、停机和故障等待用显式前台续行状态表示：ISR仍运行，但原先被阻塞的前台保护不会额外执行。
 
-电机前台短临界区内借用控制器、诊断和MMIO，完成一次有限步骤后释放；不会在等待或await期间持有引用。P1电机IRQ同优先级不嵌套，可直接访问这些状态。初始化完成、借用结束后才unmask。05无Mutex/RefCell或async；06只有UI值邮箱使用必要的短临界区。改变IRQ优先级、新增访问者或允许异常返回都需要重新审查共享安全。
+05的连续前台在短临界区内借用控制器；06将电机任务放入UART2软件中断上的P1 InterruptExecutor，与ADC1/BTIM1/BTIM3的P1硬件ISR同级，ARMv6-M同级异常不能相互抢占。控制器不跨await借用，等待路径真正返回Pending，只有有限的立即可执行延续会连续推进。ADC逐样本处理与定时换相仍在ISR立即执行，唤醒只合并重复检查请求。普通线程executor仅有UI，少量命令/状态/waker通过短临界区同步，不持有电机引用。05无执行器，作为直接ISR/前台教学阶梯保留；06展示完整任务分层。改变IRQ优先级、新增访问者或允许异常返回都需要重新审查共享安全。
 
 06使用官方 `InterruptExecutor`，专用未启用UART2外设的UART2向量作低优先级软件唤醒，UI任务处理PA3/PC13/UART1；电机仍在普通前台。UI不能持有控制器引用或电机寄存器指针。UART非阻塞，每次UI唤醒最多发送一字节。UI失联不再增加原工程没有的电机故障码。
 

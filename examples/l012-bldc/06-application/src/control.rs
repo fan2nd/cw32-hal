@@ -7,7 +7,7 @@
 //! rather than silently replacing it with a textbook 30-degree delay.
 //!
 //! Timer ISRs only update the source counters and key state. The motor
-//! foreground calls foreground_step continuously. Explicit continuations
+//! task calls foreground_step on real hardware events, draining ready continuations. Explicit continuations
 //! preserve the original blocking waits without holding a Rust borrow across
 //! an interrupt. Protection is paused during startup, settling and error loops.
 //! Original state-order edge cases are deliberately retained.
@@ -465,9 +465,59 @@ impl MotorController {
         actions
     }
 
-    /// One original main-loop/continuation iteration. Call repeatedly, not on
-    /// a millisecond schedule. No reference may survive the adapter's critical
-    /// section. ISR flags can change between calls while a C busy wait is active.
+    /// Whether another source foreground continuation can advance immediately.
+    /// Call after one foreground_step for a real event. This is not a timer or
+    /// a replacement for interrupt processing: ADC filtering and timer state
+    /// transitions have already happened in their hardware handlers.
+    pub fn foreground_ready(&self) -> bool {
+        if !self.initialized_measurements {
+            return self.adc2_ready;
+        }
+        if self.powered_off {
+            return false;
+        }
+        match self.startup {
+            StartupState::Aligning => return self.state_ms >= u32::from(ALIGNMENT_MS),
+            StartupState::Forced => {
+                // A fault alone does not escape the original inner busy wait.
+                return self.state_ms >= u32::from(FORCED_STEP_TIMEOUT_MS)
+                    || self.crossing_flag
+                    || self.startup_locked;
+            }
+            StartupState::Inactive => {}
+        }
+        if self.stop_waiting {
+            return self.state_ms >= u32::from(STOP_SETTLE_MS);
+        }
+        if self.state == MotorState::ErrorOver {
+            // Blink is presentation work done once per real event, not an
+            // endlessly-ready continuation after the initial 200 ms pause.
+            return self.state_ms >= 200
+                && (self.fault.is_none() || self.idle_ms >= u32::from(AUTO_POWER_OFF_MS));
+        }
+        if self.measurement_ms >= u32::from(MEASUREMENT_INTERVAL_MS)
+            || (self.fault.is_some() && self.state != MotorState::Error)
+            || self.idle_ms >= u32::from(AUTO_POWER_OFF_MS)
+        {
+            return true;
+        }
+        match self.state {
+            MotorState::StartCheck => self.set_speed > 0,
+            MotorState::StartDelay => {
+                self.set_speed == 0 || self.state_ms >= u32::from(START_DELAY_MS)
+            }
+            MotorState::StartOpen | MotorState::Stop | MotorState::Error => true,
+            MotorState::RunOpen => {
+                self.set_speed == 0 || self.ramp_ms >= u32::from(RAMP_FULL_SCALE_MS / 100)
+            }
+            MotorState::WaitStart => self.set_speed == 0,
+            MotorState::ErrorOver => false,
+        }
+    }
+
+    /// One original main-loop/continuation iteration. Drain foreground_ready
+    /// before awaiting a new hardware event; do not impose a fixed 1 ms poll.
+    /// No controller reference may survive await or return from a handler.
     pub fn foreground_step(&mut self, step_ticks: u16) -> Actions {
         let mut actions = Actions::default();
         if !self.initialized_measurements {

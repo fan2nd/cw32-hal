@@ -1,6 +1,6 @@
 [package]
 name = "cw32-bldc-06-application"
-version = "0.11.5"
+version = "0.11.6"
 edition = "2021"
 rust-version = "1.99"
 publish = false
@@ -18,7 +18,7 @@ embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, featu
 cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }
 cortex-m-rt = { version = "=0.7.5" }
 critical-section = { version = "=1.2.0" }
-embassy-executor = { version = "=0.10.0", features = ["platform-cortex-m", "executor-interrupt"] }
+embassy-executor = { version = "=0.10.0", features = ["platform-cortex-m", "executor-interrupt", "executor-thread"] }
 
 [[bin]]
 name = "bldc_06_application"
