@@ -223,7 +223,7 @@ impl<'d> Cordic<'d> {
     }
 }
 
-static EVENT: crate::async_support::EventState = crate::async_support::EventState::new();
+static EVENT: crate::interrupt::EventState = crate::interrupt::EventState::new();
 static RESULTS: critical_section::Mutex<core::cell::Cell<[Q31; 3]>> =
     critical_section::Mutex::new(core::cell::Cell::new([Q31::ZERO; 3]));
 

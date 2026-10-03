@@ -81,7 +81,7 @@ pub(super) trait VcIo {
 }
 fn service_vc_interrupt(
     io: &mut impl VcIo,
-    state: &crate::async_support::EventState,
+    state: &crate::interrupt::EventState,
 ) -> Option<core::task::Waker> {
     if io.pending() {
         // Disable only this source before RW0 acknowledgment, especially for
@@ -109,7 +109,7 @@ impl VcWaitCore {
     fn poll(
         &mut self,
         io: &mut impl VcIo,
-        state: &crate::async_support::EventState,
+        state: &crate::interrupt::EventState,
         cx: &mut core::task::Context<'_>,
     ) -> core::task::Poll<()> {
         use core::task::Poll;
@@ -141,7 +141,7 @@ impl VcWaitCore {
             }
         })
     }
-    fn cancel(&mut self, io: &mut impl VcIo, state: &crate::async_support::EventState) {
+    fn cancel(&mut self, io: &mut impl VcIo, state: &crate::interrupt::EventState) {
         if self.armed {
             critical_section::with(|_| {
                 io.disable();

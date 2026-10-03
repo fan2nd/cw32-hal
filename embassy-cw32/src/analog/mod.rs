@@ -58,7 +58,7 @@ mod sealed {
     #[cfg_attr(all(vc_l012, not(bgr_l012)), allow(dead_code))]
     pub(crate) trait VcInstance {
         fn regs() -> crate::pac::vc::Vc;
-        fn state() -> &'static crate::async_support::EventState;
+        fn state() -> &'static crate::interrupt::EventState;
     }
     pub trait Pin<I, const S: u8> {}
 }

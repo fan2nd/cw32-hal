@@ -1,7 +1,7 @@
 //! Shared sequence lifecycle. IP backends select the real completion source
 //! and preserve their own register, clock, watchdog and channel contracts.
 use super::Error;
-use crate::async_support::EventState;
+use crate::interrupt::EventState;
 use core::task::{Context, Poll};
 
 pub(super) trait SequenceIo {

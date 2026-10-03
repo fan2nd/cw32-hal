@@ -1,3 +1,4 @@
+> v0.13.2 consolidates build helpers into build.rs and the shared IRQ event latch into interrupt.rs without changing behavior; see [validation](validation-v0.13.2.md).
 > v0.13.1 adds independently selected IP/capability layers and shared workflows; see [HAL cfg layering](hal-cfg-layering.md). Earlier version-specific discussion below remains historical where labeled.
 
 # 设计审查：理解 Embassy 的链路，而不只模仿目录

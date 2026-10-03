@@ -27,7 +27,7 @@ use pac::adc::regs;
 mod sealed {
     pub(crate) trait Sealed {
         fn regs() -> crate::pac::adc::Adc;
-        fn state() -> &'static crate::async_support::EventState;
+        fn state() -> &'static crate::interrupt::EventState;
     }
     pub trait PinSealed<I> {}
 }

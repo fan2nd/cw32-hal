@@ -2,8 +2,10 @@
 use core::{convert::Infallible, marker::PhantomData, task::Poll};
 
 use crate::{
-    async_support::EventState,
-    interrupt::typelevel::{Binding, Handler, Interrupt},
+    interrupt::{
+        typelevel::{Binding, Handler, Interrupt},
+        EventState,
+    },
     pac, Peri,
 };
 
@@ -13,7 +15,7 @@ pub(crate) mod sealed {
     pub(crate) trait InterruptPin {
         const PORT: super::Port;
         const NUMBER: u8;
-        fn state() -> &'static crate::async_support::EventState;
+        fn state() -> &'static crate::interrupt::EventState;
     }
 }
 

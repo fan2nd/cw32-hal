@@ -2,10 +2,7 @@
 use super::backend::{
     service_events, set_event_enabled, BreakFlags, HardwareEvents, ThreePhasePwm,
 };
-use crate::{
-    async_support::EventState,
-    interrupt::{self, InterruptExt},
-};
+use crate::interrupt::{self, EventState, InterruptExt};
 
 static UPDATE_STATE: EventState = EventState::new();
 static BREAK_STATE: EventState = EventState::new();

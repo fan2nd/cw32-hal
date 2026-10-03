@@ -9,7 +9,6 @@
 pub mod adc;
 #[cfg(any(bgr, dac, vcref, opa, vc))]
 pub mod analog;
-mod async_support;
 #[cfg(atim)]
 pub mod atim;
 #[cfg(cordic)]

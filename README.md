@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.13.1**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版采用 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道，并新增拥有真实路由的通用 Timer/SimplePwm；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.13.2**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版采用 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道，并新增拥有真实路由的通用 Timer/SimplePwm；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -181,9 +181,11 @@ serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的
 
 本版完成 PAC/数组、GPIO共享与异步实现、ADC/Comp模式所有权及通用timer/PWM的逐项重构；不宣称覆盖全部 embassy-stm32 驱动或全部芯片功能。见[逐模块现状](docs/embassy-api-alignment.md)。
 
-本版按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/validation-v0.13.1.md) 和 [HAL cfg 分层](docs/hal-cfg-layering.md)。此前 PAC/所有权 API 迁移记录见 [v0.13.0](docs/validation-v0.13.0.md)。
+v0.13.2 将构建辅助函数合回 `build.rs`，IRQ 事件状态合入现有 `interrupt` 模块，删除两个独立 support 文件；生成结果和 IRQ 行为保持不变，见 [v0.13.2 验证](docs/validation-v0.13.2.md)。
 
-## 上传 C 工程的递进 Rust 例程（v0.13.1）
+v0.13.1 按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/validation-v0.13.1.md) 和 [HAL cfg 分层](docs/hal-cfg-layering.md)。此前 PAC/所有权 API 迁移记录见 [v0.13.0](docs/validation-v0.13.0.md)。
+
+## 上传 C 工程的递进 Rust 例程（v0.13.2）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

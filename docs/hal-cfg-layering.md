@@ -72,3 +72,12 @@ framework, dynamic clocking or unverified hardware combinations. Source-only
 archives contain no test scaffolding. Temporary equivalence, negative and
 mixed/absent-IP probes accompany the real two-chip release builds; see
 [v0.13.1 validation](validation-v0.13.1.md). No silicon was tested.
+
+## v0.13.2 source layout
+
+Metadata associations, supported-IP checks and capability/cfg generation now live
+as private functions in `embassy-cw32/build.rs`. The shared single-owner event
+latch is crate-private in the existing `interrupt` module. The separate
+`build_support.rs` and `async_support.rs` files were removed. The operations,
+critical sections, cancellation ordering and generated public tables are
+unchanged; see [v0.13.2 validation](validation-v0.13.2.md).
