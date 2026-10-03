@@ -25,24 +25,38 @@ impl Driver for TimerDriver {
     fn now(&self) -> u64 {
         critical_section::with(|cs| {
             let state = self.state.borrow(cs).borrow();
-            assert!(state.started, "time driver used before HAL init");
-            state.counter.now(&mut Registers)
+            // Driver::now must not fail or touch unclocked hardware before init.
+            // Initialization starts the counter at zero, preserving monotonicity.
+            if state.started {
+                state.counter.now(&mut Registers)
+            } else {
+                0
+            }
         })
     }
     fn schedule_wake(&self, at: u64, waker: &Waker) {
+        // RawWaker clone/drop callbacks may also reenter the driver. Prepare
+        // ownership before borrowing State; retire an unused clone afterward.
+        let mut candidate = Some(waker.clone());
         let immediate = critical_section::with(|cs| {
             let mut state = self.state.borrow(cs).borrow_mut();
-            assert!(state.started, "time driver used before HAL init");
-            let now = state.counter.now(&mut Registers);
-            let immediate = state.queue.schedule(now, at, waker);
-            state
-                .counter
-                .arm(&mut Registers, state.queue.next_expiration());
+            let now = if state.started {
+                state.counter.now(&mut Registers)
+            } else {
+                0
+            };
+            let immediate = state.queue.schedule(now, at, &mut candidate);
+            if state.started {
+                state
+                    .counter
+                    .arm(&mut Registers, state.queue.next_expiration());
+            }
             immediate
         });
+        drop(candidate);
         // Never invoke arbitrary wake code while State/RefCell is borrowed.
-        if immediate {
-            waker.wake_by_ref();
+        if let Some(waker) = immediate {
+            waker.wake();
         }
     }
 }
@@ -61,6 +75,11 @@ pub(super) unsafe fn init(priority: interrupt::Priority, configure: impl FnOnce(
         state.started = true;
         interrupt::GTIM1.unpend();
         interrupt::GTIM1.set_priority(priority);
+        // Preserve wakeups registered before init. Unpend first: arm may pend
+        // the vector when a deadline passed while hardware was configured.
+        state
+            .counter
+            .arm(&mut Registers, state.queue.next_expiration());
         // SAFETY: the selected IP is configured; our handler below is installed
         // at the real GTIM1 vector by the PAC runtime.
         unsafe {

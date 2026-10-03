@@ -452,17 +452,29 @@ fn main() {
                 .interrupt;
             writeln!(analog, "type Interrupt=crate::interrupt::typelevel::{irq};").unwrap();
             let number = name.strip_prefix("VC").unwrap().parse::<u8>().unwrap();
-            if p.version == "f030" {
-                writeln!(analog, "const NUMBER:u8={number};").unwrap();
-            } else {
-                let reference = match name {
-                    "VC1" | "VC2" => "VC12REF",
-                    "VC3" | "VC4" => "VC34REF",
-                    _ => panic!("unaudited comparator reference pair"),
-                };
+            writeln!(analog, "const NUMBER:u8={number};").unwrap();
+            if p.version == "l012"
+                && md
+                    .peripherals
+                    .iter()
+                    .any(|r| r.block == "vcref" && r.version == "l012")
+            {
+                // The reference pairing is an instance connection, unrelated
+                // to the comparator's IRQ grouping or its diagnostic number.
+                let reference = p
+                    .comparator
+                    .and_then(|c| c.reference)
+                    .expect("comparator reference capability requires audited connection metadata");
+                let target = md
+                    .peripherals
+                    .iter()
+                    .find(|r| r.name == reference)
+                    .expect("comparator reference target must exist");
+                assert_eq!((target.block, target.version), ("vcref", "l012"));
                 writeln!(
                     analog,
-                    "#[cfg(vcref_l012)] type Reference=peripherals::{reference}; const NUMBER:u8={number};"
+                    "#[cfg(vcref_l012)] type Reference=peripherals::{};",
+                    ident(reference)
                 )
                 .unwrap();
             }
@@ -658,7 +670,7 @@ fn field<'a>(
 }
 
 fn gpio_capabilities(p: &cw32_metapac::metadata::Peripheral) -> BTreeSet<&'static str> {
-    use cw32_metapac::metadata::{Access, ReadBehavior, WriteBehavior};
+    use cw32_metapac::metadata::{Access, FieldKind, ReadBehavior, WriteBehavior};
     let mut result = BTreeSet::new();
     let indexed = |name: &str| {
         let Some(r) = p.registers.iter().find(|r| r.name == name) else {
@@ -676,6 +688,7 @@ fn gpio_capabilities(p: &cw32_metapac::metadata::Peripheral) -> BTreeSet<&'stati
         assert!(
             f.bit_offset == 0
                 && f.bit_size == 1
+                && matches!(f.kind, FieldKind::Bool)
                 && matches!(f.access, Access::ReadWrite)
                 && f.array.is_some_and(|a| a.len == 16 && a.stride == 1),
             "GPIO capability requires the audited indexed PIN layout"
@@ -717,6 +730,7 @@ fn gpio_capabilities(p: &cw32_metapac::metadata::Peripheral) -> BTreeSet<&'stati
                 && r.array.is_none()
                 && matches!(f.access, Access::ReadWrite)
                 && f.bit_offset == 3
+                && matches!(f.kind, FieldKind::Bool)
                 && f.bit_size == 1
                 && f.array.is_none(),
             "unaudited scalar pull-down layout"

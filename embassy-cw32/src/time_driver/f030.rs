@@ -9,7 +9,9 @@
 //! flash stalls, and wakers executing inside this IRQ. A one-bit OV cannot
 //! recover two missed wraps. All clock accuracy remains that of the HSI source.
 //!
-//! Alarms are never intentionally early. CCR is set to the actual deadline,
+//! Deadline interrupts are never intentionally early. A saturated bounded
+//! queue may wake a task early to retry; Embassy timers recheck their deadline.
+//! CCR is set to the actual deadline,
 //! without an artificial minimum delay. A post-write time check pends the IRQ
 //! if programming missed the match. Lateness still includes programming, IRQ
 //! and executor delay; at an 8 MHz CPU this can exceed one timer tick.

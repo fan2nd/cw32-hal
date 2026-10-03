@@ -1,7 +1,7 @@
 //! PAC and metadata generated from the layered cw32-data YAML sources.
 #![no_std]
 #![deny(unsafe_op_in_unsafe_fn)]
-include!(concat!(env!("OUT_DIR"), "/pac.rs"));
+include!(env!("CW32_METAPAC_PAC_PATH"));
 
 // SAFETY: the enum discriminants come from the validated, audited IRQ metadata.
 unsafe impl cortex_m::interrupt::InterruptNumber for Interrupt {
@@ -18,10 +18,10 @@ pub use Interrupt as interrupt;
 // Keep the hardware vector table out of host tools that consume metadata.
 #[cfg(all(feature = "rt", target_arch = "arm", target_os = "none"))]
 mod runtime {
-    include!(concat!(env!("OUT_DIR"), "/rt.rs"));
+    include!(env!("CW32_METAPAC_RT_PATH"));
 }
 
 #[cfg(feature = "metadata")]
 pub mod metadata {
-    include!(concat!(env!("OUT_DIR"), "/metadata.rs"));
+    include!(env!("CW32_METAPAC_METADATA_PATH"));
 }

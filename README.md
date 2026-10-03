@@ -1,8 +1,10 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.13.2**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版采用 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道，并新增拥有真实路由的通用 Timer/SimplePwm；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.14.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道，以及拥有真实路由的通用 Timer/SimplePwm；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
+
+v0.14.0 对 data、生成器/PAC 与全部现有 HAL 模块重新对照实际固定版本上游，修复共享 PAC 输出、连接元数据、ADC 序列遗留状态、软件更新触发及时间驱动回调/初始化契约。逐模块结论、真实硬件差异及未实现范围见 [完整审查](docs/full-chain-audit-v0.14.0.md)。
 
 ## 先看设计与边界
 
@@ -40,10 +42,13 @@ cw32-gen/                       统一 host-only 生成器 crate
 generated-data/                本地生成中间产物，ignore，不入源码包
   chips/*.json                  芯片组成及 register references
   registers/*_*.json            共享 kind/version 寄存器定义
-cw32-metapac/src/chips/         本地预生成 PAC/metadata，ignore；普通构建只消费
+cw32-metapac/generated/         预生成的整个 PAC 输出树，ignore；普通构建只消费
+  common.rs, metadata_types.rs 公共访问核心与 metadata 类型，各一份
+  peripherals/, registers/    每个 kind/version 的 PAC 与 metadata，各一份
+  chips/<chip>/                只选择共享模块、实例、IRQ 和芯片关联
 embassy-cw32/                   HAL 算法 + metadata 驱动的构建期特化
   src/adc/mod.rs                统一公开入口，按 adc_l012/adc_f030 选择实现
-  src/adc/{l012,f030}.rs        对称的芯片系列 IP 实现；analog/atim/rcc 同样组织
+  src/adc/{l012,f030}.rs        ADC IP 后端；ATIM/RCC 同样按版本，analog 再按具体 IP 分层
   src/gpio/{mod,shared}.rs      经确认可复用的 GPIO 驱动保留一份
   src/time_driver/mod.rs        GTIM 时间驱动入口；实现、core 与 queue 收入此目录
 xtask/                         统一生成库的薄封装：regenerate、漂移与流水线检查
@@ -52,7 +57,7 @@ vendor/                        固定原厂 header/SVD，离线证据；不是�
 
 HAL 入口按外设 kind 是否存在开启；驱动后端按该实例的 IP version 选择，GPIO 可选能力直接从寄存器 metadata 推导。芯片 feature 只选择 metadata，不生成全局芯片/系列 cfg。ATIM/GTIM 与各模拟 IP 独立选型，共同事件和等待流程只维护一份。详见 [分层说明](docs/hal-cfg-layering.md)。
 
-芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version，这与受查上游生成器的限制相同。schema6 通过显式 block 引用支持嵌套子块及数组，DMA channel 是真实子块；尚未实现上游通用继承和完整变换体系。共享register JSON已去重，Rust寄存器类型当前在每个chip PAC内复用，尚未把跨chip公共Rust模块独立打包。
+芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version。schema7 通过显式 block 引用支持嵌套子块及数组，DMA channel 是真实子块；尚未实现上游通用继承和完整变换体系。共享 register JSON、Rust PAC 与 register metadata 均按 kind/version 去重；芯片只选择这些模块并定义实例。相同复位值的不同来源也确定性合并，不再丢失先前来源。
 
 外设 IP 版本统一使用芯片系列标识 `l012`、`f030`，不使用 `v1`/`v2`。它是寄存器兼容模型的名称，不是芯片白名单：F030 的 IWDT/WWDT 经审查与 L012 相同，仍引用 `l012`，不复制一份。YAML 文件名、version 字段、normalized JSON、PAC metadata、HAL cfg 与后端文件名沿用同一标识。JSON schema 的版本号与原厂文档修订号是独立概念。
 
@@ -69,14 +74,14 @@ cargo run --offline -p xtask -- regenerate --check
 
 1. xtask 的薄封装调用 `cw32_gen::generate`；其中 `cw32_gen::data` 读取所有芯片 YAML，应用显式 fixes 和 perimap，排序归一化、校验，将 chips/*.json 与 registers/kind_version.json 实际写入磁盘。
 2. `cw32_gen::pac` 从这些文件重新读取并校验 JSON，按 register references 加载共享定义，再生成每芯片 PAC 和 Rust METADATA。schema、data 与 pac 是同一个 crate 内的模块边界；统一 crate 包含 YAML 依赖，但 schema 保持纯模型/校验职责，PAC 渲染阶段不加载 YAML，也不直接接收上一阶段的内存模型。
-3. 替换由工具拥有的 generated-data/ 与 cw32-metapac/src/chips/ 两个生成树。
+3. 替换由工具拥有的 generated-data/ 与 cw32-metapac/generated/ 两个生成树。
 
 --check 重新生成并逐字节检查文件集合与内容；发现缺失、漂移、多余文件即失败，不修改产物。干净源码先 regenerate，再 --check；没有生成物时 --check 明确失败，绝不默默写入。CI包含此检查。JSON 是可发布中间接口，不是维护源；PAC 同样禁止手改。
 
 也可直接调用统一 CLI（在新的输出目录中生成，或用于干净源码自举）：
 
 ```sh
-cargo run -p cw32-gen -- generate cw32-data all generated-data cw32-metapac/src/chips
+cargo run -p cw32-gen -- generate cw32-data all generated-data cw32-metapac/generated
 ```
 
 需要单独检查某一阶段时，可以分别运行：
@@ -95,7 +100,7 @@ rustup target add thumbv6m-none-eabi
 cargo check -p embassy-cw32 --target thumbv6m-none-eabi --features cw32l012c8
 ```
 
-测试工具链 Rust/Cargo 1.99.0，Cargo.lock 在本地生成并被 ignore；手工 manifest 固定直接依赖版本，但不承诺跨时点的完整传递依赖图一致。PAC 普通 build.rs **仅选择预生成文件**，没有 `cw32-gen` 或其他 generator build dependency，不读取 YAML/JSON。HAL runtime 和 build.rs 依赖同一 cw32-metapac；build.rs 读取 METADATA 生成 kind/version cfg、pin singleton、GPIO 端口与门控掩码、IRQ 标记和只读关联表，并在 `memory-x` 开启时写出 memory.x。模块 gate 实际使用 kind/version cfg；L012 与 F030 的不兼容寄存器版本选择独立驱动，不支持的版本不会被当作兼容布局。驱动算法实际使用生成的 PAC 字段。
+测试工具链 Rust/Cargo 1.99.0，Cargo.lock 在本地生成并被 ignore；手工 manifest 固定直接依赖版本，但不承诺跨时点的完整传递依赖图一致。PAC 普通 build.rs **仅选择预生成 Rust 路径**，没有 `cw32-gen` 或其他 generator build dependency，不读取 YAML/JSON。HAL runtime 和 build.rs 依赖同一 cw32-metapac；build.rs 读取 METADATA 生成 kind/version cfg、pin singleton、GPIO 端口与门控掩码、IRQ 标记和只读关联表，并在 `memory-x` 开启时写出 memory.x。模块 gate 实际使用 kind/version cfg；L012 与 F030 的不兼容寄存器版本选择独立驱动，不支持的版本不会被当作兼容布局。驱动算法实际使用生成的 PAC 字段。正常 PAC 构建不复制整份输出到 OUT_DIR；metadata 和 runtime 文件只在对应 feature 开启时要求存在。
 
 HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--features cw32l012c8`，仅构建生成器/xtask 不需要选择芯片。PAC 也没有默认芯片，直接使用 PAC 时同样需要明确选择。`--no-default-features --features cw32l012c8` 可检查不含 runtime 的 HAL。未选芯片报错；不自动将名称相近的 CW32 型号视为兼容。PAC/HAL 为 no_std；生成器在 host 运行。HAL `metadata` feature 控制公开关联表，并转发 PAC metadata feature；build dependency 始终启用 metadata 供生成使用。`unstable-pac` 才公开 `embassy_cw32::pac`。未开启 `memory-x` 时，应用负责自己的内存布局和链接配置。
 
@@ -103,8 +108,8 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 ## 已实现的数据能力及约束
 
-- register：名称、offset、access、字段范围与 overlap；生成 typed raw/bool/enum getter 与 setter。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。
-- JSON schema v6 显式维护字段、寄存器及子块数组，保留完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 提供对应清除操作；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
+- register：名称、offset、access、字段范围与 overlap；生成 typed raw/bool/enum getter 与 setter。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。当前真实数据中的多位字段仍为 raw，不能把 enum 生成能力当作已完成全部硬件枚举。
+- JSON schema v7 显式维护字段、寄存器及子块数组，保留完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 按其实际写入语义显式清除；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
 - perimap：精确 chip+instance+vendor_ip/vendor_version（或原block/version）匹配，保留datasheet实例名。mode: select在加载前选择规范kind/version/register block文件，即使原vendor名没有本地文件也可；mode: alias仅relabel已加载模型。外设根 block 的 perimap 仍精确匹配；嵌套 block 依赖显式解析，不支持上游通用数据库/正则映射。同chip相同原block身份不能选互相矛盾的模型，必须先区分源身份。
 - fixes：原block名下的寄存器/字段纠错，先于alias；要求source/reason，未知目标、错键、冲突均报错，失败回滚。当前selector作用于该chip中共享这个block的全部实例，不支持仅GPIOA特例。局部布局差异应拆版本/数据模型，不能改坏公共 l012 模型。
 - shared IRQ：物理 IRQ 表唯一；peripheral signal→IRQ 可多对多。重复引用不复制物理向量。PAC runtime 按物理 IRQ 号生成向量，稀疏编号保留空槽；HAL `bind_interrupts!` 只为实际声明的 handler 生成入口和 Binding，不从关联表批量生成空证明。
@@ -136,7 +141,7 @@ F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存�
 
 保留 embedded-hal 1.0 阻塞 GPIO、复位时钟初始化和可选专用 GTIM1 时间驱动。L012 RCC 默认保持 HSI/24、总线不分频的标称4 MHz配置；v0.10.0增加从已验证复位状态显式选择96MHz HSI及APB/2（48MHz）的配置，先设置Flash等待周期，VDD必须至少1.8V；F030 RCC 按其独立复位配置使用 HSI 48 MHz/6 的标称8 MHz；`config.rcc.hsi_stabilization_limit` 是 trim 后的有界轮询次数，不是任意时钟树或校准后的时间超时。没有把更高频率支持混同于完整 SYSCTRL 寄存器数据。
 
-`rcc::clocks()` 在成功初始化前会 panic。
+`rcc::clocks()` 在成功初始化前会 panic。与它不同，启用的 Embassy 时间驱动在初始化前返回时间 0 且不访问硬件；提前登记的唤醒会保留到初始化。16 个槽是存储容量，队列满时提前唤醒被替换任务以重试，不再 panic；Timer future 会重新核对 deadline。
 
 启用 `time-driver-any` 或 `time-driver-gtim1` 后，HAL 初始化自动启动专用 16-bit GTIM1；`Config.time_interrupt_priority` 默认 P0。GTIM1 从交给应用的 `Peripherals` 字段中移除，保留给时间驱动，不占用 FOC 的 ATIM；关闭时间驱动时仍可安全取得 GTIM1。旧 `time-driver-systick` 和手动转交 `core.SYST` 的接口已撤销。
 
@@ -174,7 +179,7 @@ serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的
 
 ## 源码交付与 ignore
 
-源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/src/chips/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 YAML、修正规则、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。源码自举、生成及文档列出的日常校验只需 Rust/Cargo，无 Python 或 PyYAML 前置条件；外部审查探针的编排脚本不属于源码项目。
+源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/generated/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 YAML、修正规则、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。源码自举、生成及文档列出的日常校验只需 Rust/Cargo，无 Python 或 PyYAML 前置条件；外部审查探针的编排脚本不属于源码项目。
 
 
 `--check` 是只读漂移检查，可捕获缺失文件、多余文件和内容变化。生成工具仅替换两个明确拥有的生成目录，不能用于存放手写代码。临时校验和变异测试使用独立临时目录并自动清理。离线命令需要提前缓存所有 Rust 依赖与目标工具链；缺缓存时先联网执行正常 Cargo 命令。
@@ -185,7 +190,7 @@ v0.13.2 将构建辅助函数合回 `build.rs`，IRQ 事件状态合入现有 `i
 
 v0.13.1 按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/validation-v0.13.1.md) 和 [HAL cfg 分层](docs/hal-cfg-layering.md)。此前 PAC/所有权 API 迁移记录见 [v0.13.0](docs/validation-v0.13.0.md)。
 
-## 上传 C 工程的递进 Rust 例程（v0.13.2）
+## 上传 C 工程的递进 Rust 例程（v0.14.0）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

@@ -751,6 +751,12 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART3
 - name: VC1
+  comparator:
+    reference: VC12REF
+    dac:
+      peripheral: DAC
+      channel: 1
+    source: CW32L012 RM1.4 section 27.7.3 VCx_CR0.INN, printed p628 (PDF p654), and sections 27.7.1-2, printed p627; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vc
   version: l012
   address: 0x40000084
@@ -783,6 +789,12 @@ peripherals:
     bit: 1
   interrupts: []
 - name: VC2
+  comparator:
+    reference: VC12REF
+    dac:
+      peripheral: DAC
+      channel: 2
+    source: CW32L012 RM1.4 section 27.7.3 VCx_CR0.INN, printed p628 (PDF p654), and sections 27.7.1-2, printed p627; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vc
   version: l012
   address: 0x40000094
@@ -800,6 +812,12 @@ peripherals:
   - signal: GLOBAL
     interrupt: VC24
 - name: VC3
+  comparator:
+    reference: VC34REF
+    dac:
+      peripheral: DAC
+      channel: 1
+    source: CW32L012 RM1.4 section 27.7.3 VCx_CR0.INN, printed p628 (PDF p654), and sections 27.7.1-2, printed p627; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vc
   version: l012
   address: 0x40000184
@@ -832,6 +850,12 @@ peripherals:
     bit: 1
   interrupts: []
 - name: VC4
+  comparator:
+    reference: VC34REF
+    dac:
+      peripheral: DAC
+      channel: 2
+    source: CW32L012 RM1.4 section 27.7.3 VCx_CR0.INN, printed p628 (PDF p654), and sections 27.7.1-2, printed p627; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vc
   version: l012
   address: 0x40000194

@@ -1,3 +1,5 @@
+> Current whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
+
 > 当前结构整理检查见 [v0.13.2](validation-v0.13.2.md)。
 > 当前 HAL IP/cfg 分层检查见 [v0.13.1](validation-v0.13.1.md)。
 

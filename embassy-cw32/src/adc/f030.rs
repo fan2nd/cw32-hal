@@ -236,6 +236,8 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     /// Borrow this owner and all channels for a fixed-length scan extension.
     /// Channel tokens can be produced by `AdcChannel::reborrow_adc` or `degrade_adc`.
     /// Dropping the sequence stops conversions and removes its watchdog configuration.
+    /// A new sequence also discards any conversion and watchdog left by a forgotten
+    /// earlier sequence. Validation errors leave the existing hardware state unchanged.
     pub fn configure_sequence<'a, 'ch, const N: usize>(
         &'a mut self,
         channels: [(BorrowedAdcChannel<'ch, I>, SampleTime); N],
@@ -247,6 +249,12 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
             shared_sample(&channels.each_ref().map(|(_, sample)| *sample))?,
             N,
         );
+        self.stop();
+        I::regs().cr1().modify(|w| {
+            w.set_wdtall(false);
+            w.set_wdtch(0);
+        });
+        self.acknowledge_watchdog();
         Ok(Sequence {
             adc: self,
             channels,

@@ -1,6 +1,6 @@
-# Audited CW32L012 subset. See sources/provenance.yaml for evidence and limits.
+# Source evidence for the maintained CW32L012C8 and CW32F030C8 datasets.
 schema_version: 1
-scope: Complete CW32L012 register-model coverage with explicit source discrepancies, all 32 external IRQs, chip memory and separately audited package maps. Experimental; not hardware validated.
+scope: Both existing CW32L012C8 and CW32F030C8 chip datasets, comprising 87 peripheral views and 46 reusable IP definitions. Register layouts, complete external IRQ tables, memory, maintained die pins and selected signal routes retain explicit source discrepancies. Experimental; not hardware validated.
 sources:
 - id: sdk
   kind: standard-peripheral-library
@@ -50,6 +50,34 @@ sources:
   figures:
   - 5-1
   - 5-2
+- id: f030-sdk
+  kind: standard-peripheral-library
+  version: '2.2'
+  url: https://www.whxy.com/uploads/files/20241111/CW32F030_StandardPeripheralLib_V2.2.zip
+  sha256: 7c431df43d7075b817a51d818ea4c9aba55f83b7c9c77bf0065976758954b780
+- id: f030-cmsis-header
+  kind: cmsis-header
+  path: vendor/cw32f030/cw32f030.h
+  upstream_path: Libraries/inc/cw32f030.h
+  sha256: 7060347a4cb18d8550708ce8c488cdbdb8e58c0e9d6ecf6f1e6467e139328862
+  derived_from: f030-sdk
+- id: f030-svd
+  kind: cmsis-svd
+  version: '1.2'
+  path: vendor/cw32f030/CW32F030.svd
+  upstream_path: IdeSupport/EWARM/arm/config/debugger/CW/CW32F030.svd
+  sha256: c59bdc211510db5a8117d4d7610c2ef9b7ba328d9221c166354766f07e079aaa
+  derived_from: f030-sdk
+- id: f030-reference-manual
+  kind: reference-manual
+  version: '2.5'
+  url: https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  sha256: 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2
+- id: f030-datasheet
+  kind: datasheet
+  version: '1.9'
+  url: https://www.whxy.com/uploads/files/20251229/CW32F030_DataSheet_CN_V1.9.pdf
+  sha256: 04ef91434320e5d05a3b6690fead0fedb31a7d9bad28c96b655a6e13a22e46b2
 evidence:
 - applies_to: registers/*/l012.yaml registers; families/cw32l012.yaml peripheral addresses
   sources:
@@ -82,14 +110,25 @@ evidence:
   - reference-manual
   detail: 'RM table 2-1 agrees with SDK Template MDK project and CW32L012x8.icf: main Flash at 0x00000000,
     65536 bytes; SRAM at 0x20000000, 8192 bytes.'
-- applies_to: chips/*.yaml pins
+- applies_to: chips/cw32l012c8.yaml pins
   sources:
   - datasheet
-  detail: Figures 5-1 and 5-2 on printed page 32 (PDF page 36) visually establish identical 48-position layouts for LQFP48/C8T6 and QFN48/C8U6; all 40 GPIO bonds are modeled. See docs/pin-route-evidence.md for complete numbered mapping and the 82 FOC-route audit.
+  detail: L012 Figures 5-1 and 5-2 on printed page 32 (PDF page 36) establish the evidence for the maintained 40 die GPIO identities. Chip YAML has no package-selection layer; board bonding remains a board responsibility. Original FOC route evidence is extended by sources/timer-pwm-routes.yaml, for 126 maintained L012 routes.
 - applies_to: registers/*/l012.yaml reset_value/reset_source/reset_note; families/cw32l012.yaml register_resets
   sources:
   - reference-manual
   detail: 'RM1.4 full register reset headings, cross-checked against bit semantics, protection state and reset-domain notes. Full words include reserved bits (ADC.CR=0x100); unknowns and conflicting L012 GPIOA/B ANALOG/ICR remain explicit. See docs/register-reset-defaults.md. F030 entries cite their independently pinned RM2.5 evidence directly; shared watchdog values agree.'
+- applies_to: families/cw32l012.yaml comparator
+  sources:
+  - reference-manual
+  detail: 'RM1.4 sections 27.7.1-2 (printed p627) and 27.7.3 VCx_CR0.INN (printed p628): VC1/VC2 use VC12REF, VC3/VC4 use VC34REF; VC1/VC3 use DAC output 1, VC2/VC4 use DAC output 2. These are instance connections, not properties of the shared vc/l012 register block.'
+- applies_to: registers/*/f030.yaml; families/cw32f030.yaml; chips/cw32f030c8.yaml
+  sources:
+  - f030-cmsis-header
+  - f030-svd
+  - f030-reference-manual
+  - f030-datasheet
+  detail: 'The 37 F030 peripheral views use 18 independently modeled F030 IP definitions plus the two structurally compatible watchdog models. All register and field positions/access and all 32 physical IRQ numbers are compared with the pinned artifacts. GPIOC/F are explicitly smaller implemented-pin subsets of the raw shared GPIO layout; conservative manual-backed access corrections remain. Maintained chip routes total 107 after the GTIM extensions; PF3/BOOT remains excluded from safe pin identities.'
 cautions:
 - pins:
   - PA13
@@ -97,11 +136,11 @@ cautions:
   reason: SWD by default; GPIO unavailable while SYSCTRL.CR2.SWDIO=0. The HAL must not silently disable
     SWD.
 - pins:
-  - PF03
+  - PF3
   reason: BOOT selection pin and the only internal pull-down-capable GPIO; boot circuitry must be
     considered.
 limitations:
-- Both C8T6 and C8U6 package GPIO pin maps are audited (40 GPIO each). Only 82 FOC-related routes are audited; other alternate functions remain unmodeled.
+- The chip-level model is package-independent. Its maintained GPIO identities have datasheet evidence, but users must verify their physical package and PCB bonding. Only the 126 L012 and 107 F030 listed routes are modeled; other alternate functions remain unmodeled.
 - No claimed UART/SPI/I2C/ADC/DMA/timer driver implementation follows from the IRQ metadata.
 - Hardware timing, oscillator accuracy and physical GPIO operation have not been tested.
 - RM1.4 HSI reset-value line 0x0001F772 conflicts with its reserved-upper-bits and TRIM-default text;
@@ -116,7 +155,7 @@ limitations:
 - Pinned CMSIS header/SVD files remain available for offline audit. Reference-manual, SDK source-function
   semantics, memory-map and datasheet pin claims are attributed manual audits, not independent
   hardware verification.
-full_register_audit:
+l012_register_audit:
   instances: 50
   ip_models: 28
   logical_register_views: 306
@@ -137,3 +176,16 @@ full_register_audit:
   - VCREF DIV width is 3 bits in header/SVD and SDK encodings, 4 bits in RM prose; retain narrower evidenced model.
   - I2C RXWATER/RXCNT width is 2 bits in header/SVD, 12 bits in manual tables; retain narrower evidenced model.
   - GTIM ISR manual RW conflicts with header/SVD RO and separate ICR; retain read-only API.
+current_dataset_audit:
+  peripheral_views: 87
+  ip_definitions: 46
+  expanded_register_views: 520
+  distinct_reset_evidence_records: 463
+  known_reset_evidence_records: 442
+  unknown_generic_reset_records: 21
+  expanded_known_reset_views: 499
+  instance_reset_overrides: 28
+  reset_count_note: DMA parent channel arrays add 32 L012 and 25 F030 views of the already-audited DMACHANNEL records. They do not introduce 57 independent reset claims.
+  clock_reset_references: 158
+  physical_irqs_per_chip: 32
+  limitations: Heading comparisons establish the declared full reset words; variable, reset-domain-dependent, instance-dependent and contradicted values remain unknown. Header/SVD consistency and primary-manual review do not establish silicon behavior.

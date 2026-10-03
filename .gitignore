@@ -1,5 +1,7 @@
 # Rebuildable intermediate data and pre-generated consumer artifacts.
 /generated-data/
+/cw32-metapac/generated/
+# Legacy generated output from pre-0.14 checkouts is never source.
 /cw32-metapac/src/chips/
 /generated/
 # Cargo resolves the lock locally. Source-only archives exclude it too.

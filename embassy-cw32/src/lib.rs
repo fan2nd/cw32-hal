@@ -1,5 +1,5 @@
 //! Metadata-driven CW32L012C8 and CW32F030C8 HAL, backed by the generated cw32-metapac crate.
-//! Chip identities are emitted by build.rs; the PAC consumes normalized chip/register
+//! Peripheral and pin identities are emitted from metadata by build.rs; the PAC consumes chip/register
 //! JSON compiled from layered source data by the separate data generator.
 //! No STM32 register compatibility is assumed.
 #![no_std]

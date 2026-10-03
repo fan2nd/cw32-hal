@@ -1,5 +1,5 @@
-//! Consumer build: select audited, pre-generated artifacts. No YAML/JSON parsing.
-use std::{env, fs, path::PathBuf};
+//! Consumer build: select generated Rust. No generator, YAML or JSON dependency.
+use std::{env, path::PathBuf};
 fn main() {
     let chips: Vec<_> = env::vars()
         .filter_map(|(name, _)| {
@@ -12,23 +12,27 @@ fn main() {
         1,
         "select exactly one supported CW32 chip feature"
     );
-    let source = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap())
-        .join("src/chips")
-        .join(&chips[0]);
-    let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
-    for file in ["pac.rs", "metadata.rs"] {
-        println!("cargo:rerun-if-changed={}", source.join(file).display());
-        fs::copy(source.join(file), out.join(file)).expect(
-            "missing generated PAC; run cargo run -p xtask -- regenerate from the workspace root before building",
-        );
+    let generated = PathBuf::from(env::var_os("CARGO_MANIFEST_DIR").unwrap()).join("generated");
+    let chip = generated.join("chips").join(&chips[0]);
+    println!("cargo:rerun-if-changed={}", generated.display());
+    for (key, file, enabled) in [
+        ("PAC", "pac.rs", true),
+        (
+            "METADATA",
+            "metadata.rs",
+            env::var_os("CARGO_FEATURE_METADATA").is_some(),
+        ),
+        ("RT", "rt.rs", env::var_os("CARGO_FEATURE_RT").is_some()),
+    ] {
+        if !enabled {
+            continue;
+        }
+        let path = chip.join(file);
+        assert!(path.is_file(), "missing generated PAC; run cargo run -p xtask -- regenerate from the workspace root before building");
+        println!("cargo:rustc-env=CW32_METAPAC_{key}_PATH={}", path.display());
     }
     if env::var_os("CARGO_FEATURE_RT").is_some() {
-        for file in ["rt.rs", "device.x"] {
-            println!("cargo:rerun-if-changed={}", source.join(file).display());
-            fs::copy(source.join(file), out.join(file)).expect(
-                "missing generated runtime; run cargo run -p xtask -- regenerate from the workspace root before building",
-            );
-        }
-        println!("cargo:rustc-link-search={}", out.display());
+        assert!(chip.join("device.x").is_file(), "missing generated runtime; run cargo run -p xtask -- regenerate from the workspace root before building");
+        println!("cargo:rustc-link-search={}", chip.display());
     }
 }

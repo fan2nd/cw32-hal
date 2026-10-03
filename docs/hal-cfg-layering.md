@@ -34,7 +34,8 @@ ADC-to-ATIM convenience methods require the compatible trigger contract, while
 ordinary ADC remains available without ATIM. These combinations describe checked
 software capability, not a claim that a synthetic mixed chip exists.
 
-VC pin traits consume the explicitly audited per-instance pin routes, with
+VC reference associated types now consume explicit, sourced family connections,
+not VC-name or IRQ-group inference. VC pin traits consume the audited pin routes, with
 register selector-width checks. No family-wide “four or eight inputs” guess
 selects their layout. ADC local reset suppression uses the explicit
 [reset cross-effects](schema-v6.md), alongside shared reset-bit ownership.
@@ -59,9 +60,9 @@ selects their layout. ADC local reset suppression uses the explicit
 This is not a claim that every similar-looking register file can be merged.
 After excluding descriptions/provenance, all 17 kinds with both versions still
 have real layout, access, width, field or reset differences. IWDT/WWDT already
-reuse the same data IP version across the two chips. PAC Rust modules are still
-packaged per chip; cross-chip Rust-module deduplication is a separate generator
-packaging limitation, not hidden HAL duplication.
+reuse the same data IP version across the two chips. PAC Rust and register metadata modules are now emitted once per kind/version;
+chip roots select them within the same PAC crate. Known reset specializations
+are aggregated across the selected chip set without inventing unknown values.
 
 ## Remaining boundaries
 

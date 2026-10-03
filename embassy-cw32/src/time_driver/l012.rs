@@ -9,7 +9,9 @@
 //! flash stalls, and wakers executing inside this IRQ. A one-bit UIF cannot
 //! recover two missed wraps. All clock accuracy remains that of the HSI source.
 //!
-//! Alarms are never intentionally early. CCR is set to the actual deadline,
+//! Deadline interrupts are never intentionally early. A saturated bounded
+//! queue may wake a task early to retry; Embassy timers recheck their deadline.
+//! CCR is set to the actual deadline,
 //! without an artificial minimum delay. A post-write time check pends the IRQ
 //! if programming missed the match. Lateness still includes programming, IRQ
 //! and executor delay; at a 4 MHz CPU this can exceed one timer tick.
@@ -66,8 +68,12 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
             pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
             pac::GTIM1.cnt().write_value(regs::Cnt(0));
             pac::GTIM1.ccr(0).write_value(regs::Ccr(0));
+            // MMS=0 forwards UG as TRGO. Keep TRGO at stopped CNT_EN while
+            // loading PSC, so initialization cannot trigger another peripheral.
+            pac::GTIM1.cr2().write(|w| w.set_mms(1));
             pac::GTIM1.egr().write(|w| w.set_ug(true)); // UG loads buffered PSC, resets CNT
             pac::GTIM1.icr().write_value(regs::Icr(0)); // stopped/exclusive: clear all startup flags
+            pac::GTIM1.cr2().write_value(regs::Cr2(0));
             pac::GTIM1.ccer().write(|w| w.set_cc1e(true)); // CC1 enabled, no GPIO AF configured
             pac::GTIM1.ier().write(|w| w.set_uie(true));
             // UIFREMAP=1, URS=1, CEN=1, upcounting, continuous, updates enabled.

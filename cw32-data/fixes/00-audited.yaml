@@ -11,7 +11,8 @@
 #   patch: {type: field, bit_offset: 4, bit_size: 2, access: rw}
 #   provenance: {source: "Exact erratum or SDK reference", reason: "Why it is wrong"}
 #
-# Register patches support offset/access/description; field patches support
+# Register patches support offset/access/description/alias_of/write_behavior/
+# read_behavior; field patches support
 # bit_offset/bit_size/access/description. Omitted properties remain unchanged.
 # Empty patches and unknown keys are errors. Add new hardware in source YAML.
 []

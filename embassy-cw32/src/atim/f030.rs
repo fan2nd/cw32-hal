@@ -236,11 +236,15 @@ impl<'d> ThreePhasePwm<'d> {
         pac::ATIM.fltr().write_value(filter_config(&config));
         // BKE on, AOE/MOE/VCE/SAFEEN off. Comparator routing is a scoped guard.
         pac::ATIM.dtr().write_value(deadtime);
+        // MMS=0 forwards UG to downstream timers even with ADC triggering off.
+        // Select stopped EN for the preload commit, then restore before start.
+        pac::ATIM.mscr().write(|v| v.set_mms(1));
         let mut update = control;
         update.set_ug(true);
         pac::ATIM.cr().write_value(update);
         // R1W0: start at the full documented reset, preserving RFU bit 1.
         pac::ATIM.icr().write(|v| v.set_uif(false));
+        pac::ATIM.mscr().write_value(regs::Mscr(0));
         // ADC owns its trigger receiver. This timer emits only real updates.
         pac::ATIM.trig().write(|v| {
             v.set_adte(true);
@@ -340,8 +344,10 @@ trait DutyIo {
     fn outputs_enabled(&mut self) -> bool;
     fn control(&mut self) -> u32;
     fn trigger(&mut self) -> u32;
+    fn master_trigger(&mut self) -> u32;
     fn write_control(&mut self, value: u32);
     fn write_trigger(&mut self, value: u32);
+    fn write_master_trigger(&mut self, value: u32);
     fn write_compares(&mut self, duty: [u16; 3]);
     fn clear_update(&mut self);
 }
@@ -356,11 +362,17 @@ impl DutyIo for HardwareDuty {
     fn trigger(&mut self) -> u32 {
         pac::ATIM.trig().read().0
     }
+    fn master_trigger(&mut self) -> u32 {
+        pac::ATIM.mscr().read().0
+    }
     fn write_control(&mut self, value: u32) {
         pac::ATIM.cr().write_value(regs::Cr(value));
     }
     fn write_trigger(&mut self, value: u32) {
         pac::ATIM.trig().write_value(regs::Trig(value));
+    }
+    fn write_master_trigger(&mut self, value: u32) {
+        pac::ATIM.mscr().write_value(regs::Mscr(value));
     }
     fn write_compares(&mut self, duty: [u16; 3]) {
         for (n, value) in duty.into_iter().enumerate() {
@@ -377,10 +389,14 @@ fn program_duty(io: &mut impl DutyIo, duty: [u16; 3]) -> Result<(), Error> {
     }
     let control = control_without_commands(io.control());
     let trigger = io.trigger();
+    let master_trigger = io.master_trigger();
     let mut paused = regs::Cr(control);
     paused.set_en(false);
     paused.set_uie(false);
     io.write_control(paused.0);
+    let mut master_gated = regs::Mscr(master_trigger);
+    master_gated.set_mms(1);
+    io.write_master_trigger(master_gated.0);
     let mut gated = regs::Trig(trigger);
     gated.set_adte(false);
     io.write_trigger(gated.0);
@@ -389,6 +405,7 @@ fn program_duty(io: &mut impl DutyIo, duty: [u16; 3]) -> Result<(), Error> {
     io.write_control(paused.0);
     io.clear_update();
     io.write_trigger(trigger);
+    io.write_master_trigger(master_trigger);
     io.write_control(control);
     Ok(())
 }

@@ -2,12 +2,13 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-/// Version 6 records reset cross-effects on other peripheral resources. Version 5 added
+/// Version 7 records evidenced comparator source connections. Version 6 records
+/// reset cross-effects on other peripheral resources. Version 5 added
 /// indexed fields, registers and subblocks; reset evidence remains. Older
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 6;
+pub const SCHEMA_VERSION: u32 = 7;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -226,6 +227,19 @@ model!(RegisterBit {
     field: String,
     bit: u8
 });
+// An existing DAC channel connected internally to a comparator's negative input.
+// Channel numbers are the documented hardware numbers, not zero-based indices.
+model!(DacConnection {
+    peripheral: String,
+    channel: u8
+});
+// Physical source topology belongs to peripheral instances, not reusable VC IP.
+// None means unmodeled; it never licenses a guessed connection or new owner.
+model!(ComparatorConnections {
+    reference: Option<String>,
+    dac: Option<DacConnection>,
+    source: String
+});
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RegisterReset {
@@ -253,6 +267,8 @@ pub struct Peripheral {
     /// Other resources disturbed by this reset, beyond owners of the same reset bit.
     #[serde(default)]
     pub reset_effects: Vec<ResetEffect>,
+    #[serde(default)]
+    pub comparator: Option<ComparatorConnections>,
     /// This view shares ownership with its parent and must not receive an independent HAL token.
     #[serde(default)]
     pub ownership_parent: Option<String>,
@@ -321,12 +337,17 @@ pub fn err(message: impl Into<String>) -> Box<dyn std::error::Error> {
 }
 fn identifier(s: &str) -> bool {
     let mut c = s.chars();
-    c.next()
-        .is_some_and(|x| x.is_ascii_alphabetic() || x == '_')
+    s != "_"
+        && c.next()
+            .is_some_and(|x| x.is_ascii_alphabetic() || x == '_')
         && c.all(|x| x.is_ascii_alphanumeric() || x == '_')
         && ![
-            "self", "Self", "type", "mod", "fn", "pub", "struct", "enum", "match", "crate",
-            "super", "use",
+            "as", "async", "await", "break", "const", "continue", "crate", "dyn", "else", "enum",
+            "extern", "false", "fn", "for", "if", "impl", "in", "let", "loop", "match", "mod",
+            "move", "mut", "pub", "ref", "return", "self", "Self", "static", "struct", "super",
+            "trait", "true", "type", "unsafe", "use", "where", "while", "abstract", "become",
+            "box", "do", "final", "macro", "override", "priv", "try", "typeof", "unsized",
+            "virtual", "yield", "gen",
         ]
         .contains(&s)
 }
@@ -335,6 +356,34 @@ pub fn check_id(s: &str) -> Result<()> {
         return Err(err(format!("invalid identifier: {s}")));
     }
     Ok(())
+}
+// Match the public PAC value-type spelling. Reject collisions before emitting
+// Rust, rather than discovering malformed data only in a consumer compilation.
+fn type_name(name: &str) -> String {
+    name.split('_')
+        .filter_map(|part| {
+            let mut chars = part.chars();
+            chars.next().map(|first| {
+                first.to_ascii_uppercase().to_string()
+                    + &chars.map(|c| c.to_ascii_lowercase()).collect::<String>()
+            })
+        })
+        .collect()
+}
+fn claim_name(names: &mut BTreeSet<String>, name: String, context: &str) -> Result<()> {
+    if !names.insert(name.clone()) {
+        return Err(err(format!("{context}: generated name collision: {name}")));
+    }
+    Ok(())
+}
+fn accessor(name: &str) -> Result<String> {
+    let name = name.to_ascii_lowercase();
+    // Other Rust keywords can use raw identifiers; these path/self keywords
+    // cannot. A lone underscore is never an item identifier.
+    if ["self", "super", "crate", "_"].contains(&name.as_str()) {
+        return Err(err(format!("invalid generated accessor: {name}")));
+    }
+    Ok(name)
 }
 fn unique<'a>(values: impl Iterator<Item = &'a str>, label: &str) -> Result<()> {
     let mut seen = BTreeSet::new();
@@ -353,6 +402,14 @@ pub fn validate(ir: &Ir) -> Result<()> {
     }
     check_id(&ir.chip.name)?;
     check_id(&ir.family.name)?;
+    if ir.chip.family != ir.family.name {
+        return Err(err("chip/family identity mismatch"));
+    }
+    if ir.family.core != "Cortex-M0+" || ir.family.target != "thumbv6m-none-eabi" {
+        return Err(err(
+            "unsupported core/target for the Cortex-M0+ PAC runtime",
+        ));
+    }
     unique(
         ir.family.peripherals.iter().map(|x| x.name.as_str()),
         "peripheral",
@@ -367,14 +424,33 @@ pub fn validate(ir: &Ir) -> Result<()> {
     )?;
     unique(ir.chip.memory.iter().map(|x| x.name.as_str()), "memory")?;
     unique(ir.chip.pins.iter().map(|x| x.name.as_str()), "pin")?;
+    let mut types = BTreeSet::from([
+        "common".into(),
+        "Interrupt".into(),
+        "interrupt".into(),
+        "runtime".into(),
+        "metadata".into(),
+    ]);
+    for block in ir.blocks.values() {
+        claim_name(&mut types, block.name.clone(), "PAC module")?;
+    }
+    let mut values = BTreeSet::from(["UNKNOWN_RESET".into()]);
+    for constant in &ir.family.constants {
+        claim_name(&mut values, constant.name.clone(), "PAC constant")?;
+    }
+    for peripheral in &ir.family.peripherals {
+        claim_name(&mut values, peripheral.name.clone(), "PAC instance")?;
+        claim_name(&mut values, format!("{}_BASE", peripheral.name), "PAC base")?;
+    }
     let mut irq_numbers = BTreeSet::new();
     for i in &ir.family.interrupts {
-        if i.number > 31 || !irq_numbers.insert(i.number) {
+        if i.number > 31 || !irq_numbers.insert(i.number) || i.name == "__INTERRUPTS" {
             return Err(err("invalid or duplicate Cortex-M0+ external IRQ number"));
         }
     }
     for p in &ir.family.peripherals {
-        if p.address % 4 != 0
+        if p.address > u32::MAX as usize
+            || p.address % 4 != 0
             || p.clock_bit.is_some_and(|x| x >= 32)
             || p.pulldown_mask & !p.implemented_mask != 0
         {
@@ -460,7 +536,7 @@ pub fn validate(ir: &Ir) -> Result<()> {
             .address
             .checked_add(m.size)
             .ok_or_else(|| err("memory overflow"))?;
-        if m.size == 0 || end > (u32::MAX as usize) {
+        if m.size == 0 || end.saturating_sub(1) > u32::MAX as usize {
             return Err(err("invalid memory region"));
         }
         for n in &ir.chip.memory[..index] {
@@ -553,12 +629,18 @@ fn validate_reset(
 
 fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
     let mut local = BTreeMap::new();
+    let mut filenames = BTreeSet::new();
     for (key, b) in &ir.blocks {
         check_id(&b.name)?;
         check_id(&b.version)?;
         if *key != b.name {
             return Err(err("register block map key/name mismatch"));
         }
+        claim_name(
+            &mut filenames,
+            format!("{}_{}", b.name, b.version),
+            "register artifact filename",
+        )?;
         unique(
             b.registers
                 .iter()
@@ -574,17 +656,23 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
             .map(|r| &r.name)
             .chain(b.blocks.iter().map(|item| &item.name))
         {
-            if !methods.insert(name.to_ascii_lowercase()) {
+            if !methods.insert(accessor(name)?) {
                 return Err(err(format!(
                     "{}: duplicate register/subblock accessor {name}",
                     b.name
                 )));
             }
         }
+        check_id(&type_name(&b.name))?;
+        let mut value_types = BTreeSet::new();
+        let mut enum_types = BTreeSet::new();
         let mut original_names = BTreeSet::new();
         let mut ranges = Vec::new();
         // Validate all element counts and widths before resolving alias targets.
         for r in &b.registers {
+            let value_type = type_name(&r.name);
+            check_id(&value_type)?;
+            claim_name(&mut value_types, value_type.clone(), "register value type")?;
             if ![8, 16, 32].contains(&r.bit_size) {
                 return Err(err("register access width must be 8, 16 or 32 bits"));
             }
@@ -640,8 +728,17 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                 return Err(err("register behavior conflicts with access direction"));
             }
             unique(r.fields.iter().map(|f| f.name.as_str()), "field")?;
+            let mut field_methods = BTreeSet::from(["from_bits".into(), "bits".into()]);
             let mut occupied = 0u32;
             for f in &r.fields {
+                let method = accessor(&f.name)?;
+                claim_name(&mut field_methods, method.clone(), "field accessor")?;
+                claim_name(&mut field_methods, format!("set_{method}"), "field setter")?;
+                if f.kind == "enum" {
+                    let enum_type = format!("{value_type}{}", type_name(&f.name));
+                    check_id(&enum_type)?;
+                    claim_name(&mut enum_types, enum_type, "field enum type")?;
+                }
                 if f.bit_size == 0
                     || u16::from(f.bit_offset) + u16::from(f.bit_size) > u16::from(r.bit_size)
                     || !["rw", "ro", "wo"].contains(&f.access.as_str())
@@ -659,8 +756,11 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                 unique(f.values.iter().map(|v| v.name.as_str()), "enum variant")?;
                 let mut values = BTreeSet::new();
                 for v in &f.values {
-                    if v.value > (u32::MAX >> (32 - f.bit_size)) || !values.insert(v.value) {
-                        return Err(err("invalid/duplicate enum value"));
+                    if v.value > (u32::MAX >> (32 - f.bit_size))
+                        || !values.insert(v.value)
+                        || ["from_bits", "to_bits"].contains(&v.name.as_str())
+                    {
+                        return Err(err("invalid/duplicate enum value or reserved variant"));
                     }
                 }
                 let (len, stride) = f
@@ -898,6 +998,49 @@ fn validate_peripheral_relationships(
         .map(|p| (p.name.as_str(), p))
         .collect();
     for p in &ir.family.peripherals {
+        if let Some(connections) = &p.comparator {
+            if p.block != "vc"
+                || connections.source.trim().is_empty()
+                || (connections.reference.is_none() && connections.dac.is_none())
+            {
+                return Err(err(
+                    "comparator connections require VC source, a connection and evidence",
+                ));
+            }
+            if let Some(name) = &connections.reference {
+                let reference = peripherals
+                    .get(name.as_str())
+                    .ok_or_else(|| err("unknown comparator reference peripheral"))?;
+                if name == &p.name || reference.block != "vcref" {
+                    return Err(err(
+                        "comparator reference must target a distinct VCREF peripheral",
+                    ));
+                }
+            }
+            if let Some(connection) = &connections.dac {
+                let dac = peripherals
+                    .get(connection.peripheral.as_str())
+                    .ok_or_else(|| err("unknown comparator DAC peripheral"))?;
+                if connection.peripheral == p.name || dac.block != "dac" || connection.channel == 0
+                {
+                    return Err(err(
+                        "comparator DAC must target a distinct DAC hardware channel",
+                    ));
+                }
+                let block = &ir.blocks[&dac.block];
+                for prefix in ["DOR", "DHR12R"] {
+                    let name = format!("{prefix}{}", connection.channel);
+                    if !block.registers.iter().any(|register| {
+                        (register.array.is_none() && register.name == name)
+                            || register.elements.iter().any(|element| element.name == name)
+                    }) {
+                        return Err(err(
+                            "comparator DAC channel lacks its modeled output/holding register",
+                        ));
+                    }
+                }
+            }
+        }
         unique(
             p.reset_effects.iter().map(|e| e.peripheral.as_str()),
             "reset effect",

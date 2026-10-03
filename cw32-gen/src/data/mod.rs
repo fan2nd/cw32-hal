@@ -121,14 +121,29 @@ pub fn generate(root: &Path, chip: &str, out: &Path) -> Result<std::path::PathBu
 pub fn generate_many(root: &Path, chips: &[&str], out: &Path) -> Result<Vec<std::path::PathBuf>> {
     let mut names = std::collections::BTreeSet::new();
     let mut definitions = BTreeMap::new();
+    let mut chip_paths = std::collections::BTreeSet::new();
+    let mut register_paths = BTreeMap::new();
     let mut irs = Vec::new();
     for chip in chips {
         if !names.insert(*chip) {
             return Err(err("duplicate chip in publication set"));
         }
         let ir = load(root, chip)?;
+        if !chip_paths.insert(ir.chip.name.to_ascii_lowercase()) {
+            return Err(err(
+                "chip names collide after output filename normalization",
+            ));
+        }
         for b in ir.blocks.values() {
             let key = (b.name.clone(), b.version.clone());
+            let path = format!("{}_{}", b.name, b.version);
+            if register_paths
+                .get(&path)
+                .is_some_and(|previous| previous != &key)
+            {
+                return Err(err(format!("register artifact filename collision: {path}")));
+            }
+            register_paths.insert(path, key.clone());
             let bytes = serde_json::to_vec(b)?;
             if definitions.get(&key).is_some_and(|old| *old != bytes) {
                 return Err(err(format!(

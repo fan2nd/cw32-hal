@@ -169,11 +169,17 @@ impl<'d> ThreePhasePwm<'d> {
         pac::ATIM.af1().write(|v| v.set_bkine(true));
         // Deliberately disable BK2INE, which is set in the AF2 reset word.
         pac::ATIM.af2().write_value(regs::Af2(0));
-        // TRGO=update, usable by ADC even while phase outputs remain disabled.
-        pac::ATIM.cr2().write(|v| v.set_mms(2));
+        // Both MMS=reset and MMS=update propagate UG. Gate TRGO/TRGO2 to
+        // stopped CNT_EN while loading preloads, before connecting ADC triggers.
+        pac::ATIM.cr2().write(|v| {
+            v.set_mms(1);
+            v.set_mms2(1);
+        });
         pac::ATIM.egr().write(|v| v.set_ug(true));
         // R1W0: preserve every unrelated flag with the documented reset word.
         pac::ATIM.icr().write(|v| v.set_uif(false));
+        // Only real updates emit TRGO. No further software UG is used by this driver.
+        pac::ATIM.cr2().write(|v| v.set_mms(2));
         let pins = [
             a.into(),
             b.into(),

@@ -1,4 +1,4 @@
-# CW32F030C8 support (v0.13.1)
+# CW32F030C8 support (v0.14.0)
 
 ## Chip identity and build
 
@@ -15,7 +15,7 @@ cargo check -p embassy-cw32 --features cw32f030c8
 ```
 
 Generation is still one Rust `cw32-gen` crate, two real file stages:
-YAML -> schema-6 normalized JSON -> read/validate JSON -> PAC/metadata.
+YAML -> schema-7 normalized JSON -> read/validate JSON -> PAC/metadata.
 Normal PAC builds consume those pre-generated artifacts and do not parse
 YAML or JSON. Generated trees and Cargo.lock are ignored and not shipped.
 
@@ -79,7 +79,7 @@ implementation; an unproven global inhibit sequence is not silently substituted.
 
 Accordingly this version's strict `set_duty([u16; 3])` returns `Busy` while outputs
 are enabled. With outputs disabled it stops the counter, temporarily gates ADC
-triggering, writes the three preloads, issues one UG to load them, clears that
+and timer-master triggering, writes the three preloads, issues one UG to load them, clears that
 software update and restores the prior trigger/counter settings. This can change
 PWM phase and ADC trigger spacing. It is **not** a disturbance-free running FOC
 control loop. `timer::simple_pwm::SimplePwm` exposes ordinary single-channel buffered
@@ -139,3 +139,7 @@ subset. Current verification uses ARM build/link checks.
 See [v0.13.0 validation](validation-v0.13.0.md) for the executed checks. No board
 was connected: compile, simulated race tests and ELF vectors do not establish
 actual silicon timing, motor safety or electrical correctness.
+
+The time driver returns zero before initialization and retains pre-init alarms.
+Queue saturation can wake a task early to retry; it does not expire the stored
+deadline early. Waker clone/drop/wake callbacks run outside borrowed state.

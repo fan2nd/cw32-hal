@@ -53,11 +53,11 @@ fn copy_tree(src: &Path, dst: &Path) -> Result<()> {
 fn regenerate(root: &Path, check: bool) -> Result<()> {
     let temp = Temp::new()?;
     let data = temp.0.join("data");
-    let pac = temp.0.join("chips");
+    let pac = temp.0.join("pac");
     cw32_gen::generate(&root.join("cw32-data"), "all", &data, &pac)?;
     for (src, dst) in [
         (data, root.join("generated-data")),
-        (pac, root.join("cw32-metapac/src/chips")),
+        (pac, root.join("cw32-metapac/generated")),
     ] {
         if check {
             let expected = files(&src)?;

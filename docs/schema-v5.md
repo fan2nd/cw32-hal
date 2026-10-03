@@ -1,3 +1,5 @@
+> Current whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
+
 > Indexed-model history: schema 6 preserves this model and adds explicit reset cross-effects. See [schema-v6.md](schema-v6.md).
 
 # Normalized schema v5 and PAC structure

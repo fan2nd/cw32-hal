@@ -38,11 +38,12 @@ pub fn generate_data(source: &Path, selector: &str, json: &Path) -> Result<Vec<S
 }
 
 /// Run both stages, retaining and re-reading normalized JSON before any render.
-/// PAC output contains a subdirectory per selected chip.
+/// PAC output shares common code and kind/version modules across chip roots.
 pub fn generate(source: &Path, selector: &str, json: &Path, output: &Path) -> Result<()> {
     let names = generate_data(source, selector, json)?;
-    for name in names {
-        pac::generate_from_json(&json.join(format!("chips/{name}.json")), &output.join(name))?;
-    }
-    Ok(())
+    let paths = names
+        .iter()
+        .map(|name| json.join(format!("chips/{name}.json")))
+        .collect::<Vec<_>>();
+    pac::generate_many_from_json(&paths, output)
 }
