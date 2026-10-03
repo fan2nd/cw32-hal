@@ -28,8 +28,10 @@ macro_rules! l012_common {
         fn configure_pwm(self) {
             for n in 0..2 {
                 self.ccmr_cmp(n).write(|v| {
-                    v.set_ocm(0, 6);
-                    v.set_ocm(1, 6);
+                    v.set_ocm(0, vals::CcmrCmpOcm::PWM1);
+                    v.set_ocm(1, vals::CcmrCmpOcm::PWM1);
+                    v.set_ocmh(0, false);
+                    v.set_ocmh(1, false);
                     v.set_ocpe(0, true);
                     v.set_ocpe(1, true);
                 });
@@ -44,24 +46,22 @@ macro_rules! l012_common {
             // Disable before any mode write. This also makes endpoint changes
             // safe when their requested duty differs from the active mode.
             if !enabled {
-                self.ccer().modify(|v| match channel {
-                    0 => v.set_cc1e(false),
-                    1 => v.set_cc2e(false),
-                    2 => v.set_cc3e(false),
-                    3 => v.set_cc4e(false),
-                    _ => unreachable!(),
-                });
+                self.ccer().modify(|v| v.set_cce(channel, false));
             } else {
                 // CCxNP/CCxP/CCxNE remain zero: only main active-high outputs.
-                self.ccmr_cmp(channel / 2)
-                    .modify(|v| v.set_ocm(channel % 2, if duty == 65536 { 5 } else { 6 }));
-                self.ccer().modify(|v| match channel {
-                    0 => v.set_cc1e(true),
-                    1 => v.set_cc2e(true),
-                    2 => v.set_cc3e(true),
-                    3 => v.set_cc4e(true),
-                    _ => unreachable!(),
+                self.ccmr_cmp(channel / 2).modify(|v| {
+                    // These named modes use the base OCMH=0 encoding.
+                    v.set_ocmh(channel % 2, false);
+                    v.set_ocm(
+                        channel % 2,
+                        if duty == 65536 {
+                            vals::CcmrCmpOcm::FORCE_ACTIVE
+                        } else {
+                            vals::CcmrCmpOcm::PWM1
+                        },
+                    );
                 });
+                self.ccer().modify(|v| v.set_cce(channel, true));
             }
         }
     };

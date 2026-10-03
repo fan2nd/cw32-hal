@@ -55,13 +55,8 @@ impl<T: Instance> AdcScan<T> {
     pub unsafe fn configure(&mut self, config: ScanConfig<'_>) {
         assert!(!config.slots.is_empty() && config.slots.len() <= 8);
         assert!(config.slots.iter().all(|s| s.channel < 16));
-        #[cfg(sysctrl_l012)]
-        critical_section::with(|_| {
-            let mut gate = pac::SYSCTRL.apben1().read();
-            gate.set_key(0x5a5a);
-            gate.set_adc(true);
-            pac::SYSCTRL.apben1().write_value(gate);
-        });
+        let mut clock = <T as crate::rcc::PeripheralClock>::acquire_no_reset();
+        clock.pin();
         let r = self.regs;
         r.trigger().write(|_| {});
         r.start().write(|w| w.set_start(false));
@@ -69,7 +64,7 @@ impl<T: Instance> AdcScan<T> {
         let mut control = r.cr().read();
         control.set_slave(false);
         control.set_ens(0);
-        control.set_clk(0);
+        control.set_clk(pac::adc::vals::CrClk::DIV1);
         control.set_cont(false);
         control.set_en(false);
         r.cr().write_value(control);
@@ -85,7 +80,7 @@ impl<T: Instance> AdcScan<T> {
             }
         });
         self.clear_events();
-        control.set_clk(config.divider as u8);
+        control.set_clk(config.divider.register_value());
         control.set_ens(config.slots.len() as u8 - 1);
         control.set_en(true);
         r.cr().write_value(control);
@@ -112,7 +107,7 @@ impl<T: Instance> AdcScan<T> {
     /// Select only ATIM OC4REFC rising-edge triggering. PWM1 usually rises at
     /// reload; this does not promise a sample at CNT == CCR4.
     pub fn trigger_from_pwm(&mut self) {
-        self.regs.trigger().write(|w| w.set_atimoc4refc(true));
+        self.regs.trigger().write(|w| w.set_atim_ocref(3, true));
     }
     /// Start once without clearing flags or changing the hardware trigger route.
     /// A busy conversion may coalesce/ignore the request, as on the peripheral.

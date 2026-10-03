@@ -21,13 +21,8 @@ pub enum NegativeInput {
 /// external feedback must be physically present, and the bridge must be off.
 /// Wait the required analog startup time before using conversion results.
 pub unsafe fn configure_current_sense(positive: PositiveInput, negative: NegativeInput) {
-    #[cfg(sysctrl_l012)]
-    critical_section::with(|_| {
-        let mut gate = pac::SYSCTRL.apben2().read();
-        gate.set_key(0x5a5a);
-        gate.set_opa(true);
-        pac::SYSCTRL.apben2().write_value(gate);
-    });
+    let mut clock = <crate::peripherals::OPA1 as crate::rcc::PeripheralClock>::acquire_no_reset();
+    clock.pin();
     pac::BGR.cr().modify(|w| w.set_bgren(true));
     // Keep the audited reset bias (BIAS=7), as the prior PAC write closures did.
     let mut control = pac::opa::regs::Cr::default();

@@ -21,7 +21,7 @@ embassy_cw32::bind_interrupts!(
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
     let mut config = embassy_cw32::Config::default();
-    config.rcc.hsi_frequency = embassy_cw32::rcc::HsiFrequency::Mhz96;
+    config.rcc.hsi_divider = embassy_cw32::rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
     let dma_channels = embassy_cw32::dma::split(p.DMA);

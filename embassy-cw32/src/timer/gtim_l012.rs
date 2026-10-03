@@ -1,6 +1,6 @@
 //! GTIM L012, CW32L012 RM1.4 chapter 16.
 use super::TimerRegisters;
-use crate::pac::gtim::{regs, Gtim};
+use crate::pac::gtim::{regs, vals, Gtim};
 
 impl TimerRegisters for Gtim {
     l012_common!();

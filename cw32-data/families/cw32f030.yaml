@@ -3,6 +3,10 @@ core: Cortex-M0+
 target: thumbv6m-none-eabi
 peripherals:
 - name: ADC
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: adc
   version: sdk_v2_2
   vendor_ip: ADC
@@ -29,6 +33,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: ADC
 - name: ATIM
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: atim
   version: sdk_v2_2
   vendor_ip: ATIM
@@ -48,6 +56,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: ATIM
 - name: AWT
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: awt
   version: sdk_v2_2
   vendor_ip: AWT
@@ -67,6 +79,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: AWT
 - name: BTIM1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
   version: sdk_v2_2
   vendor_ip: BTIM
@@ -86,6 +102,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM1
 - name: BTIM2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
   version: sdk_v2_2
   vendor_ip: BTIM
@@ -105,6 +125,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM2
 - name: BTIM3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
   version: sdk_v2_2
   vendor_ip: BTIM
@@ -124,6 +148,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM3
 - name: CRC
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: crc
   version: sdk_v2_2
   vendor_ip: CRC
@@ -141,6 +169,10 @@ peripherals:
     bit: 2
   interrupts: []
 - name: DMA
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dma
   version: sdk_v2_2
   vendor_ip: DMA
@@ -317,6 +349,10 @@ peripherals:
       signal: CH4
       selector: 42
 - name: DMACHANNEL1
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
   version: sdk_v2_2
   vendor_ip: DMACHANNEL
@@ -337,6 +373,10 @@ peripherals:
     interrupt: DMACH1
   ownership_parent: DMA
 - name: DMACHANNEL2
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
   version: sdk_v2_2
   vendor_ip: DMACHANNEL
@@ -357,6 +397,10 @@ peripherals:
     interrupt: DMACH23
   ownership_parent: DMA
 - name: DMACHANNEL3
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
   version: sdk_v2_2
   vendor_ip: DMACHANNEL
@@ -377,6 +421,10 @@ peripherals:
     interrupt: DMACH23
   ownership_parent: DMA
 - name: DMACHANNEL4
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
   version: sdk_v2_2
   vendor_ip: DMACHANNEL
@@ -397,6 +445,10 @@ peripherals:
     interrupt: DMACH45
   ownership_parent: DMA
 - name: DMACHANNEL5
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
   version: sdk_v2_2
   vendor_ip: DMACHANNEL
@@ -417,6 +469,10 @@ peripherals:
     interrupt: DMACH45
   ownership_parent: DMA
 - name: FLASH
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: flash
   version: sdk_v2_2
   vendor_ip: FLASH
@@ -436,6 +492,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: GPIOA
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000ffff
@@ -475,6 +535,10 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOB
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000ffff
@@ -514,6 +578,10 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOC
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000e000
@@ -553,6 +621,10 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOF
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   register_resets:
   - register: DIR
     reset_value: 0x000000cb
@@ -595,6 +667,10 @@ peripherals:
     description: Raw GPIOF registers describe PF3, but datasheet Rev 1.9 classifies PF03/BOOT as dedicated BOOT. The family mask is register capability only; CW32F030C8 die pins exclude PF3 and safe HAL must not expose it as GPIO.
     source: CW32F030 DS Rev 1.9 Table 3-1 versus RM Rev 2.5 GPIO AF table and SDK GPIOF struct
 - name: GTIM1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
   version: sdk_v2_2
   vendor_ip: GTIM
@@ -614,6 +690,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM1
 - name: GTIM2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
   version: sdk_v2_2
   vendor_ip: GTIM
@@ -633,6 +713,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM2
 - name: GTIM3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
   version: sdk_v2_2
   vendor_ip: GTIM
@@ -652,6 +736,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM3
 - name: GTIM4
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
   version: sdk_v2_2
   vendor_ip: GTIM
@@ -671,6 +759,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM4
 - name: I2C1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; section 20.4.2 confirms the serial clock generator uses PCLK
   block: i2c
   version: sdk_v2_2
   vendor_ip: I2C
@@ -690,6 +782,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: I2C1
 - name: I2C2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; section 20.4.2 confirms the serial clock generator uses PCLK
   block: i2c
   version: sdk_v2_2
   vendor_ip: I2C
@@ -709,6 +805,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: I2C2
 - name: IWDT
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: iwdt
   version: sdk_v2_2
   vendor_ip: IWDT
@@ -750,6 +850,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: RTC
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: rtc
   version: sdk_v2_2
   vendor_ip: RTC
@@ -769,6 +873,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: RTC
 - name: SPI1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: spi
   version: sdk_v2_2
   vendor_ip: SPI
@@ -788,6 +896,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: SPI1
 - name: SPI2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: spi
   version: sdk_v2_2
   vendor_ip: SPI
@@ -820,6 +932,10 @@ peripherals:
   - signal: FAULT
     interrupt: FAULT
 - name: UART1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
   version: sdk_v2_2
   vendor_ip: UART
@@ -839,6 +955,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART1
 - name: UART2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
   version: sdk_v2_2
   vendor_ip: UART
@@ -858,6 +978,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART2
 - name: UART3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
   version: sdk_v2_2
   vendor_ip: UART
@@ -877,6 +1001,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART3
 - name: VC1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: vc
   version: sdk_v2_2
   vendor_ip: VC
@@ -900,6 +1028,10 @@ peripherals:
     description: VC1 and VC2 share the reference divider and ADC bandgap resource; raw per-instance DIV views do not grant independent ownership of shared configuration.
     source: CW32x030 RM Rev 2.5 23.3 and 23.7.1
 - name: VC2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: vc
   version: sdk_v2_2
   vendor_ip: VC
@@ -923,6 +1055,10 @@ peripherals:
     description: VC1 and VC2 share the reference divider and ADC bandgap resource; raw per-instance DIV views do not grant independent ownership of shared configuration.
     source: CW32x030 RM Rev 2.5 23.3 and 23.7.1
 - name: WWDT
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: wwdt
   version: sdk_v2_2
   vendor_ip: WWDT

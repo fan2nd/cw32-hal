@@ -197,8 +197,10 @@ pub(crate) fn quarantine_for_controller_reset(state: &ChannelState) {
 include!(concat!(env!("OUT_DIR"), "/_generated_dma.rs"));
 
 /// Consume exclusive controller ownership and produce disjoint channel tokens.
-/// The shared clock stays enabled. No channel may reset the controller or disable
-/// another channel's IRQ. Existing software poison is never cleared here.
+/// Each constructed channel retains the shared clock; unused channel tokens
+/// retain no gate. The final clean owner releases it, while quarantine pins it
+/// permanently. No channel may reset the controller or disable another channel's
+/// IRQ. Existing software poison is never cleared here.
 pub fn split<'d>(_controller: Peri<'d, Controller>) -> Channels<'d> {
     initialize_controller();
     // SAFETY: the sole controller token covers every generated descendant;
@@ -210,12 +212,14 @@ pub fn split<'d>(_controller: Peri<'d, Controller>) -> Channels<'d> {
 /// Blocking mode does not require or enable NVIC. Async mode requires the exact
 /// generated channel/IRQ binding, including every used channel on shared vectors.
 pub struct Channel<'d, C: Instance, M: Mode = Blocking> {
+    _clock: crate::rcc::ClockGuard,
     _token: Peri<'d, C>,
     _mode: PhantomData<M>,
 }
 impl<'d, C: Instance> Channel<'d, C, Blocking> {
     pub fn new_blocking(channel: Peri<'d, C>) -> Self {
         Self {
+            _clock: <Controller as crate::rcc::PeripheralClock>::acquire_no_reset(),
             _token: channel,
             _mode: PhantomData,
         }
@@ -230,6 +234,7 @@ impl<'d, C: Instance> Channel<'d, C, Async> {
         // SAFETY: Binding proves dispatch to the channel-specific handler.
         unsafe { C::Interrupt::enable() };
         Self {
+            _clock: <Controller as crate::rcc::PeripheralClock>::acquire_no_reset(),
             _token: channel,
             _mode: PhantomData,
         }
@@ -443,6 +448,9 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
 impl<C: Instance, M: Mode> Drop for Channel<'_, C, M> {
     fn drop(&mut self) {
         cancel_channel::<C>();
+        if C::state().phase() != Phase::Idle && C::state().phase() != Phase::Complete {
+            self._clock.pin();
+        }
     }
 }
 

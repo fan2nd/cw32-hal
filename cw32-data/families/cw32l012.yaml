@@ -4,6 +4,10 @@ core: Cortex-M0+
 target: thumbv6m-none-eabi
 peripherals:
 - name: ADC1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: adc
   version: l012
   address: 0x40000000
@@ -21,6 +25,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: ADC1
 - name: ADC2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: adc
   version: l012
   address: 0x40000100
@@ -38,6 +46,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: ADC2_DAC
 - name: ATIM
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: atim
   version: l012
   address: 0x40001400
@@ -62,6 +74,10 @@ peripherals:
   reset: null
   interrupts: []
 - name: BTIM1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: btim
   version: l012
   address: 0x40004800
@@ -79,6 +95,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM1
 - name: BTIM2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: btim
   version: l012
   address: 0x40004840
@@ -96,6 +116,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM2
 - name: BTIM3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: btim
   version: l012
   address: 0x40004880
@@ -113,6 +137,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM3_HALLTIM
 - name: CORDIC
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: cordic
   version: l012
   address: 0x40023400
@@ -130,6 +158,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: CORDIC
 - name: CRC
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: crc
   version: l012
   address: 0x40023000
@@ -145,6 +177,10 @@ peripherals:
     bit: 2
   interrupts: []
 - name: DAC
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dac
   version: l012
   address: 0x400000c0
@@ -162,6 +198,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: ADC2_DAC
 - name: DMA
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dma
   version: l012
   address: 0x40020000
@@ -397,6 +437,10 @@ peripherals:
       signal: RX
       selector: 63
 - name: DMACHANNEL1
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dmachannel
   version: l012
   address: 0x40020020
@@ -415,6 +459,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: DMACH12
 - name: DMACHANNEL2
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dmachannel
   version: l012
   address: 0x40020040
@@ -433,6 +481,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: DMACH12
 - name: DMACHANNEL3
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dmachannel
   version: l012
   address: 0x40020060
@@ -451,6 +503,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: DMACH34
 - name: DMACHANNEL4
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: dmachannel
   version: l012
   address: 0x40020080
@@ -469,6 +525,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: DMACH34
 - name: EAU
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: eau
   version: l012
   address: 0x40023200
@@ -484,6 +544,10 @@ peripherals:
     bit: 3
   interrupts: []
 - name: FLASH
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: hclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: flash
   version: l012
   address: 0x40022000
@@ -501,6 +565,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: GPIOA
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000ffff
@@ -529,6 +597,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOA
 - name: GPIOB
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000ffff
@@ -557,6 +629,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOB
 - name: GPIOC
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   register_resets:
   - register: DIR
     reset_value: 0x0000e000
@@ -591,6 +667,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOC
 - name: GPIOF
+  clock_tree:
+    bus_clock: hclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   register_resets:
   - register: DIR
     reset_value: 0x000000cb
@@ -625,6 +705,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOF
 - name: GTIM1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: gtim
   version: l012
   address: 0x40001800
@@ -642,6 +726,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM1
 - name: GTIM2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: gtim
   version: l012
   address: 0x40001c00
@@ -659,6 +747,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM2
 - name: GTIM3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: gtim
   version: l012
   address: 0x40002400
@@ -676,6 +768,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM34
 - name: GTIM4
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: gtim
   version: l012
   address: 0x40002800
@@ -693,6 +789,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM34
 - name: HALLTIM
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: halltim
   version: l012
   address: 0x40006400
@@ -710,6 +810,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: BTIM3_HALLTIM
 - name: I2C1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; sections 23.8.2 and 23.8.17 give independent master/slave clock muxes
   block: i2c
   version: l012
   address: 0x40005800
@@ -727,6 +831,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: I2C1
 - name: I2C2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; sections 23.8.2 and 23.8.17 give independent master/slave clock muxes
   block: i2c
   version: l012
   address: 0x40005c00
@@ -751,6 +859,10 @@ peripherals:
   reset: null
   interrupts: []
 - name: IWDT
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: iwdt
   version: l012
   address: 0x40005000
@@ -768,6 +880,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: WDT
 - name: LPTIM
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: lptim
   version: l012
   address: 0x40006000
@@ -794,6 +910,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: LVD
 - name: OPA1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   opa:
     dac:
       peripheral: DAC
@@ -814,6 +934,10 @@ peripherals:
     bit: 9
   interrupts: []
 - name: OPA2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   opa:
     dac:
       peripheral: DAC
@@ -843,6 +967,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: RTC
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: rtc
   version: l012
   address: 0x40004400
@@ -860,6 +988,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: RTC
 - name: SPI1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: spi
   version: l012
   address: 0x40000800
@@ -877,6 +1009,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: SPI1
 - name: SPI2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: spi
   version: l012
   address: 0x40000400
@@ -894,6 +1030,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: SPI23
 - name: SPI3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: spi
   version: l012
   address: 0x40003400
@@ -922,6 +1062,10 @@ peripherals:
   - signal: CLKFAULT
     interrupt: CLKFAULT
 - name: UART1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: uart
   version: l012
   address: 0x40000c00
@@ -939,6 +1083,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART1
 - name: UART2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: uart
   version: l012
   address: 0x40001000
@@ -956,6 +1104,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART2
 - name: UART3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: uart
   version: l012
   address: 0x40002000
@@ -973,6 +1125,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: UART3
 - name: VC1
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   comparator:
     reference: VC12REF
     dac:
@@ -996,6 +1152,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: VC13
 - name: VC12REF
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vcref
   version: l012
   address: 0x40000080
@@ -1011,6 +1171,10 @@ peripherals:
     bit: 1
   interrupts: []
 - name: VC2
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   comparator:
     reference: VC12REF
     dac:
@@ -1034,6 +1198,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: VC24
 - name: VC3
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   comparator:
     reference: VC34REF
     dac:
@@ -1057,6 +1225,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: VC13
 - name: VC34REF
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: vcref
   version: l012
   address: 0x40000180
@@ -1072,6 +1244,10 @@ peripherals:
     bit: 1
   interrupts: []
 - name: VC4
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: null
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   comparator:
     reference: VC34REF
     dac:
@@ -1095,6 +1271,10 @@ peripherals:
   - signal: GLOBAL
     interrupt: VC24
 - name: WWDT
+  clock_tree:
+    bus_clock: pclk
+    kernel_clock: pclk
+    source: CW32L012 RM1.4 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp26-27; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: wwdt
   version: l012
   address: 0x40005400

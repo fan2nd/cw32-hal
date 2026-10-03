@@ -13,7 +13,9 @@ mod sealed {
 
 /// Metadata-generated L012 basic timer identity and its actual IRQ vector.
 #[allow(private_bounds)]
-pub trait BasicTimerInstance: sealed::Instance + PeripheralType + 'static {
+pub trait BasicTimerInstance:
+    sealed::Instance + crate::rcc::KernelClock + PeripheralType + 'static
+{
     type Interrupt: Interrupt;
 }
 
@@ -41,13 +43,8 @@ impl<T: BasicTimerInstance> BasicTimer<T> {
     }
     /// Configure stopped repetitive counting; does not enable update IRQs.
     pub fn configure(&mut self, config: TimerConfig) {
-        #[cfg(sysctrl_l012)]
-        critical_section::with(|_| {
-            let mut gate = pac::SYSCTRL.apben2().read();
-            gate.set_key(0x5a5a);
-            gate.set_btim123(true);
-            pac::SYSCTRL.apben2().write_value(gate);
-        });
+        let mut clock = <T as crate::rcc::PeripheralClock>::acquire_no_reset();
+        clock.pin();
         let r = self.regs;
         r.cr1().write(|_| {});
         r.dier().write(|_| {});

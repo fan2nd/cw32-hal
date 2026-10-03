@@ -2,11 +2,12 @@ name: dmachannel
 version: l012
 registers:
 - name: CSR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: DSTLOAD
     bit_offset: 15
@@ -42,14 +43,40 @@ registers:
     bit_offset: 8
     bit_size: 3
     access: rw
-    kind: raw
-    description: "Terminal diagnostic: 0 initial, 1 address out of range, 2 transfer-stop request, 3 source access error, 4 destination access error, 5 complete. Not a BUSY flag; no documented drain guarantee. RM1.4 8.8.3 labels RW but gives no software-write semantics."
+    kind: enum
+    description: 'Terminal diagnostic: 0 initial, 1 address out of range, 2 transfer-stop request, 3 source access error,
+      4 destination access error, 5 complete. Not a BUSY flag; no documented drain guarantee. RM1.4 8.8.3 labels RW but
+      gives no software-write semantics.'
+    values:
+    - name: INITIAL
+      value: 0
+    - name: ADDRESS_OUT_OF_RANGE
+      value: 1
+    - name: TRANSFER_STOP
+      value: 2
+    - name: SOURCE_ACCESS_ERROR
+      value: 3
+    - name: DESTINATION_ACCESS_ERROR
+      value: 4
+    - name: COMPLETE
+      value: 5
+    values_source: CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: SIZE
     bit_offset: 6
     bit_size: 2
     access: rw
-    kind: raw
-    description: "0 selects 8-bit data and increment 1; 1 selects 16-bit data and increment 2; 2 selects 32-bit data and increment 4; 3 is not documented. RM1.4 8.8.3 specifies that transfer-width selection applies only to Flash/SRAM memory; address increment applies to all peripherals."
+    kind: enum
+    description: 0 selects 8-bit data and increment 1; 1 selects 16-bit data and increment 2; 2 selects 32-bit data and
+      increment 4; 3 is not documented. RM1.4 8.8.3 specifies that transfer-width selection applies only to Flash/SRAM
+      memory; address increment applies to all peripherals.
+    values:
+    - name: BITS8
+      value: 0
+    - name: BITS16
+      value: 1
+    - name: BITS32
+      value: 2
+    values_source: CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: DSTINC
     bit_offset: 5
     bit_size: 1
@@ -66,8 +93,15 @@ registers:
     bit_offset: 3
     bit_size: 1
     access: rw
-    kind: bool
-    description: "0 selects BULK (no inter-block arbitration gaps), 1 selects BLOCK (arbitration after each block). Hardware BLOCK requires a request for each block; software BLOCK needs one start for the full count."
+    kind: enum
+    description: 0 selects BULK (no inter-block arbitration gaps), 1 selects BLOCK (arbitration after each block). Hardware
+      BLOCK requires a request for each block; software BLOCK needs one start for the full count.
+    values:
+    - name: BULK
+      value: 0
+    - name: BLOCK
+      value: 1
+    values_source: CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: TEIE
     bit_offset: 2
     bit_size: 1
@@ -85,20 +119,23 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: "0 disables, 1 enables the channel. The manual does not specify disable acknowledgement, automatic clearing, or completion of outstanding bus writes."
+    description: 0 disables, 1 enables the channel. The manual does not specify disable acknowledgement, automatic clearing,
+      or completion of outstanding bus writes.
 - name: CNT
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.5, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.5, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: REPEAT
     bit_offset: 16
     bit_size: 4
     access: rw
     kind: raw
-    description: "Data items per block, nonzero and at most 15; total items CNT times REPEAT. Paced source or destination requires REPEAT=1. RM1.4 8.5.2 recommends 1 and 8.8.5 defines block size."
+    description: Data items per block, nonzero and at most 15; total items CNT times REPEAT. Paced source or destination
+      requires REPEAT=1. RM1.4 8.5.2 recommends 1 and 8.8.5 defines block size.
   - name: CNT
     bit_offset: 0
     bit_size: 16
@@ -106,11 +143,12 @@ registers:
     kind: raw
     description: Field CNT; raw encoding retained unless explicitly audited.
 - name: SRCADDR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.6, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.6, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 8
   access: rw
-  description: Register SRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register SRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics.
   fields:
   - name: SRCADDR
     bit_offset: 0
@@ -119,11 +157,12 @@ registers:
     kind: raw
     description: Field SRCADDR; raw encoding retained unless explicitly audited.
 - name: DSTADDR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.7, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.7, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 12
   access: rw
-  description: Register DSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register DSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics.
   fields:
   - name: DSTADDR
     bit_offset: 0
@@ -132,38 +171,179 @@ registers:
     kind: raw
     description: Field DSTADDR; raw encoding retained unless explicitly audited.
 - name: TRIG
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.4, printed p121 (PDF p147); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.4, printed p121 (PDF p147); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 16
   access: rw
-  description: 'Register TRIG; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Alias view of DMA.TRIG1..4. SOFTSRC write one triggers; zero does nothing; TYPE/HARDSRC are configuration. Must share ownership with parent DMA channel registers. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
+  description: 'Register TRIG; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Alias view of DMA.TRIG1..4. SOFTSRC write one triggers; zero does nothing; TYPE/HARDSRC are
+    configuration. Must share ownership with parent DMA channel registers. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
   fields:
   - name: HARDSRC
     bit_offset: 2
     bit_size: 6
     access: rw
-    kind: raw
-    description: "Six-bit controller-wide hardware request selector. Exact chip-specific routes are in the DMA instance metadata; not interchangeable between L012 and F030."
+    kind: enum
+    description: Six-bit controller-wide hardware request selector. Exact chip-specific routes are in the DMA instance
+      metadata; not interchangeable between L012 and F030.
+    values:
+    - name: UART1_RX
+      value: 0
+    - name: UART1_TX
+      value: 1
+    - name: UART2_RX
+      value: 2
+    - name: UART2_TX
+      value: 3
+    - name: UART3_RX
+      value: 4
+    - name: UART3_TX
+      value: 5
+    - name: SPI1_RX
+      value: 6
+    - name: SPI1_TX
+      value: 7
+    - name: SPI2_RX
+      value: 8
+    - name: SPI2_TX
+      value: 9
+    - name: SPI3_RX
+      value: 10
+    - name: SPI3_TX
+      value: 11
+    - name: ADC1_SEQUENCE
+      value: 12
+    - name: ADC1_SINGLE
+      value: 13
+    - name: ADC2_SEQUENCE
+      value: 14
+    - name: ADC2_SINGLE
+      value: 15
+    - name: DAC_DHR1_UNDERRUN
+      value: 16
+    - name: DAC_DHR2_UNDERRUN
+      value: 17
+    - name: HALLTIM_EVENT
+      value: 18
+    - name: BTIM1_UPDATE
+      value: 19
+    - name: BTIM1_TRIGGER
+      value: 20
+    - name: BTIM2_UPDATE
+      value: 21
+    - name: BTIM2_TRIGGER
+      value: 22
+    - name: BTIM3_UPDATE
+      value: 23
+    - name: BTIM3_TRIGGER
+      value: 24
+    - name: GTIM1_TRIGGER
+      value: 25
+    - name: GTIM1_UPDATE
+      value: 26
+    - name: GTIM1_CH1
+      value: 27
+    - name: GTIM1_CH2
+      value: 28
+    - name: GTIM1_CH3
+      value: 29
+    - name: GTIM1_CH4
+      value: 30
+    - name: GTIM2_TRIGGER
+      value: 31
+    - name: GTIM2_UPDATE
+      value: 32
+    - name: GTIM2_CH1
+      value: 33
+    - name: GTIM2_CH2
+      value: 34
+    - name: GTIM2_CH3
+      value: 35
+    - name: GTIM2_CH4
+      value: 36
+    - name: GTIM3_TRIGGER
+      value: 37
+    - name: GTIM3_UPDATE
+      value: 38
+    - name: GTIM3_CH1
+      value: 39
+    - name: GTIM3_CH2
+      value: 40
+    - name: GTIM3_CH3
+      value: 41
+    - name: GTIM3_CH4
+      value: 42
+    - name: GTIM4_TRIGGER
+      value: 43
+    - name: GTIM4_UPDATE
+      value: 44
+    - name: GTIM4_CH1
+      value: 45
+    - name: GTIM4_CH2
+      value: 46
+    - name: GTIM4_CH3
+      value: 47
+    - name: GTIM4_CH4
+      value: 48
+    - name: ATIM_UPDATE
+      value: 49
+    - name: ATIM_CH1
+      value: 50
+    - name: ATIM_CH2
+      value: 51
+    - name: ATIM_CH3
+      value: 52
+    - name: ATIM_CH4
+      value: 53
+    - name: ATIM_CH5
+      value: 54
+    - name: ATIM_CH6
+      value: 55
+    - name: ATIM_COM
+      value: 56
+    - name: ATIM_TRIGGER
+      value: 57
+    - name: CORDIC_IDLE
+      value: 58
+    - name: CORDIC_EOC
+      value: 59
+    - name: I2C1_TX
+      value: 60
+    - name: I2C1_RX
+      value: 61
+    - name: I2C2_TX
+      value: 62
+    - name: I2C2_RX
+      value: 63
+    values_source: CW32L012 RM1.4 sections 8.2, 8.7 and 8.8.4 (printed pp107,117,121), table 5-1; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: SOFTSRC
     bit_offset: 1
     bit_size: 1
     access: rw
     kind: bool
-    description: "Reads zero after transfer completion and one while transfer is in progress. Writing one software-triggers the channel; writing zero has no effect. Not documented as an abort or hardware-trigger drain acknowledgement."
+    description: Reads zero after transfer completion and one while transfer is in progress. Writing one software-triggers
+      the channel; writing zero has no effect. Not documented as an abort or hardware-trigger drain acknowledgement.
   - name: TYPE
     bit_offset: 0
     bit_size: 1
     access: rw
-    kind: bool
-    description: "0 selects software triggering by SOFTSRC; 1 selects hardware triggering by the HARDSRC request source."
+    kind: enum
+    description: 0 selects software triggering by SOFTSRC; 1 selects hardware triggering by the HARDSRC request source.
+    values:
+    - name: SOFTWARE
+      value: 0
+    - name: HARDWARE
+      value: 1
+    values_source: CW32L012 RM1.4 section 8.8.4, printed p121 (PDF p147); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: mixed
   read_behavior: ordinary
 - name: CCNT
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.8, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.8, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 20
   access: ro
-  description: Register CCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: CREPEAT
     bit_offset: 16
@@ -178,11 +358,12 @@ registers:
     kind: raw
     description: Field CCNT; raw encoding retained unless explicitly audited.
 - name: CSRCADDR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.9, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.9, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 24
   access: ro
-  description: Register CSRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CSRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics.
   fields:
   - name: CSRCADDR
     bit_offset: 0
@@ -191,11 +372,12 @@ registers:
     kind: raw
     description: Field CSRCADDR; raw encoding retained unless explicitly audited.
 - name: CDSTADDR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 8.8.10, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 8.8.10, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 28
   access: ro
-  description: Register CDSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CDSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics.
   fields:
   - name: CDSTADDR
     bit_offset: 0

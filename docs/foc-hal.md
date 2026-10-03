@@ -18,7 +18,7 @@ HAL build.rs generates sealed route traits from chip capability and pin-route me
 
 `init(Config) -> Peripherals` acquires resources; `try_init` is the fallible alternative. The configuration includes `config.rcc`, and `rcc::clocks()` returns the checked nominal clocks after successful initialization. There is no `Peripherals.clocks` field. The default clock is reset HSI/24 with undivided buses, nominally 4 MHz; the checked 96 MHz HSI/APB-div2 configuration is also supported. The RCC stabilization poll limit does not add arbitrary clock-tree support.
 
-All shared SYSCTRL read-modify-writes use critical sections, compatible with Cortex-M0+ without compare-and-swap. Clock gates are never disabled on driver drop. A reset marked shared in metadata is never asserted by a single-instance constructor: ADC1/2, OPA1/2 and VC/reference sibling drivers therefore cannot reset each other. Drivers initialize their own registers instead.
+All shared SYSCTRL read-modify-writes use critical sections, compatible with Cortex-M0+ without compare-and-swap. Counted clock guards preserve every live sibling; the final eligible owner shuts down its hardware before releasing the gate. Forgotten owners, unsafe motor takeover and ADC/DMA quarantine retain clocks. Independent ADC1/2, OPA1/2 and VC/reference siblings cannot reset each other. Drivers initialize their own registers instead; whole DMA-controller ownership is handled separately. See [RCC resources](rcc-resources.md).
 
 ## Specialized three-phase PWM behavior and limitations
 

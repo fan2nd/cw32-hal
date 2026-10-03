@@ -6,140 +6,206 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 8.8.1, printed p137 (PDF p138); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: ro
-  description: CW32F030 DMA.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 DMA.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: TE5
-    bit_offset: 17
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TE5; raw encoding.
-  - name: TC5
-    bit_offset: 16
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TC5; raw encoding.
-  - name: TE4
-    bit_offset: 13
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TE4; raw encoding.
-  - name: TC4
-    bit_offset: 12
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TC4; raw encoding.
-  - name: TE3
-    bit_offset: 9
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TE3; raw encoding.
-  - name: TC3
-    bit_offset: 8
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TC3; raw encoding.
-  - name: TE2
-    bit_offset: 5
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TE2; raw encoding.
-  - name: TC2
-    bit_offset: 4
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TC2; raw encoding.
-  - name: TE1
-    bit_offset: 1
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 DMA.ISR.TE1; raw encoding.
-  - name: TC1
+  - name: TC
     bit_offset: 0
     bit_size: 1
     access: ro
     kind: bool
-    description: CW32F030 DMA.ISR.TC1; raw encoding.
+    description: 'Per-channel transfer completion status. Index order: TC1, TC2, TC3, TC4, TC5.'
+    array:
+      len: 5
+      stride: 4
+    elements:
+    - name: TC1
+      bit_offset: 0
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TC1; raw encoding.
+      values: []
+    - name: TC2
+      bit_offset: 4
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TC2; raw encoding.
+      values: []
+    - name: TC3
+      bit_offset: 8
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TC3; raw encoding.
+      values: []
+    - name: TC4
+      bit_offset: 12
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TC4; raw encoding.
+      values: []
+    - name: TC5
+      bit_offset: 16
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TC5; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 8.8.1, printed p137 (PDF p138); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: TE
+    bit_offset: 1
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: 'Per-channel transfer error status. Index order: TE1, TE2, TE3, TE4, TE5.'
+    array:
+      len: 5
+      stride: 4
+    elements:
+    - name: TE1
+      bit_offset: 1
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TE1; raw encoding.
+      values: []
+    - name: TE2
+      bit_offset: 5
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TE2; raw encoding.
+      values: []
+    - name: TE3
+      bit_offset: 9
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TE3; raw encoding.
+      values: []
+    - name: TE4
+      bit_offset: 13
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TE4; raw encoding.
+      values: []
+    - name: TE5
+      bit_offset: 17
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 DMA.ISR.TE5; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 8.8.1, printed p137 (PDF p138); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: ICR
   reset_value: 4294967295
   reset_source: CW32x030 RM Rev2.5 section 8.8.2, printed p138 (PDF p139); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   reset_note: Full reset word includes unmodeled/reserved set bits 0xFFFCCCCC; retain them, do not mask to modeled fields.
   offset: 4
   access: rw
-  description: 'CW32F030 DMA.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
-    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
-    8.8.2; 1.2'
+  description: 'CW32F030 DMA.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing
+    one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source:
+    CW32x030 RM Rev 2.5 8.8.2; 1.2'
   fields:
-  - name: TE5
-    bit_offset: 17
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TE5; raw encoding.
-  - name: TC5
-    bit_offset: 16
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TC5; raw encoding.
-  - name: TE4
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TE4; raw encoding.
-  - name: TC4
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TC4; raw encoding.
-  - name: TE3
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TE3; raw encoding.
-  - name: TC3
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TC3; raw encoding.
-  - name: TE2
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TE2; raw encoding.
-  - name: TC2
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TC2; raw encoding.
-  - name: TE1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 DMA.ICR.TE1; raw encoding.
-  - name: TC1
+  - name: TC
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 DMA.ICR.TC1; raw encoding.
+    description: 'Per-channel transfer completion R1W0 acknowledgement: write zero to clear; one preserves. Index order:
+      TC1, TC2, TC3, TC4, TC5.'
+    array:
+      len: 5
+      stride: 4
+    elements:
+    - name: TC1
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TC1; raw encoding.
+      values: []
+    - name: TC2
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TC2; raw encoding.
+      values: []
+    - name: TC3
+      bit_offset: 8
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TC3; raw encoding.
+      values: []
+    - name: TC4
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TC4; raw encoding.
+      values: []
+    - name: TC5
+      bit_offset: 16
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TC5; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 8.8.2, printed p138 (PDF p139); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: TE
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-channel transfer error R1W0 acknowledgement: write zero to clear; one preserves. Index order: TE1,
+      TE2, TE3, TE4, TE5.'
+    array:
+      len: 5
+      stride: 4
+    elements:
+    - name: TE1
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TE1; raw encoding.
+      values: []
+    - name: TE2
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TE2; raw encoding.
+      values: []
+    - name: TE3
+      bit_offset: 9
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TE3; raw encoding.
+      values: []
+    - name: TE4
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TE4; raw encoding.
+      values: []
+    - name: TE5
+      bit_offset: 17
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 DMA.ICR.TE5; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 8.8.2, printed p138 (PDF p139); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   write_behavior: zero_to_clear
   read_behavior: ordinary
 constants: []

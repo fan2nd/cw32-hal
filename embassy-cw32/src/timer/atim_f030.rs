@@ -88,12 +88,7 @@ impl TimerRegisters for Atim {
         } else {
             6
         };
-        self.fltr().modify(|v| match channel {
-            0 => v.set_ocm1aflt1a(mode),
-            1 => v.set_ocm2aflt2a(mode),
-            2 => v.set_ocm3aflt3a(mode),
-            _ => unreachable!(),
-        });
+        self.fltr().modify(|v| v.set_ocmflta(channel, mode));
     }
     fn master_output(self, enabled: bool) {
         self.dtr().modify(|v| v.set_moe(enabled));

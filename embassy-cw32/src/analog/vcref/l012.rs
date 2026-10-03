@@ -28,6 +28,7 @@ fn divider_word(config: DividerConfig) -> Result<pac::vcref::regs::Ref, Error> {
 /// VC1/2 share one divider, VC3/4 another. A reference borrow prevents a live
 /// comparator's divider from being reconfigured or dropped by safe Rust.
 pub struct RefDivider<'d, I: RefInstance> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, I>,
 }
 impl<'d, I: RefInstance> RefDivider<'d, I> {
@@ -37,10 +38,11 @@ impl<'d, I: RefInstance> RefDivider<'d, I> {
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
         let word = divider_word(config)?;
-        I::enable_and_reset();
+        let clock = I::acquire();
         I::regs().r#ref().write_value(word);
         delay.delay_us(32);
         Ok(Self {
+            _clock: clock,
             _instance: instance,
         })
     }

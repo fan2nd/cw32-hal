@@ -65,7 +65,7 @@ pub mod timer;
 use core::cell::Cell;
 static TAKEN: critical_section::Mutex<Cell<bool>> = critical_section::Mutex::new(Cell::new(false));
 
-/// Initialization validates direct-reset HSI; L012 optionally selects an audited 96 MHz profile.
+/// Initialization validates direct-reset HSI, then applies the requested HSI/bus dividers.
 #[derive(Clone, Copy)]
 #[non_exhaustive]
 pub struct Config {
@@ -89,6 +89,9 @@ impl Default for Config {
 pub enum InitError {
     AlreadyTaken,
     Clock(rcc::ClockError),
+    /// Selected GTIM1 cannot produce the fixed 1 MHz Embassy timebase.
+    #[cfg(feature = "time-driver-gtim1")]
+    UnsupportedTimeClock,
 }
 
 // All device/peripheral/pin identities come from cw32-metapac metadata.
@@ -107,6 +110,10 @@ pub fn try_init(config: Config) -> Result<Peripherals, InitError> {
         let taken = TAKEN.borrow(cs);
         if taken.get() {
             return Err(InitError::AlreadyTaken);
+        }
+        #[cfg(feature = "time-driver-gtim1")]
+        if !time_driver::valid_clock(config.rcc.clocks()) {
+            return Err(InitError::UnsupportedTimeClock);
         }
         // SAFETY: exclusive global initialization, critical section held; the
         // clock routine validates reset state before applying vendor trim.

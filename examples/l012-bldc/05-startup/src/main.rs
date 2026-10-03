@@ -73,7 +73,7 @@ static mut DIAGNOSTICS: Diagnostics = Diagnostics {
 #[cortex_m_rt::entry]
 fn main() -> ! {
     let mut config = embassy_cw32::Config::default();
-    config.rcc.hsi_frequency = rcc::HsiFrequency::Mhz96;
+    config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
     let dma_channels = dma::split(p.DMA);

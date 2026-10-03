@@ -6,8 +6,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.5, printed p247 (PDF p248); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 768
   access: rw
-  description: CW32F030 GTIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: ARR
     bit_offset: 0
@@ -20,8 +20,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.6, printed p247 (PDF p248); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 772
   access: rw
-  description: CW32F030 GTIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: CNT
     bit_offset: 0
@@ -34,40 +34,158 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.4, printed p246 (PDF p247); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 776
   access: rw
-  description: CW32F030 GTIM.CMMR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-    for value encodings.
+  description: CW32F030 GTIM.CMMR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
-  - name: CC4M
-    bit_offset: 12
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CMMR.CC4M; raw encoding.
-  - name: CC3M
-    bit_offset: 8
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CMMR.CC3M; raw encoding.
-  - name: CC2M
-    bit_offset: 4
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CMMR.CC2M; raw encoding.
-  - name: CC1M
+  - name: CCM
     bit_offset: 0
     bit_size: 4
     access: rw
-    kind: raw
-    description: CW32F030 GTIM.CMMR.CC1M; raw encoding.
+    kind: enum
+    description: 'Capture/compare channel mode; forward PWM is high at CNT>=CCR, reverse PWM is high at CNT<CCR. Index
+      order: CC1M, CC2M, CC3M, CC4M.'
+    values:
+    - name: DISABLED
+      value: 0
+    - name: RISING_EDGE
+      value: 1
+    - name: FALLING_EDGE
+      value: 2
+    - name: BOTH_EDGES
+      value: 3
+    - name: FORCE_LOW
+      value: 8
+    - name: FORCE_HIGH
+      value: 9
+    - name: LOW_ON_MATCH
+      value: 10
+    - name: HIGH_ON_MATCH
+      value: 11
+    - name: PWM_FORWARD
+      value: 14
+    - name: PWM_REVERSE
+      value: 15
+    values_source: CW32x030 RM Rev2.5 section 14.8.4, printed p246 (PDF p247); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    array:
+      len: 4
+      stride: 4
+    elements:
+    - name: CC1M
+      bit_offset: 0
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: Capture/compare mode. PWM_FORWARD drives high at CNT>=CCR; PWM_REVERSE drives high at CNT<CCR.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: RISING_EDGE
+        value: 1
+      - name: FALLING_EDGE
+        value: 2
+      - name: BOTH_EDGES
+        value: 3
+      - name: FORCE_LOW
+        value: 8
+      - name: FORCE_HIGH
+        value: 9
+      - name: LOW_ON_MATCH
+        value: 10
+      - name: HIGH_ON_MATCH
+        value: 11
+      - name: PWM_FORWARD
+        value: 14
+      - name: PWM_REVERSE
+        value: 15
+    - name: CC2M
+      bit_offset: 4
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: Capture/compare mode. PWM_FORWARD drives high at CNT>=CCR; PWM_REVERSE drives high at CNT<CCR.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: RISING_EDGE
+        value: 1
+      - name: FALLING_EDGE
+        value: 2
+      - name: BOTH_EDGES
+        value: 3
+      - name: FORCE_LOW
+        value: 8
+      - name: FORCE_HIGH
+        value: 9
+      - name: LOW_ON_MATCH
+        value: 10
+      - name: HIGH_ON_MATCH
+        value: 11
+      - name: PWM_FORWARD
+        value: 14
+      - name: PWM_REVERSE
+        value: 15
+    - name: CC3M
+      bit_offset: 8
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: Capture/compare mode. PWM_FORWARD drives high at CNT>=CCR; PWM_REVERSE drives high at CNT<CCR.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: RISING_EDGE
+        value: 1
+      - name: FALLING_EDGE
+        value: 2
+      - name: BOTH_EDGES
+        value: 3
+      - name: FORCE_LOW
+        value: 8
+      - name: FORCE_HIGH
+        value: 9
+      - name: LOW_ON_MATCH
+        value: 10
+      - name: HIGH_ON_MATCH
+        value: 11
+      - name: PWM_FORWARD
+        value: 14
+      - name: PWM_REVERSE
+        value: 15
+    - name: CC4M
+      bit_offset: 12
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: Capture/compare mode. PWM_FORWARD drives high at CNT>=CCR; PWM_REVERSE drives high at CNT<CCR.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: RISING_EDGE
+        value: 1
+      - name: FALLING_EDGE
+        value: 2
+      - name: BOTH_EDGES
+        value: 3
+      - name: FORCE_LOW
+        value: 8
+      - name: FORCE_HIGH
+        value: 9
+      - name: LOW_ON_MATCH
+        value: 10
+      - name: HIGH_ON_MATCH
+        value: 11
+      - name: PWM_FORWARD
+        value: 14
+      - name: PWM_REVERSE
+        value: 15
+    array_source: CW32x030 RM Rev2.5 section 14.8.4, printed p246 (PDF p247); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: ETR
   reset_value: 0
   reset_source: CW32x030 RM Rev2.5 section 14.8.3, printed p246 (PDF p247); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 780
   access: rw
-  description: CW32F030 GTIM.ETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.ETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: ETRFLT
     bit_offset: 4
@@ -80,8 +198,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.1, printed p243 (PDF p244); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 784
   access: rw
-  description: CW32F030 GTIM.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: ENCRELOAD
     bit_offset: 19
@@ -141,8 +259,18 @@ registers:
     bit_offset: 1
     bit_size: 2
     access: rw
-    kind: raw
-    description: CW32F030 GTIM.CR0.MODE; raw encoding.
+    kind: enum
+    description: Counter clock/start mode. TIMER/TRIGGER_START/GATED use PCLK; COUNTER uses TRS.
+    values:
+    - name: TIMER
+      value: 0
+    - name: COUNTER
+      value: 1
+    - name: TRIGGER_START
+      value: 2
+    - name: GATED
+      value: 3
+    values_source: CW32x030 RM Rev2.5 section 14.8.1, printed p243 (PDF p244); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: EN
     bit_offset: 0
     bit_size: 1
@@ -154,8 +282,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.11, printed p248 (PDF p249); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 788
   access: rw
-  description: CW32F030 GTIM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: DIRCHANGE
     bit_offset: 9
@@ -163,30 +291,6 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 GTIM.IER.DIRCHANGE; raw encoding.
-  - name: CC4
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.IER.CC4; raw encoding.
-  - name: CC3
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.IER.CC3; raw encoding.
-  - name: CC2
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.IER.CC2; raw encoding.
-  - name: CC1
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.IER.CC1; raw encoding.
   - name: UD
     bit_offset: 2
     bit_size: 1
@@ -205,13 +309,52 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 GTIM.IER.OV; raw encoding.
+  - name: CC
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-channel capture/compare event control/status. Index order: CC1, CC2, CC3, CC4.'
+    array:
+      len: 4
+      stride: 1
+    elements:
+    - name: CC1
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.IER.CC1; raw encoding.
+      values: []
+    - name: CC2
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.IER.CC2; raw encoding.
+      values: []
+    - name: CC3
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.IER.CC3; raw encoding.
+      values: []
+    - name: CC4
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.IER.CC4; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.11, printed p248 (PDF p249); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: ISR
   reset_value: 0
   reset_source: CW32x030 RM Rev2.5 section 14.8.12, printed p249 (PDF p250); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 792
   access: rw
-  description: CW32F030 GTIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: DIR
     bit_offset: 10
@@ -225,30 +368,6 @@ registers:
     access: ro
     kind: bool
     description: CW32F030 GTIM.ISR.DIRCHANGE; raw encoding.
-  - name: CC4
-    bit_offset: 6
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GTIM.ISR.CC4; raw encoding.
-  - name: CC3
-    bit_offset: 5
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GTIM.ISR.CC3; raw encoding.
-  - name: CC2
-    bit_offset: 4
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GTIM.ISR.CC2; raw encoding.
-  - name: CC1
-    bit_offset: 3
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GTIM.ISR.CC1; raw encoding.
   - name: UD
     bit_offset: 2
     bit_size: 1
@@ -267,16 +386,55 @@ registers:
     access: ro
     kind: bool
     description: CW32F030 GTIM.ISR.OV; raw encoding.
+  - name: CC
+    bit_offset: 3
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: 'Per-channel capture/compare event control/status. Index order: CC1, CC2, CC3, CC4.'
+    array:
+      len: 4
+      stride: 1
+    elements:
+    - name: CC1
+      bit_offset: 3
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 GTIM.ISR.CC1; raw encoding.
+      values: []
+    - name: CC2
+      bit_offset: 4
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 GTIM.ISR.CC2; raw encoding.
+      values: []
+    - name: CC3
+      bit_offset: 5
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 GTIM.ISR.CC3; raw encoding.
+      values: []
+    - name: CC4
+      bit_offset: 6
+      bit_size: 1
+      access: ro
+      kind: bool
+      description: CW32F030 GTIM.ISR.CC4; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.12, printed p249 (PDF p250); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: ICR
   reset_value: 1023
   reset_source: CW32x030 RM Rev2.5 section 14.8.13, printed p250 (PDF p251); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   reset_note: Full reset word includes unmodeled/reserved set bits 0x00000180; retain them, do not mask to modeled fields.
   offset: 796
   access: rw
-  description: 'CW32F030 GTIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-    for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
-    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
-    14.8.13; 1.2'
+  description: 'CW32F030 GTIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing
+    one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source:
+    CW32x030 RM Rev 2.5 14.8.13; 1.2'
   fields:
   - name: DIRCHANGE
     bit_offset: 9
@@ -284,30 +442,6 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 GTIM.ICR.DIRCHANGE; raw encoding.
-  - name: CC4
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.ICR.CC4; raw encoding.
-  - name: CC3
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.ICR.CC3; raw encoding.
-  - name: CC2
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.ICR.CC2; raw encoding.
-  - name: CC1
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.ICR.CC1; raw encoding.
   - name: UD
     bit_offset: 2
     bit_size: 1
@@ -326,6 +460,45 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 GTIM.ICR.OV; raw encoding.
+  - name: CC
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-channel capture/compare event R1W0 acknowledgement. Index order: CC1, CC2, CC3, CC4.'
+    array:
+      len: 4
+      stride: 1
+    elements:
+    - name: CC1
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.ICR.CC1; raw encoding.
+      values: []
+    - name: CC2
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.ICR.CC2; raw encoding.
+      values: []
+    - name: CC3
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.ICR.CC3; raw encoding.
+      values: []
+    - name: CC4
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.ICR.CC4; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.13, printed p250 (PDF p251); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: CCR
@@ -347,26 +520,26 @@ registers:
     stride: 4
   elements:
   - name: CCR1
-    description: CW32F030 GTIM.CCR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-      for value encodings.
+    description: CW32F030 GTIM.CCR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
     reset_value: 65535
     reset_source: CW32x030 RM Rev2.5 section 14.8.7, printed p247 (PDF p248); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: CCR2
-    description: CW32F030 GTIM.CCR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-      for value encodings.
+    description: CW32F030 GTIM.CCR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 14.8.8, printed p247 (PDF p248); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: CCR3
-    description: CW32F030 GTIM.CCR3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-      for value encodings.
+    description: CW32F030 GTIM.CCR3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
     reset_value: 65535
     reset_source: CW32x030 RM Rev2.5 section 14.8.9, printed p247 (PDF p248); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: CCR4
-    description: CW32F030 GTIM.CCR4; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-      for value encodings.
+    description: CW32F030 GTIM.CCR4; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 14.8.10, printed p248 (PDF p249); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
@@ -377,89 +550,95 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 14.8.2, printed p245 (PDF p246); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 816
   access: rw
-  description: CW32F030 GTIM.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
-  - name: CH4POL
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.CR1.CH4POL; raw encoding.
-  - name: CH4FLT
-    bit_offset: 12
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CR1.CH4FLT; raw encoding.
-  - name: CH3POL
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.CR1.CH3POL; raw encoding.
-  - name: CH3FLT
-    bit_offset: 8
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CR1.CH3FLT; raw encoding.
-  - name: CH2POL
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.CR1.CH2POL; raw encoding.
-  - name: CH2FLT
-    bit_offset: 4
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: CW32F030 GTIM.CR1.CH2FLT; raw encoding.
-  - name: CH1POL
+  - name: CHPOL
     bit_offset: 3
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GTIM.CR1.CH1POL; raw encoding.
-  - name: CH1FLT
+    description: 'Per-channel input polarity. Index order: CH1POL, CH2POL, CH3POL, CH4POL.'
+    array:
+      len: 4
+      stride: 4
+    elements:
+    - name: CH1POL
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.CR1.CH1POL; raw encoding.
+      values: []
+    - name: CH2POL
+      bit_offset: 7
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.CR1.CH2POL; raw encoding.
+      values: []
+    - name: CH3POL
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.CR1.CH3POL; raw encoding.
+      values: []
+    - name: CH4POL
+      bit_offset: 15
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.CR1.CH4POL; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.2, printed p245 (PDF p246); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: CHFLT
     bit_offset: 0
     bit_size: 3
     access: rw
     kind: raw
-    description: CW32F030 GTIM.CR1.CH1FLT; raw encoding.
+    description: 'Per-channel input filter selection. Index order: CH1FLT, CH2FLT, CH3FLT, CH4FLT.'
+    array:
+      len: 4
+      stride: 4
+    elements:
+    - name: CH1FLT
+      bit_offset: 0
+      bit_size: 3
+      access: rw
+      kind: raw
+      description: CW32F030 GTIM.CR1.CH1FLT; raw encoding.
+      values: []
+    - name: CH2FLT
+      bit_offset: 4
+      bit_size: 3
+      access: rw
+      kind: raw
+      description: CW32F030 GTIM.CR1.CH2FLT; raw encoding.
+      values: []
+    - name: CH3FLT
+      bit_offset: 8
+      bit_size: 3
+      access: rw
+      kind: raw
+      description: CW32F030 GTIM.CR1.CH3FLT; raw encoding.
+      values: []
+    - name: CH4FLT
+      bit_offset: 12
+      bit_size: 3
+      access: rw
+      kind: raw
+      description: CW32F030 GTIM.CR1.CH4FLT; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.2, printed p245 (PDF p246); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: DMA
   reset_value: 0
   reset_source: CW32x030 RM Rev2.5 section 14.8.14, printed p251 (PDF p252); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 832
   access: rw
-  description: CW32F030 GTIM.DMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 GTIM.DMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
-  - name: CC4
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.DMA.CC4; raw encoding.
-  - name: CC3
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.DMA.CC3; raw encoding.
-  - name: CC2
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.DMA.CC2; raw encoding.
-  - name: CC1
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GTIM.DMA.CC1; raw encoding.
   - name: TRS
     bit_offset: 1
     bit_size: 1
@@ -472,4 +651,43 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 GTIM.DMA.OV; raw encoding.
+  - name: CC
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-channel capture/compare event control/status. Index order: CC1, CC2, CC3, CC4.'
+    array:
+      len: 4
+      stride: 1
+    elements:
+    - name: CC1
+      bit_offset: 2
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.DMA.CC1; raw encoding.
+      values: []
+    - name: CC2
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.DMA.CC2; raw encoding.
+      values: []
+    - name: CC3
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.DMA.CC3; raw encoding.
+      values: []
+    - name: CC4
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 GTIM.DMA.CC4; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 14.8.14, printed p251 (PDF p252); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 constants: []

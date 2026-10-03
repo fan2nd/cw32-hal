@@ -2,24 +2,50 @@ name: dmachannel
 version: f030
 registers:
 - name: CSR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: rw
-  description: CW32F030 DMACHANNEL.CSR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 DMACHANNEL.CSR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings.
   fields:
   - name: STATUS
     bit_offset: 8
     bit_size: 3
     access: ro
-    kind: raw
-    description: "Terminal diagnostic: 0 initial, 1 address out of range, 2 transfer-stop request, 3 source access error, 4 destination access error, 5 complete. Not a BUSY flag; no documented drain guarantee. RM2.5 8.8.3 labels RW while the pinned SVD says RO; conservative RO retained."
+    kind: enum
+    description: 'Terminal diagnostic: 0 initial, 1 address out of range, 2 transfer-stop request, 3 source access error,
+      4 destination access error, 5 complete. Not a BUSY flag; no documented drain guarantee. RM2.5 8.8.3 labels RW while
+      the pinned SVD says RO; conservative RO retained.'
+    values:
+    - name: INITIAL
+      value: 0
+    - name: ADDRESS_OUT_OF_RANGE
+      value: 1
+    - name: TRANSFER_STOP
+      value: 2
+    - name: SOURCE_ACCESS_ERROR
+      value: 3
+    - name: DESTINATION_ACCESS_ERROR
+      value: 4
+    - name: COMPLETE
+      value: 5
+    values_source: CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: SIZE
     bit_offset: 6
     bit_size: 2
     access: rw
-    kind: raw
-    description: "0 selects 8-bit data and increment 1; 1 selects 16-bit data and increment 2; 2 selects 32-bit data and increment 4; 3 is not documented. RM2.5 8.5.1 requires matching source and destination data widths."
+    kind: enum
+    description: 0 selects 8-bit data and increment 1; 1 selects 16-bit data and increment 2; 2 selects 32-bit data and
+      increment 4; 3 is not documented. RM2.5 8.5.1 requires matching source and destination data widths.
+    values:
+    - name: BITS8
+      value: 0
+    - name: BITS16
+      value: 1
+    - name: BITS32
+      value: 2
+    values_source: CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: DSTINC
     bit_offset: 5
     bit_size: 1
@@ -36,8 +62,15 @@ registers:
     bit_offset: 3
     bit_size: 1
     access: rw
-    kind: bool
-    description: "0 selects BULK (no inter-block arbitration gaps), 1 selects BLOCK (arbitration after each block). Hardware BLOCK requires a request for each block; software BLOCK needs one start for the full count."
+    kind: enum
+    description: 0 selects BULK (no inter-block arbitration gaps), 1 selects BLOCK (arbitration after each block). Hardware
+      BLOCK requires a request for each block; software BLOCK needs one start for the full count.
+    values:
+    - name: BULK
+      value: 0
+    - name: BLOCK
+      value: 1
+    values_source: CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: TEIE
     bit_offset: 2
     bit_size: 1
@@ -55,20 +88,23 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: "0 disables, 1 enables the channel. The manual does not specify disable acknowledgement, automatic clearing, or completion of outstanding bus writes."
+    description: 0 disables, 1 enables the channel. The manual does not specify disable acknowledgement, automatic clearing,
+      or completion of outstanding bus writes.
 - name: CNT
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 8.8.5, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 8.8.5, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 DMACHANNEL.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 DMACHANNEL.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings.
   fields:
   - name: REPEAT
     bit_offset: 16
     bit_size: 4
     access: rw
     kind: raw
-    description: "Must be programmed to 1 per RM2.5 8.8.5; 8.5.2 states completion reduces it to zero, so reload before another transfer."
+    description: Must be programmed to 1 per RM2.5 8.8.5; 8.5.2 states completion reduces it to zero, so reload before
+      another transfer.
   - name: CNT
     bit_offset: 0
     bit_size: 16
@@ -76,11 +112,12 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.CNT.CNT; raw encoding.
 - name: SRCADDR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 8.8.6, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 8.8.6, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: CW32F030 DMACHANNEL.SRCADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 DMACHANNEL.SRCADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings.
   fields:
   - name: SRCADDR
     bit_offset: 0
@@ -89,11 +126,12 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.SRCADDR.SRCADDR; raw encoding.
 - name: DSTADDR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 8.8.7, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 8.8.7, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: CW32F030 DMACHANNEL.DSTADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 DMACHANNEL.DSTADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings.
   fields:
   - name: DSTADDR
     bit_offset: 0
@@ -102,30 +140,129 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.DSTADDR.DSTADDR; raw encoding.
 - name: TRIG
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 8.8.4, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 8.8.4, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 16
   access: rw
-  description: 'CW32F030 DMACHANNEL.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration. Source: CW32x030 RM Rev 2.5 8.8.4'
+  description: 'CW32F030 DMACHANNEL.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings. SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and
+    hardware clears it on completion. TYPE and HARDSRC are configuration. Source: CW32x030 RM Rev 2.5 8.8.4'
   fields:
   - name: HARDSRC
     bit_offset: 2
     bit_size: 6
     access: rw
-    kind: raw
-    description: "Six-bit controller-wide hardware request selector. Exact chip-specific routes are in the DMA instance metadata; not interchangeable between L012 and F030."
+    kind: enum
+    description: Six-bit controller-wide hardware request selector. Exact chip-specific routes are in the DMA instance
+      metadata; not interchangeable between L012 and F030.
+    values:
+    - name: UART1_RX
+      value: 0
+    - name: UART1_TX
+      value: 1
+    - name: UART2_RX
+      value: 2
+    - name: UART2_TX
+      value: 3
+    - name: UART3_RX
+      value: 4
+    - name: UART3_TX
+      value: 5
+    - name: SPI1_RX
+      value: 6
+    - name: SPI1_TX
+      value: 7
+    - name: SPI2_RX
+      value: 8
+    - name: SPI2_TX
+      value: 9
+    - name: ADC_CONVERSION
+      value: 10
+    - name: BTIM1_UPDATE
+      value: 11
+    - name: BTIM1_TRIGGER
+      value: 12
+    - name: BTIM2_UPDATE
+      value: 13
+    - name: BTIM2_TRIGGER
+      value: 14
+    - name: BTIM3_UPDATE
+      value: 15
+    - name: BTIM3_TRIGGER
+      value: 16
+    - name: ATIM_SHARED_A
+      value: 17
+    - name: ATIM_SHARED_B
+      value: 18
+    - name: GTIM1_UPDATE
+      value: 19
+    - name: GTIM1_TRIGGER
+      value: 20
+    - name: GTIM1_CH1
+      value: 21
+    - name: GTIM1_CH2
+      value: 22
+    - name: GTIM1_CH3
+      value: 23
+    - name: GTIM1_CH4
+      value: 24
+    - name: GTIM2_UPDATE
+      value: 25
+    - name: GTIM2_TRIGGER
+      value: 26
+    - name: GTIM2_CH1
+      value: 27
+    - name: GTIM2_CH2
+      value: 28
+    - name: GTIM2_CH3
+      value: 29
+    - name: GTIM2_CH4
+      value: 30
+    - name: GTIM3_UPDATE
+      value: 31
+    - name: GTIM3_TRIGGER
+      value: 32
+    - name: GTIM3_CH1
+      value: 33
+    - name: GTIM3_CH2
+      value: 34
+    - name: GTIM3_CH3
+      value: 35
+    - name: GTIM3_CH4
+      value: 36
+    - name: GTIM4_UPDATE
+      value: 37
+    - name: GTIM4_TRIGGER
+      value: 38
+    - name: GTIM4_CH1
+      value: 39
+    - name: GTIM4_CH2
+      value: 40
+    - name: GTIM4_CH3
+      value: 41
+    - name: GTIM4_CH4
+      value: 42
+    values_source: CW32x030 RM Rev2.5 sections 8.2, 8.4.4, 8.7, 8.8.4 and 15.3.6 (printed pp124,130-131,136,140-141,283),
+      table 5-1; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: SOFTSRC
     bit_offset: 1
     bit_size: 1
     access: rw
     kind: bool
-    description: "Reads zero after transfer completion and one while transfer is in progress. Writing one software-triggers the channel; writing zero has no effect. Not documented as an abort or hardware-trigger drain acknowledgement."
+    description: Reads zero after transfer completion and one while transfer is in progress. Writing one software-triggers
+      the channel; writing zero has no effect. Not documented as an abort or hardware-trigger drain acknowledgement.
   - name: TYPE
     bit_offset: 0
     bit_size: 1
     access: rw
-    kind: bool
-    description: "0 selects software triggering by SOFTSRC; 1 selects hardware triggering by the HARDSRC request source."
+    kind: enum
+    description: 0 selects software triggering by SOFTSRC; 1 selects hardware triggering by the HARDSRC request source.
+    values:
+    - name: SOFTWARE
+      value: 0
+    - name: HARDWARE
+      value: 1
+    values_source: CW32x030 RM Rev2.5 section 8.8.4, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   write_behavior: mixed
   read_behavior: ordinary
 constants: []

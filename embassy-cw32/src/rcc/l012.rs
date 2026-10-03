@@ -1,45 +1,96 @@
-//! Checked reset-clock bring-up for CW32L012C8.
-//!
-//! The default remains HSI /24 with undivided AHB/APB: nominal 4 MHz.
-//! An explicit HSI /1 profile raises SYSCLK/HCLK to nominal 96 MHz after
-//! factory trim and the vendor-prescribed Flash wait-state change. APB /2 is
-//! available for a 48 MHz PCLK. VDD must be >=1.8 V for 96 MHz operation.
-//! Frequencies are nominal, not a measurement or oscillator-accuracy guarantee.
+//! Audited HSI startup clock tree for CW32L012.
+//! Factory-trimmed 96 MHz oscillator, documented HSI and AHB/APB dividers.
+//! The default remains HSI /24 and undivided buses: nominal 4 MHz.
+//! Clock switching is startup-only; 96 MHz requires VDD >=1.8 V.
 
 use crate::pac::sysctrl::regs;
 use crate::pac::{self, sysctrl};
 
-/// The two audited direct-reset HSI configurations. Other clock trees are rejected.
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum HsiFrequency {
-    #[default]
-    Mhz4,
-    /// HSI /1, AHB /1; requires VDD >=1.8 V and the supply/temperature limits of
-    /// the CW32L012 datasheet. Does not make a peripheral's own clock legal.
-    Mhz96,
-}
+use super::{HclkDivider, PclkDivider};
 
+/// HSI oscillator divider, as documented by the selected variant's manual.
+/// Non-integral nominal frequencies are reported rounded down to integer Hz.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-pub enum PclkDivider {
-    #[default]
+pub enum HsiDivider {
     Div1,
     Div2,
+    Div3,
+    Div4,
+    Div5,
+    Div6,
+    Div7,
+    Div8,
+    Div9,
+    Div10,
+    Div12,
+    Div16,
+    Div20,
+    #[default]
+    Div24,
+    Div28,
+    Div32,
+}
+impl HsiDivider {
+    pub const fn divisor(self) -> u32 {
+        match self {
+            Self::Div1 => 1,
+            Self::Div2 => 2,
+            Self::Div3 => 3,
+            Self::Div4 => 4,
+            Self::Div5 => 5,
+            Self::Div6 => 6,
+            Self::Div7 => 7,
+            Self::Div8 => 8,
+            Self::Div9 => 9,
+            Self::Div10 => 10,
+            Self::Div12 => 12,
+            Self::Div16 => 16,
+            Self::Div20 => 20,
+            Self::Div24 => 24,
+            Self::Div28 => 28,
+            Self::Div32 => 32,
+        }
+    }
+    pub const fn hz(self) -> u32 {
+        96000000 / self.divisor()
+    }
+    const fn encoding(self) -> pac::sysctrl::vals::HsiDiv {
+        match self {
+            Self::Div1 => pac::sysctrl::vals::HsiDiv::DIV1,
+            Self::Div2 => pac::sysctrl::vals::HsiDiv::DIV2,
+            Self::Div3 => pac::sysctrl::vals::HsiDiv::DIV3,
+            Self::Div4 => pac::sysctrl::vals::HsiDiv::DIV4,
+            Self::Div5 => pac::sysctrl::vals::HsiDiv::DIV5,
+            Self::Div6 => pac::sysctrl::vals::HsiDiv::DIV6,
+            Self::Div7 => pac::sysctrl::vals::HsiDiv::DIV7,
+            Self::Div8 => pac::sysctrl::vals::HsiDiv::DIV8,
+            Self::Div9 => pac::sysctrl::vals::HsiDiv::DIV9,
+            Self::Div10 => pac::sysctrl::vals::HsiDiv::DIV10,
+            Self::Div12 => pac::sysctrl::vals::HsiDiv::DIV12,
+            Self::Div16 => pac::sysctrl::vals::HsiDiv::DIV16,
+            Self::Div20 => pac::sysctrl::vals::HsiDiv::DIV20,
+            Self::Div24 => pac::sysctrl::vals::HsiDiv::DIV24,
+            Self::Div28 => pac::sysctrl::vals::HsiDiv::DIV28,
+            Self::Div32 => pac::sysctrl::vals::HsiDiv::DIV32,
+        }
+    }
 }
 
-/// Bounded reset-clock validation followed by an optional audited HSI change.
+/// Checked HSI and bus configuration.
 #[derive(Clone, Copy, Debug)]
 #[non_exhaustive]
 pub struct Config {
-    pub hsi_frequency: HsiFrequency,
-    /// Applied before raising HSI, so APB never overshoots its requested clock.
+    pub hsi_divider: HsiDivider,
+    pub hclk_divider: HclkDivider,
     pub pclk_divider: PclkDivider,
-    /// Maximum HSI stability polls after applying vendor trim.
+    /// Maximum HSI stability polls after factory trim.
     pub hsi_stabilization_limit: u32,
 }
 impl Default for Config {
     fn default() -> Self {
         Self {
-            hsi_frequency: HsiFrequency::Mhz4,
+            hsi_divider: HsiDivider::Div24,
+            hclk_divider: HclkDivider::Div1,
             pclk_divider: PclkDivider::Div1,
             hsi_stabilization_limit: 0xffff,
         }
@@ -117,41 +168,61 @@ impl HighSpeedIo for HardwareHighSpeed {
         pac::SYSCTRL.hsi().write_value(value);
     }
 }
-fn set_pclk_divider(io: &mut impl HighSpeedIo, divider: PclkDivider) -> Result<(), ClockError> {
-    let encoding = u8::from(divider == PclkDivider::Div2);
-    let mut value = io.bus();
-    value.set_key((pac::SYSCTRL_KEY >> 16) as u16);
-    value.set_pclkprs(encoding);
-    io.set_bus(value);
-    if io.bus().pclkprs() != encoding {
-        return Err(ClockError::ClockReadbackMismatch);
+
+impl Config {
+    /// Compute nominal requested clocks without touching hardware.
+    pub fn clocks(self) -> Clocks {
+        configured_clocks(self)
     }
-    Ok(())
 }
-fn raise_hsi_to_96(io: &mut impl HighSpeedIo, polls: u32) -> Result<(), ClockError> {
-    // FLASHWAIT=3 precedes HSI.DIV=1. Preserve SWD/fault/wake/reserved fields.
-    let mut wait = io.flash_wait();
-    wait.set_key((pac::SYSCTRL_KEY >> 16) as u16);
-    wait.set_flashwait(3);
-    io.set_flash_wait(wait);
-    if io.flash_wait().flashwait() != 3 {
-        return Err(ClockError::FlashWaitReadbackMismatch);
-    }
-    let mut hsi = io.hsi();
-    hsi.set_div(1);
-    io.set_hsi(hsi);
-    for _ in 0..polls {
-        let readback = io.hsi();
-        if readback.stable() {
-            return if readback.div() == 1 && readback.trim() == hsi.trim() {
-                Ok(())
-            } else {
-                Err(ClockError::ClockReadbackMismatch)
-            };
+
+fn configured_clocks(config: Config) -> Clocks {
+    let sysclk = config.hsi_divider.hz();
+    let hclk = sysclk >> config.hclk_divider as u8;
+    let pclk = hclk >> config.pclk_divider as u8;
+    Clocks { sysclk, hclk, pclk }
+}
+
+fn apply_configuration(io: &mut impl HighSpeedIo, config: Config) -> Result<Clocks, ClockError> {
+    let clocks = configured_clocks(config);
+    // Reduce buses first: the subsequent HSI change never overshoots final HCLK/PCLK.
+    if config.hclk_divider != HclkDivider::Div1 || config.pclk_divider != PclkDivider::Div1 {
+        let mut bus = io.bus();
+        bus.set_key((pac::SYSCTRL_KEY >> 16) as u16);
+        bus.set_hclkprs(config.hclk_divider.register_value());
+        bus.set_pclkprs(config.pclk_divider.register_value());
+        io.set_bus(bus);
+        let bus = io.bus();
+        if bus.hclkprs() != config.hclk_divider.register_value()
+            || bus.pclkprs() != config.pclk_divider.register_value()
+            || bus.sysclk() != pac::sysctrl::vals::Cr0Sysclk::HSI
+        {
+            return Err(ClockError::ClockReadbackMismatch);
         }
-        core::hint::spin_loop();
     }
-    Err(ClockError::HsiNotStable)
+    if config.hsi_divider != HsiDivider::Div24 {
+        // Both old reset HCLK and target HCLK are safe at this wait count.
+        // RMW retains cache/prefetch, SWD and reserved fields.
+        let wait_count = ((clocks.hclk.max(pac::RESET_HCLK_HZ) - 1) / 24_000_000) as u8;
+        let mut wait = io.flash_wait();
+        wait.set_key((pac::SYSCTRL_KEY >> 16) as u16);
+        wait.set_flashwait(wait_count);
+        io.set_flash_wait(wait);
+        if io.flash_wait().flashwait() != wait_count {
+            return Err(ClockError::FlashWaitReadbackMismatch);
+        }
+        let mut hsi = io.hsi();
+        hsi.set_div(config.hsi_divider.encoding());
+        io.set_hsi(hsi);
+        let readback = io.hsi();
+        if readback.div() != config.hsi_divider.encoding() || readback.trim() != hsi.trim() {
+            return Err(ClockError::ClockReadbackMismatch);
+        }
+        if !readback.stable() {
+            return Err(ClockError::HsiNotStable);
+        }
+    }
+    Ok(clocks)
 }
 
 fn validate_configuration(
@@ -159,10 +230,12 @@ fn validate_configuration(
     cr1: regs::Cr1,
     hsi: regs::Hsi,
 ) -> Result<(), ClockError> {
-    if cr0.sysclk() != 0 {
+    if cr0.sysclk() != pac::sysctrl::vals::Cr0Sysclk::HSI {
         return Err(ClockError::SystemClockNotHsi);
     }
-    if cr0.hclkprs() != 0 || cr0.pclkprs() != 0 {
+    if cr0.hclkprs() != pac::sysctrl::vals::Cr0Hclkprs::DIV1
+        || cr0.pclkprs() != pac::sysctrl::vals::Cr0Pclkprs::DIV1
+    {
         return Err(ClockError::BusPrescalerNotReset);
     }
     if hsi.div() != regs::Hsi(sysctrl::HSI_DIV24).div() {
@@ -259,36 +332,5 @@ pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
     if u32::from(hsi.trim()) != hsi_trim || u32::from(lsi.trim()) != lsi_trim {
         return Err(ClockError::TrimReadbackMismatch);
     }
-    if config.pclk_divider != PclkDivider::Div1 {
-        set_pclk_divider(&mut HardwareHighSpeed, config.pclk_divider)?;
-    }
-    let divisor = if config.pclk_divider == PclkDivider::Div2 {
-        2
-    } else {
-        1
-    };
-    if config.hsi_frequency == HsiFrequency::Mhz96 {
-        raise_hsi_to_96(&mut HardwareHighSpeed, config.hsi_stabilization_limit)?;
-        Ok(Clocks {
-            sysclk: 96_000_000,
-            hclk: 96_000_000,
-            pclk: 96_000_000 / divisor,
-        })
-    } else {
-        Ok(Clocks {
-            sysclk: pac::RESET_SYSCLK_HZ,
-            hclk: pac::RESET_HCLK_HZ,
-            pclk: pac::RESET_PCLK_HZ / divisor,
-        })
-    }
+    apply_configuration(&mut HardwareHighSpeed, config)
 }
-
-/// Internal clock/reset implementation generated from audited metadata.
-/// Shared register updates occur inside a Cortex-M0+ critical section (no CAS).
-/// Drivers do not disable shared clock gates when dropped.
-/// A reset shared with another singleton is intentionally skipped; drivers must
-/// initialize their own registers without disturbing neighboring instances.
-pub(crate) trait PeripheralClock {
-    fn enable_and_reset();
-}
-include!(concat!(env!("OUT_DIR"), "/_generated_peripheral_clocks.rs"));

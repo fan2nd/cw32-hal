@@ -1,7 +1,7 @@
 # Owned timers and single-ended PWM
 
-This layer follows the actual owned `Timer`, typed `PwmPin` and borrowed channel
-structure of the [pinned Embassy timer sources](https://github.com/embassy-rs/embassy/tree/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/timer).
+This layer follows the owned `Timer`, typed `PwmPin`, borrowed channel and
+consuming static `split` structure of the [pinned Embassy timer sources](https://github.com/embassy-rs/embassy/tree/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/timer).
 It implements CW32 hardware contracts rather than STM32 register compatibility.
 
 ## Owners and channels
@@ -37,6 +37,53 @@ owner frequency change, a second mutable handle or owner Drop. Native duty is
 `u32`, from zero through `period_ticks` inclusive. The embedded-hal `u16` duty
 interface is normalized: `u16::MAX` means 100%, not a truncated native compare.
 
+For independent drivers or tasks, `SimplePwm<'static, T>::split(self)` consumes
+the owner and returns `SimplePwmChannels<T>`. Its `ch1` through `ch4` fields are
+`Option<OwnedPwmChannel<T>>`: each present handle owns exactly one pin and can
+move independently. Handles cannot be cloned. Missing pins stay `None`, so
+this does not invent a fourth external F030 ATIM channel.
+
+```rust
+use embassy_cw32::timer::{low_level::Config, simple_pwm::{PwmPin, SimplePwm}, Ch1, Ch2};
+
+let mut pwm = SimplePwm::new_with_config(
+    p.ATIM,
+    Some(PwmPin::<_, Ch1>::new(p.PA8)),
+    Some(PwmPin::<_, Ch2>::new(p.PA9)),
+    None, None,
+    Config { prescaler_divisor: 1, period_ticks: 1000 },
+)?;
+pwm.start(); // Select the shared running state before consuming the owner.
+let channels = pwm.split().map_err(|(error, _owner)| error)?;
+let mut first = channels.ch1.unwrap();
+let mut second = channels.ch2.unwrap();
+first.set_duty_cycle(32_768)?;
+first.enable();
+second.set_duty_cycle(u16::MAX)?; // exact 100%; first channel keeps running
+second.enable();
+drop(first); // second retains its output, counter phase and clock ownership
+// Move `second` into any driver/task accepting embedded_hal::pwm::SetDutyCycle.
+```
+
+Split freezes the frequency and counter running state. Start/stop and timing
+changes therefore belong to the whole owner before the split; channel handles
+offer only duty and individual output-enable control. A stopped split stays
+stopped. Split requires `period_ticks <= 65535`: the full 0–100% range then fits
+the compare register, with no forced-mode transition or peer-wide phase reset.
+At 65536 it returns `(Error::SplitPeriodTooLong, original_owner)` without
+changing registers, pins, duties, or running state. The returned owner can be
+reconfigured or continue using the full native unsplit range.
+
+All shared output-register updates, ATIM master-output enable changes and
+channel lifetime counts are protected by one critical section per operation.
+Dropping a channel disconnects only its pin; the final channel drop stops the
+counter and releases its clock guard. Forgetting any channel retains that
+timer/clock ownership, even if the forgotten channel was disabled. Splitting
+an owner with an accepted period and no pins stops/releases it and returns
+four `None` fields.
+The implementation transfers the original guard into per-instance state; it
+does not clone the whole timer owner.
+
 `PwmPin::new` disconnects its pin. `SimplePwm::new` leaves all channels disabled
 and the counter stopped; enabling and starting are separate operations.
 Disabled pins are floating inputs, not guaranteed electrically low. `stop`
@@ -47,7 +94,10 @@ break input, ADC trigger, timer IRQ or DMA.
 
 ## Clocks, periods and update boundaries
 
-The clock comes from validated RCC state, not a caller-supplied snapshot.
+The clock comes from the timer's metadata-selected kernel clock and validated
+RCC state, not a caller-supplied snapshot. A timer keeps an RCC clock guard
+through its final owner; a shared gate cannot be reset or disabled while a
+peer still owns it. On both audited chips these timers use PCLK.
 `Config { prescaler_divisor, period_ticks }` uses physical quantities; supported
 periods are 2..=65536. This API range is not a claim that every other silicon
 setting is forbidden. The legal dividers are:
@@ -71,9 +121,11 @@ not reset phase just to force a new preload into that channel.
 Frequency/configuration changes gate outputs, stop, write/load and restore
 prior enabled/running state. This deliberately resets phase and can create a
 floating interval. At a 65536-count period, a 16-bit CCR cannot hold 65536;
-100% uses the actual forced-active mode. Entering/leaving that endpoint uses
-the same gated phase-reset transaction. Other duty changes do not pause peer
-channels. Zero and full-scale never wrap through a narrowing cast.
+100% uses the actual forced-active mode. On the unsplit owner, entering/leaving
+that endpoint uses the same gated phase-reset transaction. Independent split
+channels reject that period when splitting, so none can cause this transaction
+on a peer. Other duty changes do not pause peer channels. Zero and full-scale
+never wrap through a narrowing cast.
 
 Software update events are issued while stopped with TRGO routes gated,
 including L012 ATIM MMS2 and F030 ATIM MSCR. Generic timer initialization never
@@ -95,6 +147,6 @@ complementary-PWM API are not implemented here. Existing `atim::ThreePhasePwm`
 retains its specialized complementary/break and three-phase update contracts.
 Its safety constraints are not relaxed by the simpler single-ended driver.
 
-Both-chip builds, negative ownership/route checks and instrumented real-source
-MMIO sequencing checks passed; see [validation](validation-v0.13.0.md).
+For both-chip builds, negative ownership/route checks and real-source synthetic
+MMIO sequencing coverage, see [validation](validation-v0.18.0.md).
 No device timing or electrical behavior was measured.

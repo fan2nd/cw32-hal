@@ -6,8 +6,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.1, printed p460 (PDF p461); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: rw
-  description: CW32F030 ADC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: BIAS
     bit_offset: 14
@@ -68,8 +68,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.2, printed p462 (PDF p463); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 ADC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: WDTALL
     bit_offset: 13
@@ -112,9 +112,10 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.8, printed p466 (PDF p467); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: 'CW32F030 ADC.START; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-    for value encodings. START=1 starts conversion and START=0 stops it; hardware clears START when the selected mode completes.
-    AUTOSTOP is configuration and can disable ADC at completion. Source: CW32x030 RM Rev 2.5 22.4.1; 22.13.8'
+  description: 'CW32F030 ADC.START; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. START=1 starts conversion and START=0 stops it; hardware clears START when the selected
+    mode completes. AUTOSTOP is configuration and can disable ADC at completion. Source: CW32x030 RM Rev 2.5 22.4.1;
+    22.13.8'
   fields:
   - name: AUTOSTOP
     bit_offset: 1
@@ -135,8 +136,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.4, printed p463 (PDF p464); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: CW32F030 ADC.SQR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.SQR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: ENS
     bit_offset: 16
@@ -153,14 +154,40 @@ registers:
       len: 4
       stride: 4
     description: Indexed SQR; local index begins at zero, with explicitly modeled positions.
+    elements:
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: SQR0
+      bit_offset: 0
+      description: 'Element 0: SQR0. Indexed SQR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: SQR1
+      bit_offset: 4
+      description: 'Element 1: SQR1. Indexed SQR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: SQR2
+      bit_offset: 8
+      description: 'Element 2: SQR2. Indexed SQR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: SQR3
+      bit_offset: 12
+      description: 'Element 3: SQR3. Indexed SQR; local index begins at zero, with explicitly modeled positions.'
+    array_source: CW32x030 RM Rev2.5 section 22.13.4, printed p463 (PDF p464); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: CR2
   reset_value: 0
   reset_source: CW32x030 RM Rev2.5 section 22.13.3, printed p463 (PDF p464); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 16
   access: rw
-  description: 'CW32F030 ADC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings. ACCRST is R0W1: writing one clears the RESULTACC accumulation register, while zero has no effect. ACCEN
-    and CNT are ordinary configuration. Source: CW32x030 RM Rev 2.5 22.13.3'
+  description: 'CW32F030 ADC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. ACCRST is R0W1: writing one clears the RESULTACC accumulation register, while zero has no
+    effect. ACCEN and CNT are ordinary configuration. Source: CW32x030 RM Rev 2.5 22.13.3'
   fields:
   - name: ACCRST
     bit_offset: 9
@@ -187,8 +214,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.5, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 20
   access: rw
-  description: CW32F030 ADC.VTH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.VTH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: VTH
     bit_offset: 0
@@ -201,8 +228,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.6, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 24
   access: rw
-  description: CW32F030 ADC.VTL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.VTL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: VTL
     bit_offset: 0
@@ -215,8 +242,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 28
   access: rw
-  description: CW32F030 ADC.TRIGGER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
-    for value encodings.
+  description: CW32F030 ADC.TRIGGER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: DMA
     bit_offset: 15
@@ -224,103 +251,163 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 ADC.TRIGGER.DMA; raw encoding.
-  - name: I2C2
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.I2C2; raw encoding.
-  - name: I2C1
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.I2C1; raw encoding.
-  - name: SPI2
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.SPI2; raw encoding.
-  - name: SPI1
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.SPI1; raw encoding.
-  - name: UART3
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.UART3; raw encoding.
-  - name: UART2
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.UART2; raw encoding.
-  - name: UART1
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.UART1; raw encoding.
-  - name: BTIM3
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.BTIM3; raw encoding.
-  - name: BTIM2
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.BTIM2; raw encoding.
-  - name: BTIM1
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.BTIM1; raw encoding.
-  - name: GTIM4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.GTIM4; raw encoding.
-  - name: GTIM3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.GTIM3; raw encoding.
-  - name: GTIM2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.GTIM2; raw encoding.
-  - name: GTIM1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ADC.TRIGGER.GTIM1; raw encoding.
   - name: ATIM
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
     description: CW32F030 ADC.TRIGGER.ATIM; raw encoding.
+  - name: I2C
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance I2C interrupt request trigger enable; ATIM trigger output and DMA IRQ remain separately
+      named sources. Index order: I2C1, I2C2.'
+    array:
+      len: 2
+      stride: 1
+    elements:
+    - name: I2C1
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.I2C1; raw encoding.
+    - name: I2C2
+      bit_offset: 14
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.I2C2; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: SPI
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance SPI interrupt request trigger enable; ATIM trigger output and DMA IRQ remain separately
+      named sources. Index order: SPI1, SPI2.'
+    array:
+      len: 2
+      stride: 1
+    elements:
+    - name: SPI1
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.SPI1; raw encoding.
+    - name: SPI2
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.SPI2; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: UART
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance UART interrupt request trigger enable; ATIM trigger output and DMA IRQ remain separately
+      named sources. Index order: UART1, UART2, UART3.'
+    array:
+      len: 3
+      stride: 1
+    elements:
+    - name: UART1
+      bit_offset: 8
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.UART1; raw encoding.
+    - name: UART2
+      bit_offset: 9
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.UART2; raw encoding.
+    - name: UART3
+      bit_offset: 10
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.UART3; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: BTIM
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance BTIM interrupt request trigger enable; ATIM trigger output and DMA IRQ remain separately
+      named sources. Index order: BTIM1, BTIM2, BTIM3.'
+    array:
+      len: 3
+      stride: 1
+    elements:
+    - name: BTIM1
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.BTIM1; raw encoding.
+    - name: BTIM2
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.BTIM2; raw encoding.
+    - name: BTIM3
+      bit_offset: 7
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.BTIM3; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - name: GTIM
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance GTIM interrupt request trigger enable; ATIM trigger output and DMA IRQ remain separately
+      named sources. Index order: GTIM1, GTIM2, GTIM3, GTIM4.'
+    array:
+      len: 4
+      stride: 1
+    elements:
+    - name: GTIM1
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.GTIM1; raw encoding.
+    - name: GTIM2
+      bit_offset: 2
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.GTIM2; raw encoding.
+    - name: GTIM3
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.GTIM3; raw encoding.
+    - name: GTIM4
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 ADC.TRIGGER.GTIM4; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 22.13.7, printed p464 (PDF p465); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: RESULT
   reset_value: 0
   reset_source: CW32x030 RM Rev2.5 section 22.13.12, printed p468 (PDF p469); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 32
   access: ro
-  description: 'Indexed RESULT: index 0 = RESULT0, index 1 = RESULT1, index 2 = RESULT2, index 3 = RESULT3. Complete field
-    layout/access/side effects are identical; offsets and element evidence are explicit.'
+  description: 'Indexed RESULT: index 0 = RESULT0, index 1 = RESULT1, index 2 = RESULT2, index 3 = RESULT3. Complete
+    field layout/access/side effects are identical; offsets and element evidence are explicit.'
   fields:
   - name: RESULT
     bit_offset: 0
@@ -335,34 +422,35 @@ registers:
     stride: 4
   elements:
   - name: RESULT0
-    description: 'CW32F030 ADC.RESULT0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-      2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention.
-      The latch classification records this state change; it does not mean the value is a FIFO or that reading clears EOC,
-      EOS or OVW. Clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10; 22.5.1'
+    description: 'CW32F030 ADC.RESULT0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result
+      retention. The latch classification records this state change; it does not mean the value is a FIFO or that reading
+      clears EOC, EOS or OVW. Clear interrupt flags explicitly through ICR. Source: CW32x030 RM Rev 2.5 22.13.2; 22.13.10;
+      22.5.1'
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 22.13.12, printed p468 (PDF p469); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: RESULT1
-    description: 'CW32F030 ADC.RESULT1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-      2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention.
-      This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM
-      Rev 2.5 22.13.2; 22.13.10'
+    description: 'CW32F030 ADC.RESULT1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result
+      retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source:
+      CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 22.13.13, printed p469 (PDF p470); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: RESULT2
-    description: 'CW32F030 ADC.RESULT2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-      2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention.
-      This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM
-      Rev 2.5 22.13.2; 22.13.10'
+    description: 'CW32F030 ADC.RESULT2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result
+      retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source:
+      CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 22.13.14, printed p469 (PDF p470); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
   - name: RESULT3
-    description: 'CW32F030 ADC.RESULT3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-      2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result retention.
-      This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source: CW32x030 RM
-      Rev 2.5 22.13.2; 22.13.10'
+    description: 'CW32F030 ADC.RESULT3; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings. Reading consumes the unread-result state used by overrun detection and DISCARD result
+      retention. This does not automatically clear EOC, EOS or OVW; clear interrupt flags explicitly through ICR. Source:
+      CW32x030 RM Rev 2.5 22.13.2; 22.13.10'
     reset_value: 0
     reset_source: CW32x030 RM Rev2.5 section 22.13.15, printed p469 (PDF p470); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
     reset_note: null
@@ -371,8 +459,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.16, printed p469 (PDF p470); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 48
   access: ro
-  description: CW32F030 ADC.RESULTACC; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-    2.5 for value encodings.
+  description: CW32F030 ADC.RESULTACC; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings.
   fields:
   - name: RESULT
     bit_offset: 0
@@ -385,8 +473,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.9, printed p466 (PDF p467); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 52
   access: rw
-  description: CW32F030 ADC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: OVW
     bit_offset: 6
@@ -435,10 +523,10 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.11, printed p468 (PDF p469); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 56
   access: rw
-  description: 'CW32F030 ADC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
-    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
-    22.13.11; 1.2'
+  description: 'CW32F030 ADC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing
+    one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source:
+    CW32x030 RM Rev 2.5 22.13.11; 1.2'
   fields:
   - name: OVW
     bit_offset: 6
@@ -489,8 +577,8 @@ registers:
   reset_source: CW32x030 RM Rev2.5 section 22.13.10, printed p467 (PDF p468); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 60
   access: ro
-  description: CW32F030 ADC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
-    value encodings.
+  description: CW32F030 ADC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: READY
     bit_offset: 7

@@ -34,7 +34,7 @@ impl Hardware for Registers {
     fn compare_irq(&mut self, enabled: bool) {
         pac::GTIM1.ier().write(|w| {
             w.set_uie(true);
-            w.set_cc1ie(enabled);
+            w.set_ccie(0, enabled);
         });
     }
     fn compare(&mut self, value: u16) {
@@ -56,7 +56,9 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
     // SAFETY: HAL init owns GTIM1 and the checks above establish its tick rate.
     unsafe {
         super::driver::init(priority, || {
-            <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
+            let mut clock = <crate::peripherals::GTIM1 as PeripheralClock>::acquire();
+            // The globally installed time driver has process-long ownership.
+            clock.pin();
             pac::GTIM1.cr1().write_value(regs::Cr1(0));
             pac::GTIM1.ier().write_value(regs::Ier(0));
             pac::GTIM1.cr2().write_value(regs::Cr2(0));
@@ -74,7 +76,7 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
             pac::GTIM1.egr().write(|w| w.set_ug(true)); // UG loads buffered PSC, resets CNT
             pac::GTIM1.icr().write_value(regs::Icr(0)); // stopped/exclusive: clear all startup flags
             pac::GTIM1.cr2().write_value(regs::Cr2(0));
-            pac::GTIM1.ccer().write(|w| w.set_cc1e(true)); // CC1 enabled, no GPIO AF configured
+            pac::GTIM1.ccer().write(|w| w.set_cce(0, true)); // CC1 enabled, no GPIO AF configured
             pac::GTIM1.ier().write(|w| w.set_uie(true));
             // UIFREMAP=1, URS=1, CEN=1, upcounting, continuous, updates enabled.
             pac::GTIM1.cr1().write(|w| {

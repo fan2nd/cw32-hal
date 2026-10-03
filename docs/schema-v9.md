@@ -1,5 +1,7 @@
 # Schema 9: OPA internal source connections
 
+Historical schema; current field-array/enum/clock additions are in [schema10](schema-v10.md).
+
 Version 9 adds optional `opa` connections to a peripheral instance. It records
 the internal DAC source of an OPA independently of the reusable register IP.
 Version 8 JSON must be regenerated; it is rejected by the PAC stage.

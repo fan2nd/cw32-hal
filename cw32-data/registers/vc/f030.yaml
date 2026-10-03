@@ -2,11 +2,12 @@ name: vc
 version: f030
 registers:
 - name: DIV
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 23.7.1, printed p479 (PDF p480); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 23.7.1, printed p479 (PDF p480); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: rw
-  description: CW32F030 VC.DIV; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 VC.DIV; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: VIN
     bit_offset: 7
@@ -27,11 +28,12 @@ registers:
     kind: raw
     description: CW32F030 VC.DIV.DIV; raw encoding.
 - name: CR0
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 23.7.2, printed p480 (PDF p481); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 23.7.2, printed p480 (PDF p481); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 VC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 VC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: INN
     bit_offset: 12
@@ -82,11 +84,12 @@ registers:
     kind: bool
     description: CW32F030 VC.CR0.EN; raw encoding.
 - name: CR1
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 23.7.3, printed p482 (PDF p483); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 23.7.3, printed p482 (PDF p483); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: CW32F030 VC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 VC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: BLANKFLT
     bit_offset: 13
@@ -94,24 +97,6 @@ registers:
     access: rw
     kind: raw
     description: CW32F030 VC.CR1.BLANKFLT; raw encoding.
-  - name: BLANKCH3B
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 VC.CR1.BLANKCH3B; raw encoding.
-  - name: BLANKCH2B
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 VC.CR1.BLANKCH2B; raw encoding.
-  - name: BLANKCH1B
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 VC.CR1.BLANKCH1B; raw encoding.
   - name: ATIMBK
     bit_offset: 9
     bit_size: 1
@@ -160,12 +145,43 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 VC.CR1.FLTEN; raw encoding.
+  - name: BLANKCHB
+    bit_offset: 10
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-phase ATIM channel B rising-edge blanking source enable. Index order: BLANKCH1B, BLANKCH2B, BLANKCH3B.'
+    array:
+      len: 3
+      stride: 1
+    elements:
+    - name: BLANKCH1B
+      bit_offset: 10
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 VC.CR1.BLANKCH1B; raw encoding.
+    - name: BLANKCH2B
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 VC.CR1.BLANKCH2B; raw encoding.
+    - name: BLANKCH3B
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 VC.CR1.BLANKCH3B; raw encoding.
+    array_source: CW32x030 RM Rev2.5 section 23.7.3, printed p482 (PDF p483); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
 - name: SR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 23.7.4, printed p483 (PDF p484); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 23.7.4, printed p483 (PDF p484); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: 'CW32F030 VC.SR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. INTF is cleared by writing zero; READY and FLTV are read-only status. Preserve the clearable flag when no clear is intended. Source: CW32x030 RM Rev 2.5 23.7.4'
+  description: 'CW32F030 VC.SR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. INTF is cleared by writing zero; READY and FLTV are read-only status. Preserve the clearable
+    flag when no clear is intended. Source: CW32x030 RM Rev 2.5 23.7.4'
   fields:
   - name: READY
     bit_offset: 2

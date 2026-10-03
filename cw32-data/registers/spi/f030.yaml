@@ -2,11 +2,12 @@ name: spi
 version: f030
 registers:
 - name: CR1
-  reset_value: 0x00001c04
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.1, printed p388 (PDF p389); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 7172
+  reset_source: CW32x030 RM Rev2.5 section 19.8.1, printed p388 (PDF p389); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: rw
-  description: CW32F030 SPI.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 SPI.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: MISOHD
     bit_offset: 18
@@ -30,8 +31,18 @@ registers:
     bit_offset: 14
     bit_size: 2
     access: rw
-    kind: raw
-    description: CW32F030 SPI.CR1.MODE; raw encoding.
+    kind: enum
+    description: Serial communication direction and wire mode.
+    values:
+    - name: FULL_DUPLEX
+      value: 0
+    - name: TRANSMIT_ONLY
+      value: 1
+    - name: RECEIVE_ONLY
+      value: 2
+    - name: HALF_DUPLEX
+      value: 3
+    values_source: CW32x030 RM Rev2.5 section 19.8.1, printed p388 (PDF p389); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: WIDTH
     bit_offset: 10
     bit_size: 4
@@ -66,8 +77,24 @@ registers:
     bit_offset: 3
     bit_size: 3
     access: rw
-    kind: raw
-    description: CW32F030 SPI.CR1.BR; raw encoding.
+    kind: enum
+    description: Master SCK prescaler. Encoding 7 is reserved; L012 uses a different arithmetic divider.
+    values:
+    - name: DIV2
+      value: 0
+    - name: DIV4
+      value: 1
+    - name: DIV8
+      value: 2
+    - name: DIV16
+      value: 3
+    - name: DIV32
+      value: 4
+    - name: DIV64
+      value: 5
+    - name: DIV128
+      value: 6
+    values_source: CW32x030 RM Rev2.5 section 19.8.1, printed p388 (PDF p389); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   - name: MSTR
     bit_offset: 2
     bit_size: 1
@@ -87,11 +114,12 @@ registers:
     kind: bool
     description: CW32F030 SPI.CR1.CPHA; raw encoding.
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.4, printed p391 (PDF p392); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 19.8.4, printed p391 (PDF p392); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 SPI.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 SPI.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: MODF
     bit_offset: 7
@@ -142,11 +170,12 @@ registers:
     kind: bool
     description: CW32F030 SPI.IER.TXE; raw encoding.
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.2, printed p389 (PDF p390); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 19.8.2, printed p389 (PDF p390); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: CW32F030 SPI.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 SPI.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: HDOE
     bit_offset: 0
@@ -155,11 +184,12 @@ registers:
     kind: bool
     description: CW32F030 SPI.CR2.HDOE; raw encoding.
 - name: SSI
-  reset_value: 0x00000001
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.3, printed p390 (PDF p391); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 1
+  reset_source: CW32x030 RM Rev2.5 section 19.8.3, printed p390 (PDF p391); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: CW32F030 SPI.SSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 SPI.SSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: SSI
     bit_offset: 0
@@ -168,11 +198,12 @@ registers:
     kind: bool
     description: CW32F030 SPI.SSI.SSI; raw encoding.
 - name: ISR
-  reset_value: 0x00000001
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.5, printed p392 (PDF p393); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 1
+  reset_source: CW32x030 RM Rev2.5 section 19.8.5, printed p392 (PDF p393); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 16
   access: ro
-  description: CW32F030 SPI.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 SPI.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: SSLVL
     bit_offset: 9
@@ -235,11 +266,14 @@ registers:
     kind: bool
     description: CW32F030 SPI.ISR.TXE; raw encoding.
 - name: ICR
-  reset_value: 0x000000ff
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.6, printed p393 (PDF p394); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 255
+  reset_source: CW32x030 RM Rev2.5 section 19.8.6, printed p393 (PDF p394); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 20
   access: rw
-  description: 'CW32F030 SPI.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. R1W0 interrupt clears plus FLUSH bit zero: writing zero to FLUSH clears the transmit buffer and shift register and sets TXE. Unselected bits must remain one to avoid an unintended flush. Source: CW32x030 RM Rev 2.5 19.8.6'
+  description: 'CW32F030 SPI.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. R1W0 interrupt clears plus FLUSH bit zero: writing zero to FLUSH clears the transmit buffer
+    and shift register and sets TXE. Unselected bits must remain one to avoid an unintended flush. Source: CW32x030 RM
+    Rev 2.5 19.8.6'
   fields:
   - name: MODF
     bit_offset: 7
@@ -292,11 +326,13 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: DR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 19.8.7, printed p393 (PDF p394); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 19.8.7, printed p393 (PDF p394); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 24
   access: rw
-  description: 'CW32F030 SPI.DR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. A write queues transmit data and clears TXE. Reading receives buffered data and clears RXNE; a generic read-modify-write is invalid. Source: CW32x030 RM Rev 2.5 19.6.1; 19.8.7'
+  description: 'CW32F030 SPI.DR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. A write queues transmit data and clears TXE. Reading receives buffered data and clears RXNE;
+    a generic read-modify-write is invalid. Source: CW32x030 RM Rev 2.5 19.6.1; 19.8.7'
   fields:
   - name: DR
     bit_offset: 0

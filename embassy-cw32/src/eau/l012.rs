@@ -33,20 +33,22 @@ pub struct SquareRoot {
     pub remainder: u32,
 }
 
-/// Exclusive accelerator owner. Drop does not disable a shared bus clock.
+/// Exclusive accelerator owner. The final clock owner gates the accelerator on drop.
 pub struct Eau<'d> {
+    clock: crate::rcc::ClockGuard,
     token: Peri<'d, EAU>,
 }
 impl<'d> Eau<'d> {
     pub fn new(token: Peri<'d, EAU>) -> Self {
-        <EAU as PeripheralClock>::enable_and_reset();
-        Self { token }
+        let clock = <EAU as PeripheralClock>::acquire();
+        Self { token, clock }
     }
-    pub fn reset(&mut self) {
-        <EAU as PeripheralClock>::enable_and_reset();
+    /// Reset only while no forgotten owner retains the same clock resource.
+    pub fn reset(&mut self) -> bool {
+        self.clock.reset()
     }
     pub fn release(self) -> Peri<'d, EAU> {
-        <EAU as PeripheralClock>::enable_and_reset();
+        self.clock.reset();
         self.token
     }
     pub fn is_busy(&self) -> bool {

@@ -10,6 +10,9 @@ pub struct InterruptHandler<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> crate::interrupt::typelevel::Handler<I::Interrupt> for InterruptHandler<I> {
     unsafe fn on_interrupt() {
         let waker = critical_section::with(|_| {
+            if !I::clock_resource().is_enabled() {
+                return None;
+            }
             service_vc_interrupt(&mut VcHardware::<I>(core::marker::PhantomData), I::state())
         });
         if let Some(waker) = waker {

@@ -81,7 +81,7 @@ pub async fn run(
         pac::SYSCTRL.apben1().write_value(gate);
         pac::UART1.ier().write(|_| {});
         pac::UART1.cr1().write(|r| {
-            r.set_source(1);
+            r.set_source(pac::uart::vals::Cr1Source::PCLK_ALT);
             r.set_rxen(true);
             r.set_txen(true);
         });

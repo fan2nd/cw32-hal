@@ -86,6 +86,7 @@ fn calibration_word(config: Calibration) -> Result<pac::opa::regs::Cal, Error> {
 /// A DAC-backed OPA retains its source guard, allowing single-channel code
 /// updates while keeping the source enabled and its route/pins owned.
 pub struct Opa<'d, I: OpaInstance> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, I>,
     _positive: Option<Peri<'d, AnyPin>>,
     _negative: Option<Peri<'d, AnyPin>>,
@@ -238,7 +239,7 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
         let word = opa_word(pch, nch, mode, gain, config)?;
-        I::enable_and_reset();
+        let clock = I::acquire();
         let r = I::regs();
         r.cr().write_value(pac::opa::regs::Cr(0xe000));
         r.cal().write_value(pac::opa::regs::Cal(0));
@@ -252,6 +253,7 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         r.cr().write_value(word);
         delay.delay_us(40);
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             _positive: positive,
             _negative: negative,

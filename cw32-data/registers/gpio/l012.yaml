@@ -15,11 +15,125 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: OPENDRAIN
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.2, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -32,16 +146,130 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.2, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: PDR
   reset_value: 8
   reset_source: CW32L012 RM1.4 section 9.6.3, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
-  reset_note: RM9.6.3 explicitly gives GPIOx_PDR=0x00000008 for x=A/B/C/F; only PF03 has a physical pull-down. Do not infer
-    additional implemented pull-down fields or change the documented reset word from the pin capability.
+  reset_note: RM9.6.3 explicitly gives GPIOx_PDR=0x00000008 for x=A/B/C/F; only PF03 has a physical pull-down. Do not
+    infer additional implemented pull-down fields or change the documented reset word from the pin capability.
   offset: 12
   access: rw
   description: Pull-down enable; only PF03 implements an internal pull-down.
@@ -64,18 +292,132 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.4, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: AFR
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.6, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 20
   access: rw
-  description: 'Indexed AFR: index 0 = AFRL, index 1 = AFRH. Complete field layout/access/side effects are identical; offsets
-    and element evidence are explicit.'
+  description: 'Indexed AFR: index 0 = AFRL, index 1 = AFRH. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
   fields:
   - name: AFR
     bit_offset: 0
@@ -86,6 +428,56 @@ registers:
       len: 8
       stride: 4
     description: Indexed AFR; local index begins at zero, with explicitly modeled positions.
+    elements:
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR0
+      bit_offset: 0
+      description: 'Element 0: AFR0. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR1
+      bit_offset: 4
+      description: 'Element 1: AFR1. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR2
+      bit_offset: 8
+      description: 'Element 2: AFR2. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR3
+      bit_offset: 12
+      description: 'Element 3: AFR3. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR4
+      bit_offset: 16
+      description: 'Element 4: AFR4. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR5
+      bit_offset: 20
+      description: 'Element 5: AFR5. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR6
+      bit_offset: 24
+      description: 'Element 6: AFR6. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    - bit_size: 4
+      access: rw
+      kind: raw
+      name: AFR7
+      bit_offset: 28
+      description: 'Element 7: AFR7. Indexed AFR; local index begins at zero, with explicitly modeled positions.'
+    array_source: CW32L012 RM1.4 section 9.6.6, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   array:
     offsets:
     - 4
@@ -106,9 +498,9 @@ registers:
   reset_source: CW32L012 RM1.4 section 9.6.7, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
     RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)
   reset_note: 'Reset is instance-dependent: GPIOA=0x000001FF, GPIOB=0x0000007F, GPIOC=0x0000E000, GPIOF=0x000000C3. Shared
-    block has no single full reset value. Additional source conflict: GPIOA/B nominal headings conflict with RM9.3.7 reset-state
-    prose: all pins except PA13/PA14/PF03 should start analog high-impedance, yet ANALOG A=0x01FF/B=0x007F leaves other implemented
-    pins digital.'
+    block has no single full reset value. Additional source conflict: GPIOA/B nominal headings conflict with RM9.3.7
+    reset-state prose: all pins except PA13/PA14/PF03 should start analog high-impedance, yet ANALOG A=0x01FF/B=0x007F
+    leaves other implemented pins digital.'
   offset: 28
   access: rw
   description: 'Pin mode: 0 = digital, 1 = analog.'
@@ -118,11 +510,126 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.7, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+      RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)
 - name: RISEIE
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.8, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -135,11 +642,125 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.8, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: FALLIE
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.9, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -152,11 +773,125 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.9, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: ISR
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.10, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -169,36 +904,265 @@ registers:
     bit_size: 1
     access: ro
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.10, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: ICR
   reset_value: null
   reset_source: CW32L012 RM1.4 section 9.6.11, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
     RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)
   reset_note: 'Reset is instance-dependent: GPIOA=0x000001FF, GPIOB=0x000000FF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared
-    block has no single full reset value. Additional source conflict: GPIOA/B nominal headings omit implemented pins (A9..15/B8..15),
-    despite the same register describing PINy bits15:0 as read-one/write-zero. DIR was corrected to full A/B masks in Rev1.3;
-    no equivalent ANALOG/ICR correction is recorded.'
+    block has no single full reset value. Additional source conflict: GPIOA/B nominal headings omit implemented pins
+    (A9..15/B8..15), despite the same register describing PINy bits15:0 as read-one/write-zero. DIR was corrected to
+    full A/B masks in Rev1.3; no equivalent ANALOG/ICR correction is recorded.'
   offset: 56
   access: rw
-  description: 'Interrupt flags are cleared by writing ZERO to the relevant bit; not W1C. Implemented interrupt-clear fields
-    are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected
-    implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific.
-    Source: RM1.4 9.6.11; RM1.4 1.2'
+  description: 'Interrupt flags are cleared by writing ZERO to the relevant bit; not W1C. Implemented interrupt-clear
+    fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to
+    unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains
+    register-specific. Source: RM1.4 9.6.11; RM1.4 1.2'
   fields:
   - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.11, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+      RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: FILTER
@@ -219,11 +1183,125 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.12, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: IDR
   reset_value: null
   reset_source: CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -239,11 +1317,125 @@ registers:
     bit_size: 1
     access: ro
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: ro
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: ODR
   reset_value: null
   reset_source: CW32L012 RM1.4 section 9.6.14, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -257,11 +1449,125 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.14, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: BRR
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 9.6.15, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
@@ -269,19 +1575,133 @@ registers:
   access: rw
   description: 'Write 1 to a low-halfword bit to reset its output latch; vendor access is read-write. R0W1 output action:
     selected ones reset ODR output latches; zeros do nothing. This clears output bits, not interrupt flags. Source: RM1.4
-    9.6.15; SDK GPIO_ResetBits R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output
-    bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_WritePin'
+    9.6.15; SDK GPIO_ResetBits R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears
+    output bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_WritePin'
   fields:
   - name: BRR
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR0
+      bit_offset: 0
+      description: 'Element 0: BRR0. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR1
+      bit_offset: 1
+      description: 'Element 1: BRR1. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR2
+      bit_offset: 2
+      description: 'Element 2: BRR2. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR3
+      bit_offset: 3
+      description: 'Element 3: BRR3. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR4
+      bit_offset: 4
+      description: 'Element 4: BRR4. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR5
+      bit_offset: 5
+      description: 'Element 5: BRR5. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR6
+      bit_offset: 6
+      description: 'Element 6: BRR6. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR7
+      bit_offset: 7
+      description: 'Element 7: BRR7. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR8
+      bit_offset: 8
+      description: 'Element 8: BRR8. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR9
+      bit_offset: 9
+      description: 'Element 9: BRR9. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR10
+      bit_offset: 10
+      description: 'Element 10: BRR10. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR11
+      bit_offset: 11
+      description: 'Element 11: BRR11. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR12
+      bit_offset: 12
+      description: 'Element 12: BRR12. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR13
+      bit_offset: 13
+      description: 'Element 13: BRR13. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR14
+      bit_offset: 14
+      description: 'Element 14: BRR14. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR15
+      bit_offset: 15
+      description: 'Element 15: BRR15. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.15, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: one_to_clear
   read_behavior: ordinary
 - name: BSRR
@@ -290,30 +1710,258 @@ registers:
   offset: 92
   access: rw
   description: 'Low halfword sets output latch bits; upper halfword resets them; vendor access is read-write. R0W1 output
-    action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK GPIO_SetBits/GPIO_ResetBits
-    R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16;
-    SDK GPIO_WritePin'
+    action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK
+    GPIO_SetBits/GPIO_ResetBits R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write,
+    not RMW. Source: RM1.4 9.6.16; SDK GPIO_WritePin'
   fields:
   - name: BRR
     bit_offset: 16
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR0
+      bit_offset: 16
+      description: 'Element 0: BRR0. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR1
+      bit_offset: 17
+      description: 'Element 1: BRR1. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR2
+      bit_offset: 18
+      description: 'Element 2: BRR2. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR3
+      bit_offset: 19
+      description: 'Element 3: BRR3. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR4
+      bit_offset: 20
+      description: 'Element 4: BRR4. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR5
+      bit_offset: 21
+      description: 'Element 5: BRR5. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR6
+      bit_offset: 22
+      description: 'Element 6: BRR6. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR7
+      bit_offset: 23
+      description: 'Element 7: BRR7. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR8
+      bit_offset: 24
+      description: 'Element 8: BRR8. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR9
+      bit_offset: 25
+      description: 'Element 9: BRR9. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR10
+      bit_offset: 26
+      description: 'Element 10: BRR10. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR11
+      bit_offset: 27
+      description: 'Element 11: BRR11. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR12
+      bit_offset: 28
+      description: 'Element 12: BRR12. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR13
+      bit_offset: 29
+      description: 'Element 13: BRR13. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR14
+      bit_offset: 30
+      description: 'Element 14: BRR14. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BRR15
+      bit_offset: 31
+      description: 'Element 15: BRR15. Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.16, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: BSS
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS0
+      bit_offset: 0
+      description: 'Element 0: BSS0. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS1
+      bit_offset: 1
+      description: 'Element 1: BSS1. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS2
+      bit_offset: 2
+      description: 'Element 2: BSS2. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS3
+      bit_offset: 3
+      description: 'Element 3: BSS3. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS4
+      bit_offset: 4
+      description: 'Element 4: BSS4. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS5
+      bit_offset: 5
+      description: 'Element 5: BSS5. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS6
+      bit_offset: 6
+      description: 'Element 6: BSS6. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS7
+      bit_offset: 7
+      description: 'Element 7: BSS7. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS8
+      bit_offset: 8
+      description: 'Element 8: BSS8. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS9
+      bit_offset: 9
+      description: 'Element 9: BSS9. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS10
+      bit_offset: 10
+      description: 'Element 10: BSS10. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS11
+      bit_offset: 11
+      description: 'Element 11: BSS11. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS12
+      bit_offset: 12
+      description: 'Element 12: BSS12. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS13
+      bit_offset: 13
+      description: 'Element 13: BSS13. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS14
+      bit_offset: 14
+      description: 'Element 14: BSS14. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: BSS15
+      bit_offset: 15
+      description: 'Element 15: BSS15. Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.16, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: mixed
   read_behavior: ordinary
 - name: TOG
@@ -321,19 +1969,133 @@ registers:
   reset_source: CW32L012 RM1.4 section 9.6.17, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 96
   access: rw
-  description: 'Write 1 to toggle the corresponding output latch bit; vendor access is read-write. R0W1 output action: each
-    written one toggles the corresponding ODR latch; zero does nothing. Source: RM1.4 9.6.17; SDK GPIO_TogglePin'
+  description: 'Write 1 to toggle the corresponding output latch bit; vendor access is read-write. R0W1 output action:
+    each written one toggles the corresponding ODR latch; zero does nothing. Source: RM1.4 9.6.17; SDK GPIO_TogglePin'
   fields:
   - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
-      array.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as
+      an explicit array.
     array:
       len: 16
       stride: 1
+    elements:
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN0
+      bit_offset: 0
+      description: 'Element 0: PIN0. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN1
+      bit_offset: 1
+      description: 'Element 1: PIN1. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN2
+      bit_offset: 2
+      description: 'Element 2: PIN2. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN3
+      bit_offset: 3
+      description: 'Element 3: PIN3. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN4
+      bit_offset: 4
+      description: 'Element 4: PIN4. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN5
+      bit_offset: 5
+      description: 'Element 5: PIN5. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN6
+      bit_offset: 6
+      description: 'Element 6: PIN6. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN7
+      bit_offset: 7
+      description: 'Element 7: PIN7. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN8
+      bit_offset: 8
+      description: 'Element 8: PIN8. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN9
+      bit_offset: 9
+      description: 'Element 9: PIN9. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN10
+      bit_offset: 10
+      description: 'Element 10: PIN10. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN11
+      bit_offset: 11
+      description: 'Element 11: PIN11. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN12
+      bit_offset: 12
+      description: 'Element 12: PIN12. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN13
+      bit_offset: 13
+      description: 'Element 13: PIN13. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN14
+      bit_offset: 14
+      description: 'Element 14: PIN14. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    - bit_size: 1
+      access: rw
+      kind: bool
+      name: PIN15
+      bit_offset: 15
+      description: 'Element 15: PIN15. Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout,
+        represented as an explicit array.'
+    array_source: CW32L012 RM1.4 section 9.6.17, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: toggle
   read_behavior: ordinary
 constants:

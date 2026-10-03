@@ -7,7 +7,7 @@
     doc = "The separate [`crate::atim`] driver owns complementary/break-protected PWM."
 )]
 
-use crate::{gpio::Pin, pac, peripherals, rcc::PeripheralClock, PeripheralType};
+use crate::{gpio::Pin, pac, peripherals, rcc::KernelClock, PeripheralType};
 
 // Share only the operations audited on both L012 register blocks. Each IP's
 // adapter is selected independently, including when the other IP is absent.
@@ -72,14 +72,16 @@ pub(crate) mod sealed {
     pub(crate) trait Instance {
         fn regs() -> super::Registers;
     }
-    pub trait PwmInstance {}
+    pub(crate) trait PwmInstance {
+        fn state() -> &'static critical_section::Mutex<core::cell::RefCell<super::simple_pwm::State>>;
+    }
     pub trait Channel {}
     pub trait Pin<T, C> {}
 }
 
 /// A metadata-generated, exclusively owned 16-bit PCLK timer instance.
 #[allow(private_bounds)]
-pub trait CoreInstance: PeripheralType + PeripheralClock + sealed::Instance {}
+pub trait CoreInstance: PeripheralType + KernelClock + sealed::Instance {}
 /// A timer with an audited single-ended output implementation.
 #[allow(private_bounds)]
 pub trait PwmInstance: CoreInstance + sealed::PwmInstance {}
@@ -130,6 +132,9 @@ pub enum Error {
     CounterOutOfRange,
     DutyOutOfRange,
     ChannelUnavailable,
+    /// Independent PWM channels require period_ticks <= 65535 so their full
+    /// duty range fits CCR without a shared counter/mode reconfiguration.
+    SplitPeriodTooLong,
 }
 impl embedded_hal::pwm::Error for Error {
     fn kind(&self) -> embedded_hal::pwm::ErrorKind {

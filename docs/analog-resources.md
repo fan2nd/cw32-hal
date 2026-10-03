@@ -52,9 +52,10 @@ threshold updates or synchronous dual-channel updates after splitting.
 
 Every shared DAC CR0/CR1 update after construction uses a critical-section RMW.
 Dropping one channel disconnects only its external route, clears only its enable
-bit, then disconnects only its owned pin. Sibling fields, reserved bits and the
-shared clock gate are preserved. The whole DAC has no separate shutdown that can
-run after its channels have been transferred.
+bit, then disconnects only its owned pin. Sibling fields and reserved bits are
+preserved. Each channel retains an RCC guard, so the gate remains enabled until
+the final channel is safely shut down. The whole DAC has no separate shutdown
+that can run after its channels have been transferred.
 
 ## OPA output as an ADC channel
 

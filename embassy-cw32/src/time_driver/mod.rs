@@ -18,3 +18,20 @@ pub(crate) use l012::init;
 mod f030;
 #[cfg(all(feature = "time-driver-gtim1", gtim_f030))]
 pub(crate) use f030::init;
+
+/// Reject an unsupported 1 MHz timebase before any RCC register is changed.
+pub(crate) fn valid_clock(clocks: crate::rcc::Clocks) -> bool {
+    let hz = embassy_time_driver::TICK_HZ as u32;
+    let pclk = clocks.pclk_hz();
+    if pclk < hz || pclk % hz != 0 {
+        return false;
+    }
+    #[cfg(gtim_l012)]
+    {
+        pclk / hz <= 65536
+    }
+    #[cfg(gtim_f030)]
+    {
+        hz == 1_000_000 && core::prescaler(pclk / hz).is_some()
+    }
+}

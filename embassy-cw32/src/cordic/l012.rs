@@ -115,10 +115,11 @@ pub struct Hyperbolic {
 
 /// Exclusive, synchronous access to the hardware accelerator.
 ///
-/// Dropping this object consumes its token and does not gate the shared bus or
-/// enable an interrupt. `release` explicitly resets and returns the token.
+/// Dropping this object releases its dedicated clock. A forgotten owner keeps
+/// that clock alive. `release` requests an exclusive reset and returns the token.
 /// After a timeout, call `reset` or try another operation once BUSY is clear.
 pub struct Cordic<'d> {
+    clock: crate::rcc::ClockGuard,
     token: Peri<'d, CORDIC>,
     config: Config,
 }
@@ -128,15 +129,22 @@ impl<'d> Cordic<'d> {
         Self::with_config(token, Config::default())
     }
     pub fn with_config(token: Peri<'d, CORDIC>, config: Config) -> Self {
-        <CORDIC as PeripheralClock>::enable_and_reset();
-        Self { token, config }
+        let clock = <CORDIC as PeripheralClock>::acquire();
+        let owner = Self {
+            token,
+            config,
+            clock,
+        };
+        owner.reset_irq_state();
+        owner
     }
-    /// Abort any previous operation and discard its result via peripheral reset.
-    pub fn reset(&mut self) {
-        <CORDIC as PeripheralClock>::enable_and_reset();
+    /// Abort via peripheral reset only when this is the sole clock owner.
+    /// Returns false when a forgotten owner or permanent pin prevents reset.
+    pub fn reset(&mut self) -> bool {
+        self.clock.reset()
     }
     pub fn release(self) -> Peri<'d, CORDIC> {
-        <CORDIC as PeripheralClock>::enable_and_reset();
+        self.clock.reset();
         self.token
     }
     pub fn is_busy(&self) -> bool {
@@ -234,6 +242,9 @@ impl crate::interrupt::typelevel::Handler<crate::interrupt::typelevel::CORDIC>
 {
     unsafe fn on_interrupt() {
         let waker = critical_section::with(|cs| {
+            if !CORDIC::clock_resource().is_enabled() {
+                return None;
+            }
             if let Some(result) = complete_async(&mut Hardware) {
                 RESULTS.borrow(cs).set(result);
                 EVENT.latch(1)
@@ -297,8 +308,12 @@ impl<'d> Cordic<'d> {
         AsyncCordic { inner: Some(self) }
     }
     fn reset_irq_state(&self) {
-        <CORDIC as PeripheralClock>::enable_and_reset();
-        EVENT.reset();
+        critical_section::with(|_| {
+            // A forgotten owner can prevent reset; IE must still be masked.
+            pac::CORDIC.csr().modify(|w| w.set_ie(false));
+            self.clock.reset();
+            EVENT.reset();
+        });
     }
 }
 /// IRQ-driven Q1.31 operations. Every method is lazy until first poll. Dropping
@@ -316,7 +331,7 @@ impl<'d> AsyncCordic<'d> {
     async fn calculate(&mut self, op: Operation) -> Result<[Q31; 3], Error> {
         let guard = critical_section::with(|_| {
             begin_async(&mut Hardware, self.inner.as_ref().unwrap().config, &op)?;
-            Ok(Cancel)
+            Ok(Cancel(&self.inner.as_ref().unwrap().clock))
         })?;
         let result = core::future::poll_fn(|cx| {
             EVENT.register(cx.waker());
@@ -411,8 +426,8 @@ impl Drop for AsyncCordic<'_> {
     }
 }
 
-struct Cancel;
-impl Drop for Cancel {
+struct Cancel<'a>(&'a crate::rcc::ClockGuard);
+impl Drop for Cancel<'_> {
     fn drop(&mut self) {
         critical_section::with(|_| {
             // Dedicated AHBRST.CORDIC reset cancels hardware, including a
@@ -421,7 +436,7 @@ impl Drop for Cancel {
             let mut status = regs::Csr(hw.read(Reg::Csr));
             status.set_ie(false);
             hw.write(Reg::Csr, status.0);
-            <CORDIC as PeripheralClock>::enable_and_reset();
+            self.0.reset();
             EVENT.reset();
         });
     }

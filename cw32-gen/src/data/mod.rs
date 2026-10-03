@@ -60,6 +60,9 @@ pub fn load(root: &Path, chip: &str) -> Result<Ir> {
         for r in &mut b.registers {
             for f in &mut r.fields {
                 f.values.sort_by_key(|v| v.value);
+                for element in &mut f.elements {
+                    element.values.sort_by_key(|v| v.value);
+                }
             }
             r.fields.sort_by_key(|f| f.bit_offset);
         }

@@ -1,6 +1,6 @@
 //! Minimal owned timer control. No raw PAC access or fabricated peripheral clocks.
 use super::{CoreInstance, Error, Frequency, Prescalers};
-use crate::{rcc, Peri};
+use crate::{rcc::ClockGuard, Peri};
 
 /// Edge-aligned upcounter timing. Values describe physical counts, not encodings.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -32,25 +32,28 @@ impl Config {
 
 /// Owns a single timer. Construction and Drop leave its counter stopped.
 ///
-/// Clock gates shared with another instance are never disabled or reset here;
-/// the metadata-derived RCC implementation preserves those ownership rules.
+/// A metadata-derived clock guard keeps the timer's clock alive. Shared clock
+/// gates are reset only when the RCC resource can do so without affecting a
+/// live peer, and are released only after the final owner drops.
 /// GTIM1 is not safely obtainable when the Embassy time driver reserves it.
 pub struct Timer<'d, T: CoreInstance> {
     _instance: Peri<'d, T>,
+    pub(super) clock: ClockGuard,
     clock_hz: u32,
     config: Config,
 }
 impl<'d, T: CoreInstance> Timer<'d, T> {
     /// Use the validated RCC PCLK. This never starts the counter or enables pins.
     pub fn new(instance: Peri<'d, T>) -> Self {
-        let clock_hz = rcc::clocks().pclk;
-        T::enable_and_reset();
+        let clock_hz = T::frequency();
+        let clock = T::acquire();
         T::regs().initialize();
         let config = Config::default();
         T::regs().write_timing(config);
         T::regs().load();
         Self {
             _instance: instance,
+            clock,
             clock_hz,
             config,
         }

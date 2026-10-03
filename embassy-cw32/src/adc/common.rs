@@ -12,6 +12,9 @@ pub(super) trait SequenceIo {
 }
 
 pub(super) trait AsyncSequenceIo: SequenceIo {
+    fn clock_enabled(&self) -> bool {
+        true
+    }
     fn completion_interrupt_enabled(&mut self) -> bool;
     fn completion_pending(&mut self) -> bool;
     fn completion_interrupt(&mut self, enabled: bool);
@@ -91,7 +94,7 @@ fn service_completion(io: &mut impl AsyncSequenceIo) -> bool {
 
 pub(super) fn on_interrupt(io: &mut impl AsyncSequenceIo, state: &EventState) {
     let waker = critical_section::with(|_| {
-        if service_completion(io) {
+        if io.clock_enabled() && service_completion(io) {
             // Keep completion publication indivisible with hardware cleanup
             // even if an enclosing executor can run in another interrupt.
             state.latch(SEQUENCE_COMPLETE)

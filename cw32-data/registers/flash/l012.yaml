@@ -3,11 +3,17 @@ version: l012
 registers:
 - name: CR1
   reset_value: null
-  reset_source: "CW32L012 RM1.4 section 7.10.1, printed p100 (PDF p126); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section 7.6.3, printed p95 (PDF p121)"
-  reset_note: "Nominal reset heading is 0x00000000 for an unprotected device. Read-only SECURITY[6:5] reports persistent protection level set through ISP; a universal full reset word is not established across protection states. Writable MODE reset remains 0."
+  reset_source: CW32L012 RM1.4 section 7.10.1, printed p100 (PDF p126); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section 7.6.3, printed p95 (PDF p121)
+  reset_note: Nominal reset heading is 0x00000000 for an unprotected device. Read-only SECURITY[6:5] reports persistent
+    protection level set through ISP; a universal full reset word is not established across protection states. Writable
+    MODE reset remains 0.
   offset: 0
   access: rw
-  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.1; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked,
+    one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing
+    flag. Source: RM1.4 7.10.1; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
   fields:
   - name: KEY
     bit_offset: 16
@@ -30,11 +36,14 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 7.10.2, printed p101 (PDF p127); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 7.10.2, printed p101 (PDF p127); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.2; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked,
+    one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing
+    flag. Source: RM1.4 7.10.2; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
   fields:
   - name: KEY
     bit_offset: 16
@@ -69,11 +78,14 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: PAGELOCK
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 7.10.3, printed p102 (PDF p128); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 7.10.3, printed p102 (PDF p128); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 8
   access: rw
-  description: 'Register PAGELOCK; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence, not a self-clearing flag. Source: RM1.4 7.10.3; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
+  description: 'Register PAGELOCK; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Every write requires KEY[31:16]=0x5A5A. CR1 selects flash operation mode; PAGELOCK bits use
+    zero=locked, one=unlocked. CR2.CACHEINVALID is an explicit write-one then write-zero cache invalidation sequence,
+    not a self-clearing flag. Source: RM1.4 7.10.3; SDK FLASH_SetLatency/FLASH_UnlockAllPages/FLASH_LockAllPages'
   fields:
   - name: KEY
     bit_offset: 16
@@ -81,110 +93,139 @@ registers:
     access: wo
     kind: raw
     description: Field KEY; raw encoding retained unless explicitly audited.
-  - name: LOCK15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK15; raw encoding retained unless explicitly audited.
-  - name: LOCK14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK14; raw encoding retained unless explicitly audited.
-  - name: LOCK13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK13; raw encoding retained unless explicitly audited.
-  - name: LOCK12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK12; raw encoding retained unless explicitly audited.
-  - name: LOCK11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK11; raw encoding retained unless explicitly audited.
-  - name: LOCK10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK10; raw encoding retained unless explicitly audited.
-  - name: LOCK9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK9; raw encoding retained unless explicitly audited.
-  - name: LOCK8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK8; raw encoding retained unless explicitly audited.
-  - name: LOCK7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK7; raw encoding retained unless explicitly audited.
-  - name: LOCK6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK6; raw encoding retained unless explicitly audited.
-  - name: LOCK5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK5; raw encoding retained unless explicitly audited.
-  - name: LOCK4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK4; raw encoding retained unless explicitly audited.
-  - name: LOCK3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK3; raw encoding retained unless explicitly audited.
-  - name: LOCK2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK2; raw encoding retained unless explicitly audited.
-  - name: LOCK1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field LOCK1; raw encoding retained unless explicitly audited.
-  - name: LOCK0
+  - name: LOCK
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Field LOCK0; raw encoding retained unless explicitly audited.
+    description: 'Flash protection group bit; programming/unlocking constraints remain those of PAGELOCK. Index order:
+      LOCK0, LOCK1, LOCK2, LOCK3, LOCK4, LOCK5, LOCK6, LOCK7, LOCK8, LOCK9, LOCK10, LOCK11, LOCK12, LOCK13, LOCK14, LOCK15.'
+    array:
+      len: 16
+      stride: 1
+    elements:
+    - name: LOCK0
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK0; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK1
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK2
+      bit_offset: 2
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK2; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK3
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK3; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK4
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK4; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK5
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK5; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK6
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK6; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK7
+      bit_offset: 7
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK7; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK8
+      bit_offset: 8
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK8; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK9
+      bit_offset: 9
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK9; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK10
+      bit_offset: 10
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK10; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK11
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK11; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK12
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK12; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK13
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK13; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK14
+      bit_offset: 14
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK14; raw encoding retained unless explicitly audited.
+      values: []
+    - name: LOCK15
+      bit_offset: 15
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field LOCK15; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 7.10.3, printed p102 (PDF p128); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: keyed
   read_behavior: ordinary
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 7.10.4, printed p103 (PDF p129); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 7.10.4, printed p103 (PDF p129); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 32
   access: rw
-  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: PROG
     bit_offset: 4
@@ -217,11 +258,12 @@ registers:
     kind: bool
     description: Field PC; raw encoding retained unless explicitly audited.
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 7.10.5, printed p104 (PDF p130); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 7.10.5, printed p104 (PDF p130); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 36
   access: ro
-  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: BUSY
     bit_offset: 5
@@ -260,11 +302,14 @@ registers:
     kind: bool
     description: Field PC; raw encoding retained unless explicitly audited.
 - name: ICR
-  reset_value: 0x0000001f
-  reset_source: "CW32L012 RM1.4 section 7.10.6, printed p105 (PDF p131); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 31
+  reset_source: CW32L012 RM1.4 section 7.10.6, printed p105 (PDF p131); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 40
   access: rw
-  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 7.10.6; RM1.4 1.2'
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR
+    flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch
+    or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 7.10.6; RM1.4 1.2'
   fields:
   - name: PROG
     bit_offset: 4
@@ -300,11 +345,15 @@ registers:
   read_behavior: ordinary
 - name: SDKCFR
   reset_value: null
-  reset_source: "CW32L012 RM1.4 section 7.10.7, printed p105 (PDF p131); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section 7.6.4, printed p96 (PDF p122)"
-  reset_note: "Nominal reset heading is 0x0000007F when no secure library is configured. Read-only START/END report secure-library indexes stored in Flash control words; section7.6.4 says programmed StartIdx and EndIdx are readable in this register. A universal full reset word is not established across programmed security-library states."
+  reset_source: CW32L012 RM1.4 section 7.10.7, printed p105 (PDF p131); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section 7.6.4, printed p96 (PDF p122)
+  reset_note: Nominal reset heading is 0x0000007F when no secure library is configured. Read-only START/END report secure-library
+    indexes stored in Flash control words; section7.6.4 says programmed StartIdx and EndIdx are readable in this register.
+    A universal full reset word is not established across programmed security-library states.
   offset: 112
   access: ro
-  description: Register SDKCFR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register SDKCFR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics.
   fields:
   - name: END
     bit_offset: 8

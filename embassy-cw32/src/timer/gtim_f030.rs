@@ -1,7 +1,7 @@
 //! GTIM F030, CW32x030 RM2.5 chapter 14. There is no compare preload,
 //! software update command, per-pin enable, or ATIM master-output gate.
 use super::{low_level::Config, Prescalers, TimerRegisters};
-use crate::pac::gtim::{regs, Gtim};
+use crate::pac::gtim::{regs, vals, Gtim};
 
 impl TimerRegisters for Gtim {
     fn prescalers(self) -> Prescalers {
@@ -42,10 +42,9 @@ impl TimerRegisters for Gtim {
     }
     fn configure_pwm(self) {
         self.cmmr().write(|v| {
-            v.set_cc1m(8);
-            v.set_cc2m(8);
-            v.set_cc3m(8);
-            v.set_cc4m(8);
+            for channel in 0..4 {
+                v.set_ccm(channel, vals::CmmrCcm::FORCE_LOW);
+            }
         });
     }
     fn write_compare(self, channel: usize, duty: u32) {
@@ -55,19 +54,13 @@ impl TimerRegisters for Gtim {
     fn output(self, channel: usize, enabled: bool, duty: u32) {
         // RM14.8.4: 8=forced low, 9=forced high, 15=high when CNT<CCR.
         let mode = if !enabled {
-            8
+            vals::CmmrCcm::FORCE_LOW
         } else if duty == 65536 {
-            9
+            vals::CmmrCcm::FORCE_HIGH
         } else {
-            15
+            vals::CmmrCcm::PWM_REVERSE
         };
-        self.cmmr().modify(|v| match channel {
-            0 => v.set_cc1m(mode),
-            1 => v.set_cc2m(mode),
-            2 => v.set_cc3m(mode),
-            3 => v.set_cc4m(mode),
-            _ => unreachable!(),
-        });
+        self.cmmr().modify(|v| v.set_ccm(channel, mode));
     }
     fn master_output(self, _enabled: bool) {
         // GTIM outputs are controlled only by each channel's compare mode.

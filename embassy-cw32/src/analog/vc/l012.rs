@@ -71,6 +71,7 @@ fn comparator_words(
 /// and the bandgap, divider or DAC borrow until the comparator is dropped.
 /// VC pair reference identity is independent of the shared IRQ13/IRQ24 pairing.
 pub struct Comp<'d, I: VcInstance, M: Mode> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, I>,
     _positive: Peri<'d, AnyPin>,
     _negative: Option<Peri<'d, AnyPin>>,
@@ -269,7 +270,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         config: ComparatorConfig,
     ) -> Result<Self, Error> {
         let (cr0, cr1) = comparator_words(pch, nch, config)?;
-        I::enable_and_reset();
+        let clock = I::acquire();
         let r = I::regs();
         critical_section::with(|_| {
             // Configure this VC only: no shared reset/reference-register writes.
@@ -285,6 +286,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         }
         r.cr0().write_value(cr0);
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             _positive: positive,
             _negative: negative,

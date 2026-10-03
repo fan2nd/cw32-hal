@@ -13,7 +13,7 @@ use super::{
     BorrowedAdcChannel, BorrowedChannel,
 };
 use crate::{
-    gpio::Pin, interrupt, pac, peripherals, rcc::PeripheralClock, Async, Blocking, Mode, Peri,
+    gpio::Pin, interrupt, pac, peripherals, rcc::KernelClock, Async, Blocking, Mode, Peri,
     PeripheralType,
 };
 use core::{future::poll_fn, marker::PhantomData};
@@ -33,7 +33,7 @@ mod sealed {
 }
 /// Generated peripheral identity; shared ADC reset is deliberately never asserted.
 #[allow(private_bounds)]
-pub trait Instance: sealed::Sealed + PeripheralClock + PeripheralType + 'static {
+pub trait Instance: sealed::Sealed + KernelClock + PeripheralType + 'static {
     /// ADC1 has its own vector; ADC2 shares ADC2_DAC with the DAC.
     type Interrupt: interrupt::typelevel::Interrupt;
 }
@@ -60,6 +60,16 @@ pub enum ClockDivider {
     Div2 = 1,
     Div4 = 2,
     Div8 = 3,
+}
+impl ClockDivider {
+    pub(crate) fn register_value(self) -> pac::adc::vals::CrClk {
+        match self {
+            Self::Div1 => pac::adc::vals::CrClk::DIV1,
+            Self::Div2 => pac::adc::vals::CrClk::DIV2,
+            Self::Div4 => pac::adc::vals::CrClk::DIV4,
+            Self::Div8 => pac::adc::vals::CrClk::DIV8,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -109,6 +119,7 @@ fn validate_clock(pclk: u32, config: Config) -> Result<(), Error> {
 /// Owns one ADC peripheral. Channels are exclusively borrowed for each operation.
 /// Conversion values are uncalibrated 12-bit codes.
 pub struct Adc<'d, I: Instance, M: Mode> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, I>,
     _mode: PhantomData<M>,
     config: Config,
@@ -157,11 +168,11 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
         config: Config,
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
-        let pclk = crate::rcc::clocks().pclk_hz();
+        let pclk = I::frequency();
         validate_clock(pclk, config)?;
         #[cfg(any(dma_l012, dma_f030))]
         I::dma_state().check()?;
-        I::enable_and_reset();
+        let clock = I::acquire();
         let r = I::regs();
         // RM gives CR reset 0x100 with bit8 reserved: never overwrite reserved
         // readback, including when a shared reset cannot be asserted.
@@ -180,6 +191,7 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
         delay.delay_us(32); // EN needs ~1 us; auto-started BGR needs ~30 us (RM 25.12.19).
         I::state().reset();
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             _mode: PhantomData,
             config,
@@ -447,6 +459,9 @@ impl<I: Instance> interrupt::typelevel::Handler<I::Interrupt> for InterruptHandl
 }
 
 impl<I: Instance> AsyncSequenceIo for Hardware<I> {
+    fn clock_enabled(&self) -> bool {
+        I::clock_resource().is_enabled()
+    }
     fn completion_interrupt_enabled(&mut self) -> bool {
         I::regs().ier().read().eos()
     }
@@ -484,14 +499,14 @@ fn control_mask() -> u32 {
     let mut mask = regs::Cr(0);
     mask.set_en(true);
     mask.set_cont(true);
-    mask.set_clk(3);
+    mask.set_clk(pac::adc::vals::CrClk::DIV8);
     mask.set_ens(7);
     mask.set_slave(true);
     mask.0
 }
 fn control_word(old: u32, divider: ClockDivider, count: usize) -> u32 {
     let mut word = regs::Cr(old & !control_mask());
-    word.set_clk(divider as u8);
+    word.set_clk(divider.register_value());
     word.set_ens((count - 1) as u8);
     word.set_en(true);
     word.0
@@ -520,6 +535,7 @@ impl<'d, I: Instance, M: Mode> Drop for Adc<'d, I, M> {
             {
                 I::dma_state().cancel();
                 if I::dma_state().check().is_err() {
+                    self._clock.pin();
                     return;
                 }
             }

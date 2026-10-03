@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+/// Version 10 records semantic enum evidence, explicit field arrays and peripheral clocks.
 /// Version 9 records evidenced OPA internal DAC connections.
 /// Version 8 records explicit DMA channels and uniform request-selector routes.
 /// Version 7 records evidenced comparator source connections. Version 6 records
@@ -10,7 +11,7 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 9;
+pub const SCHEMA_VERSION: u32 = 10;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -44,10 +45,12 @@ model!(Constant {
     value: u32,
     description: String
 });
-model!(EnumValue {
-    name: String,
-    value: u32
-});
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct EnumValue {
+    pub name: String,
+    pub value: u32,
+}
 fn raw_kind() -> String {
     "raw".into()
 }
@@ -104,11 +107,20 @@ impl Array {
     }
 }
 
+/// Field offsets use the same explicit/regular representation as register
+/// arrays, but validation bounds expansion to the enclosing 32-bit word.
+pub type FieldArray = Array;
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
-pub struct FieldArray {
-    pub len: u8,
-    pub stride: u8,
+pub struct FieldElement {
+    pub name: String,
+    pub bit_offset: u8,
+    pub bit_size: u8,
+    pub access: String,
+    pub kind: String,
+    #[serde(default)]
+    pub values: Vec<EnumValue>,
+    pub description: String,
 }
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
@@ -116,9 +128,17 @@ pub struct Field {
     pub name: String,
     pub bit_offset: u8,
     pub bit_size: u8,
-    /// Explicit repeated fields: element n begins at bit_offset + n * stride.
+    /// Each array offset is relative to bit_offset; source order is index order.
     #[serde(default)]
     pub array: Option<FieldArray>,
+    #[serde(default)]
+    pub elements: Vec<FieldElement>,
+    /// Evidence that all elements have identical width/access/value semantics.
+    #[serde(default)]
+    pub array_source: Option<String>,
+    /// Manual section supporting every semantic enum encoding.
+    #[serde(default)]
+    pub values_source: Option<String>,
     pub access: String,
     pub description: String,
     #[serde(default = "raw_kind")]
@@ -218,6 +238,17 @@ pub struct Block {
     pub blocks: Vec<BlockItem>,
     pub constants: Vec<Constant>,
 }
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ClockSource {
+    Hclk,
+    Pclk,
+}
+model!(ClockTree {
+    bus_clock: ClockSource,
+    kernel_clock: Option<ClockSource>,
+    source: String
+});
 model!(ResetEffect {
     peripheral: String,
     description: String,
@@ -288,6 +319,8 @@ pub struct Peripheral {
     pub clock_bit: Option<u8>,
     #[serde(default, alias = "clock")]
     pub clock_gate: Option<RegisterBit>,
+    #[serde(default)]
+    pub clock_tree: Option<ClockTree>,
     #[serde(default)]
     pub reset: Option<RegisterBit>,
     /// Other resources disturbed by this reset, beyond owners of the same reset bit.
@@ -533,6 +566,12 @@ pub fn validate(ir: &Ir) -> Result<()> {
             }
         }
         validate_quirks(&p.quirks)?;
+        if p.clock_tree
+            .as_ref()
+            .is_some_and(|clock| clock.source.trim().is_empty())
+        {
+            return Err(err("peripheral clock tree requires source evidence"));
+        }
     }
     validate_quirks(&ir.chip.quirks)?;
     unique(ir.chip.remaps.iter().map(|r| r.name.as_str()), "remap")?;
@@ -768,7 +807,16 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
             unique(r.fields.iter().map(|f| f.name.as_str()), "field")?;
             let mut field_methods = BTreeSet::from(["from_bits".into(), "bits".into()]);
             let mut occupied = 0u32;
+            let mut original_fields = BTreeSet::new();
             for f in &r.fields {
+                let names: Vec<_> = if f.array.is_some() {
+                    f.elements.iter().map(|e| e.name.as_str()).collect()
+                } else {
+                    vec![f.name.as_str()]
+                };
+                if names.into_iter().any(|name| !original_fields.insert(name)) {
+                    return Err(err("duplicate original field identity"));
+                }
                 let method = accessor(&f.name)?;
                 claim_name(&mut field_methods, method.clone(), "field accessor")?;
                 claim_name(&mut field_methods, format!("set_{method}"), "field setter")?;
@@ -787,7 +835,12 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                 if !["raw", "bool", "enum"].contains(&f.kind.as_str())
                     || (f.kind == "bool" && f.bit_size != 1)
                     || (f.kind != "enum" && !f.values.is_empty())
-                    || (f.kind == "enum" && f.values.is_empty())
+                    || (f.kind == "enum"
+                        && (f.values.is_empty()
+                            || f.values_source
+                                .as_ref()
+                                .is_none_or(|source| source.trim().is_empty())))
+                    || (f.kind != "enum" && f.values_source.is_some())
                 {
                     return Err(err("invalid field kind/values"));
                 }
@@ -797,26 +850,51 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                     if v.value > (u32::MAX >> (32 - f.bit_size))
                         || !values.insert(v.value)
                         || ["from_bits", "to_bits"].contains(&v.name.as_str())
+                        || v.name.starts_with("_RESERVED_")
                     {
                         return Err(err("invalid/duplicate enum value or reserved variant"));
                     }
                 }
-                let (len, stride) = f
-                    .array
-                    .as_ref()
-                    .map(|a| (a.len, a.stride))
-                    .unwrap_or((1, 0));
-                if len == 0
-                    || (f.array.is_some() && stride < f.bit_size)
-                    || u16::from(f.bit_offset)
-                        + u16::from(len - 1) * u16::from(stride)
-                        + u16::from(f.bit_size)
-                        > u16::from(r.bit_size)
-                {
-                    return Err(err("invalid indexed field extent/stride"));
+                let offsets = item_offsets(&f.array)?;
+                if f.array.is_some() {
+                    if offsets.len() > usize::from(r.bit_size)
+                        || f.elements.len() != offsets.len()
+                        || f.array_source
+                            .as_ref()
+                            .is_none_or(|source| source.trim().is_empty())
+                    {
+                        return Err(err(
+                            "field array requires matching elements and semantic evidence",
+                        ));
+                    }
+                    unique(
+                        f.elements.iter().map(|e| e.name.as_str()),
+                        "field array element",
+                    )?;
+                    for (element, offset) in f.elements.iter().zip(&offsets) {
+                        if Some(usize::from(element.bit_offset))
+                            != usize::from(f.bit_offset).checked_add(*offset)
+                            || element.bit_size != f.bit_size
+                            || element.access != f.access
+                            || element.kind != f.kind
+                            || element.values != f.values
+                            || element.description.trim().is_empty()
+                        {
+                            return Err(err(
+                                "field array element layout/access/semantics mismatch",
+                            ));
+                        }
+                    }
+                } else if !f.elements.is_empty() || f.array_source.is_some() {
+                    return Err(err("scalar field cannot have array elements or evidence"));
                 }
-                for n in 0..len {
-                    let offset = f.bit_offset + n * stride;
+                for relative in offsets {
+                    let offset = usize::from(f.bit_offset)
+                        .checked_add(relative)
+                        .filter(|offset| {
+                            *offset + usize::from(f.bit_size) <= usize::from(r.bit_size)
+                        })
+                        .ok_or_else(|| err("invalid indexed field extent"))?;
                     let mask = (u32::MAX >> (32 - f.bit_size)) << offset;
                     if occupied & mask != 0 {
                         return Err(err("overlapping register fields"));
@@ -1130,11 +1208,22 @@ fn validate_peripheral_relationships(
                     for (prefix, extra) in [("TC", 0), ("TE", 1)] {
                         let name = format!("{prefix}{}", channel.number);
                         if !flags.fields.iter().any(|field| {
-                            field.name == name
-                                && u16::from(field.bit_offset)
-                                    == u16::from(channel.index) * 4 + extra
-                                && field.bit_size == 1
-                                && field.array.is_none()
+                            field.bit_size == 1
+                                && field.kind == "bool"
+                                && ((field.name == name
+                                    && field.array.is_none()
+                                    && u16::from(field.bit_offset)
+                                        == u16::from(channel.index) * 4 + extra)
+                                    || (field.name == prefix
+                                        && field.array.is_some()
+                                        && field
+                                            .elements
+                                            .get(usize::from(channel.index))
+                                            .is_some_and(|element| {
+                                                element.name == name
+                                                    && u16::from(element.bit_offset)
+                                                        == u16::from(channel.index) * 4 + extra
+                                            })))
                         }) {
                             return Err(err(
                                 "DMA channel number/index does not match its interrupt flags",

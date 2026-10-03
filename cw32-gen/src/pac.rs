@@ -344,25 +344,64 @@ fn render_block(b: &crate::schema::Block, overrides: &[crate::schema::RegisterRe
             if f.kind != "enum" {
                 continue;
             }
-            let name = format!("{}{}", value_name(&r.name), value_name(&f.name));
-            out.push_str(&format!("#[derive(Clone,Copy,Debug,PartialEq,Eq)]\n#[repr(u32)]\n#[allow(non_camel_case_types)]\npub enum {name} {{\n"));
-            for v in &f.values {
-                out.push_str(&format!("{} = {},\n", v.name, v.value));
-            }
-            out.push_str(&format!(
-                "}}\nimpl {name} {{pub const fn from_bits(value:u32)->Option<Self> {{match value {{"
-            ));
-            for v in &f.values {
-                out.push_str(&format!("{}=>Some(Self::{}),", v.value, v.name));
-            }
-            out.push_str("_=>None}} pub const fn to_bits(self)->u32 {self as u32}}\n");
-            out.push_str(&format!(
-                "impl From<{name}> for u32 {{fn from(value:{name})->u32 {{value as u32}}}}\n"
-            ));
+            render_enum(&mut out, r, f);
         }
     }
     out.push_str("}\n");
     out
+}
+/// Mirrors chiptool bcf538a2's exhaustive enum / sparse-newtype policy.
+/// Every masked bit pattern is valid, including documented reserved encodings.
+fn render_enum(out: &mut String, register: &crate::schema::Register, field: &crate::schema::Field) {
+    let name = format!("{}{}", value_name(&register.name), value_name(&field.name));
+    let ty = field_word(field.bit_size);
+    let count = 1u64 << field.bit_size;
+    let reserved = count - field.values.len() as u64;
+    let sparse = reserved >= 100 && reserved >= field.values.len() as u64;
+    let mask = u32::MAX >> (32 - field.bit_size);
+    out.push_str(&format!(
+        "#[doc = {:?}]\n#[allow(non_camel_case_types)]\n",
+        format!(
+            "{} Source: {}",
+            field.description,
+            field.values_source.as_deref().unwrap()
+        )
+    ));
+    if sparse {
+        out.push_str(&format!("#[repr(transparent)]\n#[derive(Copy,Clone,Eq,PartialEq,Ord,PartialOrd)]\npub struct {name}({ty});\nimpl {name} {{\n"));
+        for value in &field.values {
+            out.push_str(&format!(
+                "pub const {}:Self=Self({});\n",
+                value.name, value.value
+            ));
+        }
+        out.push_str(&format!("#[inline(always)] pub const fn from_bits(value:{ty})->Self {{Self(value & {mask:#x})}}\n#[inline(always)] pub const fn to_bits(self)->{ty} {{self.0}}\n}}\nimpl core::fmt::Debug for {name} {{fn fmt(&self,f:&mut core::fmt::Formatter<'_>)->core::fmt::Result {{match self.0 {{"));
+        for value in &field.values {
+            out.push_str(&format!("{}=>f.write_str({:?}),", value.value, value.name));
+        }
+        out.push_str("other=>core::write!(f,\"0x{:02X}\",other)}}}\n");
+    } else {
+        out.push_str(&format!("#[repr({ty})]\n#[derive(Copy,Clone,Debug,Eq,PartialEq,Ord,PartialOrd)]\npub enum {name} {{\n"));
+        for bits in 0..count {
+            let variant = field
+                .values
+                .iter()
+                .find(|value| u64::from(value.value) == bits)
+                .map(|value| value.name.clone())
+                .unwrap_or_else(|| format!("_RESERVED_{bits:x}"));
+            out.push_str(&format!("{variant}={bits},\n"));
+        }
+        // All patterns through mask are emitted above, making this total.
+        out.push_str(&format!("}}\nimpl {name} {{\n#[inline(always)] pub const fn from_bits(value:{ty})->Self {{unsafe {{core::mem::transmute(value & {mask:#x})}}}}\n#[inline(always)] pub const fn to_bits(self)->{ty} {{self as {ty}}}\n}}\n"));
+    }
+    out.push_str(&format!("impl From<{ty}> for {name} {{#[inline(always)] fn from(value:{ty})->Self {{Self::from_bits(value)}}}}\nimpl From<{name}> for {ty} {{#[inline(always)] fn from(value:{name})->Self {{value.to_bits()}}}}\n"));
+}
+fn field_word(bit_size: u8) -> &'static str {
+    match bit_size {
+        1..=8 => "u8",
+        9..=16 => "u16",
+        _ => "u32",
+    }
 }
 fn indexed_offset(base: usize, array: Option<&crate::schema::Array>) -> (String, String, String) {
     match array {
@@ -530,31 +569,28 @@ fn render_value(
                 }
             ),
         };
-        let (index, assertion, shift) = if let Some(array) = &f.array {
-            (
-                "n:usize,",
-                format!("assert!(n < {});", array.len),
-                format!("{} + n * {}", f.bit_offset, array.stride),
-            )
-        } else {
-            ("", String::new(), f.bit_offset.to_string())
-        };
+        let (index, assertion, shift) = indexed_offset(usize::from(f.bit_offset), f.array.as_ref());
+        let index = if index.is_empty() { "" } else { "n:usize," };
         let mask = u32::MAX >> (32 - f.bit_size);
         let read = match f.kind.as_str() {
             "bool" => format!("((self.0 >> ({shift})) & 1) != 0"),
-            "enum" => format!("{enum_type}::from_bits(((self.0 >> ({shift})) & {mask:#x}) as u32)"),
+            "enum" => format!(
+                "{enum_type}::from_bits(((self.0 >> ({shift})) & {mask:#x}) as {})",
+                field_word(f.bit_size)
+            ),
             _ => format!("((self.0 >> ({shift})) & {mask:#x}) as {ty}"),
         };
         {
-            let read_ty = if f.kind == "enum" {
-                format!("Option<{ty}>")
-            } else {
-                ty.clone()
-            };
+            let read_ty = ty.clone();
             out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {method}(&self,{index})->{read_ty} {{{assertion}{read}}}\n", f.description));
         }
         {
-            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {setter}(&mut self,{index}value:{ty}) {{{assertion}self.0=(self.0 & !(({mask:#x} as {word}) << ({shift}))) | (((value as {word}) & {mask:#x}) << ({shift}));}}\n", f.description));
+            let value_bits = if f.kind == "enum" {
+                "value.to_bits()"
+            } else {
+                "value"
+            };
+            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {setter}(&mut self,{index}value:{ty}) {{{assertion}self.0=(self.0 & !(({mask:#x} as {word}) << ({shift}))) | ((({value_bits} as {word}) & {mask:#x}) << ({shift}));}}\n", f.description));
         }
     }
     out.push_str("}\n");
@@ -687,7 +723,11 @@ const METADATA_TYPES: &str = r#"
 #[derive(Clone, Copy, Debug)]
 pub struct Metadata { pub schema_version:u32, pub name: &'static str, pub family: &'static str, pub core: &'static str, pub target: &'static str, pub peripherals: &'static [Peripheral], pub interrupts: &'static [Interrupt], pub pins: &'static [Pin], pub memory: &'static [Memory], pub interrupt_bindings:&'static [InterruptBinding], pub pin_routes:&'static [PinRoute], pub remaps:&'static [Remap], pub quirks:&'static [Quirk] }
 #[derive(Clone, Copy, Debug)]
-pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub reset_effects:&'static [ResetEffect], pub ownership_parent:Option<&'static str>, pub comparator:Option<ComparatorConnections>, pub opa:Option<OpaConnections>, pub dma:Option<DmaController>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
+pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub clock_tree:Option<ClockTree>, pub reset:Option<RegisterBit>, pub reset_effects:&'static [ResetEffect], pub ownership_parent:Option<&'static str>, pub comparator:Option<ComparatorConnections>, pub opa:Option<OpaConnections>, pub dma:Option<DmaController>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
+#[derive(Clone,Copy,Debug)]
+pub enum ClockSource {Hclk,Pclk}
+#[derive(Clone,Copy,Debug)]
+pub struct ClockTree {pub bus_clock:ClockSource,pub kernel_clock:Option<ClockSource>,pub source:&'static str}
 #[derive(Clone,Copy,Debug)]
 pub struct DmaChannel {pub peripheral:&'static str,pub number:u8,pub index:u8,pub interrupt:&'static str}
 #[derive(Clone,Copy,Debug)]
@@ -721,9 +761,9 @@ pub struct RegisterElement {pub name:&'static str,pub description:&'static str,p
 #[derive(Clone,Copy,Debug)]
 pub struct BlockItem {pub name:&'static str,pub offset:usize,pub block:&'static str,pub version:&'static str,pub array:Option<Array>,pub description:&'static str,pub source:&'static str,pub registers:&'static [Register],pub blocks:&'static [BlockItem]}
 #[derive(Clone, Copy, Debug)]
-pub struct FieldArray {pub len:u8,pub stride:u8}
+pub struct FieldElement {pub name:&'static str,pub bit_offset:u8,pub bit_size:u8,pub access:Access,pub kind:FieldKind,pub values:&'static [EnumValue],pub description:&'static str}
 #[derive(Clone, Copy, Debug)]
-pub struct RegisterField {pub name:&'static str,pub description:&'static str,pub bit_offset:u8,pub bit_size:u8,pub array:Option<FieldArray>,pub access:Access,pub kind:FieldKind,pub values:&'static [EnumValue]}
+pub struct RegisterField {pub name:&'static str,pub description:&'static str,pub bit_offset:u8,pub bit_size:u8,pub array:Option<Array>,pub elements:&'static [FieldElement],pub array_source:Option<&'static str>,pub values_source:Option<&'static str>,pub access:Access,pub kind:FieldKind,pub values:&'static [EnumValue]}
 #[derive(Clone,Copy,Debug,PartialEq,Eq)]
 pub enum FieldKind {Raw,Bool,Enum}
 #[derive(Clone,Copy,Debug)]
@@ -759,16 +799,19 @@ fn render_block_metadata(block: &crate::schema::Block) -> String {
                 .collect::<Vec<_>>()
                 .join(",");
             let kind = value_name(&f.kind);
+            let elements = f.elements.iter().map(|e| {
+                let values = e.values.iter().map(|v| format!("EnumValue {{name:{:?},value:{}}}", v.name, v.value)).collect::<Vec<_>>().join(",");
+                format!("FieldElement {{name:{:?},bit_offset:{},bit_size:{},access:Access::{},kind:FieldKind::{},values:&[{values}],description:{:?}}}",e.name,e.bit_offset,e.bit_size,access_marker(&e.access),value_name(&e.kind),e.description)
+            }).collect::<Vec<_>>().join(",");
             out.push_str(&format!(
-                "RegisterField {{name:{:?},description:{:?},bit_offset:{},bit_size:{},array:{},access:Access::{},kind:FieldKind::{kind},values:&[{values}]}},",
+                "RegisterField {{name:{:?},description:{:?},bit_offset:{},bit_size:{},array:{},elements:&[{elements}],array_source:{:?},values_source:{:?},access:Access::{},kind:FieldKind::{kind},values:&[{values}]}},",
                 f.name,
                 f.description,
                 f.bit_offset,
                 f.bit_size,
-                f.array
-                    .as_ref()
-                    .map(|a| format!("Some(FieldArray {{len:{},stride:{}}})", a.len, a.stride))
-                    .unwrap_or_else(|| "None".into()),
+                render_array(f.array.as_ref()),
+                f.array_source,
+                f.values_source,
                 access_marker(&f.access)
             ));
         }
@@ -837,8 +880,12 @@ fn render_chip_metadata(ir: &Ir, shared: &str) -> Result<String> {
             let requests = dma.requests.iter().map(|request| format!("DmaRequest {{peripheral:{:?},signal:{:?},selector:{}}}", request.peripheral, request.signal, request.selector)).collect::<Vec<_>>().join(",");
             format!("Some(DmaController {{channels:&[{channels}],requests:&[{requests}],source:{:?}}})", dma.source)
         }).unwrap_or_else(|| "None".into());
+        let clock_tree = p.clock_tree.as_ref().map(|clock| {
+            let kernel = clock.kernel_clock.map(|source| format!("Some(ClockSource::{source:?})")).unwrap_or_else(|| "None".into());
+            format!("Some(ClockTree {{bus_clock:ClockSource::{:?},kernel_clock:{kernel},source:{:?}}})",clock.bus_clock,clock.source)
+        }).unwrap_or_else(|| "None".into());
         let resets = p.register_resets.iter().map(|r| format!("RegisterReset {{register:{:?},reset_value:{},reset_source:{:?},reset_note:{:?}}}",r.register,r.reset_value,r.reset_source,r.reset_note)).collect::<Vec<_>>().join(",");
-        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, reset_effects:&[{effects}], ownership_parent:{:?}, comparator:{comparator}, opa:{opa}, dma:{dma}, registers:{}::REGISTERS, blocks:{}::BLOCKS, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block,p.block,p.implemented_mask,p.pulldown_mask));
+        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, clock_tree:{clock_tree}, reset:{}, reset_effects:&[{effects}], ownership_parent:{:?}, comparator:{comparator}, opa:{opa}, dma:{dma}, registers:{}::REGISTERS, blocks:{}::BLOCKS, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block,p.block,p.implemented_mask,p.pulldown_mask));
     }
     out.push_str("], interrupts: &[\n");
     for i in &ir.family.interrupts {

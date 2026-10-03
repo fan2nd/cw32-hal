@@ -1,4 +1,6 @@
-> Current resource-composition stage: [v0.17.0 validation](validation-v0.17.0.md), [scope and remaining stages](resource-composition-v0.17.0.md), [schema9](schema-v9.md).
+> Current clock/PWM/PAC stage: [v0.18.0 validation](validation-v0.18.0.md), [scope and remaining work](clock-pwm-pac-v0.18.0.md), [schema10](schema-v10.md).
+
+> Prior resource-composition stage: [v0.17.0 validation](validation-v0.17.0.md), [scope](resource-composition-v0.17.0.md), [schema9](schema-v9.md).
 
 > Prior interrupt migration: [v0.16.0 validation](validation-v0.16.0.md), [type-level wiring](typelevel-interrupts.md).
 

@@ -6,114 +6,343 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
-    semantics.
+  description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
-  - name: DMAUDRIE2
-    bit_offset: 29
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field DMAUDRIE2; raw encoding retained unless explicitly audited.
-  - name: DMAEN2
-    bit_offset: 28
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field DMAEN2; raw encoding retained unless explicitly audited.
-  - name: MAMP2
-    bit_offset: 24
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field MAMP2; raw encoding retained unless explicitly audited.
-  - name: WAVE2
-    bit_offset: 22
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field WAVE2; raw encoding retained unless explicitly audited.
-  - name: TSEL2
-    bit_offset: 18
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field TSEL2; raw encoding retained unless explicitly audited.
-  - name: TEN2
-    bit_offset: 17
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field TEN2; raw encoding retained unless explicitly audited.
-  - name: EN2
-    bit_offset: 16
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field EN2; raw encoding retained unless explicitly audited.
-  - name: DMAUDRIE1
+  - name: DMAUDRIE
     bit_offset: 13
     bit_size: 1
     access: rw
     kind: bool
-    description: Field DMAUDRIE1; raw encoding retained unless explicitly audited.
-  - name: DMAEN1
+    description: 'DAC per-channel DMAUDRIE configuration. Index order: DMAUDRIE1, DMAUDRIE2.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: DMAUDRIE1
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field DMAUDRIE1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: DMAUDRIE2
+      bit_offset: 29
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field DMAUDRIE2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: DMAEN
     bit_offset: 12
     bit_size: 1
     access: rw
     kind: bool
-    description: Field DMAEN1; raw encoding retained unless explicitly audited.
-  - name: MAMP1
+    description: 'DAC per-channel DMAEN configuration. Index order: DMAEN1, DMAEN2.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: DMAEN1
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field DMAEN1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: DMAEN2
+      bit_offset: 28
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field DMAEN2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: MAMP
     bit_offset: 8
     bit_size: 4
     access: rw
     kind: raw
-    description: Field MAMP1; raw encoding retained unless explicitly audited.
-  - name: WAVE1
+    description: 'DAC per-channel MAMP configuration. Index order: MAMP1, MAMP2.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: MAMP1
+      bit_offset: 8
+      bit_size: 4
+      access: rw
+      kind: raw
+      description: Field MAMP1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: MAMP2
+      bit_offset: 24
+      bit_size: 4
+      access: rw
+      kind: raw
+      description: Field MAMP2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: WAVE
     bit_offset: 6
     bit_size: 2
     access: rw
-    kind: raw
-    description: Field WAVE1; raw encoding retained unless explicitly audited.
-  - name: TSEL1
+    kind: enum
+    description: 'DAC per-channel WAVE configuration. Index order: WAVE1, WAVE2.'
+    values:
+    - name: DISABLED
+      value: 0
+    - name: NOISE
+      value: 1
+    - name: TRIANGLE
+      value: 2
+    - name: TRIANGLE_ALT
+      value: 3
+    values_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: WAVE1
+      bit_offset: 6
+      bit_size: 2
+      access: rw
+      kind: enum
+      description: Wave generation mode; both encodings 2 and 3 generate triangle waves. Requires TEN.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: NOISE
+        value: 1
+      - name: TRIANGLE
+        value: 2
+      - name: TRIANGLE_ALT
+        value: 3
+    - name: WAVE2
+      bit_offset: 22
+      bit_size: 2
+      access: rw
+      kind: enum
+      description: Wave generation mode; both encodings 2 and 3 generate triangle waves. Requires TEN.
+      values:
+      - name: DISABLED
+        value: 0
+      - name: NOISE
+        value: 1
+      - name: TRIANGLE
+        value: 2
+      - name: TRIANGLE_ALT
+        value: 3
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: TSEL
     bit_offset: 2
     bit_size: 4
     access: rw
-    kind: raw
-    description: Field TSEL1; raw encoding retained unless explicitly audited.
-  - name: TEN1
+    kind: enum
+    description: 'DAC per-channel TSEL configuration. Index order: TSEL1, TSEL2.'
+    values:
+    - name: SOFTWARE
+      value: 0
+    - name: BTIM1_TRGO
+      value: 1
+    - name: BTIM2_TRGO
+      value: 2
+    - name: BTIM3_TRGO
+      value: 3
+    - name: GTIM1_TRGO
+      value: 4
+    - name: GTIM2_TRGO
+      value: 5
+    - name: GTIM3_TRGO
+      value: 6
+    - name: GTIM4_TRGO
+      value: 7
+    - name: ATIM_TRGO
+      value: 8
+    - name: LPTIM_OV
+      value: 9
+    - name: BTIM1_ETR
+      value: 10
+    - name: BTIM2_ETR
+      value: 11
+    - name: BTIM3_ETR
+      value: 12
+    - name: GTIM1_ETR
+      value: 13
+    - name: GTIM2_ETR
+      value: 14
+    - name: GTIM3_ETR
+      value: 15
+    values_source: CW32L012 RM1.4 table 26-1, printed p605; CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635);
+      https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: TSEL1
+      bit_offset: 2
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: DAC trigger source; requires TEN.
+      values:
+      - name: SOFTWARE
+        value: 0
+      - name: BTIM1_TRGO
+        value: 1
+      - name: BTIM2_TRGO
+        value: 2
+      - name: BTIM3_TRGO
+        value: 3
+      - name: GTIM1_TRGO
+        value: 4
+      - name: GTIM2_TRGO
+        value: 5
+      - name: GTIM3_TRGO
+        value: 6
+      - name: GTIM4_TRGO
+        value: 7
+      - name: ATIM_TRGO
+        value: 8
+      - name: LPTIM_OV
+        value: 9
+      - name: BTIM1_ETR
+        value: 10
+      - name: BTIM2_ETR
+        value: 11
+      - name: BTIM3_ETR
+        value: 12
+      - name: GTIM1_ETR
+        value: 13
+      - name: GTIM2_ETR
+        value: 14
+      - name: GTIM3_ETR
+        value: 15
+    - name: TSEL2
+      bit_offset: 18
+      bit_size: 4
+      access: rw
+      kind: enum
+      description: DAC trigger source; requires TEN.
+      values:
+      - name: SOFTWARE
+        value: 0
+      - name: BTIM1_TRGO
+        value: 1
+      - name: BTIM2_TRGO
+        value: 2
+      - name: BTIM3_TRGO
+        value: 3
+      - name: GTIM1_TRGO
+        value: 4
+      - name: GTIM2_TRGO
+        value: 5
+      - name: GTIM3_TRGO
+        value: 6
+      - name: GTIM4_TRGO
+        value: 7
+      - name: ATIM_TRGO
+        value: 8
+      - name: LPTIM_OV
+        value: 9
+      - name: BTIM1_ETR
+        value: 10
+      - name: BTIM2_ETR
+        value: 11
+      - name: BTIM3_ETR
+        value: 12
+      - name: GTIM1_ETR
+        value: 13
+      - name: GTIM2_ETR
+        value: 14
+      - name: GTIM3_ETR
+        value: 15
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: TEN
     bit_offset: 1
     bit_size: 1
     access: rw
     kind: bool
-    description: Field TEN1; raw encoding retained unless explicitly audited.
-  - name: EN1
+    description: 'DAC per-channel TEN configuration. Index order: TEN1, TEN2.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: TEN1
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field TEN1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: TEN2
+      bit_offset: 17
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field TEN2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: EN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Field EN1; raw encoding retained unless explicitly audited.
+    description: 'DAC per-channel EN configuration. Index order: EN1, EN2.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: EN1
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field EN1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: EN2
+      bit_offset: 16
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field EN2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: SWTRGR
   reset_value: 0
   reset_source: CW32L012 RM1.4 section 26.10.2, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: 'Register SWTRGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-    value semantics. Write one triggers the selected DAC channel; hardware clears the trigger after transfer of its data-holding
-    value. Do not RMW. Source: RM1.4 26.10.2; SDK DAC_SoftwareTriggerCmd'
+  description: 'Register SWTRGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Write one triggers the selected DAC channel; hardware clears the trigger after transfer of its
+    data-holding value. Do not RMW. Source: RM1.4 26.10.2; SDK DAC_SoftwareTriggerCmd'
   fields:
-  - name: SWTRIG2
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field SWTRIG2; raw encoding retained unless explicitly audited.
-  - name: SWTRIG1
+  - name: SWTRIG
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Field SWTRIG1; raw encoding retained unless explicitly audited.
+    description: 'DAC per-channel software trigger command. Index order: SWTRIG1, SWTRIG2.'
+    array:
+      len: 2
+      stride: 1
+    elements:
+    - name: SWTRIG1
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field SWTRIG1; raw encoding retained unless explicitly audited.
+      values: []
+    - name: SWTRIG2
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field SWTRIG2; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.2, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12R
@@ -138,17 +367,17 @@ registers:
   elements:
   - name: DHR12R1
     description: 'Register DHR12R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual
-      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write
-      transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4
-      26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.3, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
   - name: DHR12R2
     description: 'Register DHR12R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual
-      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write
-      transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4
-      26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.6, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
@@ -174,17 +403,17 @@ registers:
   elements:
   - name: DHR12L1
     description: 'Register DHR12L1; layout independently matched to pinned CMSIS header and SVD; consult reference manual
-      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write
-      transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4
-      26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.4, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
   - name: DHR12L2
     description: 'Register DHR12L2; layout independently matched to pinned CMSIS header and SVD; consult reference manual
-      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write
-      transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4
-      26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.7, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
@@ -209,18 +438,18 @@ registers:
     stride: 12
   elements:
   - name: DHR8R1
-    description: 'Register DHR8R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-      value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers
-      the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6;
-      26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+    description: 'Register DHR8R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.5, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
   - name: DHR8R2
-    description: 'Register DHR8R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-      value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers
-      the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6;
-      26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+    description: 'Register DHR8R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled
+      a write transfers the value to the output after the documented delay. Not a generic software storage register.
+      Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.8, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
@@ -229,23 +458,36 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.9, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 32
   access: rw
-  description: 'Register DHR12RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-    value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers
-    the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6;
-    26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  description: 'Register DHR12RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a
+    write transfers the value to the output after the documented delay. Not a generic software storage register. Source:
+    RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
   fields:
-  - name: C2DATA
-    bit_offset: 16
-    bit_size: 12
-    access: rw
-    kind: raw
-    description: Field C2DATA; raw encoding retained unless explicitly audited.
-  - name: C1DATA
+  - name: DATA
     bit_offset: 0
     bit_size: 12
     access: rw
     kind: raw
-    description: Field C1DATA; raw encoding retained unless explicitly audited.
+    description: 'Independent raw samples in the dual-channel data holding word. Index order: C1DATA, C2DATA.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: C1DATA
+      bit_offset: 0
+      bit_size: 12
+      access: rw
+      kind: raw
+      description: Field C1DATA; raw encoding retained unless explicitly audited.
+      values: []
+    - name: C2DATA
+      bit_offset: 16
+      bit_size: 12
+      access: rw
+      kind: raw
+      description: Field C2DATA; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.9, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12LD
@@ -253,23 +495,36 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.10, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 36
   access: rw
-  description: 'Register DHR12LD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-    value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers
-    the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6;
-    26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  description: 'Register DHR12LD; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a
+    write transfers the value to the output after the documented delay. Not a generic software storage register. Source:
+    RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
   fields:
-  - name: C2DATA
-    bit_offset: 20
-    bit_size: 12
-    access: rw
-    kind: raw
-    description: Field C2DATA; raw encoding retained unless explicitly audited.
-  - name: C1DATA
+  - name: DATA
     bit_offset: 4
     bit_size: 12
     access: rw
     kind: raw
-    description: Field C1DATA; raw encoding retained unless explicitly audited.
+    description: 'Independent raw samples in the dual-channel data holding word. Index order: C1DATA, C2DATA.'
+    array:
+      len: 2
+      stride: 16
+    elements:
+    - name: C1DATA
+      bit_offset: 4
+      bit_size: 12
+      access: rw
+      kind: raw
+      description: Field C1DATA; raw encoding retained unless explicitly audited.
+      values: []
+    - name: C2DATA
+      bit_offset: 20
+      bit_size: 12
+      access: rw
+      kind: raw
+      description: Field C2DATA; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.10, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: command
   read_behavior: ordinary
 - name: DHR8RD
@@ -277,23 +532,36 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.11, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 40
   access: rw
-  description: 'Register DHR8RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-    value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers
-    the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6;
-    26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
+  description: 'Register DHR8RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+    for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a
+    write transfers the value to the output after the documented delay. Not a generic software storage register. Source:
+    RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
   fields:
-  - name: C2DATA
-    bit_offset: 8
-    bit_size: 8
-    access: rw
-    kind: raw
-    description: Field C2DATA; raw encoding retained unless explicitly audited.
-  - name: C1DATA
+  - name: DATA
     bit_offset: 0
     bit_size: 8
     access: rw
     kind: raw
-    description: Field C1DATA; raw encoding retained unless explicitly audited.
+    description: 'Independent raw samples in the dual-channel data holding word. Index order: C1DATA, C2DATA.'
+    array:
+      len: 2
+      stride: 8
+    elements:
+    - name: C1DATA
+      bit_offset: 0
+      bit_size: 8
+      access: rw
+      kind: raw
+      description: Field C1DATA; raw encoding retained unless explicitly audited.
+      values: []
+    - name: C2DATA
+      bit_offset: 8
+      bit_size: 8
+      access: rw
+      kind: raw
+      description: Field C2DATA; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.11, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: command
   read_behavior: ordinary
 - name: DOR
@@ -301,8 +569,8 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.12, printed p615 (PDF p641); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 44
   access: rw
-  description: 'Indexed DOR: index 0 = DOR1, index 1 = DOR2. Complete field layout/access/side effects are identical; offsets
-    and element evidence are explicit.'
+  description: 'Indexed DOR: index 0 = DOR1, index 1 = DOR2. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
   fields:
   - name: DMAUDR
     bit_offset: 15
@@ -323,16 +591,16 @@ registers:
     stride: 4
   elements:
   - name: DOR1
-    description: 'Register DOR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-      value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate
-      a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
+    description: 'Register DOR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do
+      not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.12, printed p615 (PDF p641); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
   - name: DOR2
-    description: 'Register DOR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
-      value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate
-      a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
+    description: 'Register DOR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do
+      not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
     reset_value: 0
     reset_source: CW32L012 RM1.4 section 26.10.13, printed p615 (PDF p641); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
     reset_note: null
@@ -341,19 +609,32 @@ registers:
   reset_source: CW32L012 RM1.4 section 26.10.14, printed p616 (PDF p642); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 52
   access: rw
-  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
-    semantics.
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
-  - name: C2OUT
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field C2OUT; raw encoding retained unless explicitly audited.
-  - name: C1OUT
+  - name: OUT
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: Field C1OUT; raw encoding retained unless explicitly audited.
+    description: 'DAC per-channel external output enable. Index order: C1OUT, C2OUT.'
+    array:
+      len: 2
+      stride: 1
+    elements:
+    - name: C1OUT
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field C1OUT; raw encoding retained unless explicitly audited.
+      values: []
+    - name: C2OUT
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field C2OUT; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 26.10.14, printed p616 (PDF p642); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 constants: []

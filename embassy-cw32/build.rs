@@ -128,26 +128,12 @@ fn main() {
         if let Some(bit) = p.clock_bit {
             assert_eq!(bit, gate.bit, "legacy GPIO clock bit differs");
         }
-        let owner = md
-            .peripherals
-            .iter()
-            .find(|p| p.name == gate.peripheral)
-            .unwrap();
-        assert!(
-            matches!(owner.version, "l012" | "f030"),
-            "unaudited GPIO clock controller"
-        );
-        let register = gate.register.to_ascii_lowercase();
-        let field = gate.field.to_ascii_lowercase();
-        if owner.version == "l012" {
-            writeln!(ports,"Self::{variant}=>{{let mut value=pac::SYSCTRL.{register}().read();value.set_key((pac::SYSCTRL_KEY>>16) as u16);value.set_{field}(true);pac::SYSCTRL.{register}().write_value(value);}},").unwrap();
-        } else {
-            writeln!(
-                ports,
-                "Self::{variant}=>pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true)),"
-            )
-            .unwrap();
-        }
+        let resource = clock_resource_name(&gate);
+        writeln!(
+            ports,
+            "Self::{variant}=>crate::rcc::{resource}.enable_pinned(),"
+        )
+        .unwrap();
     }
     ports.push_str("}}\n}\n");
     fs::write(out.join("_generated_gpio.rs"), ports).unwrap();
@@ -264,54 +250,11 @@ fn main() {
     generated.push_str("    }\n}\n");
     fs::write(out.join("_generated.rs"), generated).unwrap();
 
-    let mut clocks = String::new();
-    for p in md
-        .peripherals
-        .iter()
-        .filter(|p| peripheral_names.contains(&p.name))
-    {
-        if let Some(gate) = &p.clock_gate {
-            let owner = md
-                .peripherals
-                .iter()
-                .find(|p| p.name == gate.peripheral)
-                .expect("clock owner");
-            assert_eq!(
-                owner.name, "SYSCTRL",
-                "clock key semantics need audit for new controller"
-            );
-            assert!(matches!(gate.register, "AHBEN" | "APBEN1" | "APBEN2"));
-            writeln!(clocks, "impl PeripheralClock for crate::peripherals::{} {{ fn enable_and_reset() {{ critical_section::with(|_| {{", ident(p.name)).unwrap();
-            let register = gate.register.to_ascii_lowercase();
-            let field = gate.field.to_ascii_lowercase();
-            if owner.version == "l012" {
-                writeln!(clocks,"let mut value=pac::SYSCTRL.{register}().read();value.set_key((pac::SYSCTRL_KEY>>16) as u16);value.set_{field}(true);pac::SYSCTRL.{register}().write_value(value);").unwrap();
-            } else if owner.version == "f030" {
-                writeln!(
-                    clocks,
-                    "pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true));"
-                )
-                .unwrap();
-            } else {
-                panic!("unaudited clock gate semantics");
-            }
-            // A private reset bit may still affect another peripheral resource.
-            // Both shared-bit ownership and explicit cross-effects forbid a local reset.
-            if let Some(reset) = p
-                .reset
-                .as_ref()
-                .filter(|r| !r.shared && p.reset_effects.is_empty())
-            {
-                assert_eq!(reset.peripheral, "SYSCTRL");
-                assert!(matches!(reset.register, "AHBRST" | "APBRST1" | "APBRST2"));
-                let register = reset.register.to_ascii_lowercase();
-                let field = reset.field.to_ascii_lowercase();
-                writeln!(clocks,"pac::SYSCTRL.{register}().modify(|w|w.set_{field}(false));pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true));").unwrap();
-            }
-            clocks.push_str("}); } }\n");
-        }
-    }
-    fs::write(out.join("_generated_peripheral_clocks.rs"), clocks).unwrap();
+    fs::write(
+        out.join("_generated_peripheral_clocks.rs"),
+        clock_bindings(md, &peripheral_names),
+    )
+    .unwrap();
     let mut atim_pins = String::new();
     let mut sealed_pins = BTreeSet::new();
     for route in md
@@ -364,7 +307,7 @@ fn main() {
         assert!(matches!(p.version, "l012" | "f030"), "unaudited timer IP");
         let name = ident(p.name);
         let variant = if p.block == "atim" { "Atim" } else { "Gtim" };
-        writeln!(timer,"impl sealed::Instance for peripherals::{name} {{fn regs()->Registers {{Registers::{variant}(pac::{name})}} }} impl CoreInstance for peripherals::{name} {{}} impl sealed::PwmInstance for peripherals::{name} {{}} impl PwmInstance for peripherals::{name} {{}}").unwrap();
+        writeln!(timer,"impl sealed::Instance for peripherals::{name} {{fn regs()->Registers {{Registers::{variant}(pac::{name})}} }} impl CoreInstance for peripherals::{name} {{}} impl sealed::PwmInstance for peripherals::{name} {{fn state()->&'static critical_section::Mutex<core::cell::RefCell<simple_pwm::State>> {{static STATE:critical_section::Mutex<core::cell::RefCell<simple_pwm::State>>=critical_section::Mutex::new(core::cell::RefCell::new(simple_pwm::State::new())); &STATE}} }} impl PwmInstance for peripherals::{name} {{}}").unwrap();
     }
     let mut timer_routes = BTreeMap::new();
     for route in md.pin_routes {
@@ -714,6 +657,122 @@ fn main() {
     }
 }
 
+fn clock_resource_name(gate: &cw32_metapac::metadata::RegisterBit) -> String {
+    format!(
+        "CLOCK_{}_{}_{}",
+        ident(gate.peripheral),
+        ident(gate.register),
+        ident(gate.field)
+    )
+}
+
+fn ownership_root<'a>(md: &'a Metadata, mut name: &'a str) -> &'a str {
+    let mut seen = BTreeSet::new();
+    loop {
+        assert!(seen.insert(name), "cyclic clock ownership domain");
+        let peripheral = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == name)
+            .expect("clock owner identity");
+        match peripheral.ownership_parent {
+            Some(parent) => name = parent,
+            None => return name,
+        }
+    }
+}
+
+/// One state object per physical gate. A shared reset is usable only when all
+/// affected views belong to one ownership domain, such as a DMA controller and
+/// its child channel aliases. Independent siblings and cross-effects suppress it.
+fn clock_bindings(md: &Metadata, names: &[&str]) -> String {
+    use cw32_metapac::metadata::{ClockSource, RegisterBit};
+    let key = |r: RegisterBit| (r.peripheral, r.register, r.field);
+    let mut groups = BTreeMap::<_, Vec<_>>::new();
+    for p in md.peripherals {
+        if let Some(gate) = p.clock_gate {
+            groups.entry(key(gate)).or_default().push(p);
+        }
+    }
+    let frequency = |source: ClockSource| match source {
+        ClockSource::Hclk => "clocks().hclk_hz()",
+        ClockSource::Pclk => "clocks().pclk_hz()",
+    };
+    let mut out = String::new();
+    for members in groups.values() {
+        let gate = members[0].clock_gate.unwrap();
+        let resource = clock_resource_name(&gate);
+        let owner = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == gate.peripheral)
+            .expect("clock controller");
+        assert_eq!(owner.name, "SYSCTRL", "unaudited clock key controller");
+        assert!(matches!(gate.register, "AHBEN" | "APBEN1" | "APBEN2"));
+        let register = ident(gate.register).to_ascii_lowercase();
+        let field = ident(gate.field).to_ascii_lowercase();
+        let domains: BTreeSet<_> = members.iter().map(|p| ownership_root(md, p.name)).collect();
+        let reset = members[0].reset.filter(|reset| {
+            domains.len() == 1
+                && members
+                    .iter()
+                    .all(|p| p.reset.map(&key) == Some(key(*reset)) && p.reset_effects.is_empty())
+                && md
+                    .peripherals
+                    .iter()
+                    .filter(|p| p.reset.map(&key) == Some(key(*reset)))
+                    .all(|p| {
+                        domains.contains(ownership_root(md, p.name)) && p.reset_effects.is_empty()
+                    })
+        });
+        writeln!(
+            out,
+            "pub(crate) static {resource}:ClockResource=ClockResource::new(|enabled|{{"
+        )
+        .unwrap();
+        match owner.version {
+            "l012" => writeln!(out,"let mut value=pac::SYSCTRL.{register}().read();value.set_key((pac::SYSCTRL_KEY>>16) as u16);value.set_{field}(enabled);pac::SYSCTRL.{register}().write_value(value);").unwrap(),
+            "f030" => writeln!(out,"pac::SYSCTRL.{register}().modify(|w|w.set_{field}(enabled));").unwrap(),
+            _ => panic!("unaudited clock gate semantics"),
+        }
+        if let Some(reset) = reset {
+            assert_eq!(reset.peripheral, "SYSCTRL");
+            assert!(matches!(reset.register, "AHBRST" | "APBRST1" | "APBRST2"));
+            let register = ident(reset.register).to_ascii_lowercase();
+            let field = ident(reset.field).to_ascii_lowercase();
+            writeln!(out,"}},Some(||{{pac::SYSCTRL.{register}().modify(|w|w.set_{field}(false));pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true));}}));").unwrap();
+        } else {
+            out.push_str("},None);\n");
+        }
+        for p in members {
+            let tree = p
+                .clock_tree
+                .expect("clock gate requires sourced bus metadata");
+            let expected_bus = if gate.register == "AHBEN" {
+                ClockSource::Hclk
+            } else {
+                ClockSource::Pclk
+            };
+            assert_eq!(
+                core::mem::discriminant(&tree.bus_clock),
+                core::mem::discriminant(&expected_bus),
+                "clock bus metadata disagrees with audited gate controller"
+            );
+            if !names.contains(&p.name) {
+                continue;
+            }
+            let name = ident(p.name);
+            let bus = frequency(tree.bus_clock);
+            writeln!(out,"impl PeripheralClock for crate::peripherals::{name} {{fn clock_resource()->&'static ClockResource {{&{resource}}} fn bus_frequency()->u32 {{{bus}}}}}").unwrap();
+            if let Some(kernel) = tree.kernel_clock {
+                let kernel = frequency(kernel);
+                writeln!(out,"impl KernelClock for crate::peripherals::{name} {{fn frequency()->u32 {{{kernel}}}}}").unwrap();
+            }
+        }
+    }
+    out
+}
+
 /// Split identities and request encodings are controller topology, not register-name guesses.
 fn dma_bindings(md: &Metadata) -> String {
     let controllers: Vec<_> = md.peripherals.iter().filter(|p| p.block == "dma").collect();
@@ -817,14 +876,11 @@ fn dma_bindings(md: &Metadata) -> String {
             );
         }
     }
-    let reset_owner = ident(reset.peripheral);
-    let register = ident(reset.register).to_ascii_lowercase();
-    let field = ident(reset.field).to_ascii_lowercase();
     out.push_str("pub(crate) fn initialize_controller(){\n");
     for channel in dma.channels {
         writeln!(out, "crate::dma::quarantine_for_controller_reset(<crate::peripherals::{} as sealed::Instance>::state());", ident(channel.peripheral)).unwrap();
     }
-    writeln!(out, "<Controller as crate::rcc::PeripheralClock>::enable_and_reset();critical_section::with(|_|{{crate::pac::{reset_owner}.{register}().modify(|w|w.set_{field}(false));crate::pac::{reset_owner}.{register}().modify(|w|w.set_{field}(true));}});}}").unwrap();
+    out.push_str("let _clock=<Controller as crate::rcc::PeripheralClock>::acquire();}\n");
     out
 }
 
@@ -927,7 +983,7 @@ fn field<'a>(
 }
 
 fn gpio_capabilities(p: &cw32_metapac::metadata::Peripheral) -> BTreeSet<&'static str> {
-    use cw32_metapac::metadata::{Access, FieldKind, ReadBehavior, WriteBehavior};
+    use cw32_metapac::metadata::{Access, Array, FieldKind, ReadBehavior, WriteBehavior};
     let mut result = BTreeSet::new();
     let indexed = |name: &str| {
         let Some(r) = p.registers.iter().find(|r| r.name == name) else {
@@ -947,7 +1003,12 @@ fn gpio_capabilities(p: &cw32_metapac::metadata::Peripheral) -> BTreeSet<&'stati
                 && f.bit_size == 1
                 && matches!(f.kind, FieldKind::Bool)
                 && matches!(f.access, Access::ReadWrite)
-                && f.array.is_some_and(|a| a.len == 16 && a.stride == 1),
+                && f.array.is_some_and(|a| match a {
+                    Array::Regular { len, stride } => len == 16 && stride == 1,
+                    Array::Explicit(offsets) =>
+                        offsets.len() == 16
+                            && offsets.iter().enumerate().all(|(n, offset)| n == *offset),
+                }),
             "GPIO capability requires the audited indexed PIN layout"
         );
         true

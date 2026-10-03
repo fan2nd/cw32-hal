@@ -88,9 +88,9 @@ fn disabled_control_words(
 ) -> (regs::Cr1, regs::Bdtr, regs::Dtr2) {
     let mut cr1 = regs::Cr1::default();
     cr1.set_cms(if config.alignment == Alignment::Center {
-        3
+        pac::atim::vals::Cr1Cms::CENTER_BOTH
     } else {
-        0
+        pac::atim::vals::Cr1Cms::EDGE_ALIGNED
     });
     cr1.set_arpe(true);
     let mut dt = regs::Dtr2::default();
@@ -108,6 +108,7 @@ fn disabled_control_words(
 /// Owns ATIM, all six phase pins and one external break pin until dropped.
 /// Does not claim or enable the NVIC ATIM interrupt; polling does not steal its vector.
 pub struct ThreePhasePwm<'d> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, peripherals::ATIM>,
     pins: [Peri<'d, AnyPin>; 7],
     period: u16,
@@ -137,7 +138,7 @@ impl<'d> ThreePhasePwm<'d> {
         let rise = encode_dead_time(config.rising_dead_time)?;
         let fall = encode_dead_time(config.falling_dead_time)?;
         let (cr1, bdtr, dt) = disabled_control_words(&config, rise, fall);
-        <peripherals::ATIM as PeripheralClock>::enable_and_reset();
+        let clock = <peripherals::ATIM as PeripheralClock>::acquire();
         // Singleton ownership and enabled clock; reset removes stale lock/mode state.
         pac::ATIM.bdtr().write_value(regs::Bdtr(0));
         pac::ATIM.cr1().write_value(regs::Cr1(0));
@@ -149,13 +150,13 @@ impl<'d> ThreePhasePwm<'d> {
         pac::ATIM.rcr().write_value(regs::Rcr(0));
         pac::ATIM.cnt().write_value(regs::Cnt(0));
         pac::ATIM.ccmr_cmp(0).write(|v| {
-            v.set_ocm(0, 6);
-            v.set_ocm(1, 6);
+            v.set_ocm(0, pac::atim::vals::CcmrCmpOcm::PWM1);
+            v.set_ocm(1, pac::atim::vals::CcmrCmpOcm::PWM1);
             v.set_ocpe(0, true);
             v.set_ocpe(1, true);
         });
         pac::ATIM.ccmr_cmp(1).write(|v| {
-            v.set_ocm(0, 6);
+            v.set_ocm(0, pac::atim::vals::CcmrCmpOcm::PWM1);
             v.set_ocpe(0, true);
         });
         for n in 0..3 {
@@ -197,6 +198,7 @@ impl<'d> ThreePhasePwm<'d> {
         }
         pins[6].configure_alternate(K::AF, false);
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             pins,
             period: config.period,
@@ -353,12 +355,12 @@ impl ArmIo for HardwareArm {
     }
     fn channels(&mut self, on: bool) {
         pac::ATIM.ccer().write(|v| {
-            v.set_cc1e(on);
-            v.set_cc1ne(on);
-            v.set_cc2e(on);
-            v.set_cc2ne(on);
-            v.set_cc3e(on);
-            v.set_cc3ne(on);
+            v.set_cce(0, on);
+            v.set_ccne(0, on);
+            v.set_cce(1, on);
+            v.set_ccne(1, on);
+            v.set_cce(2, on);
+            v.set_ccne(2, on);
         });
     }
 }

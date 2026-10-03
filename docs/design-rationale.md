@@ -73,9 +73,9 @@ CW32 v0.7 直接使用官方 `embassy-hal-internal =0.5.0`：生成身份实现 
 
 现有 ADC、ATIM、模拟构造器使用 metadata 生成的 sealed instance/signal traits 限制已审核路线；并未扩展为全芯片 Pin/DMA 类型系统。公开关联表受 `metadata` feature 控制，仍只是数据；AFIO、quirk 文字和 IRQ 关联不会自行执行算法。原始 PAC 仅在 `unstable-pac` 下从 HAL 公开，unsafe steal/raw MMIO/clone_unchecked 仍可绕过安全所有权。
 
-IRQ 基础设施也已从仅有 marker 推进到实际分发。PAC 生成 `rt.rs`、`device.x`，按物理号布置向量；稀疏编号保留零槽而不紧缩。HAL 使用官方 `interrupt_mod!` 和类型级 Handler/Binding，`bind_interrupts!` 在 `rt` 下同时生成真实 ISR 调用与证明，共享向量可顺序调用多个 handler。当前 ADC/VC/ATIM/CORDIC 和 GPIO interrupt input 已实现真实 pending/clear/wake、NVIC 使能及取消；DMA 生命周期仍未实现，不能仅凭基础设施声称 DMA 驱动完成。
+IRQ 基础设施也已从仅有 marker 推进到实际分发。PAC 生成 `rt.rs`、`device.x`，按物理号布置向量；稀疏编号保留零槽而不紧缩。HAL 使用官方 `interrupt_mod!` 和类型级 Handler/Binding，`bind_interrupts!` 在 `rt` 下同时生成真实 ISR 调用与证明，共享向量可顺序调用多个 handler。ADC/VC/ATIM/CORDIC、GPIO interrupt input 和 DMA 均有具体 pending/clear/wake 与取消契约；DMA 的有限 ADC 接合及静态隔离边界见 [DMA](dma.md)。
 
-`init(Config) -> Peripherals` 与 `Config.rcc` 遵循官方入口形状，另保留可报告错误的 `try_init`。本地仅允许经过校验的复位 HSI/24，`rcc::clocks()` 返回保存的标称频率且在初始化前 panic；官方 getter 要求 RCC Peri，本地没有发出 SYSCTRL token，不能宣称 getter 签名完全相同。共享门控采用不在 drop 关闭的保守策略，共享 reset 不由单个实例断言；仍没有上游完整 clock 引用计数和低功耗管理。
+`init(Config) -> Peripherals` 与 `Config.rcc` 遵循官方入口形状，另保留可报告错误的 `try_init`。本地支持经过校验的 HSI/AHB/APB 分频，`rcc::clocks()` 返回成功初始化后的标称频率；`Config::clocks()` 仅预测配置。总线与固定内核输入频率来自独立 metadata，未知 mux 不猜成 PCLK。物理门控由实际 owner 引用计数，独立兄弟共享 reset 仍受抑制；遗忘 owner、DMA 隔离及显式长期用途保留门控。没有发出 SYSCTRL token，也未实现动态时钟或低功耗恢复；详见 [RCC](rcc-resources.md)。
 
 HAL 默认只有 `rt`，芯片、`memory-x`、公开 `metadata` 和 `unstable-pac` 均显式选择；`defmt` 接入实际的上游依赖和格式化实现。没有用空的 EXTI/DMA/time feature 冒充已实现能力。非时间驱动配置下，应用仍须提供适合单核 Cortex-M0+ 的 critical-section backend。
 

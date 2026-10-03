@@ -23,15 +23,15 @@ pub struct Dac<'d> {
 }
 impl<'d> Dac<'d> {
     pub fn new(_token: Peri<'d, peripherals::DAC>, delay: &mut impl DelayNs) -> Self {
-        <peripherals::DAC as PeripheralClock>::enable_and_reset();
+        let clock = <peripherals::DAC as PeripheralClock>::acquire();
         // Exclusive whole-DAC token; triggers/DMA/interrupts/waves off.
         pac::DAC.cr0().write_value(pac::dac::regs::Cr0(0));
         pac::DAC.cr1().write_value(pac::dac::regs::Cr1(0));
         pac::DAC.dhr12r(0).write_value(pac::dac::regs::Dhr12r(0));
         pac::DAC.dhr12r(1).write_value(pac::dac::regs::Dhr12r(0));
         pac::DAC.cr0().write(|w| {
-            w.set_en1(true);
-            w.set_en2(true);
+            w.set_en(0, true);
+            w.set_en(1, true);
         });
         // Datasheet tSTART is typically 3us, not a characterized maximum.
         delay.delay_us(10);
@@ -39,10 +39,12 @@ impl<'d> Dac<'d> {
         // Both retain its lifetime; neither exposes the whole peripheral token.
         Self {
             one: DacChannel {
+                _clock: clock.retain(),
                 output: None,
                 _borrow: PhantomData,
             },
             two: DacChannel {
+                _clock: clock,
                 output: None,
                 _borrow: PhantomData,
             },
@@ -75,8 +77,8 @@ impl<'d> Dac<'d> {
         let one = dac_code(one)?;
         let two = dac_code(two)?;
         pac::DAC.dhr12rd().write(|w| {
-            w.set_c1data(one);
-            w.set_c2data(two);
+            w.set_data(0, one);
+            w.set_data(1, two);
         });
         Ok(())
     }
@@ -93,6 +95,7 @@ impl<'d> Dac<'d> {
 /// Shared configuration is changed with critical-section RMWs, and dropping a
 /// channel never resets or gates its sibling.
 pub struct DacChannel<'d, const C: u8> {
+    _clock: crate::rcc::ClockGuard,
     output: Option<Peri<'d, AnyPin>>,
     _borrow: PhantomData<&'d mut peripherals::DAC>,
 }
@@ -103,8 +106,8 @@ impl<'d, const C: u8> DacChannel<'d, C> {
         pin.configure_analog();
         critical_section::with(|_| {
             pac::DAC.cr1().modify(|w| match C {
-                1 => w.set_c1out(true),
-                2 => w.set_c2out(true),
+                1 => w.set_out(0, true),
+                2 => w.set_out(1, true),
                 _ => unreachable!(),
             });
         });
@@ -134,13 +137,13 @@ impl<const C: u8> Drop for DacChannel<'_, C> {
         critical_section::with(|_| {
             // Disconnect before disabling; retain every sibling/reserved field.
             pac::DAC.cr1().modify(|w| match C {
-                1 => w.set_c1out(false),
-                2 => w.set_c2out(false),
+                1 => w.set_out(0, false),
+                2 => w.set_out(1, false),
                 _ => unreachable!(),
             });
             pac::DAC.cr0().modify(|w| match C {
-                1 => w.set_en1(false),
-                2 => w.set_en2(false),
+                1 => w.set_en(0, false),
+                2 => w.set_en(1, false),
                 _ => unreachable!(),
             });
         });

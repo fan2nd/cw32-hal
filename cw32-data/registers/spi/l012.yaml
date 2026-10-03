@@ -2,11 +2,12 @@ name: spi
 version: l012
 registers:
 - name: CR1
-  reset_value: 0x00000700
-  reset_source: "CW32L012 RM1.4 section 22.7.1, printed p516 (PDF p542); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 1792
+  reset_source: CW32L012 RM1.4 section 22.7.1, printed p516 (PDF p542); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: BR
     bit_offset: 24
@@ -36,8 +37,18 @@ registers:
     bit_offset: 16
     bit_size: 2
     access: rw
-    kind: raw
-    description: Field MODE; raw encoding retained unless explicitly audited.
+    kind: enum
+    description: Serial communication direction and wire mode.
+    values:
+    - name: FULL_DUPLEX
+      value: 0
+    - name: TRANSMIT_ONLY
+      value: 1
+    - name: RECEIVE_ONLY
+      value: 2
+    - name: HALF_DUPLEX
+      value: 3
+    values_source: CW32L012 RM1.4 section 22.7.1, printed p516 (PDF p542); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   - name: GAP
     bit_offset: 12
     bit_size: 4
@@ -81,11 +92,12 @@ registers:
     kind: bool
     description: Field MSTR; raw encoding retained unless explicitly audited.
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 22.7.2, printed p518 (PDF p544); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 22.7.2, printed p518 (PDF p544); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: DMATX
     bit_offset: 2
@@ -106,11 +118,12 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CR3
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 22.7.3, printed p518 (PDF p544); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 22.7.3, printed p518 (PDF p544); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 8
   access: rw
-  description: Register CR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: HDOE
     bit_offset: 0
@@ -119,11 +132,12 @@ registers:
     kind: bool
     description: Field HDOE; raw encoding retained unless explicitly audited.
 - name: SSI
-  reset_value: 0x00000001
-  reset_source: "CW32L012 RM1.4 section 22.7.4, printed p519 (PDF p545); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 1
+  reset_source: CW32L012 RM1.4 section 22.7.4, printed p519 (PDF p545); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 12
   access: rw
-  description: Register SSI; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register SSI; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: SSI
     bit_offset: 0
@@ -132,11 +146,12 @@ registers:
     kind: bool
     description: Field SSI; raw encoding retained unless explicitly audited.
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 22.7.5, printed p520 (PDF p546); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 22.7.5, printed p520 (PDF p546); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 16
   access: rw
-  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: MODF
     bit_offset: 7
@@ -187,11 +202,12 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: ISR
-  reset_value: 0x00000001
-  reset_source: "CW32L012 RM1.4 section 22.7.6, printed p521 (PDF p547); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 1
+  reset_source: CW32L012 RM1.4 section 22.7.6, printed p521 (PDF p547); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 20
   access: ro
-  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: SSLVL
     bit_offset: 9
@@ -254,11 +270,13 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: ICR
-  reset_value: 0x000000ff
-  reset_source: "CW32L012 RM1.4 section 22.7.7, printed p522 (PDF p548); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 255
+  reset_source: CW32L012 RM1.4 section 22.7.7, printed p522 (PDF p548); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 24
   access: rw
-  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. R1W0 flags plus FLUSH bit 0. Writing zero to FLUSH empties the TX buffer and shift register and sets TXE. A zero-initialized flag write can accidentally flush an in-flight frame. Source: RM1.4 22.7.7; SDK SPI_ClearFlag'
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. R1W0 flags plus FLUSH bit 0. Writing zero to FLUSH empties the TX buffer and shift register and
+    sets TXE. A zero-initialized flag write can accidentally flush an in-flight frame. Source: RM1.4 22.7.7; SDK SPI_ClearFlag'
   fields:
   - name: MODF
     bit_offset: 7
@@ -311,11 +329,16 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: DR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 22.7.8, printed p522 (PDF p548); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 22.7.8, printed p522 (PDF p548); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 28
   access: rw
-  description: 'Register DR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write transmits buffered data; reading receives data and clears ISR.RXNE. Access is mode/width dependent. Generic modify performs a receive acknowledgement followed by transmission. Source: RM1.4 22.5 receive operation; 22.7.6; 22.7.8; SDK SPI_SendData/SPI_ReceiveData Write transmits buffered data; reading receives data and clears ISR.RXNE. Access is mode/width dependent. Generic modify performs a receive acknowledgement followed by transmission. Source: RM1.4 22.3.8; 22.7.6; 22.7.8; SDK SPI_SendData/SPI_ReceiveData'
+  description: 'Register DR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Write transmits buffered data; reading receives data and clears ISR.RXNE. Access is mode/width dependent.
+    Generic modify performs a receive acknowledgement followed by transmission. Source: RM1.4 22.5 receive operation;
+    22.7.6; 22.7.8; SDK SPI_SendData/SPI_ReceiveData Write transmits buffered data; reading receives data and clears
+    ISR.RXNE. Access is mode/width dependent. Generic modify performs a receive acknowledgement followed by transmission.
+    Source: RM1.4 22.3.8; 22.7.6; 22.7.8; SDK SPI_SendData/SPI_ReceiveData'
   fields:
   - name: DR
     bit_offset: 0

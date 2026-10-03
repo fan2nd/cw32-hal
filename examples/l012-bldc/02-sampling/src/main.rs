@@ -45,7 +45,7 @@ static mut ADC2_ELAPSED_MS: u8 = 0;
 #[cortex_m_rt::entry]
 fn main() -> ! {
     let mut config = embassy_cw32::Config::default();
-    config.rcc.hsi_frequency = rcc::HsiFrequency::Mhz96;
+    config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     // Retain the HAL singleton tokens for the lifetime of this program.
     let _peripherals = embassy_cw32::try_init(config).expect("clock initialization failed");

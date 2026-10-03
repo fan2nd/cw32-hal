@@ -2,11 +2,12 @@ name: opa
 version: l012
 registers:
 - name: CR
-  reset_value: 0x0000e000
-  reset_source: "CW32L012 RM1.4 section 29.6.1, printed p649 (PDF p675); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 57344
+  reset_source: CW32L012 RM1.4 section 29.6.1, printed p649 (PDF p675); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: BIAS
     bit_offset: 13
@@ -69,11 +70,14 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CAL
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 29.6.2, printed p650 (PDF p676); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 29.6.2, printed p650 (PDF p676); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: 'Register CAL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTTRIG bit 3 write one starts timed calibration; zero does nothing. START is a level-calibration control; AZRUN is RO and only meaningful in triggered mode. Other fields configure routing and timing. Source: RM1.4 29.3.3; 29.6.2; SDK OPA_AutoZeroTrig_SoftEvent/OPA_AutoZeroSoft_Start'
+  description: 'Register CAL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. SOFTTRIG bit 3 write one starts timed calibration; zero does nothing. START is a level-calibration
+    control; AZRUN is RO and only meaningful in triggered mode. Other fields configure routing and timing. Source: RM1.4
+    29.3.3; 29.6.2; SDK OPA_AutoZeroTrig_SoftEvent/OPA_AutoZeroSoft_Start'
   fields:
   - name: GTIM4OC2
     bit_offset: 31
@@ -87,12 +91,6 @@ registers:
     access: rw
     kind: bool
     description: Field GTIM4OC1; raw encoding retained unless explicitly audited.
-  - name: GTIM4TRGO
-    bit_offset: 29
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
   - name: GTIM3OC2
     bit_offset: 28
     bit_size: 1
@@ -105,12 +103,6 @@ registers:
     access: rw
     kind: bool
     description: Field GTIM3OC1; raw encoding retained unless explicitly audited.
-  - name: GTIM3TRGO
-    bit_offset: 26
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
   - name: GTIM2OC2
     bit_offset: 25
     bit_size: 1
@@ -123,12 +115,6 @@ registers:
     access: rw
     kind: bool
     description: Field GTIM2OC1; raw encoding retained unless explicitly audited.
-  - name: GTIM2TRGO
-    bit_offset: 23
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
   - name: GTIM1OC2
     bit_offset: 22
     bit_size: 1
@@ -141,48 +127,12 @@ registers:
     access: rw
     kind: bool
     description: Field GTIM1OC1; raw encoding retained unless explicitly audited.
-  - name: GTIM1TRGO
-    bit_offset: 20
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
-  - name: ATIM1OC6
-    bit_offset: 19
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIM1OC6; raw encoding retained unless explicitly audited.
-  - name: ATIM1OC5
-    bit_offset: 18
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIM1OC5; raw encoding retained unless explicitly audited.
-  - name: ATIM1OC4
-    bit_offset: 17
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIM1OC4; raw encoding retained unless explicitly audited.
   - name: ATIM1TRGO
     bit_offset: 16
     bit_size: 1
     access: rw
     kind: bool
     description: Field ATIM1TRGO; raw encoding retained unless explicitly audited.
-  - name: ADC2START1
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ADC2START1; raw encoding retained unless explicitly audited.
-  - name: ADC1START1
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ADC1START1; raw encoding retained unless explicitly audited.
   - name: CLKDIV
     bit_offset: 11
     bit_size: 3
@@ -225,6 +175,95 @@ registers:
     access: rw
     kind: bool
     description: Field CALEN; raw encoding retained unless explicitly audited.
+  - name: GTIM_TRGO
+    bit_offset: 20
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance GTIM TRGO rising-edge calibration trigger enable. Index order: GTIM1TRGO, GTIM2TRGO, GTIM3TRGO,
+      GTIM4TRGO.'
+    array:
+      len: 4
+      stride: 3
+    elements:
+    - name: GTIM1TRGO
+      bit_offset: 20
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
+    - name: GTIM2TRGO
+      bit_offset: 23
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
+    - name: GTIM3TRGO
+      bit_offset: 26
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
+    - name: GTIM4TRGO
+      bit_offset: 29
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
+    array_source: CW32L012 RM1.4 section 29.6.2, printed p650 (PDF p676); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: ATIM_OCREF
+    bit_offset: 17
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'ATIM channels 4, 5 and 6 rising-edge calibration trigger enable; index zero selects channel 4. Index
+      order: ATIM1OC4, ATIM1OC5, ATIM1OC6.'
+    array:
+      len: 3
+      stride: 1
+    elements:
+    - name: ATIM1OC4
+      bit_offset: 17
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIM1OC4; raw encoding retained unless explicitly audited.
+    - name: ATIM1OC5
+      bit_offset: 18
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIM1OC5; raw encoding retained unless explicitly audited.
+    - name: ATIM1OC6
+      bit_offset: 19
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIM1OC6; raw encoding retained unless explicitly audited.
+    array_source: CW32L012 RM1.4 section 29.6.2, printed p650 (PDF p676); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: ADC_START
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Per-instance ADC START1 calibration trigger enable. Index order: ADC1START1, ADC2START1.'
+    array:
+      len: 2
+      stride: 1
+    elements:
+    - name: ADC1START1
+      bit_offset: 14
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ADC1START1; raw encoding retained unless explicitly audited.
+    - name: ADC2START1
+      bit_offset: 15
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ADC2START1; raw encoding retained unless explicitly audited.
+    array_source: CW32L012 RM1.4 section 29.6.2, printed p650 (PDF p676); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   write_behavior: mixed
   read_behavior: ordinary
 constants: []

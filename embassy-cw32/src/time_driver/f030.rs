@@ -37,7 +37,7 @@ impl Hardware for Registers {
     fn compare_irq(&mut self, enabled: bool) {
         pac::GTIM1.ier().write(|w| {
             w.set_ov(true);
-            w.set_cc1(enabled);
+            w.set_cc(0, enabled);
         });
     }
     fn compare(&mut self, value: u16) {
@@ -59,7 +59,9 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
     // SAFETY: HAL init owns GTIM1 and the checks above establish its tick rate.
     unsafe {
         super::driver::init(priority, || {
-            <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
+            let mut clock = <crate::peripherals::GTIM1 as PeripheralClock>::acquire();
+            // The globally installed time driver has process-long ownership.
+            clock.pin();
             pac::GTIM1.cr0().write_value(regs::Cr0(0)); // stopped, PCLK source, no encoder/trigger
             pac::GTIM1.ier().write_value(regs::Ier(0));
             pac::GTIM1.dma().write_value(regs::Dma(0));
@@ -69,9 +71,11 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
             pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
             pac::GTIM1.cnt().write_value(regs::Cnt(0));
             pac::GTIM1.ccr(0).write(|w| w.set_ccr(0xffff));
-            // RM 14.3.4.1: CC1M=0xA sets CC1 on CNT==CCR1. No GPIO AF is
+            // RM 14.3.4.1: CC1M=0xA selects low on CNT==CCR1. No GPIO AF is
             // configured: only the internal comparator is used, not an output pin.
-            pac::GTIM1.cmmr().write(|w| w.set_cc1m(0x0a));
+            pac::GTIM1
+                .cmmr()
+                .write(|w| w.set_ccm(0, pac::gtim::vals::CmmrCcm::LOW_ON_MATCH));
             // W0 clears all implemented startup flags; preserve reserved reset bits.
             pac::GTIM1
                 .icr()

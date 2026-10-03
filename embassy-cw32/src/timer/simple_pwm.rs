@@ -9,8 +9,25 @@ use super::{
     low_level::{self, Config, Timer},
     Ch1, Ch2, Ch3, Ch4, Channel, Error, Frequency, PwmInstance, TimerChannel, TimerPin,
 };
-use crate::{gpio::AnyPin, rcc, Peri};
-use core::marker::PhantomData;
+use crate::{gpio::AnyPin, rcc::ClockGuard, Peri};
+use core::{marker::PhantomData, mem::ManuallyDrop};
+
+// One generated state per timer, used only after a 'static owner is consumed.
+// All shared-register writes and the enabled/live bookkeeping use the same CS.
+pub(crate) struct State {
+    clock: Option<ClockGuard>,
+    live: u8,
+    enabled: u8,
+}
+impl State {
+    pub(crate) const fn new() -> Self {
+        Self {
+            clock: None,
+            live: 0,
+            enabled: 0,
+        }
+    }
+}
 
 struct PinState<'d> {
     pin: Peri<'d, AnyPin>,
@@ -31,7 +48,7 @@ impl Drop for PinState<'_> {
 }
 
 /// A pin with a metadata-proved timer/channel route. Creation disconnects it;
-/// it is not muxed to the peripheral until `SimplePwm::enable` is called.
+/// it is not muxed to the peripheral until its owning channel is enabled.
 pub struct PwmPin<'d, T: PwmInstance, C: TimerChannel> {
     pin: PinState<'d>,
     _phantom: PhantomData<(T, C)>,
@@ -73,7 +90,7 @@ impl<'d, T: PwmInstance> SimplePwm<'d, T> {
         ch4: Option<PwmPin<'d, T, Ch4>>,
         frequency_hz: u32,
     ) -> Result<Self, Error> {
-        let config = low_level::solve(rcc::clocks().pclk, frequency_hz, T::regs().prescalers())?;
+        let config = low_level::solve(T::frequency(), frequency_hz, T::regs().prescalers())?;
         Self::new_with_config(timer, ch1, ch2, ch3, ch4, config)
     }
     /// Construct with exact divider/count settings, including periods below 1 Hz.
@@ -274,6 +291,192 @@ impl<T: PwmInstance> Drop for SimplePwm<'_, T> {
     fn drop(&mut self) {
         self.gate_outputs();
         self.timer.stop();
+    }
+}
+
+/// Independently movable channel owners returned by [`SimplePwm::split`].
+/// An absent pin remains `None`; F030 ATIM has no constructible channel 4 pin.
+pub struct SimplePwmChannels<T: PwmInstance> {
+    pub ch1: Option<OwnedPwmChannel<T>>,
+    pub ch2: Option<OwnedPwmChannel<T>>,
+    pub ch3: Option<OwnedPwmChannel<T>>,
+    pub ch4: Option<OwnedPwmChannel<T>>,
+}
+
+impl<T: PwmInstance> SimplePwm<'static, T> {
+    /// Consume this driver into independently owned output channels.
+    ///
+    /// Select frequency and start/stop the counter before splitting: both are
+    /// frozen for the lifetime of the channels. Each channel can independently
+    /// enable, disable, change duty, or be dropped without stopping its peers.
+    /// The final channel Drop stops the counter and releases the timer clock.
+    /// Forgetting a channel keeps its timer/clock ownership alive.
+    ///
+    /// Requires period_ticks <= 65535. At 65536, the whole owner's forced-mode
+    /// transition for 100% uses a gated shared-phase reset; independent channels
+    /// cannot perform that transaction. Failure returns
+    /// `(Error::SplitPeriodTooLong, self)` without modifying the original owner.
+    /// With an accepted period,
+    /// all-absent pins return empty channels after stopping the timer and
+    /// releasing its clock.
+    pub fn split(self) -> Result<SimplePwmChannels<T>, (Error, Self)> {
+        if self.max_duty_ticks() == 65536 {
+            return Err((Error::SplitPeriodTooLong, self));
+        }
+        let live = self.pins.iter().filter(|pin| pin.is_some()).count() as u8;
+        if live == 0 {
+            return Ok(SimplePwmChannels {
+                ch1: None,
+                ch2: None,
+                ch3: None,
+                ch4: None,
+            });
+        }
+        let frequency = self.frequency();
+        let mut pwm = ManuallyDrop::new(self);
+        critical_section::with(|cs| {
+            let mut state = T::state().borrow(cs).borrow_mut();
+            // A safe 'static peripheral owner cannot coexist with an earlier
+            // split. No register/pin changes or panicking operations follow.
+            assert!(state.clock.is_none());
+            // SAFETY: ManuallyDrop prevents the original Timer and its clock
+            // guard from dropping. Transfer that guard exactly once; pins are
+            // separately moved out below. No timer/peripheral owner is cloned.
+            state.clock = Some(unsafe { core::ptr::read(&pwm.timer.clock) });
+            state.live = live;
+            state.enabled = pwm.enabled;
+        });
+        let [ch1, ch2, ch3, ch4] = core::array::from_fn(|channel| {
+            let duty = pwm.duty[channel];
+            pwm.pins[channel].take().map(|pin| OwnedPwmChannel {
+                pin,
+                channel,
+                duty,
+                frequency,
+                _phantom: PhantomData,
+            })
+        });
+        Ok(SimplePwmChannels { ch1, ch2, ch3, ch4 })
+    }
+}
+
+/// A non-cloneable PWM output capability, movable into a separate driver/task.
+///
+/// Created only by consuming a `'static` [`SimplePwm`] with [`SimplePwm::split`].
+/// Owns one pin and one share of the timer lifetime. Frequency and running state
+/// stay fixed; dropping or disabling this channel cannot stop another channel.
+/// Compare preload behavior is the same as [`SimplePwm::set_duty_ticks`].
+pub struct OwnedPwmChannel<T: PwmInstance> {
+    pin: PinState<'static>,
+    channel: usize,
+    duty: u32,
+    frequency: Frequency,
+    _phantom: PhantomData<T>,
+}
+impl<T: PwmInstance> OwnedPwmChannel<T> {
+    /// Connect this output, preserving the shared counter's running state.
+    pub fn enable(&mut self) {
+        critical_section::with(|cs| {
+            let mut state = T::state().borrow(cs).borrow_mut();
+            let bit = 1 << self.channel;
+            if state.enabled & bit != 0 {
+                return;
+            }
+            if !T::regs().is_running() {
+                T::regs().load();
+            }
+            self.pin.connect();
+            T::regs().output(self.channel, true, self.duty);
+            state.enabled |= bit;
+            T::regs().master_output(true);
+        });
+    }
+    /// Disconnect only this pin, without changing the shared counter's phase.
+    pub fn disable(&mut self) {
+        critical_section::with(|cs| {
+            let mut state = T::state().borrow(cs).borrow_mut();
+            T::regs().output(self.channel, false, self.duty);
+            self.pin.disconnect();
+            state.enabled &= !(1 << self.channel);
+            T::regs().master_output(state.enabled != 0);
+        });
+    }
+    pub fn is_enabled(&self) -> bool {
+        critical_section::with(|cs| {
+            T::state().borrow(cs).borrow().enabled & (1 << self.channel) != 0
+        })
+    }
+    pub fn is_running(&self) -> bool {
+        T::regs().is_running()
+    }
+    pub fn frequency(&self) -> Frequency {
+        self.frequency
+    }
+    pub fn max_duty_ticks(&self) -> u32 {
+        self.frequency.config().period_ticks
+    }
+    /// Last requested compare count; a running preloaded timer applies it at
+    /// its next update. F030 GTIM changes the compare immediately.
+    pub fn duty_ticks(&self) -> u32 {
+        self.duty
+    }
+    /// Set this channel's compare without stopping/reloading a running timer.
+    /// Zero and max_duty_ticks mean exact 0% and 100%, respectively.
+    pub fn set_duty_ticks(&mut self, duty: u32) -> Result<(), Error> {
+        if duty > self.max_duty_ticks() {
+            return Err(Error::DutyOutOfRange);
+        }
+        critical_section::with(|_| {
+            T::regs().write_compare(self.channel, duty);
+            if !T::regs().is_running() {
+                // Running state is frozen. Every stopped write commits inside
+                // this CS, so no pending peer compare is pulled forward here.
+                T::regs().load();
+            }
+            self.duty = duty;
+        });
+        Ok(())
+    }
+    pub fn max_duty_cycle(&self) -> u16 {
+        u16::MAX
+    }
+    /// Normalized duty; u16::MAX always means exactly 100%.
+    pub fn set_duty_cycle(&mut self, duty: u16) -> Result<(), Error> {
+        let ticks =
+            (u64::from(duty) * u64::from(self.max_duty_ticks()) / u64::from(u16::MAX)) as u32;
+        self.set_duty_ticks(ticks)
+    }
+}
+impl<T: PwmInstance> Drop for OwnedPwmChannel<T> {
+    fn drop(&mut self) {
+        let clock = critical_section::with(|cs| {
+            let mut state = T::state().borrow(cs).borrow_mut();
+            T::regs().output(self.channel, false, self.duty);
+            self.pin.disconnect();
+            state.enabled &= !(1 << self.channel);
+            T::regs().master_output(state.enabled != 0);
+            state.live -= 1;
+            if state.live == 0 {
+                T::regs().set_running(false);
+                state.clock.take()
+            } else {
+                None
+            }
+        });
+        // Stop/disconnect precedes releasing the RCC gate, including shared
+        // gate resources. Forgotten channels never reach this release path.
+        drop(clock);
+    }
+}
+impl<T: PwmInstance> embedded_hal::pwm::ErrorType for OwnedPwmChannel<T> {
+    type Error = Error;
+}
+impl<T: PwmInstance> embedded_hal::pwm::SetDutyCycle for OwnedPwmChannel<T> {
+    fn max_duty_cycle(&self) -> u16 {
+        self.max_duty_cycle()
+    }
+    fn set_duty_cycle(&mut self, duty: u16) -> Result<(), Self::Error> {
+        self.set_duty_cycle(duty)
     }
 }
 

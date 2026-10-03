@@ -2,11 +2,12 @@ name: vc
 version: l012
 registers:
 - name: CR0
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 27.7.3, printed p628 (PDF p654); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 27.7.3, printed p628 (PDF p654); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: INP
     bit_offset: 12
@@ -57,11 +58,12 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CR1
-  reset_value: 0x00000010
-  reset_source: "CW32L012 RM1.4 section 27.7.4, printed p629 (PDF p655); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 16
+  reset_source: CW32L012 RM1.4 section 27.7.4, printed p629 (PDF p655); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: BLANKLVL
     bit_offset: 11
@@ -106,11 +108,12 @@ registers:
     kind: raw
     description: Field FLTTIME; raw encoding retained unless explicitly audited.
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 8
   access: rw
-  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: HALLTIMTRGO
     bit_offset: 31
@@ -118,180 +121,6 @@ registers:
     access: rw
     kind: bool
     description: Field HALLTIMTRGO; raw encoding retained unless explicitly audited.
-  - name: BTIM3TRGO
-    bit_offset: 30
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field BTIM3TRGO; raw encoding retained unless explicitly audited.
-  - name: BTIM2TRGO
-    bit_offset: 29
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field BTIM2TRGO; raw encoding retained unless explicitly audited.
-  - name: BTIM1TRGO
-    bit_offset: 28
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field BTIM1TRGO; raw encoding retained unless explicitly audited.
-  - name: GTIM4OC4REFC
-    bit_offset: 27
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4OC4REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM4OC3REFC
-    bit_offset: 26
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4OC3REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM4OC2REFC
-    bit_offset: 25
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4OC2REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM4OC1REFC
-    bit_offset: 24
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4OC1REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM4TRGO
-    bit_offset: 23
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
-  - name: GTIM3OC4REFC
-    bit_offset: 22
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3OC4REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM3OC3REFC
-    bit_offset: 21
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3OC3REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM3OC2REFC
-    bit_offset: 20
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3OC2REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM3OC1REFC
-    bit_offset: 19
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3OC1REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM3TRGO
-    bit_offset: 18
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
-  - name: GTIM2OC4REFC
-    bit_offset: 17
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2OC4REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM2OC3REFC
-    bit_offset: 16
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2OC3REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM2OC2REFC
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2OC2REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM2OC1REFC
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2OC1REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM2TRGO
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
-  - name: GTIM1OC4REFC
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1OC4REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM1OC3REFC
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1OC3REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM1OC2REFC
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1OC2REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM1OC1REFC
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1OC1REFC; raw encoding retained unless explicitly audited.
-  - name: GTIM1TRGO
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
-  - name: ATIMOC6REFC
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC6REFC; raw encoding retained unless explicitly audited.
-  - name: ATIMOC5REFC
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC5REFC; raw encoding retained unless explicitly audited.
-  - name: ATIMOC4REFC
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC4REFC; raw encoding retained unless explicitly audited.
-  - name: ATIMOC3REFC
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC3REFC; raw encoding retained unless explicitly audited.
-  - name: ATIMOC2REFC
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC2REFC; raw encoding retained unless explicitly audited.
-  - name: ATIMOC1REFC
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field ATIMOC1REFC; raw encoding retained unless explicitly audited.
   - name: ATIMTRGO2
     bit_offset: 1
     bit_size: 1
@@ -304,12 +133,279 @@ registers:
     access: rw
     kind: bool
     description: Field ATIMTRGO; raw encoding retained unless explicitly audited.
+  - name: ATIM_OCREF
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Advanced timer output-compare reference trigger/blanking source gate. Index order: ATIMOC1REFC, ATIMOC2REFC,
+      ATIMOC3REFC, ATIMOC4REFC, ATIMOC5REFC, ATIMOC6REFC.'
+    array:
+      len: 6
+      stride: 1
+    elements:
+    - name: ATIMOC1REFC
+      bit_offset: 2
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC1REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: ATIMOC2REFC
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC2REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: ATIMOC3REFC
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC3REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: ATIMOC4REFC
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC4REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: ATIMOC5REFC
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC5REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: ATIMOC6REFC
+      bit_offset: 7
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field ATIMOC6REFC; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: GTIM_OCREF
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'General timer output-compare reference source gate; index=4*(timer-1)+(channel-1). Index order: GTIM1OC1REFC,
+      GTIM1OC2REFC, GTIM1OC3REFC, GTIM1OC4REFC, GTIM2OC1REFC, GTIM2OC2REFC, GTIM2OC3REFC, GTIM2OC4REFC, GTIM3OC1REFC,
+      GTIM3OC2REFC, GTIM3OC3REFC, GTIM3OC4REFC, GTIM4OC1REFC, GTIM4OC2REFC, GTIM4OC3REFC, GTIM4OC4REFC.'
+    array:
+      offsets:
+      - 0
+      - 1
+      - 2
+      - 3
+      - 5
+      - 6
+      - 7
+      - 8
+      - 10
+      - 11
+      - 12
+      - 13
+      - 15
+      - 16
+      - 17
+      - 18
+    elements:
+    - name: GTIM1OC1REFC
+      bit_offset: 9
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1OC1REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM1OC2REFC
+      bit_offset: 10
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1OC2REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM1OC3REFC
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1OC3REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM1OC4REFC
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1OC4REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM2OC1REFC
+      bit_offset: 14
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2OC1REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM2OC2REFC
+      bit_offset: 15
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2OC2REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM2OC3REFC
+      bit_offset: 16
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2OC3REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM2OC4REFC
+      bit_offset: 17
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2OC4REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM3OC1REFC
+      bit_offset: 19
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3OC1REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM3OC2REFC
+      bit_offset: 20
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3OC2REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM3OC3REFC
+      bit_offset: 21
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3OC3REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM3OC4REFC
+      bit_offset: 22
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3OC4REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM4OC1REFC
+      bit_offset: 24
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4OC1REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM4OC2REFC
+      bit_offset: 25
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4OC2REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM4OC3REFC
+      bit_offset: 26
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4OC3REFC; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM4OC4REFC
+      bit_offset: 27
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4OC4REFC; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: GTIM_TRGO
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'General timer trigger-output source gate. Index order: GTIM1TRGO, GTIM2TRGO, GTIM3TRGO, GTIM4TRGO.'
+    array:
+      len: 4
+      stride: 5
+    elements:
+    - name: GTIM1TRGO
+      bit_offset: 8
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM1TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM2TRGO
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM2TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM3TRGO
+      bit_offset: 18
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM3TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    - name: GTIM4TRGO
+      bit_offset: 23
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field GTIM4TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  - name: BTIM_TRGO
+    bit_offset: 28
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: 'Basic timer trigger-output source gate. Index order: BTIM1TRGO, BTIM2TRGO, BTIM3TRGO.'
+    array:
+      len: 3
+      stride: 1
+    elements:
+    - name: BTIM1TRGO
+      bit_offset: 28
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field BTIM1TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    - name: BTIM2TRGO
+      bit_offset: 29
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field BTIM2TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    - name: BTIM3TRGO
+      bit_offset: 30
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: Field BTIM3TRGO; raw encoding retained unless explicitly audited.
+      values: []
+    array_source: CW32L012 RM1.4 section 27.7.5, printed p630 (PDF p656); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
 - name: SR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 27.7.6, printed p632 (PDF p658); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 27.7.6, printed p632 (PDF p658); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 12
   access: rw
-  description: 'Register SR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately assert it again. Source: RM1.4 27.7.6; SDK VC_ClearInterruptFlag'
+  description: 'Register SR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately
+    assert it again. Source: RM1.4 27.7.6; SDK VC_ClearInterruptFlag'
   fields:
   - name: FLTV
     bit_offset: 1

@@ -18,7 +18,7 @@ use super::{
     BorrowedAdcChannel, BorrowedChannel,
 };
 use crate::{
-    gpio::Pin, interrupt, pac, peripherals, rcc::PeripheralClock, Async, Blocking, Mode, Peri,
+    gpio::Pin, interrupt, pac, peripherals, rcc::KernelClock, Async, Blocking, Mode, Peri,
     PeripheralType,
 };
 use core::{future::poll_fn, marker::PhantomData};
@@ -38,7 +38,7 @@ mod sealed {
 }
 /// Generated peripheral identity; shared ADC reset is deliberately never asserted.
 #[allow(private_bounds)]
-pub trait Instance: sealed::Sealed + PeripheralClock + PeripheralType + 'static {
+pub trait Instance: sealed::Sealed + KernelClock + PeripheralType + 'static {
     /// The physical ADC vector of this single-ADC device.
     type Interrupt: interrupt::typelevel::Interrupt;
 }
@@ -125,6 +125,7 @@ fn poll_ready(limit: u32, mut ready: impl FnMut() -> bool) -> bool {
 /// Owns one ADC peripheral. Channels are exclusively borrowed for each operation.
 /// Conversion values are uncalibrated 12-bit codes.
 pub struct Adc<'d, I: Instance, M: Mode> {
+    _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, I>,
     _mode: PhantomData<M>,
     config: Config,
@@ -173,14 +174,14 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
         config: Config,
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
-        let pclk = crate::rcc::clocks().pclk_hz();
+        let pclk = I::frequency();
         validate_clock(pclk, config)?;
         #[cfg(any(dma_l012, dma_f030))]
         I::dma_state().check()?;
         let sample = SampleTime::Cycles5;
         // The generated clock operation only enables the gate: ADC reset also
         // clears the BGR reference used by VC1/VC2 and must never be asserted.
-        I::enable_and_reset();
+        let clock = I::acquire();
         let r = I::regs();
         let cr = control_word(0, config.clock_divider, sample, 1);
         critical_section::with(|_| {
@@ -218,6 +219,7 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
         }
         I::state().reset();
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             _mode: PhantomData,
             config,
@@ -513,6 +515,9 @@ impl<I: Instance> interrupt::typelevel::Handler<I::Interrupt> for InterruptHandl
 }
 
 impl<I: Instance> AsyncSequenceIo for Hardware<I> {
+    fn clock_enabled(&self) -> bool {
+        I::clock_resource().is_enabled()
+    }
     fn completion_interrupt_enabled(&mut self) -> bool {
         let r = I::regs();
         let enabled = r.ier().read();
@@ -619,6 +624,7 @@ impl<'d, I: Instance, M: Mode> Drop for Adc<'d, I, M> {
             {
                 I::dma_state().cancel();
                 if I::dma_state().check().is_err() {
+                    self._clock.pin();
                     return;
                 }
             }

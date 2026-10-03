@@ -1,6 +1,6 @@
 //! ATIM L012, CW32L012 RM1.4 chapter 17.
 use super::TimerRegisters;
-use crate::pac::atim::{regs, Atim};
+use crate::pac::atim::{regs, vals, Atim};
 
 impl TimerRegisters for Atim {
     l012_common!();

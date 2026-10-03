@@ -43,6 +43,10 @@ pub struct InterruptHandler;
 impl interrupt::typelevel::Handler<interrupt::typelevel::ATIM> for InterruptHandler {
     unsafe fn on_interrupt() {
         let (update, fault) = critical_section::with(|_| {
+            use crate::rcc::PeripheralClock;
+            if !crate::peripherals::ATIM::clock_resource().is_enabled() {
+                return (None, None);
+            }
             let (update, fault) = service_events(&mut HardwareEvents);
             let update = if update != 0 {
                 UPDATE_STATE.latch(update)

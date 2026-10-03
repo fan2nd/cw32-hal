@@ -90,6 +90,9 @@ fn comparator_words(
 /// interrupt binding and supports one-shot waits. This owner never writes the
 /// shared divider, ADC reference or bandgap control.
 pub struct Comp<'d, I: VcInstance, M: Mode> {
+    _clock: crate::rcc::ClockGuard,
+    #[cfg(atim_f030)]
+    brake_clock: core::cell::Cell<Option<crate::rcc::ClockGuard>>,
     _instance: Peri<'d, I>,
     _positive: Peri<'d, AnyPin>,
     _negative: Peri<'d, AnyPin>,
@@ -139,7 +142,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         config: ComparatorConfig,
     ) -> Result<Self, Error> {
         let (cr0, cr1) = comparator_words(PCH, NCH, config)?;
-        I::enable_and_reset(); // Generated clocks never assert shared VC/BGR reset.
+        let clock = I::acquire(); // Generated clocks never assert shared VC/BGR reset.
         let positive: Peri<'d, AnyPin> = positive.into();
         let negative: Peri<'d, AnyPin> = negative.into();
         positive.configure_analog();
@@ -153,6 +156,9 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         });
         r.cr0().write_value(cr0);
         Ok(Self {
+            _clock: clock,
+            #[cfg(atim_f030)]
+            brake_clock: core::cell::Cell::new(None),
             _instance: instance,
             _positive: positive,
             _negative: negative,
@@ -182,6 +188,8 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
             let mut io = VcHardware::<I>(core::marker::PhantomData);
             io.disable();
             shutdown_comparator(&mut ShutdownHardware::<I>(core::marker::PhantomData));
+            #[cfg(atim_f030)]
+            drop(self.brake_clock.take());
             io.clear();
             I::state().reset();
         });
@@ -219,6 +227,9 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
                 // ATIM reset clears VCE but not a leaked VC's physical route.
                 pac::VC1.cr1().read().atimbk() || pac::VC2.cr1().read().atimbk(),
             )?;
+            // The source retains ATIM even if this borrow guard is forgotten
+            // and the PWM owner is later dropped. Shutdown still needs its MMIO.
+            self.brake_clock.set(Some(pwm._clock.retain()));
             I::regs().cr1().modify(|w| w.set_atimbk(true));
             pwm.set_comparator_brake(true);
             Ok(())
@@ -263,6 +274,7 @@ impl<I: VcInstance, M: Mode> Drop for ComparatorBrake<'_, '_, '_, I, M> {
             self.pwm.disable_outputs();
             self.pwm.set_comparator_brake(false);
             I::regs().cr1().modify(|w| w.set_atimbk(false));
+            drop(self._source.brake_clock.take());
         });
     }
 }

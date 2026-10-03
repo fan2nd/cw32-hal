@@ -149,12 +149,12 @@ fn control_config(c: &Config) -> regs::Cr {
 }
 fn filter_config(c: &Config) -> regs::Fltr {
     let mut value = regs::Fltr::default();
-    value.set_ocm1aflt1a(6);
-    value.set_ocm1bflt1b(6);
-    value.set_ocm2aflt2a(6);
-    value.set_ocm2bflt2b(6);
-    value.set_ocm3aflt3a(6);
-    value.set_ocm3bflt3b(6);
+    value.set_ocmflta(0, 6);
+    value.set_ocmfltb(0, 6);
+    value.set_ocmflta(1, 6);
+    value.set_ocmfltb(1, 6);
+    value.set_ocmflta(2, 6);
+    value.set_ocmfltb(2, 6);
     value.set_fltbk(c.brake_filter);
     value.set_bkp(!c.brake_active_high);
     value
@@ -180,6 +180,7 @@ fn control_without_commands(word: u32) -> u32 {
 /// Owns the timer, six real A/B pins and an external BK input.
 /// Polling construction does not claim an NVIC vector.
 pub struct ThreePhasePwm<'d> {
+    pub(crate) _clock: crate::rcc::ClockGuard,
     _instance: Peri<'d, peripherals::ATIM>,
     pins: [Peri<'d, AnyPin>; 7],
     period: u16,
@@ -208,7 +209,7 @@ impl<'d> ThreePhasePwm<'d> {
         config.validate()?;
         let control = control_config(&config);
         let deadtime = deadtime_config(&config)?;
-        <peripherals::ATIM as PeripheralClock>::enable_and_reset();
+        let clock = <peripherals::ATIM as PeripheralClock>::acquire();
         // Owned singleton; clock/reset established before any access.
         pac::ATIM.dtr().write_value(regs::Dtr(0));
         pac::ATIM.cr().write_value(control);
@@ -267,6 +268,7 @@ impl<'d> ThreePhasePwm<'d> {
         }
         pins[6].configure_alternate(K::AF, false);
         Ok(Self {
+            _clock: clock,
             _instance: instance,
             pins,
             period: config.period,

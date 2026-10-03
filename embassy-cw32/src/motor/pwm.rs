@@ -47,13 +47,9 @@ impl PwmBridge {
     /// This clears event flags; it must not be used to clear a running fault.
     pub unsafe fn configure(&mut self, config: PwmConfig) {
         assert!(config.period > 0);
-        #[cfg(sysctrl_l012)]
-        critical_section::with(|_| {
-            let mut gate = pac::SYSCTRL.apben1().read();
-            gate.set_key(0x5a5a);
-            gate.set_atim(true);
-            pac::SYSCTRL.apben1().write_value(gate);
-        });
+        let mut clock =
+            <crate::peripherals::ATIM as crate::rcc::PeripheralClock>::acquire_no_reset();
+        clock.pin();
         let r = pac::ATIM;
         r.cr1().write(|w| w.set_arpe(true));
         r.bdtr().write_value(pac::atim::regs::Bdtr(0));
@@ -67,18 +63,18 @@ impl PwmBridge {
         r.cnt().write(|_| {});
         r.ccmr_cmp(0).write(|w| {
             if config.phase_outputs {
-                w.set_ocm(0, 6);
+                w.set_ocm(0, pac::atim::vals::CcmrCmpOcm::PWM1);
                 w.set_ocpe(0, true);
-                w.set_ocm(1, 6);
+                w.set_ocm(1, pac::atim::vals::CcmrCmpOcm::PWM1);
                 w.set_ocpe(1, true);
             }
         });
         r.ccmr_cmp(1).write(|w| {
             if config.phase_outputs {
-                w.set_ocm(0, 6);
+                w.set_ocm(0, pac::atim::vals::CcmrCmpOcm::PWM1);
                 w.set_ocpe(0, true);
             }
-            w.set_ocm(1, 6);
+            w.set_ocm(1, pac::atim::vals::CcmrCmpOcm::PWM1);
             w.set_ocpe(1, true);
         });
         for i in 0..3 {
@@ -92,10 +88,10 @@ impl PwmBridge {
             r.bdtr().write_value(pac::atim::regs::Bdtr(0));
         }
         r.ccer().write(|w| {
-            w.set_cc1e(config.phase_outputs);
-            w.set_cc2e(config.phase_outputs);
-            w.set_cc3e(config.phase_outputs);
-            w.set_cc4e(true);
+            w.set_cce(0, config.phase_outputs);
+            w.set_cce(1, config.phase_outputs);
+            w.set_cce(2, config.phase_outputs);
+            w.set_cce(3, true);
         });
         r.icr().write_value(pac::atim::regs::Icr(0));
     }
@@ -140,7 +136,7 @@ impl PwmBridge {
         control.set_aoe(false);
         control.set_moe(false);
         pac::ATIM.bdtr().write_value(control);
-        pac::ATIM.ccer().write(|w| w.set_cc4e(true));
+        pac::ATIM.ccer().write(|w| w.set_cce(3, true));
     }
     #[cfg(gpio_l012)]
     /// Apply a three-high PWM/three-GPIO-low bridge state in source order.
@@ -212,7 +208,7 @@ pub unsafe fn emergency_disable_outputs() {
     control.set_aoe(false);
     control.set_moe(false);
     pac::ATIM.bdtr().write_value(control);
-    pac::ATIM.ccer().write(|w| w.set_cc4e(true));
+    pac::ATIM.ccer().write(|w| w.set_cce(3, true));
 }
 
 #[cfg(gpio_l012)]

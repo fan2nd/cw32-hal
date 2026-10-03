@@ -3,11 +3,16 @@ version: f030
 registers:
 - name: CR1
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.1, printed p120 (PDF p121); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section 7.6.3, printed p116 (PDF p117)"
-  reset_note: "Nominal reset heading is 0x00000010 for an unprotected device. Read-only SECURITY[7:6] reports persistent protection level set through ISP; a universal full reset word is not established across protection states. STANDBY reset is 1 and writable MODE reset remains 0."
+  reset_source: CW32x030 RM Rev2.5 section 7.9.1, printed p120 (PDF p121); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section 7.6.3, printed p116 (PDF p117)
+  reset_note: Nominal reset heading is 0x00000010 for an unprotected device. Read-only SECURITY[7:6] reports persistent
+    protection level set through ISP; a universal full reset word is not established across protection states. STANDBY
+    reset is 1 and writable MODE reset remains 0.
   offset: 0
   access: rw
-  description: 'CW32F030 FLASH.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.1'
+  description: 'CW32F030 FLASH.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write.
+    This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.1'
   fields:
   - name: KEY
     bit_offset: 16
@@ -42,11 +47,13 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.2, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 7.9.2, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: 'CW32F030 FLASH.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.2'
+  description: 'CW32F030 FLASH.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write.
+    This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.2'
   fields:
   - name: KEY
     bit_offset: 16
@@ -75,11 +82,13 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: PAGELOCK
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.3, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 7.9.3, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: 'CW32F030 FLASH.PAGELOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.3'
+  description: 'CW32F030 FLASH.PAGELOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+    Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write.
+    This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.3'
   fields:
   - name: KEY
     bit_offset: 16
@@ -87,110 +96,139 @@ registers:
     access: wo
     kind: raw
     description: CW32F030 FLASH.PAGELOCK.KEY; raw encoding.
-  - name: LOCK15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK15; raw encoding.
-  - name: LOCK14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK14; raw encoding.
-  - name: LOCK13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK13; raw encoding.
-  - name: LOCK12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK12; raw encoding.
-  - name: LOCK11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK11; raw encoding.
-  - name: LOCK10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK10; raw encoding.
-  - name: LOCK9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK9; raw encoding.
-  - name: LOCK8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK8; raw encoding.
-  - name: LOCK7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK7; raw encoding.
-  - name: LOCK6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK6; raw encoding.
-  - name: LOCK5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK5; raw encoding.
-  - name: LOCK4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK4; raw encoding.
-  - name: LOCK3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK3; raw encoding.
-  - name: LOCK2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK2; raw encoding.
-  - name: LOCK1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK1; raw encoding.
-  - name: LOCK0
+  - name: LOCK
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 FLASH.PAGELOCK.LOCK0; raw encoding.
+    description: 'Flash protection group bit; programming/unlocking constraints remain those of PAGELOCK. Index order:
+      LOCK0, LOCK1, LOCK2, LOCK3, LOCK4, LOCK5, LOCK6, LOCK7, LOCK8, LOCK9, LOCK10, LOCK11, LOCK12, LOCK13, LOCK14, LOCK15.'
+    array:
+      len: 16
+      stride: 1
+    elements:
+    - name: LOCK0
+      bit_offset: 0
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK0; raw encoding.
+      values: []
+    - name: LOCK1
+      bit_offset: 1
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK1; raw encoding.
+      values: []
+    - name: LOCK2
+      bit_offset: 2
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK2; raw encoding.
+      values: []
+    - name: LOCK3
+      bit_offset: 3
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK3; raw encoding.
+      values: []
+    - name: LOCK4
+      bit_offset: 4
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK4; raw encoding.
+      values: []
+    - name: LOCK5
+      bit_offset: 5
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK5; raw encoding.
+      values: []
+    - name: LOCK6
+      bit_offset: 6
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK6; raw encoding.
+      values: []
+    - name: LOCK7
+      bit_offset: 7
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK7; raw encoding.
+      values: []
+    - name: LOCK8
+      bit_offset: 8
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK8; raw encoding.
+      values: []
+    - name: LOCK9
+      bit_offset: 9
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK9; raw encoding.
+      values: []
+    - name: LOCK10
+      bit_offset: 10
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK10; raw encoding.
+      values: []
+    - name: LOCK11
+      bit_offset: 11
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK11; raw encoding.
+      values: []
+    - name: LOCK12
+      bit_offset: 12
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK12; raw encoding.
+      values: []
+    - name: LOCK13
+      bit_offset: 13
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK13; raw encoding.
+      values: []
+    - name: LOCK14
+      bit_offset: 14
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK14; raw encoding.
+      values: []
+    - name: LOCK15
+      bit_offset: 15
+      bit_size: 1
+      access: rw
+      kind: bool
+      description: CW32F030 FLASH.PAGELOCK.LOCK15; raw encoding.
+      values: []
+    array_source: CW32x030 RM Rev2.5 section 7.9.3, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   write_behavior: keyed
   read_behavior: ordinary
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.4, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 7.9.4, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 32
   access: rw
-  description: CW32F030 FLASH.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 FLASH.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: PROG
     bit_offset: 4
@@ -211,11 +249,12 @@ registers:
     kind: bool
     description: CW32F030 FLASH.IER.PC; raw encoding.
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.5, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 7.9.5, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 36
   access: ro
-  description: CW32F030 FLASH.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 FLASH.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
   - name: PROG
     bit_offset: 4
@@ -236,12 +275,15 @@ registers:
     kind: bool
     description: CW32F030 FLASH.ISR.PC; raw encoding.
 - name: ICR
-  reset_value: 0x0000000f
-  reset_source: "CW32x030 RM Rev2.5 section 7.9.6, printed p123 (PDF p124); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Full reset word includes unmodeled/reserved set bits 0x0000000C; retain them, do not mask to modeled fields."
+  reset_value: 15
+  reset_source: CW32x030 RM Rev2.5 section 7.9.6, printed p123 (PDF p124); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: Full reset word includes unmodeled/reserved set bits 0x0000000C; retain them, do not mask to modeled fields.
   offset: 40
   access: rw
-  description: 'CW32F030 FLASH.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 7.9.6; 1.2'
+  description: 'CW32F030 FLASH.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing
+    one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source:
+    CW32x030 RM Rev 2.5 7.9.6; 1.2'
   fields:
   - name: PROG
     bit_offset: 4
