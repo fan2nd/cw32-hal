@@ -23,7 +23,7 @@ constraints:
   - AF numbers are literal GPIO AFRL/AFRH selections. No SYSCTRL output remap is needed for these routes.
   - Data describes silicon routing. Applications must verify package bonding and board wiring.
   - HAL generated bus pin traits exclude PA13/PA14 until an explicit SWD-release API exists.
-  - Oscillator pads require their oscillator function to be disabled; supported HSI-only startup leaves HSE/LSE unavailable as active sources.
+  - Oscillator pads require their oscillator function to be disabled; the caller must retain oscillator pad ownership. RTC LSE startup permanently consumes PC14/PC15 tokens.
   - SCL/SDA require open-drain and suitable external pull-up resistors. UART/SPI pin directions follow the selected controller role.
 counts:
   cw32l012c8: { UART1: 24, UART2: 24, UART3: 21, SPI1: 16, SPI2: 12, SPI3: 12, I2C1: 18, I2C2: 6 }

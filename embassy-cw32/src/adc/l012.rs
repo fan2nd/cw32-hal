@@ -10,7 +10,7 @@ use super::{
         cancel_async_sequence, disarm_idle, on_interrupt, poll_sequence, prepare_sequence,
         AsyncSequenceIo, ConversionGuard, SequenceIo,
     },
-    BorrowedAdcChannel, BorrowedChannel,
+    BorrowedAdcChannel, BorrowedChannel, InternalSource,
 };
 use crate::{
     gpio::Pin, interrupt, pac, peripherals, rcc::KernelClock, Async, Blocking, Mode, Peri,
@@ -49,6 +49,8 @@ pub enum Error {
     Timeout,
     Busy,
     InvalidThreshold,
+    /// BGR/TS require a sampling phase of at least 40 us (RM 25.12.3).
+    SampleTimeTooShort,
     /// An interrupted DMA read retains this ADC and its static resources until reset.
     #[cfg(any(dma_l012, dma_f030))]
     DmaPoisoned,
@@ -124,6 +126,7 @@ pub struct Adc<'d, I: Instance, M: Mode> {
     _mode: PhantomData<M>,
     config: Config,
     clock_hz: u32,
+    pclk_hz: u32,
     cr: u32,
 }
 impl<'d, I: Instance> Adc<'d, I, Blocking> {
@@ -161,6 +164,19 @@ impl<'d, I: Instance> Adc<'d, I, Async> {
         let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
         Ok(sequence.sample().await?[0])
     }
+
+    /// Activate and settle one internal source, then await its raw 12-bit code.
+    /// Cancellation stops the ADC before releasing the source borrow. No DMA,
+    /// external triggering or scan is exposed. `delay` must measure real time.
+    pub async fn read_internal(
+        &mut self,
+        source: &mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.internal_sequence(source, sample_time, delay)?;
+        Ok(sequence.sample().await?[0])
+    }
 }
 impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     fn new_inner(
@@ -196,6 +212,7 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
             _mode: PhantomData,
             config,
             clock_hz: pclk / (1u32 << (config.clock_divider as u8)),
+            pclk_hz: pclk,
             cr,
         })
     }
@@ -218,6 +235,42 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     ) -> Result<u16, Error> {
         let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
         Ok(sequence.blocking_sample(poll_limit)?[0])
+    }
+
+    /// Activate and settle one internal source, then return its raw 12-bit code.
+    /// BGR/TS sampling must last at least 40 us; invalid sample times fail before
+    /// any MMIO. `poll_limit` counts observations, not microseconds.
+    pub fn blocking_read_internal(
+        &mut self,
+        source: &mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+        poll_limit: u32,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.internal_sequence(source, sample_time, delay)?;
+        Ok(sequence.blocking_sample(poll_limit)?[0])
+    }
+
+    fn internal_sequence<'a, 'ch>(
+        &'a mut self,
+        source: &'ch mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+    ) -> Result<Sequence<'a, 'd, 'ch, I, M, 1>, Error> {
+        // Retain the PCLK numerator: clock_hz() rounds a fractional ADCCLK
+        // down, which must not make a sub-40 us sampling phase appear valid.
+        if u64::from(sample_time.cycles()) * 1_000_000 * (1u64 << (self.config.clock_divider as u8))
+            < u64::from(self.pclk_hz) * u64::from(source.minimum_sample_us())
+        {
+            return Err(Error::SampleTimeTooShort);
+        }
+        #[cfg(any(dma_l012, dma_f030))]
+        I::dma_state().check()?;
+        // A forgotten ordinary operation must stop before source activation.
+        // DMA Busy/poison above leaves every source and ADC register untouched.
+        self.stop();
+        source.setup(delay);
+        self.configure_sequence([(super::channel::internal_channel(source), sample_time)])
     }
 
     /// Borrow this owner and all channels for a fixed-length scan extension.

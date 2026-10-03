@@ -1,0 +1,22 @@
+schema_version: 1
+scope: Dedicated LSE crystal pad routes and startup configuration evidence. Routes do not grant a GPIO token after the oscillator has been started.
+routes:
+  - { chip: CW32L012C8, controller: SYSCTRL, input: PC14, output: PC15 }
+  - { chip: CW32F030C8, controller: SYSCTRL, input: PC14, output: PC15 }
+sources:
+  l012:
+    url: https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    version: '1.4'
+    sha256: a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340
+    sections: [4.3.5, 4.3.6, 4.6, 9.3]
+    corroboration: SDK V1.0.5 Libraries/inc/cw32l012_sysctrl.h LSE_PIN_PORT=CW_GPIOC, LSE_PIN_IN=GPIO_PIN_14, LSE_PIN_OUT=GPIO_PIN_15.
+  f030:
+    url: https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    version: '2.5'
+    sha256: 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2
+    sections: [4.3.5, 4.3.6, 4.6, 9.3]
+    corroboration: SDK V2.2 Libraries/src/cw32f030_rcc.c RCC_LSE_Enable configures PC14 and PC15 as analog crystal pads.
+constraints:
+  - LSE startup consumes static pin tokens permanently because RTC and oscillator retention outlive driver Drop.
+  - LSI startup keeps existing trim and wait settings; startup does not imply precise calibrated seconds.
+  - PC14 and PC15 are dedicated analog oscillator functions, not GPIO alternate-function numbers.

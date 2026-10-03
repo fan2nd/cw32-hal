@@ -15,6 +15,9 @@ mod f030;
 #[cfg(sysctrl_f030)]
 pub use f030::*;
 
+mod low_speed;
+pub use low_speed::*;
+
 /// AHB clock divider. Encodings follow SYSCTRL.CR0.HCLKPRS on both variants.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 #[repr(u8)]

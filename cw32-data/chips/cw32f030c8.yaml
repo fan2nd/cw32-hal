@@ -8,6 +8,16 @@ memory:
   address: 536870912
   size: 8192
 pin_routes:
+- pin: PC14
+  peripheral: SYSCTRL
+  signal: LSE_IN
+  af: null
+  remap: null
+- pin: PC15
+  peripheral: SYSCTRL
+  signal: LSE_OUT
+  af: null
+  remap: null
 - pin: PA0
   peripheral: ADC
   signal: IN0

@@ -12,7 +12,7 @@ zero with triggers/DMA/waves disabled, and waits 10 µs. External output pads st
 disconnected until attached. The startup delay remains a conservative software
 choice around a typical specification, not a characterized maximum.
 
-`Dac::split(self)` returns `(DacChannel<'d, 1>, DacChannel<'d, 2>)`, transferring
+`Dac::split(self)` returns `(DacChannel<'d, D, 1>, DacChannel<'d, D, 2>)`, transferring
 any attached output pins without writing registers. Either channel can be moved,
 updated, attached to its verified external pin, or dropped independently. Both
 retain the lifetime of the original DAC peripheral borrow. No peripheral or GPIO
@@ -23,7 +23,7 @@ The unsplit owner retains `set`, `set_pair`, `output_code`, `with_output1` and
 holding-register write. Independent owners only write their own holding register.
 
 Calling `channel.source()` reserves that channel with an exclusive lifetime-bound
-`DacSource<'_, C>` guard. OPA and comparator constructors borrow the guard, while
+`DacSource<'_, D, C>` guard. OPA and comparator constructors borrow the guard, while
 `source.set(code)` takes a shared reference and remains available during their
 lifetimes. The guard offers no enable, disable, route or pin-release operation.
 Consequently an active consumer prevents dropping/reconfiguring its source, while
@@ -121,3 +121,8 @@ writes while including the actual driver sources and generated register types;
 clocks, pin callbacks and calibration-status progression are controlled by the
 probe. ARM compilation and negative ownership/pairing probes check the real
 public API. These checks do not replace electrical or hardware timing tests.
+
+From v0.20, the owner, channels and sources retain their DAC instance type D.
+Constructors infer D from Peri; pin routes and OPA/VC source compatibility use
+the metadata-generated peripheral identity as well as the channel number. See
+[DAC Instance wiring](dac-instance.md).

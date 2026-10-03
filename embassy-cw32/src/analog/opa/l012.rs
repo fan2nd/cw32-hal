@@ -6,7 +6,7 @@
 
 use super::{Bandgap, Error, OpaInstance, SignalPin};
 #[cfg(dac_l012)]
-use super::{DacDependency, DacSource, DacSourceInstance};
+use super::{DacDependency, DacInstance, DacSource, DacSourceInstance};
 use crate::{gpio::AnyPin, pac, Peri};
 use embedded_hal::delay::DelayNs;
 
@@ -197,16 +197,16 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
     }
     /// Internal DAC1 -> OPA1 / DAC2 -> OPA2, with an externally owned OPA output.
     #[cfg(dac_l012)]
-    pub fn dac_follower<O: SignalPin<I, 0>, const C: u8>(
+    pub fn dac_follower<D: DacInstance, O: SignalPin<I, 0>, const C: u8>(
         instance: Peri<'d, I>,
-        dac: &'d DacSource<'_, C>,
+        dac: &'d DacSource<'_, D, C>,
         output: Peri<'d, O>,
         bandgap: &'d Bandgap<'d>,
         config: OpaConfig,
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error>
     where
-        I: DacSourceInstance<C>,
+        I: DacSourceInstance<D, C>,
     {
         Self::build(
             instance,

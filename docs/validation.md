@@ -1,4 +1,6 @@
-> Current bus/CRC/IWDT stage: [v0.19.0 validation](validation-v0.19.0.md), [scope and remaining work](buses-v0.19.0.md).
+> Current internal/RTC/Flash/WWDT stage: [v0.20.0 validation](validation-v0.20.0.md), [scope and eight-gap progress](analog-rtc-flash-v0.20.0.md).
+
+> Prior bus/CRC/IWDT stage: [v0.19.0 validation](validation-v0.19.0.md), [scope and remaining work](buses-v0.19.0.md).
 
 > Prior clock/PWM/PAC stage: [v0.18.0 validation](validation-v0.18.0.md), [scope](clock-pwm-pac-v0.18.0.md), [schema10](schema-v10.md).
 

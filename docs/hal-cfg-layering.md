@@ -94,3 +94,13 @@ latch is crate-private in the existing `interrupt` module. The separate
 `build_support.rs` and `async_support.rs` files were removed. The operations,
 critical sections, cancellation ordering and generated public tables are
 unchanged; see [v0.13.2 validation](validation-v0.13.2.md).
+
+## v0.20 peripheral additions
+
+RTC and Flash select their real IP layouts independently. WWDT reuses the
+audited shared l012 IP on both chips. LSE pin traits come from sourced SYSCTRL
+oscillator routes; LSI startup does not require GPIO. The early LSI off-state
+audit enumerates actual requester instances and gate addresses from metadata,
+while source-selector meaning is checked against each supported hardware
+contract. Flash capacity comes from the chip memory region and is rejected if
+it exceeds the geometry audited by the driver.

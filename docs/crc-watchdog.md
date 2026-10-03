@@ -14,7 +14,7 @@ Evidence: CW32L012 RM1.4 §§10.3–10.6, printed pp141–145; CW32x030 RM2.5 §
 
 ## Independent watchdog
 
-`wdg::IndependentWatchdog::new(p.IWDT, config)` acquires without reset or start. `unleash` starts and configures it, `pet` reloads it, and CW32's documented `stop` is explicit. The driver implements reset-on-expiry, disables the early-feed window and IRQs, and leaves counting enabled during DeepSleep. Window mode and WWDT remain later work.
+`wdg::IndependentWatchdog::new(p.IWDT, config)` acquires without reset or start. `unleash` starts and configures it, `pet` reloads it, and CW32's documented `stop` is explicit. The driver implements reset-on-expiry, disables the early-feed window and IRQs, and leaves counting enabled during DeepSleep. IWDT window/IRQ modes remain later work. The separate [window watchdog](window-watchdog.md) is implemented from v0.20.
 
 The counter uses a dedicated, approximate 10 kHz RC oscillator. Configuration exposes the actual /4…/512 prescaler and 12-bit reload value; `nominal_timeout_us` assumes precisely 10 kHz and is not a deadline guarantee. Default settings are nominally 1 second. Applications need margin based on their chip's oscillator tolerance. `poll_limit` bounds status reads for each synchronization, rather than elapsed time.
 
@@ -27,3 +27,9 @@ Evidence: L012 RM1.4 §§19.3.2–19.4, pp427–431 and §19.6, pp433–435; F03
 ## Upstream comparison
 
 The fixed Embassy source is [CRC](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/crc/v2v3.rs) and [watchdog](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/wdg/mod.rs). CRC follows its owned stateful feed/read/reset pattern and width-specific methods. Watchdog follows explicit `unleash`/`pet`; configuration moves into `unleash` because CW32 requires an already-running watchdog. The CW32 stop command is a real additional hardware capability, not an assumed STM32 behavior.
+
+The watchdog owner is generic over the generated sealed `wdg::Instance`
+(v0.20), and its registers and clock are obtained through that same identity.
+`WindowWatchdog` similarly uses `WindowInstance`. Ordinary constructor calls
+infer the peripheral type from their token; no trait object or copied singleton
+is involved. CRC remains concrete, matching the fixed upstream CRC driver.

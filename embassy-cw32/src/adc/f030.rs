@@ -3,7 +3,8 @@
 //! ADCCLK is conservatively limited to 500 kHz across the full VDDA range.
 //! One channel uses MODE=0/EOC; multi-slot scans use MODE=4/EOS. Hardware
 //! watchdog is supported only for a one-channel sequence (RM 22.9).
-//! No dual-ADC, internal-channel or voltage-qualified high-speed API is implied.
+//! Internal signals use a dedicated MODE=0 path; no dual-ADC or
+//! voltage-qualified high-speed API is implied.
 //!
 //! [`Adc`] owns the peripheral, with blocking or interrupt-driven mode selected
 //! by its constructor. Channels are borrowed per read; [`Sequence`] retains the
@@ -15,7 +16,7 @@ use super::{
         cancel_async_sequence, disarm_idle, on_interrupt, poll_sequence, prepare_sequence,
         AsyncSequenceIo, ConversionGuard, SequenceIo,
     },
-    BorrowedAdcChannel, BorrowedChannel,
+    BorrowedAdcChannel, BorrowedChannel, InternalSource,
 };
 use crate::{
     gpio::Pin, interrupt, pac, peripherals, rcc::KernelClock, Async, Blocking, Mode, Peri,
@@ -167,6 +168,19 @@ impl<'d, I: Instance> Adc<'d, I, Async> {
         let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
         Ok(sequence.sample().await?[0])
     }
+
+    /// Activate and settle one internal source, then await its raw 12-bit code.
+    /// Always uses MODE=0, BUF=1 and the existing VDDA reference. Cancellation
+    /// stops the ADC before releasing the source borrow. No scan/DMA is exposed.
+    pub async fn read_internal(
+        &mut self,
+        source: &mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.internal_sequence(source, sample_time, delay)?;
+        Ok(sequence.sample().await?[0])
+    }
 }
 impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     fn new_inner(
@@ -246,6 +260,47 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     ) -> Result<u16, Error> {
         let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
         Ok(sequence.blocking_sample(poll_limit)?[0])
+    }
+
+    /// Activate and settle one internal source, then return its raw 12-bit code.
+    /// MODE=0/BUF=1 meets RM 22.4.3. The current ADCCLK limit of 500 kHz
+    /// also keeps the follower below its 200 ksps limit for every sample time.
+    /// `poll_limit` counts observations, not microseconds.
+    pub fn blocking_read_internal(
+        &mut self,
+        source: &mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+        poll_limit: u32,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.internal_sequence(source, sample_time, delay)?;
+        Ok(sequence.blocking_sample(poll_limit)?[0])
+    }
+
+    fn internal_sequence<'a, 'ch>(
+        &'a mut self,
+        source: &'ch mut impl InternalSource,
+        sample_time: SampleTime,
+        delay: &mut impl DelayNs,
+    ) -> Result<Sequence<'a, 'd, 'ch, I, M, 1>, Error> {
+        // RM 22.4.1: 19 comparison clocks plus the selected sampling phase.
+        // Keep the BUF limit explicit if voltage-aware clock policy is added.
+        if u64::from(self.clock_hz) > 200_000 * (u64::from(sample_time.cycles()) + 19) {
+            return Err(Error::ClockTooFast);
+        }
+        #[cfg(any(dma_l012, dma_f030))]
+        I::dma_state().check()?;
+        self.stop();
+        source.setup(delay);
+        let temperature = source.channel() == 14;
+        let mut sequence =
+            self.configure_sequence([(super::channel::internal_channel(source), sample_time)])?;
+        // Generic external control words clear TSEN. This private one-element
+        // sequence must retain it through prepare and the async start write.
+        let mut cr = regs::Cr0(sequence.cr);
+        cr.set_tsen(temperature);
+        sequence.cr = cr.0;
+        Ok(sequence)
     }
 
     /// Borrow this owner and all channels for a fixed-length scan extension.

@@ -11,7 +11,7 @@ use super::super::Bandgap;
 #[cfg(vcref_l012)]
 use super::super::RefDivider;
 #[cfg(dac_l012)]
-use super::super::{DacDependency, DacSource, DacSourceInstance};
+use super::super::{DacDependency, DacInstance, DacSource, DacSourceInstance};
 use embedded_hal::delay::DelayNs;
 
 /// PCLK-based comparator filter encodings from RM 27.7.4. No LSI dependency.
@@ -127,15 +127,15 @@ impl<'d, I: VcInstance> Comp<'d, I, Blocking> {
     /// The borrowed source guard allows threshold updates while keeping its
     /// channel enabled and unavailable for reconfiguration or drop.
     #[cfg(dac_l012)]
-    pub fn new_blocking_with_dac<P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
+    pub fn new_blocking_with_dac<D: DacInstance, P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
-        dac: &'d DacSource<'_, C>,
+        dac: &'d DacSource<'_, D, C>,
         bandgap: &'d Bandgap<'d>,
         config: ComparatorConfig,
     ) -> Result<Self, Error>
     where
-        I: DacSourceInstance<C>,
+        I: DacSourceInstance<D, C>,
     {
         Self::build(
             instance,
@@ -196,16 +196,16 @@ impl<'d, I: VcInstance> Comp<'d, I, Async> {
     /// channel 1 and VC2/4 use channel 2. The source remains updatable while its
     /// channel enable, configuration and ownership stay reserved by the guard.
     #[cfg(dac_l012)]
-    pub fn new_with_dac<P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
+    pub fn new_with_dac<D: DacInstance, P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
-        dac: &'d DacSource<'_, C>,
+        dac: &'d DacSource<'_, D, C>,
         bandgap: &'d Bandgap<'d>,
         irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
         config: ComparatorConfig,
     ) -> Result<Self, Error>
     where
-        I: DacSourceInstance<C>,
+        I: DacSourceInstance<D, C>,
     {
         let mut comp = Self::build(
             instance,

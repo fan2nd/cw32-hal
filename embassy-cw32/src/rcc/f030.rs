@@ -267,6 +267,9 @@ pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
         unsafe { core::ptr::read_volatile(pac::HSI_TRIM_ADDRESS as *const u16) },
         u32::from(regs::Hsi(u32::MAX).trim()),
     );
+    // Auto-started or retained LSI must not have its trim rewritten. The
+    // startup audit inspects every documented request and restores config gates.
+    let trim_lsi = super::lsi_trim_is_safe();
     // SAFETY: as above; the LSI code follows the HSI halfword.
     let lsi_trim = trim_code(
         unsafe { core::ptr::read_volatile(pac::LSI_TRIM_ADDRESS as *const u16) },
@@ -278,9 +281,11 @@ pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
     let mut hsi = pac::SYSCTRL.hsi().read();
     let mut lsi = pac::SYSCTRL.lsi().read();
     hsi.set_trim(hsi_trim as _);
-    lsi.set_trim(lsi_trim as _);
     pac::SYSCTRL.hsi().write_value(hsi);
-    pac::SYSCTRL.lsi().write_value(lsi);
+    if trim_lsi {
+        lsi.set_trim(lsi_trim as _);
+        pac::SYSCTRL.lsi().write_value(lsi);
+    }
 
     let mut stable = false;
     for _ in 0..config.hsi_stabilization_limit {
@@ -303,7 +308,7 @@ pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
         pac::SYSCTRL.lsi().read(),
     );
     validate_configuration(cr0, cr1, hsi)?;
-    if u32::from(hsi.trim()) != hsi_trim || u32::from(lsi.trim()) != lsi_trim {
+    if u32::from(hsi.trim()) != hsi_trim || (trim_lsi && u32::from(lsi.trim()) != lsi_trim) {
         return Err(ClockError::TrimReadbackMismatch);
     }
     if config.hsi_divider != HsiDivider::Div6 {

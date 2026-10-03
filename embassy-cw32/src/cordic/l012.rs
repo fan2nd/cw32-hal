@@ -14,8 +14,38 @@
 //! Hardware numerical accuracy and endpoint behavior still require board validation.
 //! Q1.15 and DMA are intentionally not exposed.
 
-use crate::{pac, peripherals::CORDIC, rcc::PeripheralClock, Peri};
+use core::marker::PhantomData;
+
+use crate::{pac, Peri, PeripheralType};
 use pac::cordic::regs;
+
+pub(crate) mod sealed {
+    pub(crate) trait Instance: crate::rcc::PeripheralClock {
+        fn regs() -> crate::pac::cordic::Cordic;
+        fn state() -> &'static super::State;
+    }
+}
+
+/// An audited CORDIC instance and its physical interrupt vector.
+#[allow(private_bounds)]
+pub trait Instance: sealed::Instance + PeripheralType + 'static {
+    type Interrupt: crate::interrupt::typelevel::Interrupt;
+}
+
+pub(crate) struct State {
+    event: crate::interrupt::EventState,
+    results: critical_section::Mutex<core::cell::Cell<[Q31; 3]>>,
+}
+impl State {
+    pub(crate) const fn new() -> Self {
+        Self {
+            event: crate::interrupt::EventState::new(),
+            results: critical_section::Mutex::new(core::cell::Cell::new([Q31::ZERO; 3])),
+        }
+    }
+}
+
+include!(concat!(env!("OUT_DIR"), "/_generated_cordic.rs"));
 
 /// Signed fixed point: the mathematical value is `bits / 2^31`, in [-1, 1).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -118,18 +148,18 @@ pub struct Hyperbolic {
 /// Dropping this object releases its dedicated clock. A forgotten owner keeps
 /// that clock alive. `release` requests an exclusive reset and returns the token.
 /// After a timeout, call `reset` or try another operation once BUSY is clear.
-pub struct Cordic<'d> {
+pub struct Cordic<'d, T: Instance> {
     clock: crate::rcc::ClockGuard,
-    token: Peri<'d, CORDIC>,
+    token: Peri<'d, T>,
     config: Config,
 }
 
-impl<'d> Cordic<'d> {
-    pub fn new(token: Peri<'d, CORDIC>) -> Self {
+impl<'d, T: Instance> Cordic<'d, T> {
+    pub fn new(token: Peri<'d, T>) -> Self {
         Self::with_config(token, Config::default())
     }
-    pub fn with_config(token: Peri<'d, CORDIC>, config: Config) -> Self {
-        let clock = <CORDIC as PeripheralClock>::acquire();
+    pub fn with_config(token: Peri<'d, T>, config: Config) -> Self {
+        let clock = T::acquire();
         let owner = Self {
             token,
             config,
@@ -143,13 +173,13 @@ impl<'d> Cordic<'d> {
     pub fn reset(&mut self) -> bool {
         self.clock.reset()
     }
-    pub fn release(self) -> Peri<'d, CORDIC> {
+    pub fn release(self) -> Peri<'d, T> {
         self.clock.reset();
         self.token
     }
     pub fn is_busy(&self) -> bool {
         // SAFETY: owned token and clock enabled by construction; CSR is RO for status.
-        pac::CORDIC.csr().read().busy()
+        T::regs().csr().read().busy()
     }
     /// Return both sin(angle*pi) and cos(angle*pi) in one hardware operation.
     /// `poll_budget` bounds CSR polls, not elapsed time or HCLK cycles.
@@ -227,27 +257,22 @@ impl<'d> Cordic<'d> {
         )?[0])
     }
     fn calculate(&mut self, op: Operation, poll_budget: u32) -> Result<[Q31; 3], Error> {
-        run(&mut Hardware, self.config, op, poll_budget)
+        run(&mut Hardware(T::regs()), self.config, op, poll_budget)
     }
 }
 
-static EVENT: crate::interrupt::EventState = crate::interrupt::EventState::new();
-static RESULTS: critical_section::Mutex<core::cell::Cell<[Q31; 3]>> =
-    critical_section::Mutex::new(core::cell::Cell::new([Q31::ZERO; 3]));
-
 /// Completion handler for the CORDIC IRQ (RM 12.6.1).
-pub struct InterruptHandler;
-impl crate::interrupt::typelevel::Handler<crate::interrupt::typelevel::CORDIC>
-    for InterruptHandler
-{
+pub struct InterruptHandler<T: Instance>(PhantomData<T>);
+impl<T: Instance> crate::interrupt::typelevel::Handler<T::Interrupt> for InterruptHandler<T> {
     unsafe fn on_interrupt() {
         let waker = critical_section::with(|cs| {
-            if !CORDIC::clock_resource().is_enabled() {
+            if !T::clock_resource().is_enabled() {
                 return None;
             }
-            if let Some(result) = complete_async(&mut Hardware) {
-                RESULTS.borrow(cs).set(result);
-                EVENT.latch(1)
+            if let Some(result) = complete_async(&mut Hardware(T::regs())) {
+                let state = T::state();
+                state.results.borrow(cs).set(result);
+                state.event.latch(1)
             } else {
                 None
             }
@@ -268,11 +293,16 @@ fn complete_async(hw: &mut impl Backend) -> Option<[Q31; 3]> {
     // while the future holds the exclusive owner borrow.
     Some([Reg::X, Reg::Y, Reg::Z].map(|r| Q31::from_bits(hw.read(r) as i32)))
 }
-fn begin_async(hw: &mut impl Backend, config: Config, op: &Operation) -> Result<(), Error> {
+fn begin_async(
+    hw: &mut impl Backend,
+    state: &State,
+    config: Config,
+    op: &Operation,
+) -> Result<(), Error> {
     if regs::Csr(hw.read(Reg::Csr)).busy() {
         return Err(Error::Busy);
     }
-    EVENT.reset();
+    state.event.reset();
     // A result read drains stale EOC; final input triggers the new operation.
     for reg in [Reg::X, Reg::Y, Reg::Z] {
         let _ = hw.read(reg);
@@ -287,22 +317,19 @@ fn begin_async(hw: &mut impl Backend, config: Config, op: &Operation) -> Result<
     }
     Ok(())
 }
-impl<'d> Cordic<'d> {
+impl<'d, T: Instance> Cordic<'d, T> {
     /// Convert the existing exclusive driver into an IRQ-driven owner.
     ///
     pub fn into_async(
         self,
-        _irq: impl crate::interrupt::typelevel::Binding<
-            crate::interrupt::typelevel::CORDIC,
-            InterruptHandler,
-        >,
-    ) -> AsyncCordic<'d> {
+        _irq: impl crate::interrupt::typelevel::Binding<T::Interrupt, InterruptHandler<T>>,
+    ) -> AsyncCordic<'d, T> {
         use crate::interrupt::typelevel::Interrupt;
         critical_section::with(|_| {
             self.reset_irq_state();
             // Do not unpend/disable NVIC: peripheral flags/IE are sufficient.
             unsafe {
-                crate::interrupt::typelevel::CORDIC::enable();
+                T::Interrupt::enable();
             }
         });
         AsyncCordic { inner: Some(self) }
@@ -310,33 +337,42 @@ impl<'d> Cordic<'d> {
     fn reset_irq_state(&self) {
         critical_section::with(|_| {
             // A forgotten owner can prevent reset; IE must still be masked.
-            pac::CORDIC.csr().modify(|w| w.set_ie(false));
+            T::regs().csr().modify(|w| w.set_ie(false));
             self.clock.reset();
-            EVENT.reset();
+            T::state().event.reset();
         });
     }
 }
 /// IRQ-driven Q1.31 operations. Every method is lazy until first poll. Dropping
 /// an in-flight future masks IE and resets the dedicated accelerator, discarding
 /// its result. The next operation can be started immediately. No DMA is used.
-pub struct AsyncCordic<'d> {
-    inner: Option<Cordic<'d>>,
+pub struct AsyncCordic<'d, T: Instance> {
+    inner: Option<Cordic<'d, T>>,
 }
-impl<'d> AsyncCordic<'d> {
-    pub fn into_blocking(mut self) -> Cordic<'d> {
+impl<'d, T: Instance> AsyncCordic<'d, T> {
+    pub fn into_blocking(mut self) -> Cordic<'d, T> {
         let inner = self.inner.take().unwrap();
         inner.reset_irq_state();
         inner
     }
     async fn calculate(&mut self, op: Operation) -> Result<[Q31; 3], Error> {
+        let state = T::state();
         let guard = critical_section::with(|_| {
-            begin_async(&mut Hardware, self.inner.as_ref().unwrap().config, &op)?;
-            Ok(Cancel(&self.inner.as_ref().unwrap().clock))
+            begin_async(
+                &mut Hardware(T::regs()),
+                state,
+                self.inner.as_ref().unwrap().config,
+                &op,
+            )?;
+            Ok(Cancel::<T>(
+                &self.inner.as_ref().unwrap().clock,
+                PhantomData,
+            ))
         })?;
         let result = core::future::poll_fn(|cx| {
-            EVENT.register(cx.waker());
-            if EVENT.take() != 0 {
-                core::task::Poll::Ready(critical_section::with(|cs| RESULTS.borrow(cs).get()))
+            state.event.register(cx.waker());
+            if state.event.take() != 0 {
+                core::task::Poll::Ready(critical_section::with(|cs| state.results.borrow(cs).get()))
             } else {
                 core::task::Poll::Pending
             }
@@ -418,7 +454,7 @@ impl<'d> AsyncCordic<'d> {
             .await?[0])
     }
 }
-impl Drop for AsyncCordic<'_> {
+impl<T: Instance> Drop for AsyncCordic<'_, T> {
     fn drop(&mut self) {
         if let Some(inner) = &self.inner {
             critical_section::with(|_| inner.reset_irq_state());
@@ -426,18 +462,18 @@ impl Drop for AsyncCordic<'_> {
     }
 }
 
-struct Cancel<'a>(&'a crate::rcc::ClockGuard);
-impl Drop for Cancel<'_> {
+struct Cancel<'a, T: Instance>(&'a crate::rcc::ClockGuard, PhantomData<T>);
+impl<T: Instance> Drop for Cancel<'_, T> {
     fn drop(&mut self) {
         critical_section::with(|_| {
             // Dedicated AHBRST.CORDIC reset cancels hardware, including a
             // computation that has not reached EOC. No shared reset is asserted.
-            let mut hw = Hardware;
+            let mut hw = Hardware(T::regs());
             let mut status = regs::Csr(hw.read(Reg::Csr));
             status.set_ie(false);
             hw.write(Reg::Csr, status.0);
             self.0.reset();
-            EVENT.reset();
+            T::state().event.reset();
         });
     }
 }
@@ -554,26 +590,26 @@ trait Backend {
     fn read(&mut self, reg: Reg) -> u32;
     fn write(&mut self, reg: Reg, word: u32);
 }
-struct Hardware;
+struct Hardware(pac::cordic::Cordic);
 impl Backend for Hardware {
     fn read(&mut self, reg: Reg) -> u32 {
         // Owned and clocked Cordic; CSR polling does not drain result flags.
         // Each result access remains exactly one read, which clears EOC.
         match reg {
-            Reg::Csr => pac::CORDIC.csr().read().0,
-            Reg::X => pac::CORDIC.x().read().0,
-            Reg::Y => pac::CORDIC.y().read().0,
-            Reg::Z => pac::CORDIC.z().read().0,
+            Reg::Csr => self.0.csr().read().0,
+            Reg::X => self.0.x().read().0,
+            Reg::Y => self.0.y().read().0,
+            Reg::Z => self.0.z().read().0,
         }
     }
     fn write(&mut self, reg: Reg, word: u32) {
         // Validated configuration and inputs cross the raw algorithm boundary
         // exactly once, retaining the hardware's final-input trigger ordering.
         match reg {
-            Reg::Csr => pac::CORDIC.csr().write_value(regs::Csr(word)),
-            Reg::X => pac::CORDIC.x().write_value(regs::X(word)),
-            Reg::Y => pac::CORDIC.y().write_value(regs::Y(word)),
-            Reg::Z => pac::CORDIC.z().write_value(regs::Z(word)),
+            Reg::Csr => self.0.csr().write_value(regs::Csr(word)),
+            Reg::X => self.0.x().write_value(regs::X(word)),
+            Reg::Y => self.0.y().write_value(regs::Y(word)),
+            Reg::Z => self.0.z().write_value(regs::Z(word)),
         }
     }
 }

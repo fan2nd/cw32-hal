@@ -164,6 +164,11 @@ impl AnyPin {
         // Generic port access intentionally carries no instance reset default.
         unsafe { pac::gpio::Gpio::from_ptr(self.port.base() as *mut ()) }
     }
+    /// Observe a retained oscillator pad without changing its mux or direction.
+    pub(crate) fn is_analog(&self) -> bool {
+        self.port.enable_clock();
+        self.regs().analog().read().pin(usize::from(self.number))
+    }
     /// Raw register block. The caller must coordinate access with HAL drivers.
     #[cfg(feature = "unstable-pac")]
     pub fn block(&self) -> pac::gpio::Gpio {

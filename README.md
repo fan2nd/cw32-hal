@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.19.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.20.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -14,7 +14,9 @@ v0.17.0 补齐首批资源组合：OPA 输出可受借用保护地交给 ADC；D
 
 v0.18.0 增加 [RCC 时钟资源](docs/rcc-resources.md) 与全部已记载 HSI/AHB/APB 分频组合，区分外设总线和内核输入频率；共享门控由实际 owner 引用计数，隔离中的 DMA/ADC 保留时钟。`SimplePwm::split()` 提供可独立持有的通道。PAC 数据新增语义枚举及重复字段索引，支持不规则 bit offsets；[46 IP 审查](docs/pac-fields-v0.18.0.md) 记录 50 个枚举字段与 156 组字段数组，保留 reserved 值和原寄存器契约。见 [本阶段边界](docs/clock-pwm-pac-v0.18.0.md)、[schema10](docs/schema-v10.md) 和 [验证](docs/validation-v0.18.0.md)。
 
-v0.19.0 增加两芯片 [UART](docs/uart.md)、[SPI](docs/spi.md)、[I2C](docs/i2c.md) 阻塞与真实 IRQ 异步控制器驱动，以及 [CRC 和独立看门狗](docs/crc-watchdog.md)。新增249条已审核总线引脚路由，类型约束和实际共享中断来自 metadata。06 UI 改用拥有 UART1 和引脚的 HAL，保留实际96MHz PCLK 下原 BRRI52/BRRF1、每次唤醒最多一个字节及原电机中断结构。安全总线 DMA、窗口看门狗等边界和后续阶段见 [本阶段范围](docs/buses-v0.19.0.md)。
+v0.19.0 增加两芯片 [UART](docs/uart.md)、[SPI](docs/spi.md)、[I2C](docs/i2c.md) 阻塞与真实 IRQ 异步控制器驱动，以及 [CRC 和独立看门狗](docs/crc-watchdog.md)。新增249条已审核总线引脚路由，类型约束和实际共享中断来自 metadata。06 UI 改用拥有 UART1 和引脚的 HAL，保留实际96MHz PCLK 下原 BRRI52/BRRF1、每次唤醒最多一个字节及原电机中断结构。该版安全总线 DMA 等边界和后续阶段见 [本阶段范围](docs/buses-v0.19.0.md)。
+
+v0.20.0 增加 [内部 ADC 源](docs/adc-internal.md)、[窗口看门狗](docs/window-watchdog.md)、[RTC](docs/rtc.md) 和 [Flash 数据分区](docs/flash.md)。RTC 使用真实 LSI/LSE 启动与时钟凭据，LSE 永久占用 PC14/PC15；RCC 保留已运行 LSI 的 trim。Flash 构造是明确的 unsafe 分区/并发边界，普通中断和 Flash 取指可能在写擦期间停顿。EAU/CORDIC、独立/窗口看门狗和 DAC 也改为由 metadata 生成的 sealed Instance 关联，寄存器、时钟、中断/源通道随实际实例传递；构造仍由传入的 Peri 自动推导类型。八项差距的完成情况和后续范围见 [第四阶段](docs/analog-rtc-flash-v0.20.0.md)。
 
 ## 先看设计与边界
 
@@ -142,7 +144,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 ## F030C8 新增支持
 
-选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、223条已审核路由（原107条模拟/定时器路由，加116条 UART/SPI/I2C 路由）；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
+选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、225条已审核路由（原107条模拟/定时器路由，加116条 UART/SPI/I2C 和2条 LSE 路由）；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
 
 F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存在的模块和外设不会出现在该芯片的安全API中。ADC/ATIM/VC以及RCC/GTIM使用独立寄存器版本与驱动。F030 ATIM硬件有比较影子寄存器，但本版严格三相批量 `set_duty` 尚不承诺运行中无扰原子提交；功率输出开启时返回 Busy。这是本版API的限制，不是硬件不支持运行时PWM更新。不能据此声称完整实时FOC控制已可用。
 
@@ -151,7 +153,7 @@ F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存�
 
 ## HAL 范围
 
-保留 embedded-hal 1.0 阻塞 GPIO、经过校验的 HSI 启动配置和可选专用 GTIM1 时间驱动。L012 默认 HSI/24、总线不分频，标称4 MHz；F030 默认 HSI/6，标称8 MHz。`config.rcc.hsi_divider`、`hclk_divider`、`pclk_divider` 选择已记载的分频组合，按要求先配置 Flash 等待周期；96MHz L012 仍要求 VDD 至少1.8V。`Config::clocks()` 是配置预测，`rcc::clocks()` 是成功初始化后的频率。`hsi_stabilization_limit` 是 trim 后的有界轮询次数。外部时钟、PLL、动态切换及低功耗恢复仍未实现。
+保留 embedded-hal 1.0 阻塞 GPIO、经过校验的 HSI 启动配置和可选专用 GTIM1 时间驱动。L012 默认 HSI/24、总线不分频，标称4 MHz；F030 默认 HSI/6，标称8 MHz。`config.rcc.hsi_divider`、`hclk_divider`、`pclk_divider` 选择已记载的分频组合，按要求先配置 Flash 等待周期；96MHz L012 仍要求 VDD 至少1.8V。`Config::clocks()` 是配置预测，`rcc::clocks()` 是成功初始化后的频率。`hsi_stabilization_limit` 是 trim 后的有界轮询次数。RTC 的低速 LSI/LSE 可独立启动；HSE/PLL 系统时钟、动态切换及低功耗恢复仍未实现。
 
 `rcc::clocks()` 在成功初始化前会 panic。与它不同，启用的 Embassy 时间驱动在初始化前返回时间 0 且不访问硬件；提前登记的唤醒会保留到初始化。16 个槽是存储容量，队列满时提前唤醒被替换任务以重试，不再 panic；Timer future 会重新核对 deadline。
 

@@ -1,3 +1,5 @@
+> Historical v0.19 stage. Current follow-on work: [v0.20](analog-rtc-flash-v0.20.0.md).
+
 # UART, SPI, I2C, CRC and independent watchdog
 
 This is the third bounded stage of the Embassy comparison. It adds the three

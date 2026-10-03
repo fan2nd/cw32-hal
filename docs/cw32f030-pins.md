@@ -19,7 +19,8 @@ reclaiming those pins.
 The original route audit covered the external **ADC, ATIM and VC1/VC2** signals from
 the pin/AF tables: 13 ADC inputs, 26 ATIM routes, 16 comparator inputs and
 6 comparator outputs, totaling **61 routes**. Later timer work added GTIM
-routes, and v0.19 adds **116 UART/SPI/I2C routes**, giving 223 current routes.
+routes, and v0.19 adds **116 UART/SPI/I2C routes**, giving 223 routes at that stage. v0.20 adds the two dedicated LSE routes,
+bringing the current total to225.
 See `cw32-data/sources/timer-pwm-routes.yaml` and
 `cw32-data/sources/bus-routes.yaml` for that independent evidence. BTIM,
 clock-output, oscillator and LVD routes remain outside this focused audit;

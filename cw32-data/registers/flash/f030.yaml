@@ -280,17 +280,16 @@ registers:
   reset_note: Full reset word includes unmodeled/reserved set bits 0x0000000C; retain them, do not mask to modeled fields.
   offset: 40
   access: rw
-  description: 'CW32F030 FLASH.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
-    2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing
-    one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source:
-    CW32x030 RM Rev 2.5 7.9.6; 1.2'
+  description: 'CW32F030 FLASH.ICR; RM Rev2.5 section 7.9.6 distinguishes write-only PROG from R1W0 PAGELOCK/PC.
+    Zero clears the associated flag and one has no effect. PROG has no documented read value. Preserve reserved
+    bits and use ISR to observe errors. The Rev1.7 change log explicitly records the PROG permission correction.'
   fields:
   - name: PROG
     bit_offset: 4
     bit_size: 1
-    access: rw
+    access: wo
     kind: bool
-    description: CW32F030 FLASH.ICR.PROG; raw encoding.
+    description: 'Write-only program-error clear: 0 clears, 1 has no effect. Source: CW32x030 RM Rev2.5 7.9.6, printed p123; Rev1.7 change log.'
   - name: PAGELOCK
     bit_offset: 1
     bit_size: 1

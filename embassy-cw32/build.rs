@@ -255,6 +255,58 @@ fn main() {
         clock_bindings(md, &peripheral_names),
     )
     .unwrap();
+    for kind in ["eau", "cordic", "iwdt", "wwdt"] {
+        let mut instances = String::new();
+        for p in md
+            .peripherals
+            .iter()
+            .filter(|p| p.block == kind && p.ownership_parent.is_none())
+        {
+            assert_eq!(p.version, "l012", "unsupported math/watchdog IP version");
+            let name = ident(p.name);
+            let ty = match kind {
+                "eau" => "Eau",
+                "cordic" => "Cordic",
+                "iwdt" => "Iwdt",
+                "wwdt" => "Wwdt",
+                _ => unreachable!(),
+            };
+            let public_trait = if kind == "wwdt" {
+                "WindowInstance"
+            } else {
+                "Instance"
+            };
+            writeln!(instances, "impl sealed::Instance for crate::peripherals::{name} {{ fn regs()->crate::pac::{kind}::{ty} {{crate::pac::{name}}}").unwrap();
+            if kind == "cordic" {
+                writeln!(
+                    instances,
+                    "fn state()->&'static State {{static STATE:State=State::new(); &STATE}}"
+                )
+                .unwrap();
+            }
+            writeln!(
+                instances,
+                "}} impl {public_trait} for crate::peripherals::{name} {{"
+            )
+            .unwrap();
+            if kind == "cordic" {
+                let irqs: Vec<_> = md
+                    .interrupt_bindings
+                    .iter()
+                    .filter(|i| i.peripheral == p.name && i.signal == "GLOBAL")
+                    .collect();
+                assert_eq!(irqs.len(), 1, "CORDIC requires one audited completion IRQ");
+                writeln!(
+                    instances,
+                    "type Interrupt=crate::interrupt::typelevel::{};",
+                    ident(irqs[0].interrupt)
+                )
+                .unwrap();
+            }
+            instances.push_str("}\n");
+        }
+        fs::write(out.join(format!("_generated_{kind}.rs")), instances).unwrap();
+    }
     let mut atim_pins = String::new();
     let mut sealed_pins = BTreeSet::new();
     for route in md
@@ -443,15 +495,24 @@ fn main() {
     }
     fs::write(out.join("_generated_motor_timer.rs"), motor_timer).unwrap();
     let mut analog = String::new();
+    if md
+        .peripherals
+        .iter()
+        .any(|p| p.block == "adc" && p.version == "l012")
+    {
+        let dacs = md.peripherals.iter().filter(|p| p.block == "dac").count();
+        assert!(dacs <= 1, "L012 internal ADC channels IN12/IN13 are audited for one shared DAC domain; multiple DAC connections require explicit data");
+    }
     for p in md
         .peripherals
         .iter()
-        .filter(|p| matches!(p.block, "opa" | "vc" | "vcref"))
+        .filter(|p| matches!(p.block, "opa" | "vc" | "vcref" | "dac"))
     {
         let name = ident(p.name);
         let (instance, block) = match p.block {
             "opa" => ("OpaInstance", "opa"),
             "vc" => ("VcInstance", "vc"),
+            "dac" => ("DacInstance", "dac"),
             _ => ("RefInstance", "vcref"),
         };
         let block_type = format!("{}{}", block[..1].to_ascii_uppercase(), &block[1..]);
@@ -508,15 +569,16 @@ fn main() {
                 .find(|dac| dac.name == connection.peripheral)
                 .expect("analog DAC target");
             assert_eq!(
-                (dac.name, dac.block, dac.version),
-                ("DAC", "dac", "l012"),
+                (dac.block, dac.version),
+                ("dac", "l012"),
                 "DAC source owner needs audited hardware"
             );
             assert!(
                 matches!(connection.channel, 1 | 2),
                 "unmodeled DAC source channel"
             );
-            writeln!(analog,"#[cfg(dac_l012)] impl sealed::DacSourceInstance<{}> for peripherals::{name} {{}} #[cfg(dac_l012)] impl DacSourceInstance<{}> for peripherals::{name} {{}}",connection.channel,connection.channel).unwrap();
+            let dac_name = ident(dac.name);
+            writeln!(analog,"#[cfg(dac_l012)] impl sealed::DacSourceInstance<peripherals::{dac_name},{}> for peripherals::{name} {{}} #[cfg(dac_l012)] impl DacSourceInstance<peripherals::{dac_name},{}> for peripherals::{name} {{}}",connection.channel,connection.channel).unwrap();
         }
         if p.block == "opa" && p.version == "l012" {
             let outputs: Vec<_> = md
@@ -579,7 +641,12 @@ fn main() {
         if !md.pins.iter().any(|p| p.name == r.pin) {
             continue;
         }
-        let signal = if r.peripheral.starts_with("OPA") {
+        let peripheral = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == r.peripheral)
+            .expect("analog route peripheral");
+        let signal = if peripheral.block == "opa" {
             match r.signal {
                 "OUT" => 0,
                 "INP1" => 1,
@@ -589,22 +656,17 @@ fn main() {
                 "INN2" => 12,
                 _ => continue,
             }
-        } else if r.peripheral.starts_with("VC") {
+        } else if peripheral.block == "vc" {
             match r
                 .signal
                 .strip_prefix("CH")
                 .and_then(|s| s.parse::<u8>().ok())
             {
                 Some(s) => {
-                    let p = md
-                        .peripherals
-                        .iter()
-                        .find(|p| p.name == r.peripheral)
-                        .unwrap();
                     // The explicitly audited route determines external-input validity.
                     // Register metadata checks representability, not a chip-family guess.
                     for selector in ["INP", "INN"] {
-                        let field = field(p, "CR0", selector);
+                        let field = field(peripheral, "CR0", selector);
                         assert!(
                             u32::from(s) < (1u32 << field.bit_size),
                             "VC route exceeds input selector"
@@ -614,7 +676,7 @@ fn main() {
                 }
                 _ => continue,
             }
-        } else if r.peripheral == "DAC" {
+        } else if peripheral.block == "dac" {
             match r.signal {
                 "OUT1" => 1,
                 "OUT2" => 2,
@@ -655,6 +717,17 @@ fn main() {
         .unwrap();
     }
     assert!(regions.contains("FLASH") && regions.contains("RAM"));
+    if let Some(controller) = md.peripherals.iter().find(|p| p.block == "flash") {
+        assert!(matches!(controller.version, "l012" | "f030"));
+        let flash = md.memory.iter().find(|r| r.name == "FLASH").unwrap();
+        assert_eq!(
+            (flash.address, flash.size),
+            (0, 65_536),
+            "Flash protection geometry has only been audited for the current 64 KiB main array"
+        );
+        fs::write(out.join("_generated_flash.rs"), format!(
+            "/// Main-array base from selected chip metadata.\npub const FLASH_BASE:usize={};\n/// Main-array size from selected chip metadata.\npub const FLASH_SIZE:usize={};\n", flash.address, flash.size)).unwrap();
+    }
     memory.push_str("}\n");
     if env::var_os("CARGO_FEATURE_MEMORY_X").is_some() {
         fs::write(out.join("memory.x"), memory).unwrap();
@@ -777,6 +850,122 @@ fn clock_bindings(md: &Metadata, names: &[&str]) -> String {
             }
         }
     }
+    // Oscillator pads are physical routes, independent of the package name.
+    for route in md
+        .pin_routes
+        .iter()
+        .filter(|r| matches!(r.signal, "LSE_IN" | "LSE_OUT"))
+    {
+        let peripheral = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == route.peripheral)
+            .expect("oscillator controller");
+        assert_eq!(peripheral.block, "sysctrl");
+        assert!(matches!(peripheral.version, "l012" | "f030"));
+        assert!(
+            route.af.is_none() && route.remap.is_none(),
+            "LSE is a dedicated analog route"
+        );
+        assert!(
+            md.pins.iter().any(|p| p.name == route.pin),
+            "LSE pad is not implemented"
+        );
+        let pin = ident(route.pin);
+        let direction = if route.signal == "LSE_IN" {
+            "Input"
+        } else {
+            "Output"
+        };
+        writeln!(out, "#[cfg(gpio)] impl crate::rcc::low_speed::sealed::Lse{direction}Pin for crate::peripherals::{pin} {{}} #[cfg(gpio)] impl crate::rcc::Lse{direction}Pin for crate::peripherals::{pin} {{}}").unwrap();
+    }
+    out.push_str(&lsi_startup_audit(md));
+    out
+}
+
+/// Startup-only off-state proof for the LSI calibration write. LSIEN does not
+/// reflect automatic clock demands (L012 RM4.7.2); STABLE=0 may mean starting.
+/// Inspect every documented requester without reset, then restore config gates.
+fn lsi_startup_audit(md: &Metadata) -> String {
+    let controller = md
+        .peripherals
+        .iter()
+        .find(|p| p.block == "sysctrl")
+        .expect("SYSCTRL");
+    assert!(matches!(controller.version, "l012" | "f030"));
+    let requesters: Vec<_> = md
+        .peripherals
+        .iter()
+        .filter(|p| {
+            p.block == "gpio"
+                || (controller.version == "l012" && matches!(p.block, "vc" | "lvd" | "iwdt"))
+        })
+        .collect();
+    let mut gates = BTreeMap::<&str, BTreeSet<&str>>::new();
+    for p in &requesters {
+        assert!(
+            matches!(p.version, "l012" | "f030"),
+            "unaudited LSI requester IP"
+        );
+        if let Some(gate) = p.clock_gate {
+            assert_eq!(gate.peripheral, controller.name);
+            assert!(matches!(gate.register, "AHBEN" | "APBEN1" | "APBEN2"));
+            gates.entry(gate.register).or_default().insert(gate.field);
+        }
+    }
+    let mut out = String::from("/// Exclusive early startup only; no peripheral reset or policy writes.\npub(crate) fn lsi_trim_is_safe()->bool {\nlet cr1=pac::SYSCTRL.cr1().read();if cr1.lsien()||cr1.hseccs()||cr1.lseccs()||pac::SYSCTRL.lsi().read().stable(){return false;}\n");
+    for (register, fields) in &gates {
+        let register = register.to_ascii_lowercase();
+        writeln!(out, "let saved_{register}=pac::SYSCTRL.{register}().read();let mut enabled_{register}=saved_{register};").unwrap();
+        // AHBEN/APBEN are ordinary RW on F030 and keyed on L012.
+        if controller.version == "l012" {
+            writeln!(
+                out,
+                "enabled_{register}.set_key((pac::SYSCTRL_KEY>>16) as u16);"
+            )
+            .unwrap();
+        }
+        for field in fields {
+            writeln!(
+                out,
+                "enabled_{register}.set_{}(true);",
+                field.to_ascii_lowercase()
+            )
+            .unwrap();
+        }
+        writeln!(
+            out,
+            "pac::SYSCTRL.{register}().write_value(enabled_{register});"
+        )
+        .unwrap();
+    }
+    out.push_str("let mut active=false;\n");
+    for p in requesters {
+        let name = ident(p.name);
+        let condition = match p.block {
+            "gpio" => format!("pac::{name}.filter().read().fltclk()==5"),
+            "vc" => format!("pac::{name}.cr0().read().en()&&!pac::{name}.cr1().read().fltclk()"),
+            "lvd" => {
+                let reg = if p.version == "l012" { "cr0" } else { "cr1" };
+                format!("pac::{name}.cr0().read().en()&&!pac::{name}.{reg}().read().fltclk()")
+            }
+            "iwdt" => format!("pac::{name}.sr().read().run()"),
+            _ => unreachable!(),
+        };
+        writeln!(out, "active|={condition};").unwrap();
+    }
+    for register in gates.keys().rev() {
+        let register = register.to_ascii_lowercase();
+        if controller.version == "l012" {
+            writeln!(out, "let mut saved_{register}=saved_{register};saved_{register}.set_key((pac::SYSCTRL_KEY>>16) as u16);").unwrap();
+        }
+        writeln!(
+            out,
+            "pac::SYSCTRL.{register}().write_value(saved_{register});"
+        )
+        .unwrap();
+    }
+    out.push_str("let cr1=pac::SYSCTRL.cr1().read();!active&&!cr1.lsien()&&!cr1.hseccs()&&!cr1.lseccs()&&!pac::SYSCTRL.lsi().read().stable()\n}\n");
     out
 }
 
@@ -1047,6 +1236,9 @@ const DRIVER_IPS: &[(&str, &[&str])] = &[
     ("i2c", &["l012", "f030"]),
     ("crc", &["l012", "f030"]),
     ("iwdt", &["l012"]),
+    ("wwdt", &["l012"]),
+    ("rtc", &["l012", "f030"]),
+    ("flash", &["l012", "f030"]),
 ];
 const GPIO_CAPABILITIES: &[&str] = &[
     "gpio_has_speed",

@@ -9,6 +9,17 @@ pub(crate) trait SealedAdcChannel<I> {
     fn channel(&self) -> u8;
 }
 
+// Kept private to the ADC implementation. The returned token retains the real
+// internal-source borrow, but can only reach a private one-element sequence.
+pub(super) fn internal_channel<'a, I: Instance>(
+    source: &'a mut impl super::InternalSource,
+) -> BorrowedAdcChannel<'a, I> {
+    BorrowedAdcChannel {
+        channel: source.channel(),
+        _borrow: PhantomData,
+    }
+}
+
 /// A channel belonging to one ADC instance.
 ///
 /// Implemented for verified typed GPIO `Peri` tokens and borrowed, settled OPA

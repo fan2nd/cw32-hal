@@ -1,7 +1,7 @@
 # RCC clocks and resource ownership
 
 The clock tree is selected once during checked direct-reset startup. The HAL
-loads the chip's factory trim and accepts only reset HSI/source/bus state before
+loads HSI factory trim and accepts only reset HSI/source/bus state before
 applying the requested HSI, AHB and APB dividers. Frequencies are nominal values,
 rounded down to integer Hz when the oscillator/divider ratio is fractional.
 They are not measured frequency or oscillator-accuracy guarantees.
@@ -30,9 +30,9 @@ An error after writes leaves any already-applied settings in place; it does not
 attempt an unproven clock rollback or report an initialized clock tree.
 L012 uses its documented SYSCTRL.CR2 FLASHWAIT alias. F030 enables its FLASH
 configuration clock and uses keyed FLASH.CR2 WAIT writes. Reserved fields and
-SWD/cache/prefetch configuration are preserved. No PLL, external oscillator,
-runtime clock switching, STOP/DeepSleep recovery, or board-level validation is
-claimed. The application must satisfy the datasheet voltage/temperature limits;
+SWD/cache/prefetch configuration are preserved. RTC LSI/LSE startup is available
+separately from v0.20. No HSE/PLL system-clock selection, runtime clock switching,
+STOP/DeepSleep recovery or board-level validation is claimed. The application must satisfy the datasheet voltage/temperature limits;
 L012 96 MHz requires VDD at least 1.8 V.
 
 With `time-driver-gtim1`, `try_init` rejects incompatible 1 MHz timebase profiles
@@ -44,6 +44,21 @@ The existing L012 motor examples keep HSI /1, AHB /1, APB /1: SYSCLK, HCLK
 and PCLK remain 96 MHz. APB /2 remains available as a separate 48 MHz PCLK
 profile. Default initialization remains unchanged on both
 chips. Peripheral electrical clock limits still apply independently.
+
+## Low-speed source retention
+
+`RtcClock` starts and observes LSI/LSE without changing the system clock. LSE
+requires the actual metadata-generated PC14/PC15 static pin tokens, permanently
+reserved for this boot. A failed readiness wait retains its token for retries.
+The oscillator and RTC gate remain enabled after owner Drop; this is not a
+battery-backup or power-loss guarantee. See [RTC](rtc.md).
+
+Global startup writes LSI factory trim only after an off-state audit. LSIEN alone
+is insufficient on L012: GPIO/VC/LVD/IWDT and clock monitors can automatically
+start it. The audit uses actual metadata instances, temporarily enables config
+gates without reset, reads their demands and restores the previous gates. An
+active or starting oscillator keeps its existing trim. F030 RC150K clients are
+not treated as LSI consumers. Source startup never rewrites LSI trim or WAIT.
 
 ## Gate lifetimes and resets
 

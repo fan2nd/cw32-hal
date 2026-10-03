@@ -19,6 +19,8 @@ pub mod crc;
 pub mod dma;
 #[cfg(eau)]
 pub mod eau;
+#[cfg(flash)]
+pub mod flash;
 #[cfg(gpio)]
 pub mod gpio;
 #[cfg(i2c)]
@@ -61,6 +63,8 @@ pub mod mode {
 pub use mode::{Async, Blocking, Mode};
 #[cfg(sysctrl)]
 pub mod rcc;
+#[cfg(rtc)]
+pub mod rtc;
 #[cfg(spi)]
 pub mod spi;
 #[cfg(feature = "time-driver-gtim1")]
@@ -69,7 +73,7 @@ mod time_driver;
 pub mod timer;
 #[cfg(uart)]
 pub mod uart;
-#[cfg(iwdt)]
+#[cfg(any(iwdt, wwdt))]
 pub mod wdg;
 
 use core::cell::Cell;

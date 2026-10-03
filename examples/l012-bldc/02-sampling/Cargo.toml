@@ -1,6 +1,6 @@
 [package]
 name = "cw32-bldc-02-sampling"
-version = "0.19.0"
+version = "0.20.0"
 edition = "2021"
 rust-version = "1.99"
 publish = false

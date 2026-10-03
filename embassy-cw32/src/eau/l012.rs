@@ -5,8 +5,22 @@
 //! on the DIVIDEND write. All accesses are 32-bit. No interrupt or DMA is used.
 //! Poll budgets bound register reads, not wall-clock time. Hardware execution
 //! has not been verified on a board.
-use crate::{pac, peripherals::EAU, rcc::PeripheralClock, Peri};
+use core::marker::PhantomData;
+
+use crate::{pac, rcc::PeripheralClock, Peri, PeripheralType};
 use pac::eau::regs;
+
+mod sealed {
+    pub(crate) trait Instance {
+        fn regs() -> crate::pac::eau::Eau;
+    }
+}
+
+/// Audited EAU peripheral identity, generated from the selected chip metadata.
+#[allow(private_bounds)]
+pub trait Instance: sealed::Instance + PeripheralClock + PeripheralType + 'static {}
+
+include!(concat!(env!("OUT_DIR"), "/_generated_eau.rs"));
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
@@ -34,26 +48,26 @@ pub struct SquareRoot {
 }
 
 /// Exclusive accelerator owner. The final clock owner gates the accelerator on drop.
-pub struct Eau<'d> {
+pub struct Eau<'d, T: Instance> {
     clock: crate::rcc::ClockGuard,
-    token: Peri<'d, EAU>,
+    token: Peri<'d, T>,
 }
-impl<'d> Eau<'d> {
-    pub fn new(token: Peri<'d, EAU>) -> Self {
-        let clock = <EAU as PeripheralClock>::acquire();
+impl<'d, T: Instance> Eau<'d, T> {
+    pub fn new(token: Peri<'d, T>) -> Self {
+        let clock = T::acquire();
         Self { token, clock }
     }
     /// Reset only while no forgotten owner retains the same clock resource.
     pub fn reset(&mut self) -> bool {
         self.clock.reset()
     }
-    pub fn release(self) -> Peri<'d, EAU> {
+    pub fn release(self) -> Peri<'d, T> {
         self.clock.reset();
         self.token
     }
     pub fn is_busy(&self) -> bool {
         // SAFETY: exclusive clocked peripheral; status reads have no side effects.
-        pac::EAU.csr().read().busy()
+        T::regs().csr().read().busy()
     }
     pub fn divide_unsigned(
         &mut self,
@@ -62,7 +76,7 @@ impl<'d> Eau<'d> {
         poll_budget: u32,
     ) -> Result<Division<u32>, Error> {
         run(
-            &mut Hardware,
+            &mut Hardware::<T>(PhantomData),
             Operation::unsigned(dividend, divisor)?,
             poll_budget,
         )
@@ -74,7 +88,7 @@ impl<'d> Eau<'d> {
         poll_budget: u32,
     ) -> Result<Division<i32>, Error> {
         let result = run(
-            &mut Hardware,
+            &mut Hardware::<T>(PhantomData),
             Operation::signed(dividend, divisor)?,
             poll_budget,
         )?;
@@ -84,7 +98,11 @@ impl<'d> Eau<'d> {
         })
     }
     pub fn sqrt(&mut self, value: u32, poll_budget: u32) -> Result<SquareRoot, Error> {
-        let result = run(&mut Hardware, Operation::sqrt(value), poll_budget)?;
+        let result = run(
+            &mut Hardware::<T>(PhantomData),
+            Operation::sqrt(value),
+            poll_budget,
+        )?;
         Ok(SquareRoot {
             root: result.quotient,
             remainder: result.remainder,
@@ -148,23 +166,23 @@ trait Backend {
     fn read(&mut self, reg: Reg) -> u32;
     fn write(&mut self, reg: Reg, word: u32);
 }
-struct Hardware;
-impl Backend for Hardware {
+struct Hardware<T: Instance>(PhantomData<T>);
+impl<T: Instance> Backend for Hardware<T> {
     fn read(&mut self, reg: Reg) -> u32 {
         // Ownership/clock established by Eau. Results are read only when idle.
         match reg {
-            Reg::Csr => pac::EAU.csr().read().0,
-            Reg::Quotient => pac::EAU.quotient().read().0,
-            Reg::Remainder => pac::EAU.remainder().read().0,
+            Reg::Csr => T::regs().csr().read().0,
+            Reg::Quotient => T::regs().quotient().read().0,
+            Reg::Remainder => T::regs().remainder().read().0,
             _ => unreachable!(),
         }
     }
     fn write(&mut self, reg: Reg, word: u32) {
         // Explicit whole-operand writes retain the computation trigger order.
         match reg {
-            Reg::Csr => pac::EAU.csr().write_value(regs::Csr(word)),
-            Reg::Dividend => pac::EAU.dividend().write_value(regs::Dividend(word)),
-            Reg::Divisor => pac::EAU.divisor().write_value(regs::Divisor(word)),
+            Reg::Csr => T::regs().csr().write_value(regs::Csr(word)),
+            Reg::Dividend => T::regs().dividend().write_value(regs::Dividend(word)),
+            Reg::Divisor => T::regs().divisor().write_value(regs::Divisor(word)),
             _ => unreachable!(),
         }
     }
