@@ -3,7 +3,8 @@
 //! [`Adc`] owns the peripheral, with blocking or interrupt-driven mode selected
 //! by its constructor. Channels are borrowed per read; [`Sequence`] retains the
 //! owner and channel borrows for fixed-length, watchdog and ATIM capture work.
-//! Async capture is cancellation-safe, one-shot, and neither DMA nor lossless streaming.
+//! ADC-IRQ capture is cancellation-safe and one-shot. The separate finite DMA
+//! endpoint owns static inputs and destination; neither API promises streaming.
 use super::{
     common::{
         cancel_async_sequence, disarm_idle, on_interrupt, poll_sequence, prepare_sequence,
@@ -23,6 +24,10 @@ mod sealed {
     pub(crate) trait Sealed {
         fn regs() -> crate::pac::adc::Adc;
         fn state() -> &'static crate::interrupt::EventState;
+        #[cfg(any(dma_l012, dma_f030))]
+        fn dma_state() -> &'static crate::adc::common::DmaState;
+        #[cfg(any(dma_l012, dma_f030))]
+        fn dma_request() -> crate::dma::Request;
     }
     pub trait PinSealed<I> {}
 }
@@ -44,6 +49,9 @@ pub enum Error {
     Timeout,
     Busy,
     InvalidThreshold,
+    /// An interrupted DMA read retains this ADC and its static resources until reset.
+    #[cfg(any(dma_l012, dma_f030))]
+    DmaPoisoned,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -151,6 +159,8 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     ) -> Result<Self, Error> {
         let pclk = crate::rcc::clocks().pclk_hz();
         validate_clock(pclk, config)?;
+        #[cfg(any(dma_l012, dma_f030))]
+        I::dma_state().check()?;
         I::enable_and_reset();
         let r = I::regs();
         // RM gives CR reset 0x100 with bit8 reserved: never overwrite reserved
@@ -201,13 +211,16 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
     /// Borrow this owner and all channels for a fixed-length scan extension.
     /// Channel tokens can be produced by `AdcChannel::reborrow_adc` or `degrade_adc`.
     /// Dropping the sequence stops conversions and removes its watchdog configuration.
-    /// A new sequence also discards any conversion and watchdog left by a forgotten
-    /// earlier sequence. Validation errors leave the existing hardware state unchanged.
+    /// A new sequence discards conversion/watchdog state from a forgotten ordinary
+    /// sequence. A forgotten DMA read instead retains a persistent Busy/poisoned
+    /// lease. Validation errors leave the existing hardware state unchanged.
     pub fn configure_sequence<'a, 'ch, const N: usize>(
         &'a mut self,
         channels: [(BorrowedAdcChannel<'ch, I>, SampleTime); N],
     ) -> Result<Sequence<'a, 'd, 'ch, I, M, N>, Error> {
         validate_sequence::<N>()?;
+        #[cfg(any(dma_l012, dma_f030))]
+        I::dma_state().check()?;
         let cr = control_word(self.cr, self.config.clock_divider, N);
         self.stop();
         I::regs().awdcr().write_value(regs::Awdcr(0));
@@ -221,8 +234,12 @@ impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
 
     /// Disable this instance's EOS source, disarm its trigger and stop conversion.
     /// Leaves shared NVIC and other peripherals untouched.
+    /// Also cancels a forgotten DMA read. Without clean DMA TC, input resources
+    /// remain quarantined, this ADC stays enabled, and further reads are rejected.
     pub fn stop(&mut self) {
         critical_section::with(|_| {
+            #[cfg(any(dma_l012, dma_f030))]
+            I::dma_state().cancel();
             cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state())
         });
     }
@@ -261,6 +278,8 @@ pub struct Sequence<'a, 'd, 'ch, I: Instance, M: Mode, const N: usize> {
 }
 impl<I: Instance, M: Mode, const N: usize> Sequence<'_, '_, '_, I, M, N> {
     fn prepare(&mut self) -> Result<(), Error> {
+        #[cfg(any(dma_l012, dma_f030))]
+        I::dma_state().check()?;
         disarm_idle(&mut Hardware::<I>(PhantomData))?;
         // Remove any stale completion from a forgotten earlier operation before reconfiguration.
         self.adc.stop();
@@ -373,6 +392,39 @@ impl<I: Instance, const N: usize> Sequence<'_, '_, '_, I, Async, N> {
         Ok(self.results())
     }
 }
+
+#[cfg(any(dma_l012, dma_f030))]
+impl<I: Instance, M: Mode, const N: usize> Sequence<'_, '_, 'static, I, M, N> {
+    pub(super) fn prepare_dma(&mut self) -> Result<(), Error> {
+        self.prepare()
+    }
+    pub(super) fn dma_config() -> crate::dma::RawConfig {
+        crate::dma::RawConfig {
+            trigger: crate::dma::Trigger::Hardware(I::dma_request()),
+            // One EOS request arrives only after every result slot is stable.
+            mode: crate::dma::TransferMode::Bulk,
+            source_increment: true,
+            destination_increment: true,
+        }
+    }
+    pub(super) fn start_dma() {
+        I::regs().ier().modify(|w| {
+            w.set_dmaeoc(false);
+            w.set_dmaeos(true);
+        });
+        I::regs().start().write(|w| w.set_start(true));
+    }
+    pub(super) fn finish_dma(clean: bool) {
+        // Called by the DMA terminal hook, never through Adc::stop (which
+        // cancels DMA). Keep the ADC enabled if an outstanding read is unproven.
+        I::regs().ier().modify(|w| {
+            w.set_dmaeoc(false);
+            w.set_dmaeos(false);
+        });
+        cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state());
+        I::dma_state().complete(clean);
+    }
+}
 impl<I: Instance, M: Mode, const N: usize> Drop for Sequence<'_, '_, '_, I, M, N> {
     fn drop(&mut self) {
         self.adc.stop();
@@ -464,6 +516,13 @@ impl<I: Instance> SequenceIo for Hardware<I> {
 impl<'d, I: Instance, M: Mode> Drop for Adc<'d, I, M> {
     fn drop(&mut self) {
         critical_section::with(|_| {
+            #[cfg(any(dma_l012, dma_f030))]
+            {
+                I::dma_state().cancel();
+                if I::dma_state().check().is_err() {
+                    return;
+                }
+            }
             // Also clean up a previously forgotten async future when its owner
             // is eventually dropped. Only this ADC is disabled, never its NVIC.
             I::regs().ier().write_value(regs::Ier(0));

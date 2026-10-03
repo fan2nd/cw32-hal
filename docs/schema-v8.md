@@ -1,3 +1,5 @@
+> Historical schema. Current OPA connections are documented in [schema9](schema-v9.md).
+
 # Normalized schema v8: explicit DMA topology
 
 Version 8 adds optional `dma` metadata to a peripheral instance. The maintained datasets attach it only to the DMA controller. It is preserved in normalized chip JSON and emitted unchanged in meaning by PAC metadata generation. Version 7 JSON must be regenerated; it is rejected rather than silently read without DMA topology.

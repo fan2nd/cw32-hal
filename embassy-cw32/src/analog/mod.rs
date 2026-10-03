@@ -10,8 +10,10 @@
 use crate::gpio::Pin;
 #[cfg(any(dac_l012, opa_l012, vc_l012, vc_f030, vcref_l012))]
 use crate::peripherals;
+#[cfg(any(dac_l012, opa_l012, vc_l012, vc_f030, vcref_l012))]
+use crate::PeripheralType;
 #[cfg(any(opa_l012, vc_l012, vc_f030, vcref_l012))]
-use crate::{pac, rcc::PeripheralClock, PeripheralType};
+use crate::{pac, rcc::PeripheralClock};
 
 #[cfg(bgr_l012)]
 #[path = "bgr/l012.rs"]
@@ -45,6 +47,12 @@ mod vc;
 pub use vc::*;
 
 mod sealed {
+    #[cfg(dac_l012)]
+    pub trait DacSourceInstance<const C: u8> {}
+    #[cfg(all(opa_l012, bgr_l012, adc_l012))]
+    pub trait OpaOutputChannel<A: crate::adc::Instance> {
+        const CHANNEL: u8;
+    }
     #[cfg(opa_l012)]
     #[cfg_attr(not(bgr_l012), allow(dead_code))]
     pub(crate) trait OpaInstance {
@@ -71,6 +79,15 @@ pub trait SignalPin<I, const S: u8>: sealed::Pin<I, S> + Pin {}
 #[cfg(opa_l012)]
 #[allow(private_bounds)]
 pub trait OpaInstance: sealed::OpaInstance + PeripheralClock + PeripheralType {}
+/// Audited internal DAC-channel connection to an OPA or comparator instance.
+#[cfg(dac_l012)]
+pub trait DacSourceInstance<const C: u8>: sealed::DacSourceInstance<C> + PeripheralType {}
+/// Audited ADC channel reached through the OPA's owned output pad.
+#[cfg(all(opa_l012, bgr_l012, adc_l012))]
+pub trait OpaOutputChannel<A: crate::adc::Instance>:
+    sealed::OpaOutputChannel<A> + OpaInstance
+{
+}
 /// Audited pair-owned comparator reference identity.
 #[cfg(vcref_l012)]
 #[allow(private_bounds)]

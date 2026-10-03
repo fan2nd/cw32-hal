@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.16.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.17.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -9,6 +9,8 @@ v0.14.0 对 data、生成器/PAC 与全部现有 HAL 模块重新对照实际固
 v0.15.0 增加 [DMA](docs/dma.md) 和单独的 [motor/ 电机 API](docs/motor-api.md)。DMA 通道、真实共享 IRQ 与硬件请求由 schema8 metadata 生成。安全 DMA 传输持有静态缓冲区，仅在正常完成后交还；CW 手册没有证明中止后总线写入已排空，取消、错误和超时会隔离缓冲区并使该通道失效。普通借入缓冲区与任意外设地址使用明确 unsafe 契约。motor/ 的 unsafe acquire 由调用者负责资源排他与中断串行化，板级控制算法与参数仍在例程中。检查范围见 [v0.15.0 验证](docs/validation-v0.15.0.md)。
 
 v0.16.0 将 motor 和板级 ISR 也接入实际 Embassy typelevel 中断绑定：ADC/基本定时器采用类型身份，开中断须给出正确 Handler 的 Binding；06 main 集中声明真实向量，原同步采样/换相仍在 ISR。见 [中断绑定设计与迁移](docs/typelevel-interrupts.md) 和 [v0.16.0 验证](docs/validation-v0.16.0.md)。
+
+v0.17.0 补齐首批资源组合：OPA 输出可受借用保护地交给 ADC；DAC 可拆分为两个独立通道，并在 VC/OPA 保留依赖时更新单通道电压码；ADC 可通过类型化 DMA 请求完成一次有限采样，保留静态输入/缓冲区与取消隔离契约；`copy_mut` 在正常完成后归还可写源。L012 支持 1–8 槽 DMA 序列，F030 首先开放已验证的单次单通道，未证明的多槽 DMA 明确拒绝。见 [资源组合与后续阶段](docs/resource-composition-v0.17.0.md)、[schema9](docs/schema-v9.md) 和 [本版验证](docs/validation-v0.17.0.md)。
 
 ## 先看设计与边界
 
@@ -63,7 +65,7 @@ vendor/                        固定原厂 header/SVD，离线证据；不是�
 
 HAL 入口按外设 kind 是否存在开启；驱动后端按该实例的 IP version 选择，GPIO 可选能力直接从寄存器 metadata 推导。芯片 feature 只选择 metadata，不生成全局芯片/系列 cfg。ATIM/GTIM 与各模拟 IP 独立选型，共同事件和等待流程只维护一份。详见 [分层说明](docs/hal-cfg-layering.md)。
 
-芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version。schema8 通过显式 block 引用支持嵌套子块及数组，并记录 DMA 通道和请求连接；尚未实现上游通用继承和完整变换体系。共享 register JSON、Rust PAC 与 register metadata 均按 kind/version 去重；芯片只选择这些模块并定义实例。相同复位值的不同来源也确定性合并，不再丢失先前来源。
+芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version。schema9 通过显式 block 引用支持嵌套子块及数组，并记录 DMA 通道和请求连接；尚未实现上游通用继承和完整变换体系。共享 register JSON、Rust PAC 与 register metadata 均按 kind/version 去重；芯片只选择这些模块并定义实例。相同复位值的不同来源也确定性合并，不再丢失先前来源。
 
 外设 IP 版本统一使用芯片系列标识 `l012`、`f030`，不使用 `v1`/`v2`。它是寄存器兼容模型的名称，不是芯片白名单：F030 的 IWDT/WWDT 经审查与 L012 相同，仍引用 `l012`，不复制一份。YAML 文件名、version 字段、normalized JSON、PAC metadata、HAL cfg 与后端文件名沿用同一标识。JSON schema 的版本号与原厂文档修订号是独立概念。
 
@@ -196,7 +198,7 @@ v0.13.2 将构建辅助函数合回 `build.rs`，IRQ 事件状态合入现有 `i
 
 v0.13.1 按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/validation-v0.13.1.md) 和 [HAL cfg 分层](docs/hal-cfg-layering.md)。此前 PAC/所有权 API 迁移记录见 [v0.13.0](docs/validation-v0.13.0.md)。
 
-## 上传 C 工程的递进 Rust 例程（v0.16.0）
+## 上传 C 工程的递进 Rust 例程（v0.17.0）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

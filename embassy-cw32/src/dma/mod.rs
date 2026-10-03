@@ -134,6 +134,14 @@ pub struct CopyBuffers<W: Word> {
     pub destination: &'static mut [W],
 }
 
+/// Exclusive source and destination consumed by [`Channel::copy_mut`].
+/// Both mutable references are returned only after clean completion.
+#[derive(Debug)]
+pub struct MutableCopyBuffers<W: Word> {
+    pub source: &'static mut [W],
+    pub destination: &'static mut [W],
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Phase {
     Idle,
@@ -147,12 +155,14 @@ enum Phase {
 pub(crate) struct ChannelState {
     event: EventState,
     phase: Mutex<Cell<Phase>>,
+    endpoint: Mutex<Cell<Option<fn(bool)>>>,
 }
 impl ChannelState {
     pub(crate) const fn new() -> Self {
         Self {
             event: EventState::new(),
             phase: Mutex::new(Cell::new(Phase::Idle)),
+            endpoint: Mutex::new(Cell::new(None)),
         }
     }
     fn phase(&self) -> Phase {
@@ -160,6 +170,14 @@ impl ChannelState {
     }
     fn set_phase(&self, phase: Phase) {
         critical_section::with(|cs| self.phase.borrow(cs).set(phase));
+    }
+    fn finish_endpoint(&self, complete: bool) {
+        // Remove the old endpoint before publishing a reusable channel. A
+        // forgotten guard must never cancel or observe a later channel user.
+        let endpoint = critical_section::with(|cs| self.endpoint.borrow(cs).take());
+        if let Some(endpoint) = endpoint {
+            endpoint(complete);
+        }
     }
 }
 
@@ -171,6 +189,7 @@ pub(crate) fn quarantine_for_controller_reset(state: &ChannelState) {
             Phase::Idle | Phase::Complete => state.set_phase(Phase::Idle),
             _ => state.set_phase(Phase::Poisoned),
         }
+        state.finish_endpoint(state.phase() == Phase::Idle);
         state.event.reset();
     });
 }
@@ -253,7 +272,7 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
             buffers.source.len(),
             RawConfig::default(),
         )
-        .and_then(|config| self.begin(config, false));
+        .and_then(|config| self.begin(config, false, None));
         match result {
             Ok(()) => Ok(Transfer {
                 _channel: self,
@@ -261,6 +280,74 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
                 finished: false,
             }),
             Err(error) => Err(StartError { error, buffers }),
+        }
+    }
+
+    /// Copy while retaining exclusive ownership of a mutable source, so it can
+    /// be changed and copied again after completion. The source is not exposed
+    /// while DMA reads it. Validation returns both references; cancellation,
+    /// error, timeout and forgetting quarantine them exactly as for [`Self::copy`].
+    pub fn copy_mut<W: Word>(
+        &mut self,
+        source: &'static mut [W],
+        destination: &'static mut [W],
+    ) -> Result<Transfer<'_, 'd, C, M, MutableCopyBuffers<W>>, StartError<MutableCopyBuffers<W>>>
+    {
+        let buffers = MutableCopyBuffers {
+            source,
+            destination,
+        };
+        if buffers.source.len() != buffers.destination.len() {
+            return Err(StartError {
+                error: Error::LengthMismatch,
+                buffers,
+            });
+        }
+        let result = validate::<W>(
+            buffers.source.as_ptr(),
+            buffers.destination.as_ptr(),
+            buffers.source.len(),
+            RawConfig::default(),
+        )
+        .and_then(|config| self.begin(config, false, None));
+        match result {
+            Ok(()) => Ok(Transfer {
+                _channel: self,
+                buffers: Some(buffers),
+                finished: false,
+            }),
+            Err(error) => Err(StartError { error, buffers }),
+        }
+    }
+
+    /// Audited driver-only endpoint: the terminal hook owns the peripheral's
+    /// persistent lease and must retain it on every unproven stop path.
+    ///
+    /// # Safety
+    /// The source/request/mode and native access width must match that endpoint.
+    /// Retain its static resources through errors, cancellation and forgetting.
+    /// The hook must disarm it, mark clean completion or permanent poison, and
+    /// never recursively cancel this channel. All setup occurs in one critical
+    /// section before enabling the peripheral request generator.
+    pub(crate) unsafe fn read_peripheral<W: Word>(
+        &mut self,
+        source: *const W,
+        destination: &'static mut [W],
+        config: RawConfig,
+        endpoint: fn(bool),
+    ) -> Result<Transfer<'_, 'd, C, M, &'static mut [W]>, StartError<&'static mut [W]>> {
+        let result = validate::<W>(source, destination.as_ptr(), destination.len(), config)
+            .and_then(|config| self.begin(config, false, Some(endpoint)));
+        match result {
+            Ok(()) => Ok(Transfer {
+                _channel: self,
+                buffers: Some(destination),
+                finished: false,
+            }),
+            Err(error) => Err(StartError {
+                error,
+                buffers: destination,
+            }),
         }
     }
 
@@ -292,7 +379,7 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
         config: RawConfig,
     ) -> Result<Transfer<'_, 'd, C, M>, Error> {
         let config = validate::<W>(source, destination, count, config)?;
-        self.begin(config, false)?;
+        self.begin(config, false, None)?;
         Ok(Transfer {
             _channel: self,
             buffers: Some(()),
@@ -318,11 +405,16 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
         config: RawConfig,
     ) -> Result<RepeatingTransfer<'_, 'd, C, M>, Error> {
         let config = validate::<W>(source, destination, count, config)?;
-        self.begin(config, true)?;
+        self.begin(config, true, None)?;
         Ok(RepeatingTransfer { _channel: self })
     }
 
-    fn begin(&mut self, config: engine::Config, repeating: bool) -> Result<(), Error> {
+    fn begin(
+        &mut self,
+        config: engine::Config,
+        repeating: bool,
+        endpoint: Option<fn(bool)>,
+    ) -> Result<(), Error> {
         critical_section::with(|_| {
             let state = C::state();
             match state.phase() {
@@ -331,6 +423,7 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
                 Phase::Idle | Phase::Complete => {}
             }
             state.event.reset();
+            critical_section::with(|cs| state.endpoint.borrow(cs).set(endpoint));
             state.set_phase(if repeating {
                 Phase::Repeating
             } else {
@@ -388,6 +481,7 @@ fn service<C: Instance>(from_irq: bool) -> Option<core::task::Waker> {
     let Some(result) = engine::complete(&mut Hardware(C::INDEX), from_irq) else {
         return None;
     };
+    state.finish_endpoint(result.is_ok());
     state.set_phase(match result {
         Ok(()) => Phase::Complete,
         Err(error) => Phase::Failed(error),
@@ -412,7 +506,7 @@ fn completion<C: Instance>() -> Option<Result<(), Error>> {
     result
 }
 
-fn cancel_channel<C: Instance>() {
+pub(crate) fn cancel_channel<C: Instance>() {
     let waker = critical_section::with(|_| {
         let state = C::state();
         // Observe a genuine terminal flag before deciding whether reclamation
@@ -421,6 +515,7 @@ fn cancel_channel<C: Instance>() {
         match state.phase() {
             Phase::Running | Phase::Repeating | Phase::Failed(_) | Phase::Poisoned => {
                 engine::disable(&mut Hardware(C::INDEX));
+                state.finish_endpoint(false);
                 state.set_phase(Phase::Poisoned);
             }
             Phase::Complete | Phase::Idle => {}

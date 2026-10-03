@@ -1,4 +1,4 @@
-> Historical schema. Current DMA topology is documented in [schema8](schema-v8.md).
+> Historical schema. Current analog-source topology is documented in [schema9](schema-v9.md), extending [schema8 DMA topology](schema-v8.md).
 
 # Normalized schema v7: instance analog connections
 

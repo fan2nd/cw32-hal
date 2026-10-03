@@ -1,4 +1,6 @@
-//! Two-channel DAC owner for the l012 DAC IP.
+//! Independently owned channels of the l012 DAC IP.
+
+use core::marker::PhantomData;
 
 use super::{Error, SignalPin};
 use crate::{gpio::AnyPin, pac, peripherals, rcc::PeripheralClock, Peri};
@@ -13,17 +15,14 @@ pub enum Channel {
 /// disconnected until explicitly attached with `with_output1/with_output2`.
 /// Reference is VDDA. Owning the external PB0/PB1 pin prevents OPA/DAC conflict.
 ///
-/// A driver retains the exclusive borrow of its peripheral.
-///
-/// Attaching an output retains its borrow even after pin type erasure.
+/// [`Self::split`] transfers both channels into independent owners. Each keeps
+/// the peripheral borrow alive and shuts down only its own channel on drop.
 pub struct Dac<'d> {
-    _token: Peri<'d, peripherals::DAC>,
-    output1: Option<Peri<'d, AnyPin>>,
-    output2: Option<Peri<'d, AnyPin>>,
-    route: pac::dac::regs::Cr1,
+    one: DacChannel<'d, 1>,
+    two: DacChannel<'d, 2>,
 }
 impl<'d> Dac<'d> {
-    pub fn new(token: Peri<'d, peripherals::DAC>, delay: &mut impl DelayNs) -> Self {
+    pub fn new(_token: Peri<'d, peripherals::DAC>, delay: &mut impl DelayNs) -> Self {
         <peripherals::DAC as PeripheralClock>::enable_and_reset();
         // Exclusive whole-DAC token; triggers/DMA/interrupts/waves off.
         pac::DAC.cr0().write_value(pac::dac::regs::Cr0(0));
@@ -34,45 +33,47 @@ impl<'d> Dac<'d> {
             w.set_en1(true);
             w.set_en2(true);
         });
-        delay.delay_us(10); // datasheet tSTART typical 3us, not a characterized max.
+        // Datasheet tSTART is typically 3us, not a characterized maximum.
+        delay.delay_us(10);
+        // Consuming the only DAC token grants two disjoint channel capabilities.
+        // Both retain its lifetime; neither exposes the whole peripheral token.
         Self {
-            _token: token,
-            output1: None,
-            output2: None,
-            route: pac::dac::regs::Cr1(0),
+            one: DacChannel {
+                output: None,
+                _borrow: PhantomData,
+            },
+            two: DacChannel {
+                output: None,
+                _borrow: PhantomData,
+            },
         }
     }
     pub fn with_output1<P: SignalPin<peripherals::DAC, 1>>(mut self, pin: Peri<'d, P>) -> Self {
-        let pin: Peri<'d, AnyPin> = pin.into();
-        pin.configure_analog();
-        self.route.set_c1out(true);
-        pac::DAC.cr1().write_value(self.route);
-        self.output1 = Some(pin);
+        self.one = self.one.with_output(pin);
         self
     }
     pub fn with_output2<P: SignalPin<peripherals::DAC, 2>>(mut self, pin: Peri<'d, P>) -> Self {
-        let pin: Peri<'d, AnyPin> = pin.into();
-        pin.configure_analog();
-        self.route.set_c2out(true);
-        pac::DAC.cr1().write_value(self.route);
-        self.output2 = Some(pin);
+        self.two = self.two.with_output(pin);
         self
+    }
+    /// Transfer both channels and any attached pins without resetting hardware.
+    /// Dropping either channel leaves the other channel and shared gate intact.
+    pub fn split(self) -> (DacChannel<'d, 1>, DacChannel<'d, 2>) {
+        (self.one, self.two)
     }
     /// Write a 12-bit right-aligned code. TEN=0 transfers it to DOR after one
     /// peripheral clock; analog settling takes additional time. No blocking wait.
     pub fn set(&mut self, channel: Channel, code: u16) -> Result<(), Error> {
-        let code = dac_code(code)? as u16;
-        let n = match channel {
-            Channel::One => 0,
-            Channel::Two => 1,
-        };
-        pac::DAC.dhr12r(n).write(|w| w.set_data(code));
-        Ok(())
+        match channel {
+            Channel::One => self.one.set(code),
+            Channel::Two => self.two.set(code),
+        }
     }
-    /// Set both holding registers with one 32-bit write.
+    /// Set both holding registers with one 32-bit write. Available only while
+    /// both channels remain exclusively owned together.
     pub fn set_pair(&mut self, one: u16, two: u16) -> Result<(), Error> {
-        let one = dac_code(one)? as u16;
-        let two = dac_code(two)? as u16;
+        let one = dac_code(one)?;
+        let two = dac_code(two)?;
         pac::DAC.dhr12rd().write(|w| {
             w.set_c1data(one);
             w.set_c2data(two);
@@ -80,29 +81,112 @@ impl<'d> Dac<'d> {
         Ok(())
     }
     pub fn output_code(&self, channel: Channel) -> u16 {
-        let n = match channel {
-            Channel::One => 0,
-            Channel::Two => 1,
-        };
-        pac::DAC.dor(n).read().data()
+        match channel {
+            Channel::One => self.one.output_code(),
+            Channel::Two => self.two.output_code(),
+        }
     }
 }
-fn dac_code(code: u16) -> Result<u32, Error> {
+
+/// One enabled DAC channel, owning only its own optional output pin.
+/// `C` is 1 or 2; only [`Dac::split`] can create these capabilities.
+/// Shared configuration is changed with critical-section RMWs, and dropping a
+/// channel never resets or gates its sibling.
+pub struct DacChannel<'d, const C: u8> {
+    output: Option<Peri<'d, AnyPin>>,
+    _borrow: PhantomData<&'d mut peripherals::DAC>,
+}
+impl<'d, const C: u8> DacChannel<'d, C> {
+    /// Attach this channel's audited external output pin.
+    pub fn with_output<P: SignalPin<peripherals::DAC, C>>(mut self, pin: Peri<'d, P>) -> Self {
+        let pin: Peri<'d, AnyPin> = pin.into();
+        pin.configure_analog();
+        critical_section::with(|_| {
+            pac::DAC.cr1().modify(|w| match C {
+                1 => w.set_c1out(true),
+                2 => w.set_c2out(true),
+                _ => unreachable!(),
+            });
+        });
+        if let Some(previous) = self.output.replace(pin) {
+            previous.disconnect();
+        }
+        self
+    }
+    /// Write this channel's holding register without waiting for analog settling.
+    pub fn set(&mut self, code: u16) -> Result<(), Error> {
+        write_channel::<C>(code)
+    }
+    pub fn output_code(&self) -> u16 {
+        pac::DAC.dor(usize::from(C - 1)).read().data()
+    }
+    /// Reserve this enabled channel as an internal OPA/comparator source.
+    /// The guard permits code updates while consumers borrow it, but keeps this
+    /// owner and its pin unavailable for reconfiguration or drop.
+    pub fn source(&mut self) -> DacSource<'_, C> {
+        DacSource {
+            _borrow: PhantomData,
+        }
+    }
+}
+impl<const C: u8> Drop for DacChannel<'_, C> {
+    fn drop(&mut self) {
+        critical_section::with(|_| {
+            // Disconnect before disabling; retain every sibling/reserved field.
+            pac::DAC.cr1().modify(|w| match C {
+                1 => w.set_c1out(false),
+                2 => w.set_c2out(false),
+                _ => unreachable!(),
+            });
+            pac::DAC.cr0().modify(|w| match C {
+                1 => w.set_en1(false),
+                2 => w.set_en2(false),
+                _ => unreachable!(),
+            });
+        });
+        if let Some(pin) = &self.output {
+            pin.disconnect();
+        }
+    }
+}
+
+/// A lifetime-bound, updatable analog source from one enabled DAC channel.
+///
+/// OPA and VC dependencies borrow this guard. Updating its code is deliberately
+/// allowed during that borrow and changes every connected consumer's signal.
+/// The caller must allow DAC and downstream analog settling before interpreting
+/// results. This guard cannot disable, reroute, or release the channel or its pin.
+pub struct DacSource<'a, const C: u8> {
+    _borrow: PhantomData<&'a mut peripherals::DAC>,
+}
+impl<const C: u8> DacSource<'_, C> {
+    /// Update this source without ending its consumers' dependency borrows.
+    /// The write is single-channel; it does not alter enable/route registers.
+    pub fn set(&self, code: u16) -> Result<(), Error> {
+        write_channel::<C>(code)
+    }
+    pub fn output_code(&self) -> u16 {
+        pac::DAC.dor(usize::from(C - 1)).read().data()
+    }
+}
+// Erase only the channel number in a consumer's stored shared reference. The
+// actual DacSource borrow, including its exclusive channel lifetime, is retained.
+#[cfg(all(bgr_l012, any(opa_l012, vc_l012)))]
+pub(crate) trait DacDependency: Sync {}
+#[cfg(all(bgr_l012, any(opa_l012, vc_l012)))]
+impl<const C: u8> DacDependency for DacSource<'_, C> {}
+
+fn write_channel<const C: u8>(code: u16) -> Result<(), Error> {
+    let code = dac_code(code)?;
+    pac::DAC
+        .dhr12r(usize::from(C - 1))
+        .write(|w| w.set_data(code));
+    Ok(())
+}
+fn dac_code(code: u16) -> Result<u16, Error> {
     if code > 4095 {
         Err(Error::InvalidCode)
     } else {
-        Ok(u32::from(code))
-    }
-}
-impl Drop for Dac<'_> {
-    fn drop(&mut self) {
-        pac::DAC.cr1().write_value(pac::dac::regs::Cr1(0));
-        pac::DAC.cr0().write_value(pac::dac::regs::Cr0(0));
-        if let Some(pin) = &self.output1 {
-            pin.disconnect();
-        }
-        if let Some(pin) = &self.output2 {
-            pin.disconnect();
-        }
+        Ok(code)
     }
 }

@@ -8,10 +8,10 @@ use super::InterruptHandler;
 use crate::{gpio::AnyPin, pac, Async, Blocking, Mode, Peri};
 
 use super::super::Bandgap;
-#[cfg(dac_l012)]
-use super::super::Dac;
 #[cfg(vcref_l012)]
 use super::super::RefDivider;
+#[cfg(dac_l012)]
+use super::super::{DacDependency, DacSource, DacSourceInstance};
 use embedded_hal::delay::DelayNs;
 
 /// PCLK-based comparator filter encodings from RM 27.7.4. No LSI dependency.
@@ -77,7 +77,7 @@ pub struct Comp<'d, I: VcInstance, M: Mode> {
     #[cfg(vcref_l012)]
     _reference: Option<&'d RefDivider<'d, I::Reference>>,
     #[cfg(dac_l012)]
-    _dac: Option<&'d Dac<'d>>,
+    _dac: Option<&'d dyn DacDependency>,
     _bandgap: &'d Bandgap<'d>,
     settled: bool,
     _mode: core::marker::PhantomData<M>,
@@ -123,15 +123,19 @@ impl<'d, I: VcInstance> Comp<'d, I, Blocking> {
         )
     }
     /// Borrow the DAC threshold: VC1/3 use channel 1 and VC2/4 use channel 2.
-    /// Set the threshold before borrowing the DAC here.
+    /// The borrowed source guard allows threshold updates while keeping its
+    /// channel enabled and unavailable for reconfiguration or drop.
     #[cfg(dac_l012)]
-    pub fn new_blocking_with_dac<P: SignalPin<I, PCH>, const PCH: u8>(
+    pub fn new_blocking_with_dac<P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
-        dac: &'d Dac<'d>,
+        dac: &'d DacSource<'_, C>,
         bandgap: &'d Bandgap<'d>,
         config: ComparatorConfig,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, Error>
+    where
+        I: DacSourceInstance<C>,
+    {
         Self::build(
             instance,
             positive.into(),
@@ -188,16 +192,20 @@ impl<'d, I: VcInstance> Comp<'d, I, Async> {
         Ok(comp)
     }
     /// Configure a borrowed DAC threshold and an interrupt binding. VC1/3 use
-    /// channel 1 and VC2/4 use channel 2; the entire DAC remains borrowed.
+    /// channel 1 and VC2/4 use channel 2. The source remains updatable while its
+    /// channel enable, configuration and ownership stay reserved by the guard.
     #[cfg(dac_l012)]
-    pub fn new_with_dac<P: SignalPin<I, PCH>, const PCH: u8>(
+    pub fn new_with_dac<P: SignalPin<I, PCH>, const PCH: u8, const C: u8>(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
-        dac: &'d Dac<'d>,
+        dac: &'d DacSource<'_, C>,
         bandgap: &'d Bandgap<'d>,
         irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
         config: ComparatorConfig,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, Error>
+    where
+        I: DacSourceInstance<C>,
+    {
         let mut comp = Self::build(
             instance,
             positive.into(),
@@ -256,7 +264,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         negative: Option<Peri<'d, AnyPin>>,
         nch: u8,
         #[cfg(vcref_l012)] reference: Option<&'d RefDivider<'d, I::Reference>>,
-        #[cfg(dac_l012)] dac: Option<&'d Dac<'d>>,
+        #[cfg(dac_l012)] dac: Option<&'d dyn DacDependency>,
         bandgap: &'d Bandgap<'d>,
         config: ComparatorConfig,
     ) -> Result<Self, Error> {

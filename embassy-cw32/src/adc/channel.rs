@@ -1,4 +1,4 @@
-//! Borrowed, type-erased ADC channels. Only metadata-verified external pins implement this API.
+//! Borrowed, type-erased ADC channels from verified pins and owned analog sources.
 use core::marker::PhantomData;
 
 use super::{ChannelPin, Instance};
@@ -11,8 +11,8 @@ pub(crate) trait SealedAdcChannel<I> {
 
 /// A channel belonging to one ADC instance.
 ///
-/// Implemented for verified typed GPIO `Peri` tokens. Internal sources are not
-/// exposed without their required reference-resource ownership and settling policy.
+/// Implemented for verified typed GPIO `Peri` tokens and borrowed, settled OPA
+/// outputs. Other internal sources require their own resource/settling policy.
 #[allow(private_bounds)]
 pub trait AdcChannel<'d, I: Instance>: SealedAdcChannel<I> + Sized {
     /// Consume this channel token and configure the pin for analog use.
@@ -46,7 +46,24 @@ impl<I: Instance, P: ChannelPin<I>> SealedAdcChannel<I> for Peri<'_, P> {
     }
 }
 
-/// A non-cloneable channel token retaining an exclusive pin borrow.
+#[cfg(all(opa_l012, bgr_l012, adc_l012))]
+impl<'a, A: Instance, O: crate::analog::OpaOutputChannel<A>> AdcChannel<'a, A>
+    for crate::analog::OpaOutput<'a, O>
+{
+}
+#[cfg(all(opa_l012, bgr_l012, adc_l012))]
+impl<A: Instance, O: crate::analog::OpaOutputChannel<A>> SealedAdcChannel<A>
+    for crate::analog::OpaOutput<'_, O>
+{
+    // The OPA already configured and owns the analog output pad. Do not
+    // reconfigure it or create another pin token here.
+    fn setup(&mut self) {}
+    fn channel(&self) -> u8 {
+        O::CHANNEL
+    }
+}
+
+/// A non-cloneable channel token retaining an exclusive pin or OPA-output borrow.
 ///
 /// It cannot be constructed from an integer. Dropping it ends the borrow, but
 /// leaves the pin in analog mode, like the upstream Embassy borrowed-channel API.

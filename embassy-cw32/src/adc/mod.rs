@@ -13,3 +13,5 @@ pub use f030::*;
 mod channel;
 mod common;
 pub use channel::{AdcChannel, BorrowedAdcChannel, BorrowedChannel};
+#[cfg(any(dma_l012, dma_f030))]
+pub use common::{DmaBuffers, DmaStartError, DmaStartFailure, DmaTransfer};

@@ -62,6 +62,93 @@ A blocking owner uses the same `copy` constructor and
 elapsed time. Cancellation performs a final completion check. A `StartError`
 returns both untouched buffers; an error after starting does not return them.
 
+`copy_mut(source, destination)` accepts two owned `&'static mut [W]` slices and
+returns `MutableCopyBuffers { source, destination }` after clean TC. This allows
+editing the source and copying it again. Neither reference is exposed while DMA
+uses it. Length/address/channel validation returns both references in
+`StartError`; cancellation, timeout, error and forgetting retain the same
+quarantine rules as `copy`.
+
+## Typed finite ADC reads
+
+`Sequence::read_dma(channel, destination)` consumes an ADC sequence whose input
+tokens are static and an owned `&'static mut [u32]` destination. The destination
+must contain exactly one word per configured slot. This is a hardware-requested,
+software-started finite operation with actual ADC/request identity and the DMA
+channel's checked interrupt binding. An ADC IRQ binding cannot substitute for a
+DMA binding. A blocking ADC owner can use an Async DMA channel because completion
+comes from DMA TC, not the ADC interrupt.
+
+The two supported endpoints intentionally differ:
+
+- L012 ADC1/ADC2: one non-continuous 1–8-slot scan. DMAEOS selects the generated
+  `ADC1_SEQUENCE` or `ADC2_SEQUENCE` request. One EOS triggers BULK over the now
+  stable result bank, with both addresses incrementing by four bytes.
+- F030 ADC: one MODE=0 conversion to RESULT0. DMAEN selects generated
+  `ADC_CONVERSION`, and BLOCK transfers exactly one native 32-bit word. A
+  multi-slot sequence is returned with `UnsupportedDmaSequence` before launch.
+  F030 requests each conversion, not EOS; no request-queue or multi-slot scan
+  guarantee is inferred from L012.
+
+The low 12 bits of each destination word are the conversion code. The 32-bit
+storage matches native registers and L012's four-byte result-slot stride; it is
+not a packed `u16` stream. There is no ADC circular, continuous, external-trigger
+or lossless streaming API here.
+
+For a one-slot sequence on L012 (F030 uses `p.ADC` and its own sample-time enum):
+
+```rust,ignore
+use embassy_cw32::adc::AdcChannel;
+
+// destination: &'static mut [u32] with exactly one element.
+// dma_channel was constructed with its real bind_interrupts! DMA binding.
+let sequence = adc.configure_sequence([
+    (p.PA0.degrade_adc(), adc::SampleTime::Cycles70),
+])?;
+let transfer = match sequence.read_dma(&mut dma_channel, destination) {
+    Ok(transfer) => transfer,
+    Err(rejected) => {
+        // rejected.sequence and rejected.destination remain usable.
+        return;
+    }
+};
+match transfer.await {
+    Ok(completed) => {
+        let code = completed.destination[0] & 0x0fff;
+        // completed.sequence and completed.destination can be used again.
+    }
+    Err(error) => {
+        // Input resources and destination remain quarantined until device reset.
+    }
+}
+```
+
+Use `blocking_wait(poll_budget)` with either channel mode. `DmaStartError` returns
+the sequence and destination on rejected setup or launch; `DmaBuffers` returns
+them only after clean DMA TC. The ADC is stopped and its DMA request disabled at
+every terminal outcome. On cancellation/error/timeout without TC, both the ADC
+and DMA channel remain poisoned, and the ADC stays enabled for any outstanding
+peripheral read. The owned sequence is deliberately forgotten, preserving any
+input-resource guards with destructors as well as its static pin lifetimes.
+Per-call borrowed pins and ordinary borrowed OPA outputs remain available for
+CPU/ADC-IRQ reads; DMA requires static input guards and static destination memory.
+
+ADC lease state is stored with the generated instance, rather than in a guard
+that `mem::forget` can bypass. Reconstruction, configuring a sequence and starting
+an existing sequence check that lease. ADC owner Drop and explicit `stop` cancel
+an outstanding DMA channel; neither makes an unproven stop reclaimable. DMA owns
+the endpoint's terminal hook, removes it before publishing a reusable channel,
+and records ADC completion/poison immediately. Thus a forgotten ADC guard cannot
+later cancel a new user of the same DMA channel. Controller re-split/reset also
+quarantines active ADC endpoints instead of clearing their lease.
+
+This composition follows the pinned Embassy
+[`Adc::read_sequence`](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/adc/mod.rs#L984-L1026)
+pattern of typed ADC configuration, checked DMA binding, raw DMA beneath the safe
+endpoint, and ADC cleanup. Its storage and cancellation contract is deliberately
+derived from CW: upstream DMA Drop requests reset and waits for `is_running` to
+clear, whereas the CW manuals do not give that bus-drain proof.
+
 ## Why safe buffers are static, and why cancellation is deliberately restrictive
 
 Rust permits `core::mem::forget` on any future, even one that borrows a stack
@@ -127,7 +214,8 @@ it. A caller-audited, target-specific protocol may allow aligned native-width
 raw volatile CPU observations without CPU writes or other DMA writers. A volatile
 load alone does not establish that protocol, an atomic multiword snapshot or an
 automatic waiver of Rust aliasing rules.
-There are no safe UART/SPI/ADC endpoint wrappers in this release.
+UART/SPI and other unaudited endpoints remain unsafe. The finite ADC endpoint
+above is safe because its driver establishes the additional contracts.
 
 `Request` is generated from the selected controller's audited selector bank,
 for example L012 `ADC2_SINGLE` and F030 `ADC_CONVERSION`. It is a hardware event

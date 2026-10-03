@@ -687,7 +687,7 @@ const METADATA_TYPES: &str = r#"
 #[derive(Clone, Copy, Debug)]
 pub struct Metadata { pub schema_version:u32, pub name: &'static str, pub family: &'static str, pub core: &'static str, pub target: &'static str, pub peripherals: &'static [Peripheral], pub interrupts: &'static [Interrupt], pub pins: &'static [Pin], pub memory: &'static [Memory], pub interrupt_bindings:&'static [InterruptBinding], pub pin_routes:&'static [PinRoute], pub remaps:&'static [Remap], pub quirks:&'static [Quirk] }
 #[derive(Clone, Copy, Debug)]
-pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub reset_effects:&'static [ResetEffect], pub ownership_parent:Option<&'static str>, pub comparator:Option<ComparatorConnections>, pub dma:Option<DmaController>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
+pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub reset_effects:&'static [ResetEffect], pub ownership_parent:Option<&'static str>, pub comparator:Option<ComparatorConnections>, pub opa:Option<OpaConnections>, pub dma:Option<DmaController>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
 #[derive(Clone,Copy,Debug)]
 pub struct DmaChannel {pub peripheral:&'static str,pub number:u8,pub index:u8,pub interrupt:&'static str}
 #[derive(Clone,Copy,Debug)]
@@ -698,6 +698,8 @@ pub struct DmaController {pub channels:&'static [DmaChannel],pub requests:&'stat
 pub struct DacConnection {pub peripheral:&'static str,pub channel:u8}
 #[derive(Clone,Copy,Debug)]
 pub struct ComparatorConnections {pub reference:Option<&'static str>,pub dac:Option<DacConnection>,pub source:&'static str}
+#[derive(Clone,Copy,Debug)]
+pub struct OpaConnections {pub dac:DacConnection,pub source:&'static str}
 #[derive(Clone, Copy, Debug)]
 pub struct ResetEffect {pub peripheral:&'static str,pub description:&'static str,pub source:&'static str}
 #[derive(Clone, Copy, Debug)]
@@ -827,13 +829,16 @@ fn render_chip_metadata(ir: &Ir, shared: &str) -> Result<String> {
                 )
             })
             .unwrap_or_else(|| "None".into());
+        let opa = p.opa.as_ref().map(|connection| {
+            format!("Some(OpaConnections {{dac:DacConnection {{peripheral:{:?},channel:{}}},source:{:?}}})", connection.dac.peripheral, connection.dac.channel, connection.source)
+        }).unwrap_or_else(|| "None".into());
         let dma = p.dma.as_ref().map(|dma| {
             let channels = dma.channels.iter().map(|channel| format!("DmaChannel {{peripheral:{:?},number:{},index:{},interrupt:{:?}}}", channel.peripheral, channel.number, channel.index, channel.interrupt)).collect::<Vec<_>>().join(",");
             let requests = dma.requests.iter().map(|request| format!("DmaRequest {{peripheral:{:?},signal:{:?},selector:{}}}", request.peripheral, request.signal, request.selector)).collect::<Vec<_>>().join(",");
             format!("Some(DmaController {{channels:&[{channels}],requests:&[{requests}],source:{:?}}})", dma.source)
         }).unwrap_or_else(|| "None".into());
         let resets = p.register_resets.iter().map(|r| format!("RegisterReset {{register:{:?},reset_value:{},reset_source:{:?},reset_note:{:?}}}",r.register,r.reset_value,r.reset_source,r.reset_note)).collect::<Vec<_>>().join(",");
-        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, reset_effects:&[{effects}], ownership_parent:{:?}, comparator:{comparator}, dma:{dma}, registers:{}::REGISTERS, blocks:{}::BLOCKS, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block,p.block,p.implemented_mask,p.pulldown_mask));
+        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, reset_effects:&[{effects}], ownership_parent:{:?}, comparator:{comparator}, opa:{opa}, dma:{dma}, registers:{}::REGISTERS, blocks:{}::BLOCKS, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block,p.block,p.implemented_mask,p.pulldown_mask));
     }
     out.push_str("], interrupts: &[\n");
     for i in &ir.family.interrupts {

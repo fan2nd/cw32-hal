@@ -24,7 +24,7 @@ v0.13 uses typed `read() -> regs::T` and `write_value(regs::T)`, true indexed re
 
 ## Schema v7 与构建
 
-`cw32-gen` 仍是唯一生成crate，内部 schema/data/pac 分工不变：YAML → **实际落盘的schema8 JSON** → 重新读取JSON → PAC/metadata/runtime。寄存器默认值属于register JSON；实例覆盖属于chip JSON中的family外设。metadata消费者按实例覆盖优先、共享register值次之解析。
+`cw32-gen` 仍是唯一生成crate，内部 schema/data/pac 分工不变：YAML → **实际落盘的schema9 JSON** → 重新读取JSON → PAC/metadata/runtime。寄存器默认值属于register JSON；实例覆盖属于chip JSON中的family外设。metadata消费者按实例覆盖优先、共享register值次之解析。
 
 校验拒绝超过8/16/32位访问字的reset、无来源的已知值、空来源/说明、重复或不存在的实例寄存器覆盖，以及普通或实例级alias复位字矛盾。旧schema JSON必须重新生成。没有新增生成crate、Python工程、例程测试或目标平台条件入口；生成JSON/PAC和构建产物不进入源码归档。
 

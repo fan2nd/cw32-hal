@@ -4,9 +4,9 @@
 //! Disable the power stage before configuring or calibrating an OPA. There is
 //! no validation of board-level calibration accuracy or motor safety.
 
-#[cfg(dac_l012)]
-use super::Dac;
 use super::{Bandgap, Error, OpaInstance, SignalPin};
+#[cfg(dac_l012)]
+use super::{DacDependency, DacSource, DacSourceInstance};
 use crate::{gpio::AnyPin, pac, Peri};
 use embedded_hal::delay::DelayNs;
 
@@ -83,7 +83,8 @@ fn calibration_word(config: Calibration) -> Result<pac::opa::regs::Cal, Error> {
 /// Single OPA with one positive route and, in external mode, one negative route.
 /// Output pin is always owned, preventing a simultaneous DAC output on that pad.
 ///
-/// A DAC-backed OPA keeps its source immutable until the OPA is dropped.
+/// A DAC-backed OPA retains its source guard, allowing single-channel code
+/// updates while keeping the source enabled and its route/pins owned.
 pub struct Opa<'d, I: OpaInstance> {
     _instance: Peri<'d, I>,
     _positive: Option<Peri<'d, AnyPin>>,
@@ -91,7 +92,17 @@ pub struct Opa<'d, I: OpaInstance> {
     _output: Peri<'d, AnyPin>,
     _bandgap: &'d Bandgap<'d>,
     #[cfg(dac_l012)]
-    _dac: Option<&'d Dac<'d>>,
+    _dac: Option<&'d dyn DacDependency>,
+    #[cfg(adc_l012)]
+    settled: bool,
+}
+/// Exclusive borrow of an enabled, settled OPA output. Its ADC channel mappings
+/// come from the OPA output pad's audited ADC routes; no GPIO token is duplicated.
+/// The borrow retains the OPA and all of its pins, BGR and DAC dependencies, and
+/// prevents calibration or dropping the owner during ADC operations/sequences.
+#[cfg(adc_l012)]
+pub struct OpaOutput<'a, I: OpaInstance> {
+    _borrow: core::marker::PhantomData<&'a mut I>,
 }
 impl<'d, I: OpaInstance> Opa<'d, I> {
     pub fn follower<P: SignalPin<I, PCH>, O: SignalPin<I, 0>, const PCH: u8>(
@@ -185,14 +196,17 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
     }
     /// Internal DAC1 -> OPA1 / DAC2 -> OPA2, with an externally owned OPA output.
     #[cfg(dac_l012)]
-    pub fn dac_follower<O: SignalPin<I, 0>>(
+    pub fn dac_follower<O: SignalPin<I, 0>, const C: u8>(
         instance: Peri<'d, I>,
-        dac: &'d Dac<'d>,
+        dac: &'d DacSource<'_, C>,
         output: Peri<'d, O>,
         bandgap: &'d Bandgap<'d>,
         config: OpaConfig,
         delay: &mut impl DelayNs,
-    ) -> Result<Self, Error> {
+    ) -> Result<Self, Error>
+    where
+        I: DacSourceInstance<C>,
+    {
         Self::build(
             instance,
             None,
@@ -219,7 +233,7 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         mode: u8,
         gain: Gain,
         bandgap: &'d Bandgap<'d>,
-        #[cfg(dac_l012)] dac: Option<&'d Dac<'d>>,
+        #[cfg(dac_l012)] dac: Option<&'d dyn DacDependency>,
         config: OpaConfig,
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
@@ -245,11 +259,32 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
             _bandgap: bandgap,
             #[cfg(dac_l012)]
             _dac: dac,
+            #[cfg(adc_l012)]
+            settled: true,
+        })
+    }
+    /// Borrow the output for ADC conversion without releasing its pin.
+    /// A calibration timeout leaves the output unavailable until a successful
+    /// calibration (including settling) or reconstruction of the OPA.
+    #[cfg(adc_l012)]
+    pub fn output(&mut self) -> Result<OpaOutput<'_, I>, Error> {
+        if !I::regs().cr().read().en() {
+            return Err(Error::Disabled);
+        }
+        if I::regs().cal().read().azrun() {
+            return Err(Error::Busy);
+        }
+        if !self.settled {
+            return Err(Error::NotReady);
+        }
+        Ok(OpaOutput {
+            _borrow: core::marker::PhantomData,
         })
     }
     /// Software-triggered bounded calibration. Output is invalid during this
-    /// call. A timeout leaves calibration running; do not use output until a
-    /// subsequent completion or recreate the disabled peripheral after drop.
+    /// call. After timeout, calibration may still be running and ADC output
+    /// borrowing remains unavailable until a successful subsequent calibration
+    /// or reconstruction of the peripheral after drop.
     /// A busy edge must be observed before reporting completion; an operation
     /// whose entire busy pulse is missed returns a conservative timeout.
     pub fn calibrate(
@@ -266,6 +301,10 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         if r.cal().read().azrun() {
             return Err(Error::Busy);
         }
+        #[cfg(adc_l012)]
+        {
+            self.settled = false;
+        }
         // Do not RMW the trigger/status register: SOFTTRIG is a write-one command.
         r.cal().write_value(word);
         let mut trigger = word;
@@ -273,6 +312,10 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         r.cal().write_value(trigger);
         wait_calibration(poll_budget, || r.cal().read().azrun())?;
         delay.delay_us(10);
+        #[cfg(adc_l012)]
+        {
+            self.settled = true;
+        }
         Ok(())
     }
     pub fn is_calibrating(&self) -> bool {

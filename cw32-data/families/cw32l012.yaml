@@ -794,6 +794,11 @@ peripherals:
   - signal: GLOBAL
     interrupt: LVD
 - name: OPA1
+  opa:
+    dac:
+      peripheral: DAC
+      channel: 1
+    source: CW32L012 RM1.4 section 29.3.1, Figure 29-1, printed p646 (PDF p672), OPAx INP4 is DAC_OUTx; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: opa
   version: l012
   address: 0x400000b0
@@ -809,6 +814,11 @@ peripherals:
     bit: 9
   interrupts: []
 - name: OPA2
+  opa:
+    dac:
+      peripheral: DAC
+      channel: 2
+    source: CW32L012 RM1.4 section 29.3.1, Figure 29-1, printed p646 (PDF p672), OPAx INP4 is DAC_OUTx; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   block: opa
   version: l012
   address: 0x400000b8

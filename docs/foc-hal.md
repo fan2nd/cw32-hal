@@ -34,7 +34,7 @@ Three duty values are preloaded together. The driver temporarily sets UDIS to av
 
 ## ADC behavior and limitations
 
-`Adc::new_blocking` and Binding-based `Adc::new` construct a mode-bearing peripheral owner, keep completion subscriptions disabled, and wait 32 μs after EN to cover analog startup plus automatic BGR startup. `blocking_read`/async `read` borrow a channel per call. `configure_sequence` returns a fixed-N Sequence borrowing the owner and its channel tokens; it does not permanently bake pins into the ADC owner. Only audited external pin channels are exposed; TS, internal BGR and internal OPA source ownership are not fabricated. The clock policy conservatively limits ADCCLK to 6 MHz across supported supply conditions. Sample times are explicit hardware encodings, and results are raw uncalibrated 12-bit values, not amperes or calibrated volts.
+`Adc::new_blocking` and Binding-based `Adc::new` construct a mode-bearing peripheral owner, keep completion subscriptions disabled, and wait 32 μs after EN to cover analog startup plus automatic BGR startup. `blocking_read`/async `read` borrow a channel per call. `configure_sequence` returns a fixed-N Sequence borrowing the owner and its channel tokens; it does not permanently bake pins into the ADC owner. Audited external pins and lifetime-bound OPA output guards are exposed; TS and internal BGR sources remain unimplemented. The clock policy conservatively limits ADCCLK to 6 MHz across supported supply conditions. Sample times are explicit hardware encodings, and results are raw uncalibrated 12-bit values, not amperes or calibrated volts.
 
 Software sampling and ADC1-master/ADC2-slave sampling have bounded iteration budgets. Timeout stops conversions and clears trigger routes; it is not a calibrated real-time deadline. Both real ADCs must report complete sequences for paired sampling.
 
@@ -81,15 +81,15 @@ Board programs live only under the root example directory. Build verification do
 
 `analog::Bandgap::new` consumes BGR, enables BGREN while preserving TSEN and waits 32 μs. It intentionally never disables BGR, including on drop, because hardware may have enabled it for another live analog block.
 
-`Dac::new` owns the unique dual-channel DAC and enables internal channel outputs, initially zero, with external output pads disconnected. `with_output1`/`with_output2` explicitly consume the corresponding chip pin token before enabling that external output. `set`/`set_pair` validate 12-bit codes. This is a raw voltage-code DAC, not calibrated voltage/current control.
+`Dac::new` owns the unique dual-channel DAC and enables internal channel outputs, initially zero, with external output pads disconnected. `with_output1`/`with_output2` explicitly consume the corresponding chip pin token before enabling that external output. `set`/`set_pair` validate 12-bit codes. `split()` returns two independent channel owners; dropping one preserves the sibling. A channel's `source()` guard permits live code updates while retaining its enable/route/pin lifetime. This is a raw voltage-code DAC, not calibrated voltage/current control.
 
-`RefDivider` owns VC12REF or VC34REF. `Comp<I,M>` can use external inputs, borrow the correct reference divider, or borrow the DAC. VC1/VC2 share VC12REF; VC3/VC4 share VC34REF. Separately, VC1/VC3 use DAC1 and VC2/VC4 use DAC2. The lifetime borrow prevents dropping/reconfiguring a live reference or DAC during comparator use; changing such a DAC threshold requires ending the borrow. Async mode retains these borrows and adds shared-IRQ edge/level waits. Constructors configure the unit disabled; explicit `enable(&mut delay)` settles it. Reads/waits reject a disabled unit. No L012 digital output pin, window/blanking scheme or ATIM break route is implemented.
+`RefDivider` owns VC12REF or VC34REF. `Comp<I,M>` can use external inputs, borrow the correct reference divider, or borrow the matching `DacSource` guard. VC1/VC2 share VC12REF; VC3/VC4 share VC34REF. Separately, VC1/VC3 use DAC1 and VC2/VC4 use DAC2, enforced by generated pairing traits. The lifetime borrow prevents dropping/reconfiguring a live reference or DAC source during comparator use; `DacSource::set` deliberately permits changing its threshold without ending that dependency. Async mode retains these borrows and adds shared-IRQ edge/level waits. Constructors configure the unit disabled; explicit `enable(&mut delay)` settles it. Reads/waits reject a disabled unit. No L012 digital output pin, window/blanking scheme or ATIM break route is implemented.
 
 `Opa` supports follower, PGA, external-feedback and DAC-follower configurations, consumes the actual output pin, and borrows Bandgap (and DAC when used). OPA and DAC therefore cannot both safely drive an already-consumed shared pin. OPA constructors do not claim calibration. `calibrate` explicitly requests hardware calibration and must observe AZRUN become high then low before reporting success; missing the pulse, zero budget or never-ending busy yields a conservative Timeout. The calibration period follows the RM rather than the conflicting SDK comment. Calibration completion and subsequent settling are not proofs of analog accuracy.
 
 OPA 的两寄存器块没有经审查的校准完成 IRQ；`calibrate` 保持明确的阻塞接口，不用 async 包装忙轮询。OPA/DAC/Bandgap/RefDivider 初始化和模拟稳定等待也仍同步。资料边界见 RM §§29.3–29.6 及 [逐外设语义](full-peripheral-semantics.md)。
 
-Internal OPA-to-ADC source channels are not yet exposed through a lifetime-safe ownership API. Consequently the external ADC APIs and OPA APIs do not constitute a complete internal OPA→ADC current-sensing pipeline. No closed-loop motor-control algorithm is included.
+`Opa::output()` returns a settled output guard implementing the matching ADC channel traits. It retains the OPA and its pin/reference/source borrows, and rejects disabled, calibrating or unsettled output. The ADC bridge uses the real shared pad routes without recreating a GPIO token. See [analog resource composition](analog-resources.md). This establishes a software ownership path for OPA→ADC sampling; it does not validate board-level current sensing or closed-loop motor operation.
 
 
 ## Independent review fixes and reproducible checks
@@ -103,4 +103,3 @@ Only BKF=0 provides the documented asynchronous break path without a running fil
 
 
 Chip selection and the critical-section implementation belong to the application. The GTIM1 time driver reserves its timer, provides nominal 1 MHz timestamps, and requires overflow servicing within 65.536 ms. No FOC timing or hardware safety is implied.
-

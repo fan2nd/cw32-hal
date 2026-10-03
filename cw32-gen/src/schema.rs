@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+/// Version 9 records evidenced OPA internal DAC connections.
 /// Version 8 records explicit DMA channels and uniform request-selector routes.
 /// Version 7 records evidenced comparator source connections. Version 6 records
 /// reset cross-effects on other peripheral resources. Version 5 added
@@ -9,7 +10,7 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 8;
+pub const SCHEMA_VERSION: u32 = 9;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -228,7 +229,7 @@ model!(RegisterBit {
     field: String,
     bit: u8
 });
-// An existing DAC channel connected internally to a comparator's negative input.
+// An existing DAC channel connected internally to an analog consumer.
 // Channel numbers are the documented hardware numbers, not zero-based indices.
 model!(DacConnection {
     peripheral: String,
@@ -239,6 +240,10 @@ model!(DacConnection {
 model!(ComparatorConnections {
     reference: Option<String>,
     dac: Option<DacConnection>,
+    source: String
+});
+model!(OpaConnections {
+    dac: DacConnection,
     source: String
 });
 // One channel view partitioned from its controller. `number` is the hardware
@@ -290,6 +295,8 @@ pub struct Peripheral {
     pub reset_effects: Vec<ResetEffect>,
     #[serde(default)]
     pub comparator: Option<ComparatorConnections>,
+    #[serde(default)]
+    pub opa: Option<OpaConnections>,
     #[serde(default)]
     pub dma: Option<DmaController>,
     /// This view shares ownership with its parent and must not receive an independent HAL token.
@@ -1200,6 +1207,30 @@ fn validate_peripheral_relationships(
                             "comparator DAC channel lacks its modeled output/holding register",
                         ));
                     }
+                }
+            }
+        }
+        if let Some(connections) = &p.opa {
+            if p.block != "opa" || connections.source.trim().is_empty() {
+                return Err(err("OPA connections require OPA source and evidence"));
+            }
+            let connection = &connections.dac;
+            let dac = peripherals
+                .get(connection.peripheral.as_str())
+                .ok_or_else(|| err("unknown OPA DAC peripheral"))?;
+            if connection.peripheral == p.name || dac.block != "dac" || connection.channel == 0 {
+                return Err(err("OPA DAC must target a distinct DAC hardware channel"));
+            }
+            let block = &ir.blocks[&dac.block];
+            for prefix in ["DOR", "DHR12R"] {
+                let name = format!("{prefix}{}", connection.channel);
+                if !block.registers.iter().any(|register| {
+                    (register.array.is_none() && register.name == name)
+                        || register.elements.iter().any(|element| element.name == name)
+                }) {
+                    return Err(err(
+                        "OPA DAC channel lacks its modeled output/holding register",
+                    ));
                 }
             }
         }

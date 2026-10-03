@@ -80,6 +80,30 @@ Consequences for a Rust DMA interface:
 
 No safe drain, bounded stop latency, restart-after-error, circular ring, or hardware-validation claim is made by this audit.
 
+### Finite ADC endpoint proof
+
+L012 RM 25.5.2 says CONT=0 performs exactly the configured sequence, stores each
+conversion in its matching RESULT0–RESULT7 slot, sets EOS after the final slot,
+and clears START. RM 25.12.8 gives independent DMAEOS and DMAEOC request enables;
+the HAL uses only DMAEOS with the metadata-derived ADCx_SEQUENCE selector.
+RESULT slots are at offsets 0x30 + 4*n (RM 25.12.11–25.12.18). One EOS can
+therefore trigger a finite BULK transfer with 32-bit source/destination increments
+over the stable result bank. External triggers, CONT and DMAEOC are disabled.
+
+F030 RM 22.5.1 says MODE=0 performs one conversion to RESULT0 and clears START.
+RM 22.13.2 says DMAEN requests DMA after each conversion; it does not provide an
+EOS request or promise queuing of a complete sequence's requests. The initial
+safe endpoint therefore uses exactly one BLOCK word from RESULT0 (offset 0x20,
+RM 22.13.12), with source increment disabled. MODE=4 multi-slot DMA is rejected;
+its four-byte result stride is not emulated as a fixed-address packed stream.
+
+Both endpoints use native 32-bit register reads and static owned destinations.
+The ADC request is enabled only after DMA validation/programming and publication
+of a persistent ADC/channel lease. Clean DMA TC establishes endpoint completion;
+error, timeout, Drop or controller reset without TC retains static inputs,
+destination and ADC enable, and permanently poisons both drivers. These software
+contracts do not claim measured conversion timing or outstanding-read draining.
+
 ## Hardware requests and selector identity
 
 HARDSRC is six bits in each channel's TRIG. Each manual specifies one list for every `y` in its supported channel range; there is no per-channel mux restriction in these sources. Consequently the controller metadata's requests are uniformly available on all its listed channels. Selector zero is UART1_RX, not “no request.” Software trigger selection is TYPE=0, independently of HARDSRC.
@@ -207,7 +231,7 @@ Peripheral request enables, FIFO state, timers' DMA-enables/CCDS, ADC conversion
 
 ## Data flow and validation
 
-The maintained family YAML owns channels and request routes. Schema version 8 serializes `Peripheral.dma` into the persisted chip JSON, and the PAC renderer reads that JSON to emit `DmaController`, `DmaChannel`, and `DmaRequest` metadata. The HAL consumes that metadata; there is no separate handwritten Rust chip/request table. Schema version 7 JSON must be regenerated.
+The maintained family YAML owns channels and request routes. DMA metadata was introduced in schema version 8; current schema version 9 preserves `Peripheral.dma` in the persisted chip JSON alongside the analog resource topology. The PAC renderer reads that JSON to emit `DmaController`, `DmaChannel`, and `DmaRequest` metadata. The HAL consumes that metadata; there is no separate handwritten Rust chip/request table. Earlier-schema JSON must be regenerated.
 
 Validation checks the controller kind and ownership, evidence text, nonempty tables, complete CH-array coverage, unique channel numbers/indices/aliases, parent-child ownership, physical bank address/version equality, controller and channel IRQ agreement, matching TC/TE bit positions, existing request peripheral identities, generated-name collisions, unique selector values, and the actual HARDSRC field width. Shared IRQ names remain legal because sharing is the hardware arrangement.
 

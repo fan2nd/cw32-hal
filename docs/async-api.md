@@ -83,8 +83,12 @@ several channels share one physical IRQ. Its handler services only that channel.
 Safe asynchronous memory copies own static source/destination buffers. Successful
 normal transfer-complete returns them; cancellation, transfer error or a blocking
 poll-budget timeout quarantines the buffers and poisons the channel. Forgetting a
-transfer cannot make the DMA destination into dangling memory. Ordinary borrowed
-buffers and peripheral MMIO endpoints require explicit unsafe transfer contracts
+transfer cannot make the DMA destination into dangling memory. `copy_mut` also
+returns the exclusive mutable source on clean completion. Finite ADC DMA owns
+static input-channel guards and a static destination, with persistent ADC/DMA
+state across forgotten futures; it returns both only after normal TC. L012
+supports 1–8 slots and F030 one MODE0 conversion. Ordinary borrowed buffers and
+arbitrary peripheral MMIO endpoints require explicit unsafe transfer contracts
 which remain in force after cancellation or forgetting the handle.
 
 This conservatism follows an important CW documentation limit: clearing channel

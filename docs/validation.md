@@ -1,4 +1,6 @@
-> Current interrupt migration: [v0.16.0 validation](validation-v0.16.0.md), [type-level wiring](typelevel-interrupts.md).
+> Current resource-composition stage: [v0.17.0 validation](validation-v0.17.0.md), [scope and remaining stages](resource-composition-v0.17.0.md), [schema9](schema-v9.md).
+
+> Prior interrupt migration: [v0.16.0 validation](validation-v0.16.0.md), [type-level wiring](typelevel-interrupts.md).
 
 > v0.15.0 DMA/motor release: [v0.15.0 validation](validation-v0.15.0.md), [DMA](dma.md), [motor API](motor-api.md), [schema8](schema-v8.md).
 

@@ -412,7 +412,33 @@ fn main() {
             .find(|b| b.peripheral == p.name && b.signal == "GLOBAL")
             .expect("ADC global IRQ")
             .interrupt;
-        writeln!(adc,"impl sealed::Sealed for peripherals::{name} {{fn regs()->pac::adc::Adc {{pac::{name}}} fn state()->&'static crate::interrupt::EventState {{static STATE:crate::interrupt::EventState=crate::interrupt::EventState::new(); &STATE}} }} impl Instance for peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}} ").unwrap();
+        writeln!(adc,"impl sealed::Sealed for peripherals::{name} {{fn regs()->pac::adc::Adc {{pac::{name}}} fn state()->&'static crate::interrupt::EventState {{static STATE:crate::interrupt::EventState=crate::interrupt::EventState::new(); &STATE}}").unwrap();
+        if md.peripherals.iter().any(|p| p.block == "dma") {
+            let signal = match p.version {
+                "l012" => "SEQUENCE",
+                "f030" => "CONVERSION",
+                _ => panic!("unaudited ADC DMA request semantics"),
+            };
+            let requests: Vec<_> = md
+                .peripherals
+                .iter()
+                .filter_map(|p| p.dma)
+                .flat_map(|dma| dma.requests)
+                .filter(|r| r.peripheral == p.name && r.signal == signal)
+                .collect();
+            assert_eq!(
+                requests.len(),
+                1,
+                "ADC DMA requires one audited request route"
+            );
+            let request = format!(
+                "{}_{}",
+                ident(requests[0].peripheral),
+                ident(requests[0].signal)
+            );
+            writeln!(adc,"#[cfg(any(dma_l012,dma_f030))] fn dma_state()->&'static crate::adc::common::DmaState {{static STATE:crate::adc::common::DmaState=crate::adc::common::DmaState::new(); &STATE}} #[cfg(any(dma_l012,dma_f030))] fn dma_request()->crate::dma::Request {{crate::dma::Request::{request}}}").unwrap();
+        }
+        writeln!(adc,"}} impl Instance for peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}} ").unwrap();
         for route in md
             .pin_routes
             .iter()
@@ -425,9 +451,18 @@ fn main() {
             else {
                 continue;
             };
-            if channel > 13 || !md.pins.iter().any(|p| p.name == route.pin) {
+            if !md.pins.iter().any(|p| p.name == route.pin) {
                 continue;
             }
+            let max_external = match p.version {
+                "l012" => 11, // RM1.4 table 25-4: 12/13 are internal DAC outputs.
+                "f030" => 12, // RM2.5 table 22-5: 13 is the internal VDDA divider.
+                _ => panic!("unaudited external ADC channel range"),
+            };
+            assert!(
+                channel <= max_external,
+                "GPIO route aliases an internal ADC source"
+            );
             let pin = ident(route.pin);
             writeln!(adc,"impl sealed::PinSealed<peripherals::{name}> for peripherals::{pin} {{}} impl ChannelPin<peripherals::{name}> for peripherals::{pin} {{ const CHANNEL:u8={channel}; }}").unwrap();
         }
@@ -512,6 +547,79 @@ fn main() {
             }
         }
         writeln!(analog, "}}").unwrap();
+        if let Some(connection) = p
+            .opa
+            .map(|opa| opa.dac)
+            .or_else(|| p.comparator.and_then(|vc| vc.dac))
+        {
+            let dac = md
+                .peripherals
+                .iter()
+                .find(|dac| dac.name == connection.peripheral)
+                .expect("analog DAC target");
+            assert_eq!(
+                (dac.name, dac.block, dac.version),
+                ("DAC", "dac", "l012"),
+                "DAC source owner needs audited hardware"
+            );
+            assert!(
+                matches!(connection.channel, 1 | 2),
+                "unmodeled DAC source channel"
+            );
+            writeln!(analog,"#[cfg(dac_l012)] impl sealed::DacSourceInstance<{}> for peripherals::{name} {{}} #[cfg(dac_l012)] impl DacSourceInstance<{}> for peripherals::{name} {{}}",connection.channel,connection.channel).unwrap();
+        }
+        if p.block == "opa" && p.version == "l012" {
+            let outputs: Vec<_> = md
+                .pin_routes
+                .iter()
+                .filter(|r| {
+                    r.peripheral == p.name
+                        && r.signal == "OUT"
+                        && r.af.is_none()
+                        && r.remap.is_none()
+                        && md.pins.iter().any(|pin| pin.name == r.pin)
+                })
+                .collect();
+            // The OPA owner erases its output pin type. An instance-only ADC
+            // capability is valid only when that instance has one output pad.
+            assert_eq!(
+                outputs.len(),
+                1,
+                "OPA ADC bridge needs one unambiguous output pad"
+            );
+            for adc in md
+                .peripherals
+                .iter()
+                .filter(|adc| adc.block == "adc" && adc.version == "l012")
+            {
+                let channels: BTreeSet<_> = md
+                    .pin_routes
+                    .iter()
+                    .filter(|r| {
+                        r.pin == outputs[0].pin
+                            && r.peripheral == adc.name
+                            && r.af.is_none()
+                            && r.remap.is_none()
+                    })
+                    .filter_map(|r| {
+                        r.signal
+                            .strip_prefix("IN")
+                            .and_then(|n| n.parse::<u8>().ok())
+                    })
+                    .collect();
+                if channels.is_empty() {
+                    continue;
+                }
+                assert_eq!(channels.len(), 1, "ambiguous OPA output ADC route");
+                let channel = *channels.first().unwrap();
+                assert!(
+                    channel <= 11,
+                    "OPA output must use a verified external ADC channel"
+                );
+                let adc = ident(adc.name);
+                writeln!(analog,"#[cfg(all(opa_l012,bgr_l012,adc_l012))] impl sealed::OpaOutputChannel<peripherals::{adc}> for peripherals::{name} {{const CHANNEL:u8={channel};}} #[cfg(all(opa_l012,bgr_l012,adc_l012))] impl OpaOutputChannel<peripherals::{adc}> for peripherals::{name} {{}}").unwrap();
+            }
+        }
     }
     for r in md
         .pin_routes
