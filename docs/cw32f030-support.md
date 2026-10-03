@@ -15,7 +15,7 @@ cargo check -p embassy-cw32 --features cw32f030c8
 ```
 
 Generation is still one Rust `cw32-gen` crate, two real file stages:
-YAML -> schema-7 normalized JSON -> read/validate JSON -> PAC/metadata.
+YAML -> schema-10 normalized JSON -> read/validate JSON -> PAC/metadata.
 Normal PAC builds consume those pre-generated artifacts and do not parse
 YAML or JSON. Generated trees and Cargo.lock are ignored and not shipped.
 
@@ -25,14 +25,16 @@ YAML or JSON. Generated trees and Cargo.lock are ignored and not shipped.
 | --- | --- |
 | Register data/PAC | All 37 official peripheral views, normalized to 20 IP models and 32 IRQs; not all have safe HAL drivers |
 | GPIO | 39 conservative die GPIO identities, Flex/Input/Output/OpenDrain, genuine speed/drive/pull controls, real port-IRQ Wait, typed audited routes; board must verify bonding; PF3/BOOT is withheld due to conflicting vendor descriptions |
-| Clocks | Checked direct-reset HSI 48 MHz /6 = nominal 8 MHz, vendor factory HSI/LSI trim; no dynamic clock switching or inherited 4 MHz assumption |
+| Clocks | Checked direct-reset HSI profiles with all documented HSI/AHB/APB dividers, default 48 MHz /6 = nominal 8 MHz, factory trim and counted peripheral resources; no dynamic clock switching |
 | Embassy time | Reserved GTIM1, true IRQ16, 1 MHz hardware count, direct deadline compare; independent F030 backend, no SysTick and no ATIM reservation |
 | ADC | One real ADC, 1..4 sequence slots, one shared sample-time setting, conservative default 500 kHz ADC clock at 8 MHz PCLK, software or ATIM-update trigger, mode-bearing owner with per-call channel borrows; MODE0/EOC for one slot and MODE4/EOS for scans |
 | VC | Two comparators, 0..7 external inputs on either mux, READY handshake, true VC1/VC2 IRQ waits, typed pin ownership; guarded comparator-to-ATIM brake route |
 | ATIM | True A/B complementary output pairs, F030 prescaler/deadtime/brake model, update/break IRQ futures; conservative strict three-phase duty update API as described below |
-| Generic timer/PWM | Owned ATIM/GTIM1–4 counter and single-ended optional-channel PWM, borrowed SetDutyCycle handles, validated physical divider/period; ATIM A1–A3 and GTIM CH1–4 have audited routes |
+| Generic timer/PWM | Owned ATIM/GTIM1–4 counter and single-ended optional-channel PWM, borrowed and independently owned static split SetDutyCycle handles, validated physical divider/period; ATIM A1–A3 and GTIM CH1–4 have audited routes |
 | DMA | Five actual channels, DMACH1/DMACH23/DMACH45 bindings and 43 audited request selectors; see [DMA safety and limitations](dma.md) |
-| Unsupported HAL drivers | UART/SPI/I2C/RTC/watchdogs/CRC and other peripherals remain PAC/metadata only; register coverage is not driver coverage |
+| UART/SPI/I2C | Three UARTs, two SPI full-duplex controllers, two seven-bit I2C controllers; blocking and IRQ-driven async, generated pin/IRQ routes; no safe bus DMA, buffering, hardware flow control or target modes |
+| CRC/IWDT | Eight CRC16 and two CRC32 presets with actual input access widths; non-window reset-only IWDT with explicit start/feed/stop |
+| Unsupported HAL drivers | RTC/Flash/window watchdog and other peripheral modes remain PAC/metadata only; register coverage is not driver coverage |
 | Absent hardware | No fabricated ADC2, OPA, DAC, CORDIC, EAU, or standalone VCREF/BGR singleton |
 
 IRQ waits use actual `Binding` proofs, instance-specific hardware flags and

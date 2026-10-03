@@ -202,12 +202,12 @@ DMA guard 常驻整个程序；它不与 ADC/定时器 ISR 分享可变 Rust 句
 - 06 main 只做时钟、通道/token 拆分与任务启动；motor.rs 保留板脚、调参、
   控制器、事件唤醒与 ISR。P1 电机 InterruptExecutor 和普通线程 UI 保持分离；
   不把计算或硬件事件改成固定 1 ms 轮询。
-- 06 UI 使用普通安全 GPIO；UART HAL 尚未实现，UART1 及其门时钟仍为明确的
-  PAC 代码，没有把串口例程伪装成电机 HAL。
+- 06 UI 使用普通安全 GPIO 和拥有 UART1/PB12/PB11 的 UART HAL；类型化引脚
+  约束、计数门控和原每次唤醒最多一字节的轮询语义均由正常驱动承担。
 
 按含 `pac::` 的源代码行统计：02/03/04/05 从 85/84/85/139 行降为 0；
-06 从 149 行（main 8、motor 126、UI 15）降为 10 行，仅位于 UI UART1 路径。
-02–05 已不依赖 `unstable-pac` feature。六个 crate 仍独立，没有新增共享业务库，
+06 在 v0.15 从149行降为10行，v0.19进一步移除 UI UART1 路径后为0行。
+全部六个例程均不依赖 `unstable-pac` feature。六个 crate 仍独立，没有新增共享业务库，
 也没有测试/Python/主机入口等附加骨架进入例程。
 
 ## 验证边界

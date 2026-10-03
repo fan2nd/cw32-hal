@@ -1,5 +1,9 @@
 # PAC semantic values and field-array audit, v0.18.0
 
+This records the v0.18 snapshot. v0.19 additionally gives both CRC MODE fields
+sourced algorithm enums, bringing the current count to 52; field arrays and the
+rest of this audit remain unchanged. See [CRC](crc-watchdog.md).
+
 All 46 reusable IP/version definitions were reviewed for repeated fields, including existing arrays, numeric-suffix candidates and role-related fields without a numeric suffix. The result contains **156 field arrays (95 added here, including 9 irregular layouts)** and **50 semantic enum fields**. Register/subblock arrays are unchanged. Every implemented group has `array_source` evidence and ordered `elements` in source YAML and persisted JSON; every enum has `values_source`. The audit does not claim that every hardware selector is already enumerated.
 
 The primary sources are [CW32L012 RM1.4](https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf) and [CW32x030 RM Rev2.5](https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf), checked against the pinned vendor field layouts. Exact section/page citations are retained per group below and in YAML. Grouping changes neither MMIO width nor register access/read/write behavior or reset values. No generator-time name inference is used.

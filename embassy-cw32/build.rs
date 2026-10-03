@@ -411,6 +411,13 @@ fn main() {
         }
     }
     fs::write(out.join("_generated_adc.rs"), adc).unwrap();
+    for kind in ["uart", "spi", "i2c"] {
+        fs::write(
+            out.join(format!("_generated_{kind}.rs")),
+            bus_bindings(md, kind),
+        )
+        .unwrap();
+    }
     // The ownership-bypass motor API still retains the physical peripheral
     // identity so enabling a source requires its actual type-level IRQ binding.
     // ADC reuses the existing Instance mapping above; only BTIM is new here.
@@ -884,6 +891,79 @@ fn dma_bindings(md: &Metadata) -> String {
     out
 }
 
+/// Digital bus identities come from the selected peripheral and physical AF
+/// routes. Sharing a vector generates the same Interrupt type for each source;
+/// the application's bind_interrupts! invocation dispatches all source handlers.
+fn bus_bindings(md: &Metadata, kind: &str) -> String {
+    let (register_type, sealed, signals): (&str, &str, &[(&str, &str)]) = match kind {
+        "uart" => ("Uart", "Instance", &[("TX", "TxPin"), ("RX", "RxPin")]),
+        "spi" => (
+            "Spi",
+            "Instance",
+            &[("SCK", "SckPin"), ("MOSI", "MosiPin"), ("MISO", "MisoPin")],
+        ),
+        "i2c" => ("I2c", "Sealed", &[("SCL", "SclPin"), ("SDA", "SdaPin")]),
+        _ => unreachable!(),
+    };
+    let mut out = String::new();
+    for p in md
+        .peripherals
+        .iter()
+        .filter(|p| p.block == kind && p.ownership_parent.is_none())
+    {
+        let name = ident(p.name);
+        let interrupts: Vec<_> = md
+            .interrupt_bindings
+            .iter()
+            .filter(|b| b.peripheral == name && b.signal == "GLOBAL")
+            .collect();
+        assert_eq!(interrupts.len(), 1, "bus needs one audited GLOBAL vector");
+        let irq = ident(interrupts[0].interrupt);
+        if kind == "i2c" && p.version == "f030" {
+            // This IP has no source interrupt-enable register. Its driver
+            // masks NVIC while consuming SI; that is valid only for an
+            // independently owned physical vector, never a shared alias.
+            assert_eq!(
+                md.interrupt_bindings
+                    .iter()
+                    .filter(|b| b.interrupt == irq)
+                    .count(),
+                1,
+                "F030 I2C requires its documented dedicated interrupt vector"
+            );
+        }
+        let state_type = if kind == "uart" {
+            "crate::uart::State".to_owned()
+        } else {
+            "crate::interrupt::EventState".to_owned()
+        };
+        writeln!(out, "impl sealed::{sealed} for crate::peripherals::{name} {{fn regs()->crate::pac::{kind}::{register_type} {{crate::pac::{name}}} fn state()->&'static {state_type} {{static STATE:{state_type}={state_type}::new(); &STATE}}}} impl Instance for crate::peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}}").unwrap();
+        let mut routes = BTreeMap::new();
+        for route in md.pin_routes.iter().filter(|r| r.peripheral == name) {
+            if route.remap.is_some() || matches!(route.pin, "PA13" | "PA14") {
+                // Debug pins need an explicit debug-port release API first.
+                continue;
+            }
+            let Some((_, signal_trait)) = signals.iter().find(|(s, _)| *s == route.signal) else {
+                continue;
+            };
+            let Some(af) = route.af else { continue };
+            assert!(af < 16, "bus AF exceeds GPIO selector");
+            assert!(
+                md.pins.iter().any(|p| p.name == route.pin),
+                "bus route pin is unavailable"
+            );
+            if let Some(previous) = routes.insert((route.pin, route.signal), af) {
+                assert_eq!(previous, af, "ambiguous bus pin alternate function");
+                continue;
+            }
+            let pin = ident(route.pin);
+            writeln!(out,"impl sealed::{signal_trait}<crate::peripherals::{name}> for crate::peripherals::{pin} {{}} impl {signal_trait}<crate::peripherals::{name}> for crate::peripherals::{pin} {{const AF:u8={af};}}").unwrap();
+        }
+    }
+    out
+}
+
 fn associations(md: &Metadata) -> String {
     let mut out = String::from(
         "// Generated from cw32-metapac metadata. No driver or ISR registration is implied.\n\
@@ -962,6 +1042,11 @@ const DRIVER_IPS: &[(&str, &[&str])] = &[
     ("dma", &["l012", "f030"]),
     ("dmachannel", &["l012", "f030"]),
     ("btim", &["l012", "f030"]),
+    ("uart", &["l012", "f030"]),
+    ("spi", &["l012", "f030"]),
+    ("i2c", &["l012", "f030"]),
+    ("crc", &["l012", "f030"]),
+    ("iwdt", &["l012"]),
 ];
 const GPIO_CAPABILITIES: &[&str] = &[
     "gpio_has_speed",
@@ -969,6 +1054,7 @@ const GPIO_CAPABILITIES: &[&str] = &[
     "gpio_has_level_interrupts",
     "gpio_pulldown_indexed",
 ];
+const CRC_CAPABILITIES: &[&str] = &["crc_has_crc32", "crc_has_wide_data"];
 
 fn field<'a>(
     p: &'a cw32_metapac::metadata::Peripheral,
@@ -1083,6 +1169,35 @@ fn driver_cfgs(md: &Metadata) -> BTreeSet<String> {
             }
             gpio = Some(caps);
         }
+        if p.block == "crc" {
+            let mode = field(p, "CR", "MODE");
+            assert!(matches!(mode.kind, cw32_metapac::metadata::FieldKind::Enum));
+            if mode
+                .values
+                .iter()
+                .any(|v| v.name == "CRC32" && v.value == 8)
+            {
+                assert!(mode
+                    .values
+                    .iter()
+                    .any(|v| v.name == "CRC32_MPEG2" && v.value == 9));
+                enabled.insert("crc_has_crc32".into());
+            }
+            if p.registers
+                .iter()
+                .any(|r| r.name == "DR16" && r.bit_size == 16)
+            {
+                assert!(p
+                    .registers
+                    .iter()
+                    .any(|r| r.name == "DR8" && r.bit_size == 8));
+                assert!(p
+                    .registers
+                    .iter()
+                    .any(|r| r.name == "DR32" && r.bit_size == 32));
+                enabled.insert("crc_has_wide_data".into());
+            }
+        }
     }
     for cap in gpio.into_iter().flatten() {
         enabled.insert(cap.to_owned());
@@ -1099,6 +1214,7 @@ fn emit_driver_cfgs(md: &Metadata) {
         }
     }
     declared.extend(GPIO_CAPABILITIES.iter().map(|c| (*c).to_owned()));
+    declared.extend(CRC_CAPABILITIES.iter().map(|c| (*c).to_owned()));
     // Only instance predicates explicitly consumed by hand-written drivers need
     // declaration when absent. All selected metadata instances are declared below.
     declared.extend(["peri_adc1", "peri_adc2", "peri_gtim1"].map(str::to_owned));

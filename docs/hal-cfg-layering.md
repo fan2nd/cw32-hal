@@ -23,6 +23,14 @@ and its [shared ADC layer](https://github.com/embassy-rs/embassy/blob/b12a6d9efc
    `gpio_pulldown_indexed`. Metadata must contain the exact supported ordinary
    RW register/field shape; malformed capabilities fail generation. Pin-specific
    pull-down masks still decide whether an individual pin supports that pull.
+5. Bus drivers independently select `uart_l012/f030`, `spi_l012/f030` and
+   `i2c_l012/f030`. UART/SPI/I2C pin traits use the actual peripheral/signal/AF
+   routes and physical GLOBAL vector, including SPI23 sharing. F030 I2C has no
+   peripheral interrupt mask, so generation requires its independently owned
+   vector before enabling the backend's NVIC masking strategy.
+6. CRC32 algorithms and wide data feeds use `crc_has_crc32` and
+   `crc_has_wide_data`, derived from sourced MODE values and 8/16/32-bit data
+   register views. IWDT uses the same audited `iwdt_l012` IP on both chips.
 
 ATIM and GTIM backends are independently selected, including mixed IP versions
 or only one timer kind. There is no `all(atim_l012,gtim_l012)` family bundle.
@@ -56,6 +64,10 @@ selects their layout. ADC local reset suppression uses the explicit
   L012 atomic UIFCPY and F030 OV/CNT/OV consistency algorithms remain distinct.
 - ATIM event-owner/wait/cancellation control flow is shared; break flags,
   deadtime, protection and duty-update semantics remain version-specific.
+- UART ownership, split halves and one-shot IRQ waits are shared. SPI transfer
+  flow is shared while divisors/register setup remain IP-specific. I2C shares
+  buffer traversal and operation lifecycle; L012 command/FIFO and F030 SI/status
+  state transitions retain separate engines.
 
 This is not a claim that every similar-looking register file can be merged.
 After excluding descriptions/provenance, all 17 kinds with both versions still

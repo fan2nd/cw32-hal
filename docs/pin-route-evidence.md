@@ -2,9 +2,9 @@
 
 ## Scope
 
-Current schema v3 stores 40 chip GPIO capabilities directly in `chip.pins`, with no Package model or physical pad numbers. Vendor package drawings below are historical source evidence for signal names, not a maintained HAL package database. Board software must check the actual part and footprint. The reviewed drawings agree on these GPIO identities; this does not release SWD, oscillator or BOOT functions.
+The data stores 40 chip GPIO capabilities directly in `chip.pins`, with no Package model or physical pad numbers. Vendor package drawings below are historical source evidence for signal names, not a maintained HAL package database. Board software must check the actual part and footprint. The reviewed drawings agree on these GPIO identities; this does not release SWD, oscillator or BOOT functions.
 
-The chip file adds **82 audited routes**: 28 ATIM CH1/CH1N/CH2/CH2N/CH3/CH3N/BK digital routes, 24 external ADC inputs, 12 OPA analog routes, 16 VC analog inputs, and two DAC analog outputs. Other alternate functions, internal trigger routing, DMA request muxes, and remaps are not covered by this focused audit. No complete-pinmux claim is made.
+This original focused audit added **82 routes**: 28 ATIM CH1/CH1N/CH2/CH2N/CH3/CH3N/BK digital routes, 24 external ADC inputs, 12 OPA analog routes, 16 VC analog inputs, and two DAC analog outputs. Later work added timer routes documented in `cw32-data/sources/timer-pwm-routes.yaml` and **133 UART/SPI/I2C routes** in `cw32-data/sources/bus-routes.yaml`, giving 259 current routes. Internal triggers and DMA selectors have separate evidence; this document is not a complete pinmux audit.
 
 Sources:
 

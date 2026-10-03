@@ -13,12 +13,16 @@ pub mod analog;
 pub mod atim;
 #[cfg(cordic)]
 pub mod cordic;
+#[cfg(crc)]
+pub mod crc;
 #[cfg(dma)]
 pub mod dma;
 #[cfg(eau)]
 pub mod eau;
 #[cfg(gpio)]
 pub mod gpio;
+#[cfg(i2c)]
+pub mod i2c;
 pub mod interrupt;
 #[cfg(any(adc_l012, atim_l012, btim_l012, gpio_l012, all(opa_l012, bgr_l012)))]
 pub mod motor;
@@ -57,10 +61,16 @@ pub mod mode {
 pub use mode::{Async, Blocking, Mode};
 #[cfg(sysctrl)]
 pub mod rcc;
+#[cfg(spi)]
+pub mod spi;
 #[cfg(feature = "time-driver-gtim1")]
 mod time_driver;
 #[cfg(any(atim, gtim))]
 pub mod timer;
+#[cfg(uart)]
+pub mod uart;
+#[cfg(iwdt)]
+pub mod wdg;
 
 use core::cell::Cell;
 static TAKEN: critical_section::Mutex<Cell<bool>> = critical_section::Mutex::new(Cell::new(false));
@@ -131,7 +141,7 @@ pub fn try_init(config: Config) -> Result<Peripherals, InitError> {
     })
 }
 
-/// Audited associations for future drivers. Empty tables mean no verified data,
+/// Audited associations for driver and board inspection. Empty tables mean no verified data,
 /// not absence of hardware capability. These tables do not install ISRs or AFIO.
 #[cfg(feature = "metadata")]
 pub mod metadata {

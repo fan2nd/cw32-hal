@@ -12,8 +12,20 @@ registers:
     bit_offset: 0
     bit_size: 4
     access: rw
-    kind: raw
-    description: CW32F030 CRC.CR.MODE; raw encoding.
+    kind: enum
+    description: Complete algorithm selection; writing initializes the running checksum.
+    values_source: "CW32x030 RM2.5 sections 10.3.1 and 10.6.1, printed pp160 and 164; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    values:
+    - {name: IBM, value: 0}
+    - {name: MAXIM, value: 1}
+    - {name: USB, value: 2}
+    - {name: MODBUS, value: 3}
+    - {name: CCITT, value: 4}
+    - {name: CCITT_FALSE, value: 5}
+    - {name: X25, value: 6}
+    - {name: XMODEM, value: 7}
+    - {name: CRC32, value: 8}
+    - {name: CRC32_MPEG2, value: 9}
   write_behavior: command
   read_behavior: ordinary
 - name: DR32

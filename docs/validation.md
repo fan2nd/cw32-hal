@@ -1,4 +1,6 @@
-> Current clock/PWM/PAC stage: [v0.18.0 validation](validation-v0.18.0.md), [scope and remaining work](clock-pwm-pac-v0.18.0.md), [schema10](schema-v10.md).
+> Current bus/CRC/IWDT stage: [v0.19.0 validation](validation-v0.19.0.md), [scope and remaining work](buses-v0.19.0.md).
+
+> Prior clock/PWM/PAC stage: [v0.18.0 validation](validation-v0.18.0.md), [scope](clock-pwm-pac-v0.18.0.md), [schema10](schema-v10.md).
 
 > Prior resource-composition stage: [v0.17.0 validation](validation-v0.17.0.md), [scope](resource-composition-v0.17.0.md), [schema9](schema-v9.md).
 

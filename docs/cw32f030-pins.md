@@ -16,10 +16,13 @@ even though the older manual/header expose its register bit. PA13/PA14
 remain die identities; applications must preserve debug unless deliberately
 reclaiming those pins.
 
-The route audit covers all external **ADC, ATIM and VC1/VC2** signals from
+The original route audit covered the external **ADC, ATIM and VC1/VC2** signals from
 the pin/AF tables: 13 ADC inputs, 26 ATIM routes, 16 comparator inputs and
-6 comparator outputs, totaling **61 routes**. UART, I2C, SPI, GTIM, BTIM,
-clock-output, oscillator and LVD routes are outside this route audit; their
+6 comparator outputs, totaling **61 routes**. Later timer work added GTIM
+routes, and v0.19 adds **116 UART/SPI/I2C routes**, giving 223 current routes.
+See `cw32-data/sources/timer-pwm-routes.yaml` and
+`cw32-data/sources/bus-routes.yaml` for that independent evidence. BTIM,
+clock-output, oscillator and LVD routes remain outside this focused audit;
 absence does not imply that the silicon lacks those functions. The F030
 does not gain L012-only ADC2, OPA, DAC or CORDIC capabilities from this data.
 
@@ -157,4 +160,3 @@ No undisclosed source correction or inference is used to add a peripheral
 capability. When official sources disagree, the selected value needs
 multiple independent detailed references, or the disputed route remains
 excluded.
-

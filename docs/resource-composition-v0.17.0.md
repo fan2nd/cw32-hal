@@ -1,7 +1,8 @@
 # Resource composition: first implementation stage
 
-This is the v0.17 stage record. The subsequent [v0.18 clock/PWM/PAC stage](clock-pwm-pac-v0.18.0.md)
-implements the next resource and data changes; its remaining-scope section is current.
+This is the historical v0.17 stage record. The subsequent [v0.18 clock/PWM/PAC stage](clock-pwm-pac-v0.18.0.md)
+implements the next resource and data changes. The [v0.19 bus/CRC/IWDT stage](buses-v0.19.0.md)
+records the current remaining scope; the list below describes what was open at v0.17.
 
 This release addresses the first three concrete gaps from the v0.16.0 review,
 plus reusable mutable DMA copy sources. It does not complete the entire remaining

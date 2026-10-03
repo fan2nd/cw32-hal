@@ -12,7 +12,7 @@ ADC1 的每次采样/滤波和 BTIM3 的立即换相仍在对应硬件 ISR 完�
 
 四个电机向量（ADC1、BTIM1、BTIM3_HALLTIM、UART2）均为 P1。ARMv6-M 同优先级异常不能互相抢占，控制器/诊断/桥臂借用只存在于该域的一次有限执行中，不能跨 await。硬件事件在 ISR 内完整执行，只有“重新检查状态”的通知允许合并；置 pending 与登记 waker 也在同一不可嵌套域，避免丢失唤醒。线程 UI 通过短临界区交换复制值，不持有电机引用。改变此优先级布局需要重新审查；同级阻塞时间、ADC 最坏延迟和线程可调度性仍需实板测量，不能由编译通过证明。
 
-UI 每次真实 tick 唤醒最多尝试发送一字节；迟到 UI 的按键观察会过期，不引入原工程没有的 UI 失联故障。HAL操作按需打开时钟，共享门和GPIO配置读改写在短临界区内完成。UI持有普通安全GPIO句柄；UART1驱动尚未抽象，相关十行PAC访问是最终程序仅剩的直接寄存器操作。
+UI 每次真实 tick 唤醒最多尝试发送一字节；迟到 UI 的按键观察会过期，不引入原工程没有的 UI 失联故障。HAL操作按需打开时钟，共享门和GPIO配置读改写在短临界区内完成。UI持有普通安全GPIO与UART1/PB12/PB11驱动句柄；最终程序没有直接PAC访问，也不启用 `unstable-pac`。UART保留实际96MHz PCLK下BRRI52/BRRF1的原分频和8N1格式，名义配置115200，实际约115246baud。
 
 ```sh
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-06-application

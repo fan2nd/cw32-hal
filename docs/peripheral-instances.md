@@ -219,7 +219,7 @@ The PAC generator emits `rt.rs` and `device.x` from this physical IRQ inventory.
 
 The HAL uses the official Embassy `interrupt_mod!` to generate sealed type-level IRQ identities, priority/NVIC operations, and Handler/Binding contracts. Its `bind_interrupts!` macro requires `rt` and emits actual ISR calls plus proofs for precisely those handler/IRQ pairs. A shared-vector handler list is called synchronously in declaration order on every IRQ occurrence. This is dispatch infrastructure; handlers still own pending-flag checks, acknowledgement, wakeups and correct interrupt enabling. The existing FOC drivers remain polling drivers and do not automatically install these handlers. A custom bootloader or replacement vector table must preserve the dispatch contract.
 
-The public HAL association tables require `metadata`; HAL build-time metadata remains enabled independently. Raw PAC re-export through the HAL requires `unstable-pac`. The [Embassy comparison](embassy-api-alignment.md) distinguishes these API changes from missing DMA and asynchronous peripheral drivers. Runtime compilation/linking evidence and any limitations belong to the [validation report](validation.md); no silicon interrupt timing is claimed here.
+The public HAL association tables require `metadata`; HAL build-time metadata remains enabled independently. Raw PAC re-export through the HAL requires `unstable-pac`. The [Embassy comparison](embassy-api-alignment.md) distinguishes implemented DMA/async drivers from their remaining modes and endpoints. Runtime compilation/linking evidence and any limitations belong to the [validation report](validation.md); no silicon interrupt timing is claimed here.
 
 Two vendor SVD omissions are completed using the header plus manual Table 5-1:
 

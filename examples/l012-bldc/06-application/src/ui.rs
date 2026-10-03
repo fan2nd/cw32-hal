@@ -54,8 +54,8 @@ use crate::frame_queue::FrameQueue;
 use core::cell::RefCell;
 use critical_section::Mutex;
 use embassy_cw32::{
-    gpio::{AfType, Flex, Input, Level, Output, OutputType, Pull},
-    pac,
+    gpio::{Input, Level, Output, Pull},
+    uart::{ClockSource, Config, Uart},
 };
 
 pub async fn run(
@@ -67,29 +67,14 @@ pub async fn run(
 ) {
     let mut led = Output::new(led, Level::High);
     let key = Input::new(key, Pull::Up);
-    let mut tx_pin = Flex::new(tx_pin);
-    tx_pin.set_high();
-    tx_pin.set_as_af_unchecked(1, AfType::output(OutputType::PushPull));
-    let mut rx_pin = Flex::new(rx_pin);
-    rx_pin.set_as_af_unchecked(1, AfType::input(Pull::Up));
-    // UART is the remaining manual peripheral: this task owns UART1 and its
-    // pin handles. Shared clock RMW is serialized with motor initialization.
-    critical_section::with(|_| {
-        let mut gate = pac::SYSCTRL.apben1().read();
-        gate.set_key(0x5a5a);
-        gate.set_uart1(true);
-        pac::SYSCTRL.apben1().write_value(gate);
-        pac::UART1.ier().write(|_| {});
-        pac::UART1.cr1().write(|r| {
-            r.set_source(pac::uart::vals::Cr1Source::PCLK_ALT);
-            r.set_rxen(true);
-            r.set_txen(true);
-        });
-        pac::UART1.cr2().write(|_| {});
-        pac::UART1.cr3().write(|_| {});
-        pac::UART1.brri().write(|r| r.set_brri(52));
-        pac::UART1.brrf().write(|r| r.set_brrf(1));
-    });
+    // Keep the source application's 96 MHz PCLK / (16 * 52 + 1), 8N1,
+    // PB12 TX / PB11 RX routing and polling cadence. UART2 is still the motor
+    // software executor's vector; UART1 does not enable any interrupt here.
+    let mut config = Config::default();
+    config.baudrate = 115_200;
+    config.clock_source = ClockSource::PclkAlt;
+    config.rx_pull = Pull::Up;
+    let mut uart = Uart::new_blocking(uart, tx_pin, rx_pin, config).unwrap();
     let mut tx = FrameQueue::new();
     loop {
         let feedback = next_ui_tick().await;
@@ -108,12 +93,12 @@ pub async fn run(
             tx.push(frame);
         }
         // Nonblocking, at most one UART byte per task wake.
-        if pac::UART1.isr().read().txe() {
+        if uart.is_write_ready() {
             if let Some(byte) = tx.pop_byte() {
-                pac::UART1.tdr().write(|r| r.set_tdr(u16::from(byte)));
+                let _ = uart.try_write(byte).unwrap();
             }
         }
-        core::hint::black_box((&led, &key, &uart, &tx_pin, &rx_pin));
+        core::hint::black_box((&led, &key, &uart));
     }
 }
 

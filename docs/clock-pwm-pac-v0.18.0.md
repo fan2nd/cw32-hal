@@ -1,5 +1,8 @@
 # Clock resources, independent PWM and semantic PAC fields
 
+This records v0.18. Later bus/CRC/IWDT implementation and current remaining
+stages are described in [v0.19](buses-v0.19.0.md).
+
 This is the second implementation stage of the remaining Embassy comparison.
 It adds real clock-resource lifetimes, broader HSI clock configuration,
 independently owned PWM channels, and sourced semantic/indexed PAC fields.
