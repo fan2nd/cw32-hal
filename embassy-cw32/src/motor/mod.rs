@@ -14,6 +14,11 @@
 //! Examples use non-nesting equal-priority motor interrupts; thread-mode access
 //! additionally requires a critical section. No lease or software-state borrow
 //! may survive an await if an interrupt can access the same resource.
+//! ADC and basic-timer identities retain their metadata-derived IRQ types.
+//! Enabling a peripheral interrupt source requires a real Embassy `Binding`
+//! proof for the application's synchronous `Handler`; this does not prove
+//! exclusive hardware access or configure the NVIC. Shared-vector handlers must
+//! each check their own peripheral flags and preserve sibling pending state.
 //!
 //! Pin routing, clocks/VDDA limits, settling delays, gate-driver polarity, dead
 //! time and physical protection remain board responsibilities. These operations

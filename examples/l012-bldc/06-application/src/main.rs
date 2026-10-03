@@ -8,6 +8,16 @@ pub mod protection;
 pub mod protocol;
 mod ui;
 
+// Application wiring: each handler runs synchronously in its exact vector.
+embassy_cw32::bind_interrupts!(
+    struct Irqs {
+        ADC1 => motor::AdcHandler;
+        BTIM1 => motor::TickHandler;
+        BTIM3_HALLTIM => motor::CommutationHandler;
+        UART2 => motor::MotorExecutorHandler;
+    }
+);
+
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
     let mut config = embassy_cw32::Config::default();
@@ -24,6 +34,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
             p.PB5, p.PB6, p.PB7, p.PA0, p.PA1, p.PA2, p.PA6, p.PA7, p.PB0, p.PB2, p.PA8, p.PA10,
             p.PA11, p.UART2,
         ),
+        Irqs,
     );
     ui::run(p.PC13, p.PA3, p.UART1, p.PB12, p.PB11).await;
 }

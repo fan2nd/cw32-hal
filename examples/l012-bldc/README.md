@@ -59,6 +59,15 @@ CH4恢复原PWM1。官方RM §25.12.7指定触发为OC4REFC上升沿，不能把
 
 06使用官方 `InterruptExecutor`，专用未启用UART2外设的UART2向量作P1电机软件唤醒；普通线程UI任务处理PA3/PC13/UART1。UI不能持有控制器引用或电机寄存器指针。UART非阻塞，每次UI唤醒最多发送一字节。UI失联不再增加原工程没有的电机故障码。
 
+02–05在各自main、06在main集中使用 `bind_interrupts!` 声明实际向量与handler。
+ADC1/BTIM1/BTIM3的原ISR主体分别位于 `Handler<typelevel::具体IRQ>` 实现内，
+同步处理顺序不变；06的UART2 handler同步调用官方执行器。
+`AdcScan::<peripherals::ADC1>::acquire()` 与 `BasicTimer::<peripherals::BTIM1>::acquire()`
+保留元数据IRQ类型，使能中断源必须传入准确 `Binding` proof，不能只手写向量名后忽略绑定检查。
+向量优先级和mask使用官方typelevel操作；BTIM3_HALLTIM不做NVIC unpend，handler仅确认
+BTIM3自己的更新源。HALLTIM保持未启用，未来使用它须增加同向量handler并重新审查共享所有权。
+HardFault/NMI/Panic仍由异常/运行时入口处理。具体迁移与unsafe义务见[电机API](../../docs/motor-api.md)。
+
 ## 原控制行为
 
 - 六步顺序：A+B-、A+C-、B+C-、B+A-、C+A-、C+B-。

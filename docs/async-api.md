@@ -1,3 +1,5 @@
+> Motor/custom ISR wiring also uses these contracts; see [type-level interrupt migration](typelevel-interrupts.md).
+
 # Typed owners and real interrupt-backed operations
 
 Current APIs use one `Adc<'d, I, M>` and one `Comp<'d, I, M>` owner with sealed `Blocking`/`Async` modes. GPIO interrupt input has a real port-IRQ backend. These are not blocking loops wrapped in async syntax. ATIM event and CORDIC futures retain their existing specialized owners; not every driver needs the same mode shape.

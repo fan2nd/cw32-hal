@@ -3,16 +3,21 @@ use crate::control::{Actions, Adc1Sample, Bridge, MotorController, TimerCommand,
 use crate::protection::Adc2Sample;
 use crate::protocol::telemetry_frame;
 use crate::ui::UiFeedback;
+use crate::Irqs;
 use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_cw32::{
     dma,
     gpio::Port,
-    interrupt::{self, InterruptExt},
-    motor::{
-        self, AdcScan, AdcUnit, BasicTimer, BridgeUpdate, ClockDivider, MotorPin, NegativeInput,
-        PhaseDrive, PinId, PinMode, PositiveInput, PwmBridge, PwmConfig, SampleTime, ScanConfig,
-        ScanSlot, TimerConfig, TimerUnit,
+    interrupt::{
+        self,
+        typelevel::{self, Binding, Handler, Interrupt as _},
     },
+    motor::{
+        self, AdcScan, BasicTimer, BridgeUpdate, ClockDivider, MotorPin, NegativeInput, PhaseDrive,
+        PinId, PinMode, PositiveInput, PwmBridge, PwmConfig, SampleTime, ScanConfig, ScanSlot,
+        TimerConfig,
+    },
+    peripherals,
 };
 
 // Original clock profile, confirmed VDDA=5 V: HCLK/PCLK=96 MHz.
@@ -91,20 +96,24 @@ static MOTOR_EXECUTOR: embassy_executor::InterruptExecutor =
 pub fn start(
     dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMACHANNEL2>,
     peripherals: MotorPeripherals,
+    _irq: impl Binding<typelevel::UART2, MotorExecutorHandler>,
 ) {
-    interrupt::UART2.disable();
-    interrupt::UART2.unpend();
-    interrupt::UART2.set_priority(interrupt::Priority::P1);
+    typelevel::UART2::disable();
+    typelevel::UART2::unpend();
+    typelevel::UART2::set_priority(interrupt::Priority::P1);
+    // Binding proves the main-module vector calls MotorExecutorHandler.
+    // Upstream start initializes the executor before unmasking its IRQ.
     // UART2 peripheral stays unused; its singleton is retained by the motor task.
     MOTOR_EXECUTOR
-        .start(interrupt::UART2)
+        .start(typelevel::UART2::IRQ)
         .spawn(run(dma_channel, peripherals).unwrap());
 }
 
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn UART2() {
-    unsafe { MOTOR_EXECUTOR.on_interrupt() };
+pub(crate) struct MotorExecutorHandler;
+impl Handler<typelevel::UART2> for MotorExecutorHandler {
+    unsafe fn on_interrupt() {
+        unsafe { MOTOR_EXECUTOR.on_interrupt() };
+    }
 }
 
 // These are wake notifications, not a queue of hardware events. Every sample,
@@ -146,9 +155,9 @@ async fn run(
 ) {
     let mut adc2_channel = dma::Channel::new_blocking(dma_channel);
     let adc2_stream;
-    for irq in [interrupt::ADC1, interrupt::BTIM1, interrupt::BTIM3_HALLTIM] {
-        irq.disable();
-    }
+    typelevel::ADC1::disable();
+    typelevel::BTIM1::disable();
+    typelevel::BTIM3_HALLTIM::disable();
     // SAFETY: all motor resources are retained unused by other drivers. Each
     // temporary motor lease ends before the next access or any await; setup
     // runs with motor IRQs masked. Thereafter P1 serializes all motor access.
@@ -187,7 +196,7 @@ async fn run(
         // PB0 is read by ADC1 CH8 without creating a second pin owner.
         motor::configure_current_sense(PositiveInput::Inp2, NegativeInput::Inn2);
         // Board channels and acquisition times remain explicit here.
-        AdcScan::acquire(AdcUnit::Adc1).configure(ScanConfig {
+        AdcScan::<peripherals::ADC1>::acquire().configure(ScanConfig {
             slots: &[
                 ScanSlot::new(8, SampleTime::Cycles70),
                 ScanSlot::new(0, SampleTime::Cycles70),
@@ -196,7 +205,7 @@ async fn run(
             ],
             divider: ClockDivider::Div2,
         });
-        AdcScan::acquire(AdcUnit::Adc2).configure(ScanConfig {
+        AdcScan::<peripherals::ADC2>::acquire().configure(ScanConfig {
             slots: &[
                 ScanSlot::new(11, SampleTime::Cycles518),
                 ScanSlot::new(5, SampleTime::Cycles518),
@@ -206,13 +215,18 @@ async fn run(
             ],
             divider: ClockDivider::Div8,
         });
-        for (unit, prescaler, reload) in [
-            (TimerUnit::Btim1, 95, 999),
-            (TimerUnit::Btim2, 11, 65530),
-            (TimerUnit::Btim3, 11, 65530),
-        ] {
-            BasicTimer::acquire(unit).configure(TimerConfig { prescaler, reload });
-        }
+        BasicTimer::<peripherals::BTIM1>::acquire().configure(TimerConfig {
+            prescaler: 95,
+            reload: 999,
+        });
+        BasicTimer::<peripherals::BTIM2>::acquire().configure(TimerConfig {
+            prescaler: 11,
+            reload: 65530,
+        });
+        BasicTimer::<peripherals::BTIM3>::acquire().configure(TimerConfig {
+            prescaler: 11,
+            reload: 65530,
+        });
     }
     // >=1 ms nominal instruction delay: exceeds BGR (~30 us), OPA and ADC
     // startup requirements. It is not used as the motor timebase.
@@ -248,9 +262,9 @@ async fn run(
         core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(armed);
         core::ptr::addr_of_mut!(BOOTSTRAP_MS).write(6);
         (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = output_opt_in;
-        AdcScan::acquire(AdcUnit::Adc1).clear_events();
-        AdcScan::acquire(AdcUnit::Adc2).clear_events();
-        AdcScan::acquire(AdcUnit::Adc1).enable_sequence_interrupt();
+        AdcScan::<peripherals::ADC1>::acquire().clear_events();
+        AdcScan::<peripherals::ADC2>::acquire().clear_events();
+        AdcScan::<peripherals::ADC1>::acquire().enable_sequence_interrupt::<AdcHandler>(Irqs);
         // Original EOC + BLOCK intent: one 32-bit result per conversion.
         // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
         // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
@@ -258,7 +272,7 @@ async fn run(
         // CPU reads remain volatile words: a scan can be partially refreshed.
         adc2_stream = adc2_channel
             .start_repeating_raw::<u32>(
-                AdcScan::acquire(AdcUnit::Adc2).result_address(),
+                AdcScan::<peripherals::ADC2>::acquire().result_address(),
                 core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>(),
                 5,
                 dma::RawConfig {
@@ -269,28 +283,32 @@ async fn run(
                 },
             )
             .expect("ADC2 DMA configuration");
-        AdcScan::acquire(AdcUnit::Adc2).enable_conversion_dma();
-        AdcScan::acquire(AdcUnit::Adc2).trigger_from_pwm();
+        AdcScan::<peripherals::ADC2>::acquire().enable_conversion_dma();
+        AdcScan::<peripherals::ADC2>::acquire().trigger_from_pwm();
 
-        BasicTimer::acquire(TimerUnit::Btim1).clear_update();
-        BasicTimer::acquire(TimerUnit::Btim3).clear_update();
-        BasicTimer::acquire(TimerUnit::Btim1).enable_update_interrupt();
-        BasicTimer::acquire(TimerUnit::Btim3).enable_update_interrupt();
-        for irq in [interrupt::ADC1, interrupt::BTIM1, interrupt::BTIM3_HALLTIM] {
-            irq.unpend();
-            irq.set_priority(interrupt::Priority::P1);
-        }
-        AdcScan::acquire(AdcUnit::Adc1).trigger_from_pwm();
-        BasicTimer::acquire(TimerUnit::Btim1).start(); // Original timer enable.
-        BasicTimer::acquire(TimerUnit::Btim2).start();
+        BasicTimer::<peripherals::BTIM1>::acquire().clear_update();
+        BasicTimer::<peripherals::BTIM3>::acquire().clear_update();
+        BasicTimer::<peripherals::BTIM1>::acquire().enable_update_interrupt::<TickHandler>(Irqs);
+        BasicTimer::<peripherals::BTIM3>::acquire()
+            .enable_update_interrupt::<CommutationHandler>(Irqs);
+        typelevel::ADC1::unpend();
+        typelevel::ADC1::set_priority(interrupt::Priority::P1);
+        typelevel::BTIM1::unpend();
+        typelevel::BTIM1::set_priority(interrupt::Priority::P1);
+        // Shared with HALLTIM: acknowledge only BTIM3's peripheral source.
+        // Do not erase a sibling's NVIC pending event. HALLTIM remains unused.
+        typelevel::BTIM3_HALLTIM::set_priority(interrupt::Priority::P1);
+        AdcScan::<peripherals::ADC1>::acquire().trigger_from_pwm();
+        BasicTimer::<peripherals::BTIM1>::acquire().start(); // Original timer enable.
+        BasicTimer::<peripherals::BTIM2>::acquire().start();
         PwmBridge::acquire().start();
-        AdcScan::acquire(AdcUnit::Adc2).start_software();
+        AdcScan::<peripherals::ADC2>::acquire().start_software();
         // All shared values are ready and no reference survives unmask.
         // Motor task and all motor handlers execute at P1, never nested.
         core::sync::atomic::compiler_fence(Ordering::Release);
-        for irq in [interrupt::ADC1, interrupt::BTIM1, interrupt::BTIM3_HALLTIM] {
-            irq.enable();
-        }
+        typelevel::ADC1::enable();
+        typelevel::BTIM1::enable();
+        typelevel::BTIM3_HALLTIM::enable();
     }
 
     loop {
@@ -323,8 +341,8 @@ async fn run(
                     temperature: raw[3],
                     reference: raw[4],
                 });
-                let actions =
-                    controller.foreground_step(BasicTimer::acquire(TimerUnit::Btim2).counter());
+                let actions = controller
+                    .foreground_step(BasicTimer::<peripherals::BTIM2>::acquire().counter());
                 apply_actions(controller, diagnostics, armed, actions, None);
                 core::hint::black_box(&*diagnostics);
                 if !controller.foreground_ready() {
@@ -362,13 +380,13 @@ unsafe fn apply_actions(
     }
 
     if let Some(ticks) = actions.step_timer_preset {
-        BasicTimer::acquire(TimerUnit::Btim2).preset(ticks);
+        BasicTimer::<peripherals::BTIM2>::acquire().preset(ticks);
     }
     match actions.sensorless_timer {
         TimerCommand::Unchanged => {}
-        TimerCommand::Stop => BasicTimer::acquire(TimerUnit::Btim3).stop(),
+        TimerCommand::Stop => BasicTimer::<peripherals::BTIM3>::acquire().stop(),
         TimerCommand::Arm(reload) => {
-            BasicTimer::acquire(TimerUnit::Btim3).arm(reload);
+            BasicTimer::<peripherals::BTIM3>::acquire().arm(reload);
         }
     }
 
@@ -377,7 +395,7 @@ unsafe fn apply_actions(
         MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
     }
     if actions.start_adc2 {
-        AdcScan::acquire(AdcUnit::Adc2).start_software();
+        AdcScan::<peripherals::ADC2>::acquire().start_software();
     }
     diagnostics.outputs_armed = *armed;
     diagnostics.logical_bridge = controller.bridge();
@@ -385,140 +403,143 @@ unsafe fn apply_actions(
     diagnostics.fault = controller.fault().map_or(0, |fault| fault as u8);
 }
 
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn ADC1() {
-    unsafe {
-        let Some(raw) = AdcScan::acquire(AdcUnit::Adc1).take_sequence::<4>() else {
-            return;
-        };
-        let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
-            .as_mut()
-            .unwrap();
-        let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
-        let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
-        diagnostics.adc1 = raw;
-        diagnostics.adc1_sequences = diagnostics.adc1_sequences.wrapping_add(1);
-        let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
-        controller.update_adc2(Adc2Sample {
-            current: core::ptr::read_volatile(dma) as u16,
-            bus_voltage: core::ptr::read_volatile(dma.add(1)) as u16,
-            potentiometer: core::ptr::read_volatile(dma.add(2)) as u16,
-            temperature: core::ptr::read_volatile(dma.add(3)) as u16,
-            reference: core::ptr::read_volatile(dma.add(4)) as u16,
-        });
-        let actions = controller.on_adc1(
-            Adc1Sample::from(raw),
-            BasicTimer::acquire(TimerUnit::Btim2).counter(),
-        );
-        apply_actions(controller, diagnostics, armed, actions, None);
-        core::hint::black_box(&*diagnostics);
-        // Samples stay in this ISR. Wake only when the sample created ready
-        // foreground work (crossing/startup success/fault/initial data).
-        if controller.foreground_ready() {
-            notify_motor();
-        }
-    }
-}
-
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn BTIM1() {
-    // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
-    unsafe {
-        if !BasicTimer::acquire(TimerUnit::Btim1).take_update() {
-            return;
-        }
-        let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
-            .as_mut()
-            .unwrap();
-        let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
-        let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
-        diagnostics.milliseconds = diagnostics.milliseconds.wrapping_add(1);
-        crate::ui::publish_ui_tick();
-        let key_pressed = crate::ui::key_sample();
-        let step_ticks = BasicTimer::acquire(TimerUnit::Btim2).counter();
-
-        let (motor, telemetry) = {
-            KEY_HOLD_MS = if key_pressed {
-                KEY_HOLD_MS.saturating_add(1)
-            } else {
-                0
+pub(crate) struct AdcHandler;
+impl Handler<typelevel::ADC1> for AdcHandler {
+    unsafe fn on_interrupt() {
+        unsafe {
+            let Some(raw) = AdcScan::<peripherals::ADC1>::acquire().take_sequence::<4>() else {
+                return;
             };
-            let key_event = KEY_HOLD_MS == KEY_DEBOUNCE_MS;
-            let was_off = controller.powered_off();
-            // In the source, immediate key telemetry precedes this tick's 100 ms
-            // measurement update. A periodic frame on the same tick supersedes it.
-            let key_voltage = controller.measurements().bus_decivolts;
-            let motor = controller.tick_1ms(key_pressed, step_ticks);
-            let mut telemetry = key_event.then(|| {
-                telemetry_frame(
-                    controller.speed_level(),
-                    key_voltage,
-                    controller.powered_off(),
-                )
+            let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
+                .as_mut()
+                .unwrap();
+            let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
+            let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
+            diagnostics.adc1 = raw;
+            diagnostics.adc1_sequences = diagnostics.adc1_sequences.wrapping_add(1);
+            let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
+            controller.update_adc2(Adc2Sample {
+                current: core::ptr::read_volatile(dma) as u16,
+                bus_voltage: core::ptr::read_volatile(dma.add(1)) as u16,
+                potentiometer: core::ptr::read_volatile(dma.add(2)) as u16,
+                temperature: core::ptr::read_volatile(dma.add(3)) as u16,
+                reference: core::ptr::read_volatile(dma.add(4)) as u16,
             });
-            if was_off && !controller.powered_off() {
-                TELEMETRY_MS = 0;
-            }
-            if controller.powered_off() {
-                if !was_off {
-                    // Final off frame wins even when auto-off and cadence coincide.
-                    telemetry = Some(telemetry_frame(
-                        controller.speed_level(),
-                        controller.measurements().bus_decivolts,
-                        controller.powered_off(),
-                    ));
-                }
-            } else {
-                TELEMETRY_MS += 1;
-                if TELEMETRY_MS >= TELEMETRY_INTERVAL_MS {
-                    TELEMETRY_MS = 0;
-                    telemetry = Some(telemetry_frame(
-                        controller.speed_level(),
-                        controller.measurements().bus_decivolts,
-                        controller.powered_off(),
-                    ));
-                }
-            }
-            (motor, telemetry)
-        };
-        apply_actions(controller, diagnostics, armed, motor, telemetry);
-        if BOOTSTRAP_MS > 0 {
-            BOOTSTRAP_MS -= 1;
-            if BOOTSTRAP_MS == 0 {
-                if *armed {
-                    MotorPin::acquire(PinId::new(Port::A, 15)).set_high(false);
-                    MotorPin::acquire(PinId::new(Port::B, 3)).set_high(false);
-                    MotorPin::acquire(PinId::new(Port::B, 4)).set_high(false);
-                }
-                controller.finish_bootstrap();
+            let actions = controller.on_adc1(
+                Adc1Sample::from(raw),
+                BasicTimer::<peripherals::BTIM2>::acquire().counter(),
+            );
+            apply_actions(controller, diagnostics, armed, actions, None);
+            core::hint::black_box(&*diagnostics);
+            // Samples stay in this ISR. Wake only when the sample created ready
+            // foreground work (crossing/startup success/fault/initial data).
+            if controller.foreground_ready() {
+                notify_motor();
             }
         }
-        core::hint::black_box(&*diagnostics);
-        notify_motor();
     }
 }
 
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn BTIM3_HALLTIM() {
-    // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
-    unsafe {
-        if !BasicTimer::acquire(TimerUnit::Btim3).take_update() {
-            return;
-        }
-        let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
-            .as_mut()
-            .unwrap();
-        let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
-        let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
-        let actions =
-            controller.on_sensorless_timer(BasicTimer::acquire(TimerUnit::Btim2).counter());
-        apply_actions(controller, diagnostics, armed, actions, None);
-        core::hint::black_box(&*diagnostics);
-        if controller.foreground_ready() {
+pub(crate) struct TickHandler;
+impl Handler<typelevel::BTIM1> for TickHandler {
+    unsafe fn on_interrupt() {
+        // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
+        unsafe {
+            if !BasicTimer::<peripherals::BTIM1>::acquire().take_update() {
+                return;
+            }
+            let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
+                .as_mut()
+                .unwrap();
+            let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
+            let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
+            diagnostics.milliseconds = diagnostics.milliseconds.wrapping_add(1);
+            crate::ui::publish_ui_tick();
+            let key_pressed = crate::ui::key_sample();
+            let step_ticks = BasicTimer::<peripherals::BTIM2>::acquire().counter();
+
+            let (motor, telemetry) = {
+                KEY_HOLD_MS = if key_pressed {
+                    KEY_HOLD_MS.saturating_add(1)
+                } else {
+                    0
+                };
+                let key_event = KEY_HOLD_MS == KEY_DEBOUNCE_MS;
+                let was_off = controller.powered_off();
+                // In the source, immediate key telemetry precedes this tick's 100 ms
+                // measurement update. A periodic frame on the same tick supersedes it.
+                let key_voltage = controller.measurements().bus_decivolts;
+                let motor = controller.tick_1ms(key_pressed, step_ticks);
+                let mut telemetry = key_event.then(|| {
+                    telemetry_frame(
+                        controller.speed_level(),
+                        key_voltage,
+                        controller.powered_off(),
+                    )
+                });
+                if was_off && !controller.powered_off() {
+                    TELEMETRY_MS = 0;
+                }
+                if controller.powered_off() {
+                    if !was_off {
+                        // Final off frame wins even when auto-off and cadence coincide.
+                        telemetry = Some(telemetry_frame(
+                            controller.speed_level(),
+                            controller.measurements().bus_decivolts,
+                            controller.powered_off(),
+                        ));
+                    }
+                } else {
+                    TELEMETRY_MS += 1;
+                    if TELEMETRY_MS >= TELEMETRY_INTERVAL_MS {
+                        TELEMETRY_MS = 0;
+                        telemetry = Some(telemetry_frame(
+                            controller.speed_level(),
+                            controller.measurements().bus_decivolts,
+                            controller.powered_off(),
+                        ));
+                    }
+                }
+                (motor, telemetry)
+            };
+            apply_actions(controller, diagnostics, armed, motor, telemetry);
+            if BOOTSTRAP_MS > 0 {
+                BOOTSTRAP_MS -= 1;
+                if BOOTSTRAP_MS == 0 {
+                    if *armed {
+                        MotorPin::acquire(PinId::new(Port::A, 15)).set_high(false);
+                        MotorPin::acquire(PinId::new(Port::B, 3)).set_high(false);
+                        MotorPin::acquire(PinId::new(Port::B, 4)).set_high(false);
+                    }
+                    controller.finish_bootstrap();
+                }
+            }
+            core::hint::black_box(&*diagnostics);
             notify_motor();
+        }
+    }
+}
+
+pub(crate) struct CommutationHandler;
+impl Handler<typelevel::BTIM3_HALLTIM> for CommutationHandler {
+    unsafe fn on_interrupt() {
+        // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
+        unsafe {
+            if !BasicTimer::<peripherals::BTIM3>::acquire().take_update() {
+                return;
+            }
+            let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
+                .as_mut()
+                .unwrap();
+            let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
+            let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
+            let actions = controller
+                .on_sensorless_timer(BasicTimer::<peripherals::BTIM2>::acquire().counter());
+            apply_actions(controller, diagnostics, armed, actions, None);
+            core::hint::black_box(&*diagnostics);
+            if controller.foreground_ready() {
+                notify_motor();
+            }
         }
     }
 }

@@ -18,7 +18,7 @@
 //! This is a timestamp-resolution improvement, not a hard-real-time guarantee.
 use super::core::{Hardware, ICR_MASK};
 use crate::{
-    interrupt::{self, InterruptExt},
+    interrupt::{self, typelevel::Interrupt as _},
     pac::{self, gtim::regs},
     rcc::PeripheralClock,
 };
@@ -41,7 +41,7 @@ impl Hardware for Registers {
         pac::GTIM1.ccr(0).write(|w| w.set_ccr(value));
     }
     fn pend(&mut self) {
-        interrupt::GTIM1.pend();
+        interrupt::typelevel::GTIM1::pend();
     }
 }
 /// Called once by HAL init after the clock tree has been verified. GTIM1 is

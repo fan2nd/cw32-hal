@@ -5,7 +5,7 @@ use super::f030::Registers;
 #[cfg(gtim_l012)]
 use super::l012::Registers;
 use super::{core::Counter, queue::Queue};
-use crate::interrupt::{self, InterruptExt};
+use crate::interrupt::{self, typelevel::Interrupt as _};
 use core::{cell::RefCell, task::Waker};
 use critical_section::Mutex;
 use embassy_time_driver::Driver;
@@ -70,11 +70,11 @@ pub(super) unsafe fn init(priority: interrupt::Priority, configure: impl FnOnce(
     critical_section::with(|cs| {
         let mut state = DRIVER.state.borrow(cs).borrow_mut();
         assert!(!state.started);
-        interrupt::GTIM1.disable();
+        interrupt::typelevel::GTIM1::disable();
         configure();
         state.started = true;
-        interrupt::GTIM1.unpend();
-        interrupt::GTIM1.set_priority(priority);
+        interrupt::typelevel::GTIM1::unpend();
+        interrupt::typelevel::GTIM1::set_priority(priority);
         // Preserve wakeups registered before init. Unpend first: arm may pend
         // the vector when a deadline passed while hardware was configured.
         state
@@ -83,13 +83,15 @@ pub(super) unsafe fn init(priority: interrupt::Priority, configure: impl FnOnce(
         // SAFETY: the selected IP is configured; our handler below is installed
         // at the real GTIM1 vector by the PAC runtime.
         unsafe {
-            interrupt::GTIM1.enable();
+            interrupt::typelevel::GTIM1::enable();
         }
     });
 }
 
 // Strong symbol overrides device.x's default handler at the actual GTIM1 vector.
-// No public manual handler binding or core.SYST acquisition is needed.
+// This private vector is installed by the reserved time driver, matching the
+// fixed upstream build-generated time-driver handler. The application cannot
+// acquire GTIM1 when this feature is enabled; no public Binding is required.
 #[allow(non_snake_case)]
 #[unsafe(no_mangle)]
 unsafe extern "C" fn GTIM1() {

@@ -7,14 +7,23 @@ use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_cw32::{
     dma,
     gpio::Port,
-    interrupt::{self, InterruptExt},
-    motor::{
-        self, AdcScan, AdcUnit, BasicTimer, ClockDivider, MotorPin, NegativeInput, PinId, PinMode,
-        PositiveInput, PwmBridge, PwmConfig, SampleTime, ScanConfig, ScanSlot, TimerConfig,
-        TimerUnit,
+    interrupt::{
+        self,
+        typelevel::{self, Handler, Interrupt as _},
     },
-    rcc,
+    motor::{
+        self, AdcScan, BasicTimer, ClockDivider, MotorPin, NegativeInput, PinId, PinMode,
+        PositiveInput, PwmBridge, PwmConfig, SampleTime, ScanConfig, ScanSlot, TimerConfig,
+    },
+    peripherals, rcc,
 };
+
+embassy_cw32::bind_interrupts!(
+    struct Irqs {
+        ADC1 => AdcHandler;
+        BTIM1 => TickHandler;
+    }
+);
 
 const CPU_HZ: u32 = 96_000_000;
 const SAMPLING_PERIOD: u16 = 4800; // 96 MHz / 20 kHz, original scale.
@@ -49,9 +58,8 @@ fn main() -> ! {
     let dma_channels = dma::split(_peripherals.DMA);
     let mut adc2_channel = dma::Channel::new_blocking(dma_channels.ch2);
     let adc2_stream;
-    for irq in [interrupt::ADC1, interrupt::BTIM1] {
-        irq.disable();
-    }
+    typelevel::ADC1::disable();
+    typelevel::BTIM1::disable();
     // SAFETY: HAL initialization transferred the peripheral singletons;
     // main keeps the singleton tokens; it never accesses hardware after unmask.
     unsafe {
@@ -90,7 +98,7 @@ fn main() -> ! {
         // External-feedback OPA1: PA6 INP2, PA7 INN2, PB0 output/ADC1 CH8.
         motor::configure_current_sense(PositiveInput::Inp2, NegativeInput::Inn2);
         // Board channels and acquisition times remain explicit here.
-        AdcScan::acquire(AdcUnit::Adc1).configure(ScanConfig {
+        AdcScan::<peripherals::ADC1>::acquire().configure(ScanConfig {
             slots: &[
                 ScanSlot::new(8, SampleTime::Cycles70),
                 ScanSlot::new(0, SampleTime::Cycles70),
@@ -99,7 +107,7 @@ fn main() -> ! {
             ],
             divider: ClockDivider::Div2,
         });
-        AdcScan::acquire(AdcUnit::Adc2).configure(ScanConfig {
+        AdcScan::<peripherals::ADC2>::acquire().configure(ScanConfig {
             slots: &[
                 ScanSlot::new(11, SampleTime::Cycles518),
                 ScanSlot::new(5, SampleTime::Cycles518),
@@ -109,7 +117,7 @@ fn main() -> ! {
             ],
             divider: ClockDivider::Div8,
         });
-        BasicTimer::acquire(TimerUnit::Btim1).configure(TimerConfig {
+        BasicTimer::<peripherals::BTIM1>::acquire().configure(TimerConfig {
             prescaler: 95,
             reload: 999,
         });
@@ -119,9 +127,9 @@ fn main() -> ! {
     INITIALIZED.store(true, Ordering::Release);
 
     unsafe {
-        AdcScan::acquire(AdcUnit::Adc1).clear_events();
-        AdcScan::acquire(AdcUnit::Adc2).clear_events();
-        AdcScan::acquire(AdcUnit::Adc1).enable_sequence_interrupt();
+        AdcScan::<peripherals::ADC1>::acquire().clear_events();
+        AdcScan::<peripherals::ADC2>::acquire().clear_events();
+        AdcScan::<peripherals::ADC1>::acquire().enable_sequence_interrupt::<AdcHandler>(Irqs);
         // Original EOC + BLOCK intent: one 32-bit result per conversion.
         // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
         // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
@@ -129,7 +137,7 @@ fn main() -> ! {
         // CPU reads remain volatile words: a scan can be partially refreshed.
         adc2_stream = adc2_channel
             .start_repeating_raw::<u32>(
-                AdcScan::acquire(AdcUnit::Adc2).result_address(),
+                AdcScan::<peripherals::ADC2>::acquire().result_address(),
                 core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>(),
                 5,
                 dma::RawConfig {
@@ -140,25 +148,24 @@ fn main() -> ! {
                 },
             )
             .expect("ADC2 DMA configuration");
-        AdcScan::acquire(AdcUnit::Adc2).enable_conversion_dma();
-        AdcScan::acquire(AdcUnit::Adc2).trigger_from_pwm();
+        AdcScan::<peripherals::ADC2>::acquire().enable_conversion_dma();
+        AdcScan::<peripherals::ADC2>::acquire().trigger_from_pwm();
 
-        BasicTimer::acquire(TimerUnit::Btim1).clear_update();
-        BasicTimer::acquire(TimerUnit::Btim1).enable_update_interrupt();
-        for irq in [interrupt::ADC1, interrupt::BTIM1] {
-            irq.unpend();
-            irq.set_priority(interrupt::Priority::P1);
-        }
-        AdcScan::acquire(AdcUnit::Adc1).trigger_from_pwm();
-        BasicTimer::acquire(TimerUnit::Btim1).start(); // Original timer enable.
+        BasicTimer::<peripherals::BTIM1>::acquire().clear_update();
+        BasicTimer::<peripherals::BTIM1>::acquire().enable_update_interrupt::<TickHandler>(Irqs);
+        typelevel::ADC1::unpend();
+        typelevel::ADC1::set_priority(interrupt::Priority::P1);
+        typelevel::BTIM1::unpend();
+        typelevel::BTIM1::set_priority(interrupt::Priority::P1);
+        AdcScan::<peripherals::ADC1>::acquire().trigger_from_pwm();
+        BasicTimer::<peripherals::BTIM1>::acquire().start(); // Original timer enable.
         PwmBridge::acquire().start();
 
-        AdcScan::acquire(AdcUnit::Adc2).start_software();
+        AdcScan::<peripherals::ADC2>::acquire().start_software();
         // Initialization and all borrows finish before any IRQ can run.
         core::sync::atomic::compiler_fence(Ordering::Release);
-        for irq in [interrupt::ADC1, interrupt::BTIM1] {
-            irq.enable();
-        }
+        typelevel::ADC1::enable();
+        typelevel::BTIM1::enable();
     }
     loop {
         core::hint::black_box(&adc2_stream);
@@ -166,65 +173,67 @@ fn main() -> ! {
     }
 }
 
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn ADC1() {
-    // SAFETY: only the non-nesting P1 handlers access these static variables.
-    unsafe {
-        let Some(raw) = AdcScan::acquire(AdcUnit::Adc1).take_sequence::<4>() else {
-            return;
-        };
-        ADC1_RAW = raw;
-        ADC1_SEQUENCES = ADC1_SEQUENCES.wrapping_add(1);
-        core::hint::black_box((
-            &*core::ptr::addr_of!(ADC1_RAW),
-            &*core::ptr::addr_of!(ADC1_SEQUENCES),
-        ));
+struct AdcHandler;
+impl Handler<typelevel::ADC1> for AdcHandler {
+    unsafe fn on_interrupt() {
+        // SAFETY: only the non-nesting P1 handlers access these static variables.
+        unsafe {
+            let Some(raw) = AdcScan::<peripherals::ADC1>::acquire().take_sequence::<4>() else {
+                return;
+            };
+            ADC1_RAW = raw;
+            ADC1_SEQUENCES = ADC1_SEQUENCES.wrapping_add(1);
+            core::hint::black_box((
+                &*core::ptr::addr_of!(ADC1_RAW),
+                &*core::ptr::addr_of!(ADC1_SEQUENCES),
+            ));
+        }
     }
 }
 
-#[allow(non_snake_case)]
-#[no_mangle]
-unsafe extern "C" fn BTIM1() {
-    unsafe {
-        if !BasicTimer::acquire(TimerUnit::Btim1).take_update() {
-            return;
-        }
-        MILLISECONDS = MILLISECONDS.wrapping_add(1);
-        let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
-        for i in 0..5 {
-            ADC2_RAW[i] = core::ptr::read_volatile(dma.add(i)) as u16;
-        }
-        if AdcScan::acquire(AdcUnit::Adc2).sequence_pending() {
-            ADC2_SEQUENCES = ADC2_SEQUENCES.wrapping_add(1);
-            AdcScan::acquire(AdcUnit::Adc2).clear_events();
-        }
-        core::hint::black_box((
-            &*core::ptr::addr_of!(ADC2_RAW),
-            &*core::ptr::addr_of!(ADC2_SEQUENCES),
-        ));
+struct TickHandler;
+impl Handler<typelevel::BTIM1> for TickHandler {
+    unsafe fn on_interrupt() {
+        unsafe {
+            if !BasicTimer::<peripherals::BTIM1>::acquire().take_update() {
+                return;
+            }
+            MILLISECONDS = MILLISECONDS.wrapping_add(1);
+            let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
+            for i in 0..5 {
+                ADC2_RAW[i] = core::ptr::read_volatile(dma.add(i)) as u16;
+            }
+            if AdcScan::<peripherals::ADC2>::acquire().sequence_pending() {
+                ADC2_SEQUENCES = ADC2_SEQUENCES.wrapping_add(1);
+                AdcScan::<peripherals::ADC2>::acquire().clear_events();
+            }
+            core::hint::black_box((
+                &*core::ptr::addr_of!(ADC2_RAW),
+                &*core::ptr::addr_of!(ADC2_SEQUENCES),
+            ));
 
-        ADC2_ELAPSED_MS += 1;
-        if ADC2_ELAPSED_MS == 5 {
-            ADC2_ELAPSED_MS = 0;
-            AdcScan::acquire(AdcUnit::Adc2).start_software();
+            ADC2_ELAPSED_MS += 1;
+            if ADC2_ELAPSED_MS == 5 {
+                ADC2_ELAPSED_MS = 0;
+                AdcScan::<peripherals::ADC2>::acquire().start_software();
+            }
+            let pressed = !MotorPin::acquire(PinId::new(Port::A, 3)).is_high();
+            KEY_HELD_MS = if pressed {
+                KEY_HELD_MS.saturating_add(1)
+            } else {
+                0
+            };
+            if KEY_HELD_MS == KEY_DEBOUNCE_MS {
+                SECTOR = (SECTOR + 1) % 6;
+                LOGICAL_BRIDGE = Bridge::commutation(SECTOR, DEMONSTRATION_DUTY);
+                MotorPin::acquire(PinId::new(Port::C, 13)).set_high(true);
+            }
+            core::hint::black_box((
+                &*core::ptr::addr_of!(SECTOR),
+                &*core::ptr::addr_of!(LOGICAL_BRIDGE),
+            ));
+            core::hint::black_box(&*core::ptr::addr_of!(MILLISECONDS));
         }
-        let pressed = !MotorPin::acquire(PinId::new(Port::A, 3)).is_high();
-        KEY_HELD_MS = if pressed {
-            KEY_HELD_MS.saturating_add(1)
-        } else {
-            0
-        };
-        if KEY_HELD_MS == KEY_DEBOUNCE_MS {
-            SECTOR = (SECTOR + 1) % 6;
-            LOGICAL_BRIDGE = Bridge::commutation(SECTOR, DEMONSTRATION_DUTY);
-            MotorPin::acquire(PinId::new(Port::C, 13)).set_high(true);
-        }
-        core::hint::black_box((
-            &*core::ptr::addr_of!(SECTOR),
-            &*core::ptr::addr_of!(LOGICAL_BRIDGE),
-        ));
-        core::hint::black_box(&*core::ptr::addr_of!(MILLISECONDS));
     }
 }
 

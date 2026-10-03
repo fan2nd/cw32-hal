@@ -1,12 +1,14 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.15.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.16.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
 v0.14.0 对 data、生成器/PAC 与全部现有 HAL 模块重新对照实际固定版本上游，修复共享 PAC 输出、连接元数据、ADC 序列遗留状态、软件更新触发及时间驱动回调/初始化契约。逐模块结论、真实硬件差异及未实现范围见 [完整审查](docs/full-chain-audit-v0.14.0.md)。
 
 v0.15.0 增加 [DMA](docs/dma.md) 和单独的 [motor/ 电机 API](docs/motor-api.md)。DMA 通道、真实共享 IRQ 与硬件请求由 schema8 metadata 生成。安全 DMA 传输持有静态缓冲区，仅在正常完成后交还；CW 手册没有证明中止后总线写入已排空，取消、错误和超时会隔离缓冲区并使该通道失效。普通借入缓冲区与任意外设地址使用明确 unsafe 契约。motor/ 的 unsafe acquire 由调用者负责资源排他与中断串行化，板级控制算法与参数仍在例程中。检查范围见 [v0.15.0 验证](docs/validation-v0.15.0.md)。
+
+v0.16.0 将 motor 和板级 ISR 也接入实际 Embassy typelevel 中断绑定：ADC/基本定时器采用类型身份，开中断须给出正确 Handler 的 Binding；06 main 集中声明真实向量，原同步采样/换相仍在 ISR。见 [中断绑定设计与迁移](docs/typelevel-interrupts.md) 和 [v0.16.0 验证](docs/validation-v0.16.0.md)。
 
 ## 先看设计与边界
 
@@ -194,7 +196,7 @@ v0.13.2 将构建辅助函数合回 `build.rs`，IRQ 事件状态合入现有 `i
 
 v0.13.1 按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/validation-v0.13.1.md) 和 [HAL cfg 分层](docs/hal-cfg-layering.md)。此前 PAC/所有权 API 迁移记录见 [v0.13.0](docs/validation-v0.13.0.md)。
 
-## 上传 C 工程的递进 Rust 例程（v0.15.0）
+## 上传 C 工程的递进 Rust 例程（v0.16.0）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

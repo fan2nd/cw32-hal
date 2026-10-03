@@ -1,33 +1,41 @@
 //! Repetitive L012 basic timers used for motor ticks and commutation delays.
-use crate::pac;
+use crate::{
+    interrupt::typelevel::{Binding, Handler, Interrupt},
+    pac, PeripheralType,
+};
 use core::marker::PhantomData;
-#[derive(Clone, Copy, Debug)]
-pub enum TimerUnit {
-    Btim1,
-    Btim2,
-    Btim3,
+
+mod sealed {
+    pub(crate) trait Instance {
+        fn regs() -> crate::pac::btim::Btim;
+    }
 }
+
+/// Metadata-generated L012 basic timer identity and its actual IRQ vector.
+#[allow(private_bounds)]
+pub trait BasicTimerInstance: sealed::Instance + PeripheralType + 'static {
+    type Interrupt: Interrupt;
+}
+
+include!(concat!(env!("OUT_DIR"), "/_generated_motor_timer.rs"));
+
 #[derive(Clone, Copy, Debug)]
 pub struct TimerConfig {
     pub prescaler: u16,
     pub reload: u16,
 }
 /// Exclusive timer lease; no IRQ installation, clock-rate inference or wrap compensation.
-pub struct BasicTimer {
+pub struct BasicTimer<T: BasicTimerInstance> {
     regs: pac::btim::Btim,
-    _domain: PhantomData<*mut ()>,
+    _domain: PhantomData<(*mut (), T)>,
 }
-impl BasicTimer {
+impl<T: BasicTimerInstance> BasicTimer<T> {
     /// # Safety
     /// Exclude safe timer owners, other motor handles, PAC access and nested
     /// handlers for this timer throughout the lease. The caller owns its IRQ.
-    pub unsafe fn acquire(unit: TimerUnit) -> Self {
+    pub unsafe fn acquire() -> Self {
         Self {
-            regs: match unit {
-                TimerUnit::Btim1 => pac::BTIM1,
-                TimerUnit::Btim2 => pac::BTIM2,
-                TimerUnit::Btim3 => pac::BTIM3,
-            },
+            regs: T::regs(),
             _domain: PhantomData,
         }
     }
@@ -54,7 +62,14 @@ impl BasicTimer {
     pub fn clear_update(&mut self) {
         self.regs.icr().write_value(pac::btim::regs::Icr(0x40));
     }
-    pub fn enable_update_interrupt(&mut self) {
+    /// Enable updates only after proving that `H` is bound to this timer's IRQ.
+    /// The handler must check and service this timer's enabled update source.
+    /// No NVIC state, priority or pending flags are changed, including on the
+    /// shared BTIM3_HALLTIM vector.
+    pub fn enable_update_interrupt<H: Handler<T::Interrupt>>(
+        &mut self,
+        _irq: impl Binding<T::Interrupt, H>,
+    ) {
         self.regs.dier().write(|w| w.set_uie(true));
     }
     /// Check enabled update source and acknowledge before caller state changes.

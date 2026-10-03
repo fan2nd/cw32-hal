@@ -30,7 +30,8 @@
 
 ### ADC 扫描与触发
 
-`AdcScan::acquire(AdcUnit)`、`ScanSlot`、`ScanConfig` 组合一至八个硬件序列槽。
+`AdcScan::<peripherals::ADC1>::acquire()`、`ScanSlot`、`ScanConfig` 组合一至八个硬件序列槽。
+ADC实例复用已有 `adc::Instance`，类型固定寄存器与元数据IRQ关联，不传入/伪造 `Peri`。
 通道/采样时间和时钟分频由调用方指定。`configure` 的启动阶段为：
 取消触发、停软件启动、禁 IRQ/DMA、读取一次 CR、仅更改文档字段并禁用 ADC、
 写序列/采样、清事件、用同一 CR 保留位快照配置分频/槽数并启用 ADC。
@@ -38,7 +39,7 @@
 
 ```rust
 unsafe {
-    AdcScan::acquire(AdcUnit::Adc1).configure(ScanConfig {
+    AdcScan::<peripherals::ADC1>::acquire().configure(ScanConfig {
         slots: &[
             ScanSlot::new(8, SampleTime::Cycles70),
             ScanSlot::new(0, SampleTime::Cycles70),
@@ -50,7 +51,8 @@ unsafe {
 }
 ```
 
-`enable_sequence_interrupt` 选择 EOS IRQ；`enable_conversion_dma` 选择 EOC DMA
+`enable_sequence_interrupt::<AdcHandler>(Irqs)` 验证实际绑定后选择 EOS IRQ；
+`enable_conversion_dma` 选择 EOC DMA
 并明确关闭 EOS DMA。`trigger_from_pwm` 只选 ATIM OC4REFC。
 `start_software` 只启动，不偷偷清 flags、取消 ATIM 触发或重排调用。
 `take_sequence::<N>` 检查 EOS，先清事件再依序读取结果，不承诺结果是冻结快照。
@@ -105,7 +107,7 @@ API 的硬件故障观察/关闭能力不能替代外部保护。
 
 ### 基本定时器、管脚与电流前端
 
-`BasicTimer` 提供重复计数配置、使能中断源的检查/确认、原始计数、计数预置，
+`BasicTimer::<peripherals::BTIM1>::acquire()` 提供重复计数配置、使能中断源的检查/确认、原始计数、计数预置，
 以及“ARR → CNT=0 → 重复使能”的 `arm`。不会替换成单次模式、添加回卷补偿，
 或在重新 arm 时偷偷清掉原待处理事件。BTIM2/3 的周期、8 MHz tick 仍由板级指定。
 
@@ -115,6 +117,69 @@ API 的硬件故障观察/关闭能力不能替代外部保护。
 启动等待仍留在板级代码。OPA CR以经审查的复位值为起点，保留BIAS=7，
 对应INP2/INN2配置字0xe220、启用后0xe221；不把未知寄存器配置全部写零。
 它不创建一个虚假的安全模拟源借用。
+
+## 真正的 Embassy 中断绑定
+
+`AdcScan<T>` 与 `BasicTimer<T>` 保留具体外设的关联中断类型。
+ADC复用已有 `adc::Instance::Interrupt`；基本定时器的 `BasicTimerInstance` 由
+芯片元数据生成寄存器和 `GLOBAL` IRQ关联。ADC1对应ADC1、ADC2对应ADC2_DAC，
+BTIM1/2分别对应BTIM1/2，BTIM3对应共享BTIM3_HALLTIM。
+
+`enable_sequence_interrupt::<H>(binding)` 和 `enable_update_interrupt::<H>(binding)`
+都要求真正的 `interrupt::typelevel::Binding<T::Interrupt, H>`，其中
+`H: Handler<T::Interrupt>`。错误IRQ、错误Handler或省略proof无法通过编译。
+这里使用官方 `embassy-hal-internal` 的类型和契约；没有另造一个同名标记、
+运行时回调表、注册器或事件搬运层。`acquire` 的unsafe独占义务仍独立存在，
+绑定proof并不证明别名安全、优先级、ISR业务逻辑正确或硬件独占。
+
+板级应用声明handler并由真实 `bind_interrupts!` 生成向量和proof，例如ADC部分：
+
+```rust
+use embassy_cw32::{
+    interrupt::typelevel::{self, Handler},
+    motor::AdcScan,
+    peripherals,
+};
+
+struct AdcHandler;
+impl Handler<typelevel::ADC1> for AdcHandler {
+    unsafe fn on_interrupt() {
+        // SAFETY: the application has established the non-nesting motor domain.
+        let Some(raw) = (unsafe { AdcScan::<peripherals::ADC1>::acquire() })
+            .take_sequence::<4>() else { return };
+        // Consume this sample and perform required control/commutation here.
+        core::hint::black_box(raw);
+    }
+}
+embassy_cw32::bind_interrupts!(struct Irqs { ADC1 => AdcHandler; });
+
+// During serialized setup, after configuring the ADC and the shared state:
+unsafe {
+    AdcScan::<peripherals::ADC1>::acquire()
+        .enable_sequence_interrupt::<AdcHandler>(Irqs);
+}
+```
+
+使能操作只写外设中断源，不偷偷改NVIC优先级、mask或pending，也不清事件。
+板级仍先完成源确认、状态初始化和P1设置，再在原时序位置使用typelevel IRQ使能。
+共享向量中每个handler只服务自己的来源；BTIM3_HALLTIM不做NVIC `unpend`，
+以免抹去HALLTIM待处理事件。当前05/06不启用HALLTIM；若以后启用，必须在同一个
+`bind_interrupts!` 列表添加其handler，并一起审查向量mask/优先级的所有权。
+BTIM3 handler先检查并确认自己的UIF/UIE，不清兄弟外设状态。
+
+02–05各自在main声明 `Irqs` 并保留原同步ISR主体。06在main集中声明ADC1、BTIM1、
+BTIM3_HALLTIM和UART2绑定；`motor::start(..., Irqs)` 要求
+`Binding<typelevel::UART2, MotorExecutorHandler>`。UART2 handler只调用官方
+`InterruptExecutor::on_interrupt`；设置P1后把 `typelevel::UART2::IRQ` 交给其
+`start`，由官方执行器先初始化再unmask。UART2外设保持未使用。
+ADC采样、滤波和即时换相、BTIM节拍及定时换相仍在各自handler同步执行，
+只有已更新状态的检查通知会唤醒原P1任务。HardFault/NMI/Panic仍是异常路径，
+不迁入外部IRQ绑定。
+
+对照实际固定版本的[中断契约](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-hal-internal/src/interrupt.rs)、
+[绑定宏](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/lib.rs)
+与[执行器启动顺序](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-executor/src/platform/cortex_m.rs)。
+v0.16.0移除动态 `AdcUnit`/`TimerUnit` 选择并让IRQ使能必须提供proof，属于显式API变更。
 
 ## 与真正 DMA 驱动配合
 

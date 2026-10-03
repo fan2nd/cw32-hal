@@ -159,6 +159,30 @@ ADC配置、PWM换相/故障关闭、基本定时器、模拟前端和引脚是�
 全部只在UI的UART1及其门时钟配置。六个crate继续独立，没有共享板级业务框架。
 六级默认和05/06功率opt-in的ARM release构建均通过。
 
+## v0.16.0：真实typelevel中断绑定
+
+本次把板级外部中断声明迁入真实 `bind_interrupts!`，并让motor源使能消费准确
+`Binding<外设关联IRQ, 应用Handler>` proof。ADC复用已有 `adc::Instance`；
+BTIM实例的寄存器与IRQ关联由元数据生成。运行时动态单元选择改为类型参数，
+无额外回调注册表、软件状态层或采样队列。
+
+- ADC1、BTIM1、BTIM3原ISR主体仅移入对应 `Handler::on_interrupt`，仍在向量内
+  同步执行；采样、滤波、即时换相与定时换相没有转移到任务。
+- 06在main显式绑定四个IRQ。UART2 handler调用原官方InterruptExecutor，
+  `motor::start` 验证其准确proof、先设P1，再由官方 `start` 初始化后启用IRQ。
+  P1电机任务与普通线程UI划分不变；现有通知和前台续行也不改变。
+- ADC/BTIM源使能只增加类型检查，不写NVIC、优先级或额外清事件。
+  原配置、清外设flag、DMA准备、触发与计数器启动顺序不变。
+- 05/06明确不再unpend共享BTIM3_HALLTIM向量；仅确认BTIM3本身的UIF，
+  以免抹去兄弟来源。当前HALLTIM仍未启用；若后来使用，必须为同向量绑定其handler，
+  并协调优先级与mask所有权。BTIM3重复模式、arm顺序及待处理更新不变。
+- HardFault/NMI/Panic保留原异常/紧急关断入口，不混同外部IRQ。
+  DMA的独立通道驱动与其已有绑定契约不重写。
+
+控制、保护、过零、六步、协议、UI和帧队列文件与迁移前逐字节相同。
+此迁移只加强编译期绑定和明确共享向量边界，不宣称消除unsafe排他义务，
+也不宣称已验证实际IRQ延迟或电气行为。
+
 本次另外在发布树外以实际motor源码和生成PAC进行记录式MMIO对照，验证桥臂操作
 与原写序、ADC保留位和EOS、PWM配置/故障、基本定时器及致命关闭。
 这些验证不证明实际电气建立、总线竞争、硬件触发有效率或最坏中断延迟。

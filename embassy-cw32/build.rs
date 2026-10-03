@@ -433,6 +433,30 @@ fn main() {
         }
     }
     fs::write(out.join("_generated_adc.rs"), adc).unwrap();
+    // The ownership-bypass motor API still retains the physical peripheral
+    // identity so enabling a source requires its actual type-level IRQ binding.
+    // ADC reuses the existing Instance mapping above; only BTIM is new here.
+    let mut motor_timer = String::new();
+    for p in md
+        .peripherals
+        .iter()
+        .filter(|p| p.block == "btim" && p.version == "l012" && p.ownership_parent.is_none())
+    {
+        let name = ident(p.name);
+        let irqs: Vec<_> = md
+            .interrupt_bindings
+            .iter()
+            .filter(|binding| binding.peripheral == p.name && binding.signal == "GLOBAL")
+            .collect();
+        assert_eq!(
+            irqs.len(),
+            1,
+            "motor timer needs one audited GLOBAL interrupt"
+        );
+        let irq = ident(irqs[0].interrupt);
+        writeln!(motor_timer, "impl sealed::Instance for crate::peripherals::{name} {{fn regs()->crate::pac::btim::Btim {{crate::pac::{name}}}}} impl BasicTimerInstance for crate::peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}}").unwrap();
+    }
+    fs::write(out.join("_generated_motor_timer.rs"), motor_timer).unwrap();
     let mut analog = String::new();
     for p in md
         .peripherals

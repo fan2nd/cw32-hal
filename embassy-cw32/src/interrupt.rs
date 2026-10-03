@@ -3,6 +3,17 @@
 //! The PAC runtime's generated vector table connects these names to real IRQ
 //! slots. Enable `rt` to use `bind_interrupts!`. Drivers should require
 //! the appropriate [`typelevel::Binding`] proof before enabling their IRQs.
+//!
+//! Ordinary drivers provide their own `InterruptHandler` type. The ownership-
+//! bypass motor API accepts application-defined [`typelevel::Handler`] types so
+//! sampling and commutation can run synchronously in the hardware ISR. Its source
+//! enables still require `Binding<Peripheral::Interrupt, Handler>`; bypassing
+//! singleton acquisition does not bypass checked interrupt wiring.
+//!
+//! A binding proves dispatch, not exclusive hardware ownership, correct source
+//! acknowledgement, priority or bounded execution time. Every active source on
+//! a shared vector must be serviced by one of the listed handlers. Core exceptions
+//! and the HAL-reserved time-driver vector have separately installed entries.
 
 use core::{
     cell::{Cell, RefCell},

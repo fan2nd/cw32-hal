@@ -1,13 +1,12 @@
 //! L012 scan operations; no owned-channel or voltage witness is fabricated.
 pub use crate::adc::{ClockDivider, SampleTime};
-use crate::pac;
+use crate::{
+    adc::Instance,
+    interrupt::typelevel::{Binding, Handler},
+    pac,
+};
 use core::marker::PhantomData;
 
-#[derive(Clone, Copy, Debug)]
-pub enum AdcUnit {
-    Adc1,
-    Adc2,
-}
 #[derive(Clone, Copy, Debug)]
 pub struct ScanSlot {
     pub channel: u8,
@@ -28,23 +27,20 @@ pub struct ScanConfig<'a> {
 
 /// Exclusive lease for ADC registers, trigger routes, IRQ enables and results.
 /// Deliberately neither Copy nor Send/Sync; contains no owner token.
-pub struct AdcScan {
+pub struct AdcScan<T: Instance> {
     regs: pac::adc::Adc,
-    _domain: PhantomData<*mut ()>,
+    _domain: PhantomData<(*mut (), T)>,
 }
-impl AdcScan {
+impl<T: Instance> AdcScan<T> {
     /// # Safety
     /// Exclude every other accessor/configurator for the selected ADC for this
     /// handle's lifetime, including owned ADC drivers and nested interrupts.
     /// DMA may read results only under the caller's coordinated configuration;
     /// it must never write ADC registers. Channels must be bonded/routed and
     /// analog sources stable; the clock and VDDA must meet the manual limits.
-    pub unsafe fn acquire(unit: AdcUnit) -> Self {
+    pub unsafe fn acquire() -> Self {
         Self {
-            regs: match unit {
-                AdcUnit::Adc1 => pac::ADC1,
-                AdcUnit::Adc2 => pac::ADC2,
-            },
+            regs: T::regs(),
             _domain: PhantomData,
         }
     }
@@ -99,7 +95,14 @@ impl AdcScan {
         self.regs.icr().write_value(pac::adc::regs::Icr(0));
     }
     /// Replace IRQ/DMA enables with EOS IRQ only.
-    pub fn enable_sequence_interrupt(&mut self) {
+    ///
+    /// The proof binds `H` to this ADC's metadata-derived interrupt. The handler
+    /// must service this ADC synchronously and check its own source on a shared
+    /// vector. This changes neither NVIC state nor priority, and clears no flags.
+    pub fn enable_sequence_interrupt<H: Handler<T::Interrupt>>(
+        &mut self,
+        _irq: impl Binding<T::Interrupt, H>,
+    ) {
         self.regs.ier().write(|w| w.set_eos(true));
     }
     /// Replace IRQ/DMA enables with per-conversion DMA only. EOS DMA is off.

@@ -1,4 +1,6 @@
-> Current DMA/motor release: [v0.15.0 validation](validation-v0.15.0.md), [DMA](dma.md), [motor API](motor-api.md), [schema8](schema-v8.md).
+> Current interrupt migration: [v0.16.0 validation](validation-v0.16.0.md), [type-level wiring](typelevel-interrupts.md).
+
+> v0.15.0 DMA/motor release: [v0.15.0 validation](validation-v0.15.0.md), [DMA](dma.md), [motor API](motor-api.md), [schema8](schema-v8.md).
 
 > v0.14.0 whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
 
