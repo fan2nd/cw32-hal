@@ -2,13 +2,16 @@
 
 The clock tree is selected once during checked direct-reset startup. The HAL
 loads HSI factory trim and accepts only reset HSI/source/bus state before
-applying the requested HSI, AHB and APB dividers. Frequencies are nominal values,
-rounded down to integer Hz when the oscillator/divider ratio is fractional.
+applying the requested source, HSI, AHB and APB dividers. HSE and the actual
+F030 PLL are supported from v0.22; see [external clocks](external-clocks.md).
+Frequencies are nominal values. Historical HSI-only profiles retain integer-Hz
+floor reporting; new HSE/PLL profiles require integral reported clock rates.
 They are not measured frequency or oscillator-accuracy guarantees.
 
-`rcc::Config` selects `hsi_divider`, `hclk_divider`, `pclk_divider` and a bounded
-HSI stability poll count. `Config::clocks()` calculates the nominal requested
-frequencies without hardware access; `rcc::clocks()` reports the successfully
+`rcc::Config` selects the source, `hsi_divider`, `hclk_divider`, `pclk_divider`,
+asserted minimum board supply and bounded stability polling. `Config::validate()`
+checks the requested profile before MMIO. `Config::clocks()` computes the same
+nominal values and panics on an invalid profile; `rcc::clocks()` reports the successfully
 initialized tree. `rcc::frequency::<Peripheral>()` uses that peripheral's audited
 kernel source, while `rcc::bus_frequency::<Peripheral>()` reports its register
 interface clock. Unresolved or configurable kernel sources have no kernel-clock
@@ -26,14 +29,18 @@ CW32 timer clocks are PCLK without an STM32-style APB multiplier.
 
 Bus dividers are applied before changing HSI. Flash wait states are set before
 raising HSI, read back, and followed by a trim-preserving HSI write/readback.
-An error after writes leaves any already-applied settings in place; it does not
-attempt an unproven clock rollback or report an initialized clock tree.
+An error after hardware initialization starts leaves any already-applied settings
+in place, returns no tokens and consumes initialization until reset. It does not
+attempt an unproven clock rollback or report an initialized clock tree. Pure
+invalid-profile/timebase rejection remains retryable because it precedes MMIO.
 L012 uses its documented SYSCTRL.CR2 FLASHWAIT alias. F030 enables its FLASH
 configuration clock and uses keyed FLASH.CR2 WAIT writes. Reserved fields and
 SWD/cache/prefetch configuration are preserved. RTC LSI/LSE startup is available
-separately from v0.20. No HSE/PLL system-clock selection, runtime clock switching,
-STOP/DeepSleep recovery or board-level validation is claimed. The application must satisfy the datasheet voltage/temperature limits;
-L012 96 MHz requires VDD at least 1.8 V.
+separately from v0.20. HSE/PLL startup is described in [external clocks](external-clocks.md);
+[runtime switching and DeepSleep recovery](runtime-low-power.md) remain unavailable
+without the documented owner/time transition protocol. The application must
+satisfy datasheet voltage/temperature limits; L012 96 MHz requires VDD at least
+1.8 V. No board-level validation is claimed.
 
 With `time-driver-gtim1`, `try_init` rejects incompatible 1 MHz timebase profiles
 before any RCC MMIO with `InitError::UnsupportedTimeClock`. L012 needs a positive

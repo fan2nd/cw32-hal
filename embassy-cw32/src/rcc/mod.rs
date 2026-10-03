@@ -1,4 +1,4 @@
-//! Checked startup clocks and counted peripheral clock resources.
+//! Checked HSI/HSE and supported PLL startup, with counted clock resources.
 //!
 //! Frequencies are fixed after initialization. Runtime clock switching and
 //! DeepSleep/STOP recovery are deliberately unsupported.
@@ -17,6 +17,8 @@ pub use f030::*;
 
 mod low_speed;
 pub use low_speed::*;
+mod external;
+pub use external::*;
 
 /// AHB clock divider. Encodings follow SYSCTRL.CR0.HCLKPRS on both variants.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]

@@ -1,4 +1,6 @@
-> Current timer/bus-DMA stage: [v0.21.0 validation](validation-v0.21.0.md), [scope and eight-gap progress](timer-dma-v0.21.0.md).
+> Current startup-clock stage: [v0.22.0 validation](validation-v0.22.0.md), [completed scope and limits](clock-roadmap-v0.22.0.md).
+
+> Prior timer/bus-DMA stage: [v0.21.0 validation](validation-v0.21.0.md), [scope and eight-gap progress](timer-dma-v0.21.0.md).
 
 > Prior internal/RTC/Flash/WWDT stage: [v0.20.0 validation](validation-v0.20.0.md), [scope and eight-gap progress](analog-rtc-flash-v0.20.0.md).
 

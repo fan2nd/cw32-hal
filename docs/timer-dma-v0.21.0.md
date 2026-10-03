@@ -1,3 +1,5 @@
+> Historical fifth stage. Current clock support and final scope: [v0.22](clock-roadmap-v0.22.0.md).
+
 # Timer capture, encoder, complementary PWM and typed bus DMA
 
 This fifth bounded stage addresses timer input/output ownership and additional

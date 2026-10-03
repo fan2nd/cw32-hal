@@ -210,13 +210,18 @@ fn main() {
         .copied()
         .filter(|name| !dma_channel_names.contains(name) && !(reserved_timer && *name == "GTIM1"))
         .collect();
+    let hse_pins = hse_pin_roles(md);
     generated.push_str(");\n#[allow(non_snake_case)]\npub struct Peripherals {\n");
     for name in &owned_names {
-        writeln!(
-            generated,
-            "    pub {name}: crate::Peri<'static, peripherals::{name}>,"
-        )
-        .unwrap();
+        if let Some(role) = hse_pins.get(name) {
+            writeln!(generated,"/// None when initialization reserves this HSE {role} pad.\npub {name}: Option<crate::Peri<'static,peripherals::{name}>>,").unwrap();
+        } else {
+            writeln!(
+                generated,
+                "pub {name}:crate::Peri<'static,peripherals::{name}>,"
+            )
+            .unwrap();
+        }
     }
     generated.push_str("}\n");
     for pin in md.pins {
@@ -239,13 +244,13 @@ fn main() {
             "impl crate::gpio::interrupt_input::sealed::InterruptPin for peripherals::{name} {{ const PORT:crate::gpio::Port=crate::gpio::Port::{variant}; const NUMBER:u8={number}; fn state()->&'static crate::interrupt::EventState {{ static STATE:crate::interrupt::EventState=crate::interrupt::EventState::new(); &STATE }} }}\nimpl crate::gpio::InterruptPin for peripherals::{name} {{ type Interrupt=crate::interrupt::typelevel::{irq}; }}",
             name=pin.name,number=pin.number).unwrap();
     }
-    generated.push_str("unsafe fn take_generated() -> Peripherals {\n    Peripherals {\n");
+    generated.push_str("unsafe fn take_generated(hse_input:bool,hse_output:bool) -> Peripherals {\n    Peripherals {\n");
     for name in &owned_names {
-        writeln!(
-            generated,
-            "        {name}: unsafe {{ peripherals::{name}::steal() }},"
-        )
-        .unwrap();
+        if let Some(role) = hse_pins.get(name) {
+            writeln!(generated,"{name}:if hse_{role} {{None}} else {{Some(unsafe{{peripherals::{name}::steal()}})}},").unwrap();
+        } else {
+            writeln!(generated, "{name}:unsafe{{peripherals::{name}::steal()}},").unwrap();
+        }
     }
     generated.push_str("    }\n}\n");
     fs::write(out.join("_generated.rs"), generated).unwrap();
@@ -885,7 +890,83 @@ fn clock_bindings(md: &Metadata, names: &[&str]) -> String {
         };
         writeln!(out, "#[cfg(gpio)] impl crate::rcc::low_speed::sealed::Lse{direction}Pin for crate::peripherals::{pin} {{}} #[cfg(gpio)] impl crate::rcc::Lse{direction}Pin for crate::peripherals::{pin} {{}}").unwrap();
     }
+    out.push_str(&hse_pin_configuration(md));
     out.push_str(&lsi_startup_audit(md));
+    out
+}
+
+/// Dedicated crystal/input pads are physical metadata, not a SYSCTRL-version
+/// naming assumption. Only those identities become optional after startup.
+fn hse_pin_roles(md: &Metadata) -> BTreeMap<&'static str, &'static str> {
+    let mut pins = BTreeMap::new();
+    let mut signals = BTreeSet::new();
+    for route in md
+        .pin_routes
+        .iter()
+        .filter(|r| matches!(r.signal, "HSE_IN" | "HSE_OUT"))
+    {
+        let controller = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == route.peripheral)
+            .expect("HSE controller");
+        assert_eq!(controller.block, "sysctrl");
+        assert!(matches!(controller.version, "l012" | "f030"));
+        assert!(
+            route.af.is_none() && route.remap.is_none(),
+            "HSE uses dedicated pads"
+        );
+        assert!(
+            md.pins.iter().any(|p| p.name == route.pin),
+            "HSE pad unavailable"
+        );
+        assert!(signals.insert(route.signal), "ambiguous HSE signal route");
+        let role = if route.signal == "HSE_IN" {
+            "input"
+        } else {
+            "output"
+        };
+        assert!(
+            pins.insert(route.pin, role).is_none(),
+            "HSE input/output must be distinct"
+        );
+    }
+    assert_eq!(pins.len(), 2, "startup HSE requires two evidenced pads");
+    pins
+}
+
+fn hse_pin_configuration(md: &Metadata) -> String {
+    let mut out=String::from("/// Exclusive early startup, after retained-oscillator rejection.\npub(crate) fn configure_hse_pins(mode:HseMode)->Result<(),ClockError>{\n");
+    for (name, role) in hse_pin_roles(md) {
+        let pin = md.pins.iter().find(|p| p.name == name).unwrap();
+        let port = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == pin.port)
+            .expect("HSE GPIO port");
+        assert_eq!(port.block, "gpio");
+        let gpio = ident(port.name);
+        let variant = ident(port.name.strip_prefix("GPIO").expect("GPIO port identity"));
+        let n = pin.number;
+        if role == "output" {
+            out.push_str("if mode==HseMode::Crystal {\n");
+        }
+        writeln!(out,"let pin=crate::gpio::AnyPin::new(crate::gpio::Port::{variant},{n});\nlet analog=mode==HseMode::Crystal;\nif analog {{pin.configure_analog();}} else {{pin.disconnect();}}\nlet r=crate::pac::{gpio};\nif !r.dir().read().pin({n}) || r.analog().read().pin({n})!=analog || r.pur().read().pin({n}) || r.afr({}).read().afr({})!=0 {{return Err(ClockError::HsePinReadbackMismatch);}}",n/8,n%8).unwrap();
+        if port.pulldown_mask & (1u16 << n) != 0 {
+            if port.version == "f030" {
+                writeln!(out,"if r.pdr().read().pin({n}) {{return Err(ClockError::HsePinReadbackMismatch);}}").unwrap();
+            } else {
+                assert_eq!(n, 3, "unaudited scalar pull-down");
+                out.push_str(
+                    "if r.pdr().read().pin3() {return Err(ClockError::HsePinReadbackMismatch);}\n",
+                );
+            }
+        }
+        if role == "output" {
+            out.push_str("}\n");
+        }
+    }
+    out.push_str("Ok(())\n}\n");
     out
 }
 

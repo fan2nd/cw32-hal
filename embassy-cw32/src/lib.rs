@@ -77,9 +77,17 @@ pub mod uart;
 pub mod wdg;
 
 use core::cell::Cell;
-static TAKEN: critical_section::Mutex<Cell<bool>> = critical_section::Mutex::new(Cell::new(false));
+#[derive(Clone, Copy)]
+enum InitState {
+    Available,
+    Failed,
+    Ready,
+}
+static TAKEN: critical_section::Mutex<Cell<InitState>> =
+    critical_section::Mutex::new(Cell::new(InitState::Available));
 
-/// Initialization validates direct-reset HSI, then applies the requested HSI/bus dividers.
+/// Validated direct-reset startup clock configuration. External oscillator pins
+/// remain reserved in the returned metadata-generated peripheral collection.
 #[derive(Clone, Copy)]
 #[non_exhaustive]
 pub struct Config {
@@ -102,6 +110,9 @@ impl Default for Config {
 #[derive(Debug)]
 pub enum InitError {
     AlreadyTaken,
+    /// A prior hardware initialization failed. Reset before trying again;
+    /// partially started clocks or reserved oscillator pads are not reclaimed.
+    PreviousInitFailed,
     Clock(rcc::ClockError),
     /// Selected GTIM1 cannot produce the fixed 1 MHz Embassy timebase.
     #[cfg(feature = "time-driver-gtim1")]
@@ -112,23 +123,35 @@ pub enum InitError {
 include!(concat!(env!("OUT_DIR"), "/_generated.rs"));
 
 /// Initialize after direct reset boot and acquire singleton ownership once.
-/// A bootloader-modified clock is rejected rather than silently misreported.
+/// A bootloader-modified clock or retained HSE/PLL is rejected. HSE-used pads
+/// are `None` in the returned collection; bypass keeps its unused output pad.
 /// The binary must execute on the selected chip and board wiring must match its pin use.
 pub fn init(config: Config) -> Peripherals {
     try_init(config).expect("CW32 initialization failed")
 }
 
-/// Fallible initialization for applications that report unsupported boot clocks.
+/// Fallible initialization. Invalid requested profiles and unsupported Embassy
+/// time clocks fail before MMIO and leave initialization available. Once hardware
+/// initialization starts, any failure consumes this boot's initialization right;
+/// reset is required before retrying and no peripheral/pin token is returned.
 pub fn try_init(config: Config) -> Result<Peripherals, InitError> {
     critical_section::with(|cs| {
         let taken = TAKEN.borrow(cs);
-        if taken.get() {
-            return Err(InitError::AlreadyTaken);
+        match taken.get() {
+            InitState::Ready => return Err(InitError::AlreadyTaken),
+            InitState::Failed => return Err(InitError::PreviousInitFailed),
+            InitState::Available => {}
         }
+        let requested = config.rcc.validate().map_err(InitError::Clock)?;
         #[cfg(feature = "time-driver-gtim1")]
-        if !time_driver::valid_clock(config.rcc.clocks()) {
+        if !time_driver::valid_clock(requested) {
             return Err(InitError::UnsupportedTimeClock);
         }
+        #[cfg(not(feature = "time-driver-gtim1"))]
+        let _ = requested;
+        // No safe tokens have escaped. An oscillator can remain active after a
+        // timeout, so never let a failed attempt later return its pads as GPIO.
+        taken.set(InitState::Failed);
         // SAFETY: exclusive global initialization, critical section held; the
         // clock routine validates reset state before applying vendor trim.
         let clocks = unsafe { rcc::init(config.rcc) }.map_err(InitError::Clock)?;
@@ -139,9 +162,9 @@ pub fn try_init(config: Config) -> Result<Peripherals, InitError> {
         unsafe {
             time_driver::init(clocks, config.time_interrupt_priority)
         };
-        taken.set(true);
+        taken.set(InitState::Ready);
         // SAFETY: the single global acquisition is guarded by TAKEN above.
-        Ok(unsafe { take_generated() })
+        Ok(unsafe { take_generated(config.rcc.uses_hse(), config.rcc.uses_hse_output()) })
     })
 }
 

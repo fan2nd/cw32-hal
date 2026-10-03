@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.21.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.22.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -19,6 +19,8 @@ v0.19.0 增加两芯片 [UART](docs/uart.md)、[SPI](docs/spi.md)、[I2C](docs/i
 v0.20.0 增加 [内部 ADC 源](docs/adc-internal.md)、[窗口看门狗](docs/window-watchdog.md)、[RTC](docs/rtc.md) 和 [Flash 数据分区](docs/flash.md)。RTC 使用真实 LSI/LSE 启动与时钟凭据，LSE 永久占用 PC14/PC15；RCC 保留已运行 LSI 的 trim。Flash 构造是明确的 unsafe 分区/并发边界，普通中断和 Flash 取指可能在写擦期间停顿。EAU/CORDIC、独立/窗口看门狗和 DAC 也改为由 metadata 生成的 sealed Instance 关联，寄存器、时钟、中断/源通道随实际实例传递；构造仍由传入的 Peri 自动推导类型。八项差距的完成情况和后续范围见 [第四阶段](docs/analog-rtc-flash-v0.20.0.md)。
 
 v0.21.0 增加 [输入捕获/编码器](docs/timer-capture-encoder.md)、[通用互补 PWM](docs/complementary-pwm.md) 和 [UART/SPI 类型化 DMA](docs/bus-dma.md)。F030 A/B 捕获输入、缺失的过捕获指示、不同死区时钟和共享 IRQ 均按真实硬件处理；DMA 仍消费静态资源并在错误/取消时隔离，UART RX 保守限单帧。实例捕获选择器进入 [schema11](docs/schema-v11.md)，[第五阶段范围](docs/timer-dma-v0.21.0.md) 保留后续时钟/低功耗事项。
+
+v0.22.0 增加两芯片 [HSE 启动与 F030 PLL](docs/external-clocks.md)，在寄存器操作前校验电压、频率和时基，按 metadata 保留 PF0/PF1，避免 HSE 与 GPIO 别名。默认 HSI 和 96MHz 电机配置不变。[时钟与低功耗边界](docs/runtime-low-power.md) 明确区分普通休眠、硅片深睡能力与尚未实现的 owner/时间恢复协议；[八项差距最终清单](docs/clock-roadmap-v0.22.0.md) 记录已实现范围和有依据的限制。
 
 ## 先看设计与边界
 
@@ -138,7 +140,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 - 50 个实例/视图、28 类 IP、306 个逻辑寄存器、1713 个字段；统计包含有声明的 I2C 同址视图和 DMA 重叠视图，不把它们误算成独立可占有硬件。
 - 32 个物理 IRQ、46 个外设信号绑定、45 组门控/复位关联；共享 IRQ 引用不复制向量。runtime 提供中断入口连接机制，具体外设驱动仍须实现 pending/clear/wake 算法。
-- L012C8 直接维护40个 GPIO 能力和259条路由（原126条模拟/定时器路由，加133条 UART/SPI/I2C 路由），不在数据模型中保存封装脚号。
+- L012C8 直接维护40个 GPIO 能力和263条路由（原126条模拟/定时器路由，加133条 UART/SPI/I2C、2条 LSE 和2条 HSE 路由），不在数据模型中保存封装脚号。
 - 106 项已审查副作用信息。头文件、SVD 与手册的差异逐项记录；VCREF DIV、I2C RXWATER 等尚有原厂资料冲突，采用有证据的保守范围，不能称为已获硅验证。
 - 64 KiB Flash、8 KiB RAM，未把有资料冲突的 Boot ROM 区域作为可用链接内存。
 
@@ -146,7 +148,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 ## F030C8 新增支持
 
-选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、225条已审核路由（原107条模拟/定时器路由，加116条 UART/SPI/I2C 和2条 LSE 路由）；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
+选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、227条已审核路由（原107条模拟/定时器路由，加116条 UART/SPI/I2C、2条 LSE 和2条 HSE 路由）；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
 
 F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存在的模块和外设不会出现在该芯片的安全API中。ADC/ATIM/VC以及RCC/GTIM使用独立寄存器版本与驱动。F030 ATIM硬件有比较影子寄存器，但本版严格三相批量 `set_duty` 尚不承诺运行中无扰原子提交；功率输出开启时返回 Busy。这是本版API的限制，不是硬件不支持运行时PWM更新。不能据此声称完整实时FOC控制已可用。
 
@@ -155,7 +157,7 @@ F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存�
 
 ## HAL 范围
 
-保留 embedded-hal 1.0 阻塞 GPIO、经过校验的 HSI 启动配置和可选专用 GTIM1 时间驱动。L012 默认 HSI/24、总线不分频，标称4 MHz；F030 默认 HSI/6，标称8 MHz。`config.rcc.hsi_divider`、`hclk_divider`、`pclk_divider` 选择已记载的分频组合，按要求先配置 Flash 等待周期；96MHz L012 仍要求 VDD 至少1.8V。`Config::clocks()` 是配置预测，`rcc::clocks()` 是成功初始化后的频率。`hsi_stabilization_limit` 是 trim 后的有界轮询次数。RTC 的低速 LSI/LSE 可独立启动；HSE/PLL 系统时钟、动态切换及低功耗恢复仍未实现。
+保留 embedded-hal 1.0 阻塞 GPIO、经过校验的 HSI 启动配置和可选专用 GTIM1 时间驱动。L012 默认 HSI/24、总线不分频，标称4 MHz；F030 默认 HSI/6，标称8 MHz。`config.rcc.hsi_divider`、`hclk_divider`、`pclk_divider` 选择已记载的分频组合，按要求先配置 Flash 等待周期；96MHz L012 仍要求 VDD 至少1.8V。`Config::clocks()` 是配置预测，`rcc::clocks()` 是成功初始化后的频率。`hsi_stabilization_limit` 是 trim 后的有界轮询次数。RTC 的低速 LSI/LSE 可独立启动；v0.22 已提供启动阶段 HSE/F030 PLL。`Config::validate()` 在 MMIO 前检查电压、频率与时间驱动兼容性。动态切换及低功耗恢复仍受 [已审核的集成边界](docs/runtime-low-power.md) 限制。
 
 `rcc::clocks()` 在成功初始化前会 panic。与它不同，启用的 Embassy 时间驱动在初始化前返回时间 0 且不访问硬件；提前登记的唤醒会保留到初始化。16 个槽是存储容量，队列满时提前唤醒被替换任务以重试，不再 panic；Timer future 会重新核对 deadline。
 

@@ -7,7 +7,8 @@
 //! The interval from each overflow until its UIF acknowledgment MUST be strictly
 //! less than 65.536 ms, including critical sections, higher-priority interrupts,
 //! flash stalls, and wakers executing inside this IRQ. A one-bit UIF cannot
-//! recover two missed wraps. All clock accuracy remains that of the HSI source.
+//! recover two missed wraps. Clock accuracy remains that of the selected source;
+//! the 1 MHz division is exact.
 //!
 //! Deadline interrupts are never intentionally early. A saturated bounded
 //! queue may wake a task early to retry; Embassy timers recheck their deadline.
