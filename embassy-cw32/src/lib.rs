@@ -26,10 +26,31 @@ pub use cw32_metapac as pac;
 #[cfg(not(feature = "unstable-pac"))]
 pub(crate) use cw32_metapac as pac;
 pub use embassy_hal_internal::{Peri, PeripheralType};
+
+/// Driver operation modes. Modes are sealed so interrupt requirements cannot be bypassed.
+pub mod mode {
+    mod sealed {
+        pub trait Sealed {}
+    }
+    /// Driver mode selected by its constructor.
+    #[allow(private_bounds)]
+    pub trait Mode: sealed::Sealed {}
+    /// Busy-waiting driver without a required interrupt binding.
+    pub struct Blocking;
+    /// Interrupt-driven driver with a checked interrupt binding.
+    pub struct Async;
+    impl sealed::Sealed for Blocking {}
+    impl sealed::Sealed for Async {}
+    impl Mode for Blocking {}
+    impl Mode for Async {}
+}
+pub use mode::{Async, Blocking, Mode};
 #[cfg(any(sysctrl_l012, sysctrl_f030))]
 pub mod rcc;
 #[cfg(feature = "time-driver-gtim1")]
 mod time_driver;
+#[cfg(any(all(atim_l012, gtim_l012), all(atim_f030, gtim_f030)))]
+pub mod timer;
 
 use core::cell::Cell;
 static TAKEN: critical_section::Mutex<Cell<bool>> = critical_section::Mutex::new(Cell::new(false));

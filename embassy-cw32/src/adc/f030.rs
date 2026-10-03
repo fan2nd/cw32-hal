@@ -1,17 +1,18 @@
-//! CW32F030 single ADC: blocking and real EOS-IRQ sequence sampling (RM 22).
+//! CW32F030 single ADC: blocking and interrupt-driven sampling (RM 22).
 //! VDDA reference, buffered external inputs, 1–4 slots, one shared sample time.
 //! ADCCLK is conservatively limited to 500 kHz across the full VDDA range.
+//! One channel uses MODE=0/EOC; multi-slot scans use MODE=4/EOS. Hardware
+//! watchdog is supported only for a one-channel sequence (RM 22.9).
 //! No dual-ADC, internal-channel or voltage-qualified high-speed API is implied.
 //!
-//! [`Adc`] retains the blocking API. [`Adc::into_async`] requires a checked
-//! interrupt binding and transfers ownership to [`AsyncAdc`]. Async capture is
-//! one-shot and cancellation-safe; it is not a DMA or lossless streaming API.
+//! [`Adc`] owns the peripheral, with blocking or interrupt-driven mode selected
+//! by its constructor. Channels are borrowed per read; [`Sequence`] retains the
+//! owner and channel borrows for fixed-length, watchdog and ATIM capture work.
+//! Async capture is cancellation-safe, one-shot, and neither DMA nor lossless streaming.
+use super::{BorrowedAdcChannel, BorrowedChannel};
 use crate::{
-    async_support::EventState,
-    gpio::{AnyPin, Pin},
-    interrupt, pac, peripherals,
-    rcc::PeripheralClock,
-    Peri, PeripheralType,
+    async_support::EventState, gpio::Pin, interrupt, pac, peripherals, rcc::PeripheralClock, Async,
+    Blocking, Mode, Peri, PeripheralType,
 };
 use core::{
     future::poll_fn,
@@ -20,17 +21,17 @@ use core::{
 };
 use embedded_hal::delay::DelayNs;
 use interrupt::typelevel::Interrupt as _;
-use pac::adc::fields as f;
+use pac::adc::regs;
 mod sealed {
     pub(crate) trait Sealed {
-        fn regs() -> crate::pac::adc::RegisterBlock;
+        fn regs() -> crate::pac::adc::Adc;
         fn state() -> &'static crate::async_support::EventState;
     }
     pub trait PinSealed<I> {}
 }
 /// Generated peripheral identity; shared ADC reset is deliberately never asserted.
 #[allow(private_bounds)]
-pub trait Instance: sealed::Sealed + PeripheralClock + PeripheralType {
+pub trait Instance: sealed::Sealed + PeripheralClock + PeripheralType + 'static {
     /// The physical ADC vector of this single-ADC device.
     type Interrupt: interrupt::typelevel::Interrupt;
 }
@@ -38,28 +39,6 @@ pub trait ChannelPin<I: Instance>: sealed::PinSealed<I> + Pin {
     const CHANNEL: u8;
 }
 include!(concat!(env!("OUT_DIR"), "/_generated_adc.rs"));
-/// Owns the bonded analog input pin. Internal TS/BGR channels are not fabricated as external pins.
-pub struct AnalogInput<'d, I: Instance> {
-    pin: Peri<'d, AnyPin>,
-    channel: u8,
-    _instance: PhantomData<I>,
-}
-impl<'d, I: Instance> AnalogInput<'d, I> {
-    pub fn new<P: ChannelPin<I>>(pin: Peri<'d, P>) -> Self {
-        let pin = pin.into();
-        pin.configure_analog();
-        Self {
-            pin,
-            channel: P::CHANNEL,
-            _instance: PhantomData,
-        }
-    }
-}
-impl<'d, I: Instance> Drop for AnalogInput<'d, I> {
-    fn drop(&mut self) {
-        self.pin.disconnect();
-    }
-}
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
     EmptySequence,
@@ -70,6 +49,8 @@ pub enum Error {
     InvalidThreshold,
     MixedSampleTimes,
     NotReady,
+    /// F030 hardware watchdog works only in single-channel mode (RM 22.9).
+    UnsupportedWatchdogMode,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
@@ -110,13 +91,7 @@ impl Default for Config {
         }
     }
 }
-fn validate<const N: usize>(pclk: u32, config: Config) -> Result<(), Error> {
-    if N == 0 {
-        return Err(Error::EmptySequence);
-    }
-    if N > 4 {
-        return Err(Error::SequenceTooLong);
-    }
+fn validate_clock(pclk: u32, config: Config) -> Result<(), Error> {
     // RM 22.4.2: VDDA=1.65..1.8 V permits ADCCLK <=500 kHz.
     if pclk == 0 || pclk > 500_000u32 * (1u32 << (config.clock_divider as u8)) {
         return Err(Error::ClockTooFast);
@@ -134,98 +109,226 @@ fn shared_sample(samples: &[SampleTime]) -> Result<SampleTime, Error> {
 fn poll_ready(limit: u32, mut ready: impl FnMut() -> bool) -> bool {
     (0..limit).any(|_| ready())
 }
-/// Retains instance and all sequence pins. Conversion values are uncalibrated 12-bit codes.
-pub struct Adc<'d, I: Instance, const N: usize> {
+/// Owns one ADC peripheral. Channels are exclusively borrowed for each operation.
+/// Conversion values are uncalibrated 12-bit codes.
+pub struct Adc<'d, I: Instance, M: Mode> {
     _instance: Peri<'d, I>,
-    _inputs: [AnalogInput<'d, I>; N],
+    _mode: PhantomData<M>,
+    config: Config,
+    clock_hz: u32,
     cr: u32,
 }
-impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
-    /// All sample-time entries must match: F030 has one shared SAM field.
-    /// Uses VDDA as reference and requires READY within the configured limit.
-    pub fn new(
+impl<'d, I: Instance> Adc<'d, I, Blocking> {
+    /// Initialize without an IRQ binding. The delay must provide real analog settling time.
+    pub fn new_blocking(
         instance: Peri<'d, I>,
-        inputs: [AnalogInput<'d, I>; N],
-        samples: [SampleTime; N],
         config: Config,
-        clocks: &crate::rcc::Clocks,
         delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
-        validate::<N>(clocks.pclk_hz(), config)?;
-        let sample = shared_sample(&samples)?;
+        Self::new_inner(instance, config, delay)
+    }
+}
+impl<'d, I: Instance> Adc<'d, I, Async> {
+    /// Initialize with this ADC's checked conversion interrupt binding.
+    /// Shared-vector pending state is never cleared and the vector is never disabled.
+    pub fn new(
+        instance: Peri<'d, I>,
+        _irq: impl interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>> + 'd,
+        config: Config,
+        delay: &mut impl DelayNs,
+    ) -> Result<Self, Error> {
+        let adc = Self::new_inner(instance, config, delay)?;
+        // SAFETY: the binding proves the handler is installed on the actual vector.
+        unsafe { I::Interrupt::enable() };
+        Ok(adc)
+    }
+
+    /// Read one borrowed channel using its conversion-complete IRQ. The future retains its exclusive
+    /// channel and owner borrows until completion or cancellation. No internal timeout.
+    pub async fn read<'ch>(
+        &mut self,
+        channel: impl BorrowedChannel<'ch, I>,
+        sample_time: SampleTime,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
+        Ok(sequence.sample().await?[0])
+    }
+}
+impl<'d, I: Instance, M: Mode> Adc<'d, I, M> {
+    fn new_inner(
+        instance: Peri<'d, I>,
+        config: Config,
+        delay: &mut impl DelayNs,
+    ) -> Result<Self, Error> {
+        let pclk = crate::rcc::clocks().pclk_hz();
+        validate_clock(pclk, config)?;
+        let sample = SampleTime::Cycles5;
         // The generated clock operation only enables the gate: ADC reset also
         // clears the BGR reference used by VC1/VC2 and must never be asserted.
         I::enable_and_reset();
         let r = I::regs();
-        let cr = control_word(0, config.clock_divider, sample);
-        let channels = inputs.iter().enumerate().fold(0u32, |word, (n, input)| {
-            word | (u32::from(input.channel) << (4 * n))
-        });
-        critical_section::with(|_| unsafe {
-            r.trigger().write_value(0);
-            r.start().write_value(0);
-            r.ier().write_value(0);
+        let cr = control_word(0, config.clock_divider, sample, 1);
+        critical_section::with(|_| {
+            r.trigger().write_value(regs::Trigger(0));
+            r.start().write_value(regs::Start(0));
+            r.ier().write_value(regs::Ier(0));
             // Preserve BIAS, reserved bits and shared BGREN, even if VC owns it.
-            r.cr0().write_value(r.cr0().read() & !control_mask());
-            r.cr1().write_value(r.cr1().read() & !0x2fefu32);
-            r.cr2().write_value(r.cr2().read() & !0x3ff); // no accumulation or multi-conversion mode
-            r.sqr()
-                .write_value(f::sqr::ENS.write(channels, (N - 1) as u32));
-            r.icr().write_value(0x7f & !flags());
-            r.cr0().write_value((r.cr0().read() & !control_mask()) | cr);
+            r.cr0().modify(|w| w.0 &= !control_mask());
+            r.cr1().modify(|w| {
+                w.set_wdtall(false);
+                w.set_wdtch(0);
+                w.set_dmaen(false);
+                w.set_align(false);
+                w.set_discard(false);
+                w.set_chmux(0);
+            });
+            // CR2 mixes an accumulation-clear command with configuration: keep
+            // the explicit read/write and leave ACCRST clear.
+            let mut accumulation = r.cr2().read();
+            accumulation.set_accrst(false);
+            accumulation.set_accen(false);
+            accumulation.set_cnt(0);
+            r.cr2().write_value(accumulation);
+            r.sqr().write_value(regs::Sqr(0));
+            r.icr().write_value(regs::Icr(0x7f & !flags()));
+            r.cr0().modify(|w| w.0 = (w.0 & !control_mask()) | cr);
         });
         delay.delay_us(40); // RM 22.4.1: analog startup, then READY must be checked.
-        let ready = poll_ready(config.readiness_poll_limit, || unsafe {
-            f::isr::READY.read(r.isr().read())
-        });
+        let ready = poll_ready(config.readiness_poll_limit, || r.isr().read().ready());
         if !ready {
-            critical_section::with(|_| unsafe {
-                r.cr0().write_value(r.cr0().read() & !control_mask());
+            critical_section::with(|_| {
+                r.cr0().modify(|w| w.0 &= !control_mask());
             });
             return Err(Error::NotReady);
         }
+        I::state().reset();
         Ok(Self {
             _instance: instance,
-            _inputs: inputs,
+            _mode: PhantomData,
+            config,
+            clock_hz: pclk / (1u32 << (config.clock_divider as u8)),
             cr,
         })
     }
+
+    /// Validated nominal ADC clock, derived from the active RCC configuration.
+    pub fn clock_hz(&self) -> u32 {
+        self.clock_hz
+    }
     pub fn busy(&self) -> bool {
-        unsafe { f::start::START.read(I::regs().start().read()) }
+        I::regs().start().read().start()
     }
-    /// Transfer this ADC and all of its pins to an IRQ-driven owner.
-    ///
-    /// Any previously armed trigger or conversion is stopped. The binding must
-    /// include [`InterruptHandler<I>`] on this ADC's actual vector.
-    /// NVIC pending state is never cleared or disabled here.
-    pub fn into_async(
-        self,
-        _irq: impl interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
-    ) -> AsyncAdc<'d, I, N> {
+
+    /// Read one borrowed channel, with a bounded number of register observations.
+    /// `poll_limit` counts observations, not microseconds. Available in either mode.
+    pub fn blocking_read<'ch>(
+        &mut self,
+        channel: impl BorrowedChannel<'ch, I>,
+        sample_time: SampleTime,
+        poll_limit: u32,
+    ) -> Result<u16, Error> {
+        let mut sequence = self.configure_sequence([(channel.into_channel(), sample_time)])?;
+        Ok(sequence.blocking_sample(poll_limit)?[0])
+    }
+
+    /// Borrow this owner and all channels for a fixed-length scan extension.
+    /// Channel tokens can be produced by `AdcChannel::reborrow_adc` or `degrade_adc`.
+    /// Dropping the sequence stops conversions and removes its watchdog configuration.
+    pub fn configure_sequence<'a, 'ch, const N: usize>(
+        &'a mut self,
+        channels: [(BorrowedAdcChannel<'ch, I>, SampleTime); N],
+    ) -> Result<Sequence<'a, 'd, 'ch, I, M, N>, Error> {
+        validate_sequence::<N>()?;
+        let cr = control_word(
+            self.cr,
+            self.config.clock_divider,
+            shared_sample(&channels.each_ref().map(|(_, sample)| *sample))?,
+            N,
+        );
+        Ok(Sequence {
+            adc: self,
+            channels,
+            cr,
+        })
+    }
+
+    /// Disable this instance's EOC/EOS sources, disarm its trigger and stop conversion.
+    /// Leaves shared NVIC and other peripherals untouched.
+    pub fn stop(&mut self) {
         critical_section::with(|_| {
-            cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state());
-            // SAFETY: the binding proves that this ADC's handler is installed.
-            // Enabling a shared vector preserves every other user's pending IRQ.
-            unsafe { I::Interrupt::enable() };
+            cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state())
         });
-        AsyncAdc { inner: self }
     }
+    pub fn watchdog_fault(&self) -> bool {
+        let status = I::regs().isr().read();
+        status.wdtl() || status.wdth()
+    }
+    pub fn acknowledge_watchdog(&mut self) {
+        let mut clear = regs::Icr(0x7f);
+        clear.set_wdtl(false);
+        clear.set_wdth(false);
+        I::regs().icr().write_value(clear);
+    }
+}
+
+fn validate_sequence<const N: usize>() -> Result<(), Error> {
+    if N == 0 {
+        return Err(Error::EmptySequence);
+    }
+    if N > 4 {
+        return Err(Error::SequenceTooLong);
+    }
+    Ok(())
+}
+
+fn validate_watchdog<const N: usize>(low: u16, high: u16) -> Result<(), Error> {
+    if N != 1 {
+        return Err(Error::UnsupportedWatchdogMode);
+    }
+    if low > high || high > 4095 {
+        return Err(Error::InvalidThreshold);
+    }
+    Ok(())
+}
+
+/// Fixed-length scan, watchdog and triggered-capture extension.
+///
+/// This is an exclusive borrow of an existing ADC owner, not a second peripheral owner.
+/// It retains each non-cloneable channel borrow until dropped. Async operations additionally
+/// borrow the sequence, so its channels cannot be repurposed while a future is pending.
+/// Trigger captures return the latest coherent scan, not a lossless first-edge capture.
+pub struct Sequence<'a, 'd, 'ch, I: Instance, M: Mode, const N: usize> {
+    adc: &'a mut Adc<'d, I, M>,
+    channels: [(BorrowedAdcChannel<'ch, I>, SampleTime); N],
+    cr: u32,
+}
+impl<I: Instance, M: Mode, const N: usize> Sequence<'_, '_, '_, I, M, N> {
     fn prepare(&mut self) -> Result<(), Error> {
+        disarm_idle(&mut Hardware::<I>(PhantomData))?;
+        // Remove any stale completion from a forgotten earlier operation before reconfiguration.
+        self.adc.stop();
+        let mut sequence = regs::Sqr(0);
+        for (n, (channel, _)) in self.channels.iter().enumerate() {
+            sequence.set_sqr(n, channel.get_hw_channel());
+        }
+        if N == 1 {
+            I::regs()
+                .cr1()
+                .modify(|w| w.set_chmux(self.channels[0].0.get_hw_channel()));
+        }
+        sequence.set_ens((N - 1) as u8);
+        I::regs().sqr().write_value(sequence);
         prepare_sequence(&mut Hardware::<I>(PhantomData), self.cr)
     }
-    /// Single software-triggered complete sequence. poll_limit counts register observations, not microseconds.
-    pub fn sample(&mut self, poll_limit: u32) -> Result<[u16; N], Error> {
+    /// Single software-triggered complete scan; the limit counts register observations.
+    pub fn blocking_sample(&mut self, poll_limit: u32) -> Result<[u16; N], Error> {
         self.prepare()?;
-        unsafe {
-            I::regs()
-                .start()
-                .write_value(f::start::START.write(0, true));
-        }
+        I::regs().start().write(|w| w.set_start(true));
         self.wait_complete(poll_limit)
     }
     fn wait_complete(&mut self, poll_limit: u32) -> Result<[u16; N], Error> {
         for _ in 0..poll_limit {
-            if unsafe { f::isr::EOS.read(I::regs().isr().read()) } && !self.busy() {
+            if self.complete() && !self.adc.busy() {
                 return Ok(self.results());
             }
             core::hint::spin_loop();
@@ -233,37 +336,34 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         self.stop();
         Err(Error::Timeout)
     }
-    fn results(&self) -> [u16; N] {
-        let r = I::regs();
-        core::array::from_fn(|n| unsafe {
-            let value = match n {
-                0 => r.result0().read(),
-                1 => r.result1().read(),
-                2 => r.result2().read(),
-                3 => r.result3().read(),
-                _ => unreachable!(),
-            };
-            (value & 0x0fff) as u16
-        })
+    fn complete(&self) -> bool {
+        let status = I::regs().isr().read();
+        if N == 1 {
+            status.eoc()
+        } else {
+            status.eos()
+        }
     }
-    /// Arm ATIM update triggering without starting or changing ATIM.
-    /// The F030 PWM owner configures TRIG.UEVE and TRIG.TRIGE.
+    fn results(&self) -> [u16; N] {
+        core::array::from_fn(|n| I::regs().result(n).read().result() & 0x0fff)
+    }
+    /// Arm ATIM update input without starting or reconfiguring ATIM. Use
+    /// `capture_triggered` to freeze the route and obtain a coherent complete scan.
     pub fn arm_atim_update(
         &mut self,
         _timer: &crate::atim::ThreePhasePwm<'_>,
     ) -> Result<(), Error> {
         self.prepare()?;
-        unsafe { I::regs().trigger().write_value(f::trigger::ATIM.mask()) };
+        I::regs().trigger().write(|w| w.set_atim(true));
         Ok(())
     }
-    /// Disarm after EOS and wait for any already-started final scan.
-    /// Returns the latest coherent scan, not a lossless first-edge capture.
+    /// Disarm after completion and finish any already-started final conversion/scan.
     pub fn capture_triggered(&mut self, poll_limit: u32) -> Result<[u16; N], Error> {
         let mut left = poll_limit;
         while left > 0 {
             left -= 1;
-            if unsafe { f::isr::EOS.read(I::regs().isr().read()) } {
-                unsafe { I::regs().trigger().write_value(0) };
+            if self.complete() {
+                I::regs().trigger().write_value(regs::Trigger(0));
                 return self.wait_complete(left.saturating_add(1));
             }
             core::hint::spin_loop();
@@ -272,107 +372,68 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         Err(Error::Timeout)
     }
     pub fn stop(&mut self) {
-        unsafe {
-            I::regs().trigger().write_value(0);
-            I::regs().start().write_value(0);
-        }
+        self.adc.stop();
     }
-    /// Configure a polling analog watchdog over this sequence's external channels.
+    /// Configure a hardware polling watchdog for a one-channel sequence.
+    /// RM 22.9 limits it to single-channel mode; N > 1 fails before register writes.
     /// Fault means result < low or result >= high (upper threshold is exclusive).
     /// Disarms external triggers before checking idle; Busy leaves the route disarmed.
     pub fn watchdog(&mut self, low: u16, high: u16) -> Result<(), Error> {
-        if low > high || high > 4095 {
-            return Err(Error::InvalidThreshold);
-        }
+        validate_watchdog::<N>(low, high)?;
         disarm_idle(&mut Hardware::<I>(PhantomData))?;
-        unsafe {
-            I::regs().vtl().write_value(u32::from(low));
-            I::regs().vth().write_value(u32::from(high));
-            let r = I::regs();
-            r.cr1()
-                .write_value(f::cr1::WDTALL.write(r.cr1().read(), true));
-        }
+        I::regs().vtl().write(|w| w.set_vtl(low));
+        I::regs().vth().write(|w| w.set_vth(high));
+        let r = I::regs();
+        r.cr1().modify(|w| {
+            w.set_wdtch(self.channels[0].0.get_hw_channel());
+            w.set_wdtall(true);
+        });
         Ok(())
     }
     pub fn watchdog_fault(&self) -> bool {
-        unsafe { I::regs().isr().read() & (f::isr::WDTL.mask() | f::isr::WDTH.mask()) != 0 }
+        self.adc.watchdog_fault()
     }
     pub fn acknowledge_watchdog(&mut self) {
-        unsafe {
-            I::regs()
-                .icr()
-                .write_value(0x7f & !(f::icr::WDTL.mask() | f::icr::WDTH.mask()));
-        }
+        self.adc.acknowledge_watchdog();
     }
 }
-
-/// IRQ-driven owner of one ADC and its complete, fixed input sequence.
-///
-/// Each operation exclusively borrows this owner until completion or
-/// cancellation. Dropping a pending future disables this ADC's EOS interrupt,
-/// disarms its trigger, stops its conversion and removes its registered waker.
-/// It never disables a shared vector or clears another peripheral's flags.
-pub struct AsyncAdc<'d, I: Instance, const N: usize> {
-    inner: Adc<'d, I, N>,
-}
-
-impl<'d, I: Instance, const N: usize> AsyncAdc<'d, I, N> {
-    /// Start a single software-triggered sequence and sleep until its EOS IRQ.
-    ///
-    /// There is no internal timeout. An executor's timeout/select can cancel
-    /// this future safely by dropping it.
+impl<I: Instance, const N: usize> Sequence<'_, '_, '_, I, Async, N> {
+    /// Await one software-triggered scan. Dropping the future stops and clears
+    /// this instance's EOC/EOS sources, trigger, conversion and registered waker.
     pub async fn sample(&mut self) -> Result<[u16; N], Error> {
         self.convert(0).await
     }
 
-    /// Await an ATIM update-triggered complete scan. The route is armed on
-    /// first poll. EOS disarms it and waits for any already-started final scan.
-    /// Does not start the timer; cancellation also works if no trigger arrives.
+    /// Arm ATIM on first poll and await the latest coherent complete scan.
+    /// Does not start ATIM. Cancellation also works if no trigger arrives.
     pub async fn sample_atim_update(
         &mut self,
         _timer: &crate::atim::ThreePhasePwm<'_>,
     ) -> Result<[u16; N], Error> {
-        self.convert(f::trigger::ATIM.mask()).await
+        let mut trigger = regs::Trigger(0);
+        trigger.set_atim(true);
+        self.convert(trigger.0).await
     }
-
     async fn convert(&mut self, trigger: u32) -> Result<[u16; N], Error> {
-        let _guard = ConversionGuard::start(
-            Hardware::<I>(PhantomData),
-            I::state(),
-            self.inner.cr,
-            trigger,
-        )?;
+        self.prepare()?;
+        let _guard =
+            ConversionGuard::start(Hardware::<I>(PhantomData), I::state(), self.cr, trigger)?;
         poll_fn(|cx| poll_sequence(I::state(), cx)).await;
-        // The ISR has disabled triggers and observed START=0. Results cannot
-        // change while they are copied, even if the task was delayed after EOS.
-        Ok(self.inner.results())
+        // The ISR disarmed the trigger and observed START=0 before publication.
+        Ok(self.results())
     }
-
-    /// Return the same ADC and pins to the blocking API.
-    pub fn into_blocking(self) -> Adc<'d, I, N> {
-        critical_section::with(|_| {
-            cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state());
-        });
-        self.inner
-    }
-
-    /// Configure the polling analog watchdog while no async conversion is held.
-    pub fn watchdog(&mut self, low: u16, high: u16) -> Result<(), Error> {
-        self.inner.watchdog(low, high)
-    }
-
-    pub fn watchdog_fault(&self) -> bool {
-        self.inner.watchdog_fault()
-    }
-
-    pub fn acknowledge_watchdog(&mut self) {
-        self.inner.acknowledge_watchdog();
+}
+impl<I: Instance, M: Mode, const N: usize> Drop for Sequence<'_, '_, '_, I, M, N> {
+    fn drop(&mut self) {
+        self.adc.stop();
+        I::regs().cr1().modify(|w| w.set_wdtall(false));
     }
 }
 
-/// ADC sequence-complete interrupt handler for a verified per-instance binding.
+/// ADC conversion/sequence-complete handler for a verified per-instance binding.
 ///
-/// Services only the enabled EOS source; preserves unrelated ADC flags and NVIC state.
+/// Services EOC in single-channel mode or EOS in scan mode; preserves unrelated
+/// ADC flags and NVIC state.
 pub struct InterruptHandler<I: Instance> {
     _instance: PhantomData<I>,
 }
@@ -380,7 +441,7 @@ pub struct InterruptHandler<I: Instance> {
 impl<I: Instance> interrupt::typelevel::Handler<I::Interrupt> for InterruptHandler<I> {
     unsafe fn on_interrupt() {
         let waker = critical_section::with(|_| {
-            if service_eos(&mut Hardware::<I>(PhantomData)) {
+            if service_completion(&mut Hardware::<I>(PhantomData)) {
                 // Keep completion publication indivisible with hardware cleanup
                 // even if an enclosing executor can run in another interrupt.
                 I::state().latch(SEQUENCE_COMPLETE)
@@ -408,41 +469,56 @@ fn poll_sequence(state: &EventState, cx: &mut Context<'_>) -> Poll<()> {
 }
 
 trait AsyncSequenceIo: SequenceIo {
-    fn eos_interrupt_enabled(&mut self) -> bool;
-    fn eos_pending(&mut self) -> bool;
-    fn eos_interrupt(&mut self, enabled: bool);
-    fn clear_eos(&mut self);
+    fn completion_interrupt_enabled(&mut self) -> bool;
+    fn completion_pending(&mut self) -> bool;
+    fn completion_interrupt(&mut self, enabled: bool);
+    fn clear_completion(&mut self);
     fn start(&mut self, enabled: bool);
     fn trigger(&mut self, mask: u32);
 }
 
 impl<I: Instance> AsyncSequenceIo for Hardware<I> {
-    fn eos_interrupt_enabled(&mut self) -> bool {
-        unsafe { f::ier::EOS.read(I::regs().ier().read()) }
-    }
-    fn eos_pending(&mut self) -> bool {
-        unsafe { f::isr::EOS.read(I::regs().isr().read()) }
-    }
-    fn eos_interrupt(&mut self, enabled: bool) {
-        unsafe {
-            let r = I::regs();
-            r.ier()
-                .write_value(f::ier::EOS.write(r.ier().read(), enabled));
+    fn completion_interrupt_enabled(&mut self) -> bool {
+        let r = I::regs();
+        let enabled = r.ier().read();
+        if r.cr0().read().mode() == 0 {
+            enabled.eoc()
+        } else {
+            enabled.eos()
         }
     }
-    fn clear_eos(&mut self) {
-        // ADC ICR is R1W0, not W1C (RM 22.13.11). Preserve EOC and AWD flags.
-        unsafe { I::regs().icr().write_value(0x7f & !f::icr::EOS.mask()) };
+    fn completion_pending(&mut self) -> bool {
+        let r = I::regs();
+        let status = r.isr().read();
+        if r.cr0().read().mode() == 0 {
+            status.eoc()
+        } else {
+            status.eos()
+        }
+    }
+    fn completion_interrupt(&mut self, enabled: bool) {
+        let r = I::regs();
+        let single = r.cr0().read().mode() == 0;
+        r.ier().modify(|w| {
+            w.set_eoc(enabled && single);
+            w.set_eos(enabled && !single);
+        });
+    }
+    fn clear_completion(&mut self) {
+        // ADC ICR is R1W0, not W1C (RM 22.13.11). Preserve AWD/other completion flags.
+        let mut clear = regs::Icr(0x7f);
+        if I::regs().cr0().read().mode() == 0 {
+            clear.set_eoc(false);
+        } else {
+            clear.set_eos(false);
+        }
+        I::regs().icr().write_value(clear);
     }
     fn start(&mut self, enabled: bool) {
-        unsafe {
-            I::regs()
-                .start()
-                .write_value(f::start::START.write(0, enabled))
-        };
+        I::regs().start().write(|w| w.set_start(enabled));
     }
     fn trigger(&mut self, mask: u32) {
-        unsafe { I::regs().trigger().write_value(mask) };
+        I::regs().trigger().write_value(regs::Trigger(mask));
     }
 }
 
@@ -453,11 +529,11 @@ fn start_async_sequence(
     trigger: u32,
 ) -> Result<(), Error> {
     disarm_idle(io)?;
-    io.eos_interrupt(false);
+    io.completion_interrupt(false);
     state.reset();
     io.control(cr);
-    io.clear_eos();
-    io.eos_interrupt(true);
+    io.clear_completion();
+    io.completion_interrupt(true);
     if trigger == 0 {
         io.start(true);
     } else {
@@ -466,30 +542,30 @@ fn start_async_sequence(
     Ok(())
 }
 
-fn service_eos(io: &mut impl AsyncSequenceIo) -> bool {
-    if !io.eos_interrupt_enabled() || !io.eos_pending() {
+fn service_completion(io: &mut impl AsyncSequenceIo) -> bool {
+    if !io.completion_interrupt_enabled() || !io.completion_pending() {
         return false;
     }
     io.disarm();
     // Clear BEFORE checking START. A late sequence can finish while the CPU
     // runs even inside a critical section. Clearing after reading busy could
-    // erase its final EOS and leave a sleeping future with no remaining IRQ.
-    io.clear_eos();
-    // MODE=4: RM 22.5.5 guarantees EOS and automatic START clear at sequence
-    // completion. With the route disarmed, at most one sequence remains.
+    // erase its final completion and leave a sleeping future with no remaining IRQ.
+    io.clear_completion();
+    // RM 22.5.1 (MODE=0/EOC) and 22.5.5 (MODE=4/EOS) guarantee automatic
+    // START clear at completion. With the route disarmed, at most one operation remains.
     if io.busy() {
         return false;
     }
-    io.eos_interrupt(false);
+    io.completion_interrupt(false);
     true
 }
 
 fn cancel_async_sequence(io: &mut impl AsyncSequenceIo, state: &EventState) {
-    io.eos_interrupt(false);
+    io.completion_interrupt(false);
     io.disarm();
     // RM 22.13.8: START=0 stops conversion; the next MODE=4 scan starts at SQR0.
     io.start(false);
-    io.clear_eos();
+    io.clear_completion();
     state.reset();
 }
 
@@ -512,32 +588,38 @@ impl<IO: AsyncSequenceIo> Drop for ConversionGuard<'_, IO> {
 }
 
 fn flags() -> u32 {
-    f::icr::EOC.mask()
-        | f::icr::EOS.mask()
-        | f::icr::EOA.mask()
-        | f::icr::WDTL.mask()
-        | f::icr::WDTH.mask()
-        | f::icr::WDTR.mask()
-        | f::icr::OVW.mask()
+    let mut flags = regs::Icr(0);
+    flags.set_eoc(true);
+    flags.set_eos(true);
+    flags.set_eoa(true);
+    flags.set_wdtl(true);
+    flags.set_wdth(true);
+    flags.set_wdtr(true);
+    flags.set_ovw(true);
+    flags.0
 }
 fn control_mask() -> u32 {
-    f::cr0::EN.mask()
-        | f::cr0::MODE.mask()
-        | f::cr0::TSEN.mask()
-        | f::cr0::REF.mask()
-        | f::cr0::CLK.mask()
-        | f::cr0::SAM.mask()
-        | f::cr0::BUF.mask()
+    let mut mask = regs::Cr0(0);
+    mask.set_en(true);
+    mask.set_mode(7);
+    mask.set_tsen(true);
+    mask.set_ref(3);
+    mask.set_clk(7);
+    mask.set_sam(3);
+    mask.set_buf(true);
+    mask.0
 }
-fn control_word(old: u32, divider: ClockDivider, sample: SampleTime) -> u32 {
-    let mut word = old & !control_mask();
-    word = f::cr0::MODE.write(word, 4); // single complete sequence scan, not continuous
-    word = f::cr0::REF.write(word, 3); // VDDA; no unowned external-reference pin
-    word = f::cr0::CLK.write(word, divider as u32);
-    word = f::cr0::SAM.write(word, sample as u32);
-    word = f::cr0::BUF.write(word, true);
-    f::cr0::EN.write(word, true)
+fn control_word(old: u32, divider: ClockDivider, sample: SampleTime, count: usize) -> u32 {
+    let mut word = regs::Cr0(old & !control_mask());
+    word.set_mode(if count == 1 { 0 } else { 4 }); // single channel or complete scan, never continuous
+    word.set_ref(3); // VDDA; no unowned external-reference pin
+    word.set_clk(divider as u8);
+    word.set_sam(sample as u8);
+    word.set_buf(true);
+    word.set_en(true);
+    word.0
 }
+
 trait SequenceIo {
     fn disarm(&mut self);
     fn busy(&mut self) -> bool;
@@ -547,25 +629,21 @@ trait SequenceIo {
 struct Hardware<I: Instance>(PhantomData<I>);
 impl<I: Instance> SequenceIo for Hardware<I> {
     fn disarm(&mut self) {
-        unsafe {
-            I::regs().trigger().write_value(0);
-        }
+        I::regs().trigger().write_value(regs::Trigger(0));
     }
     fn busy(&mut self) -> bool {
-        unsafe { f::start::START.read(I::regs().start().read()) }
+        I::regs().start().read().start()
     }
     fn control(&mut self, word: u32) {
-        critical_section::with(|_| unsafe {
+        critical_section::with(|_| {
             let r = I::regs();
             // Keep VC's current BGREN value, never restore a stale snapshot.
             r.cr0()
-                .write_value((r.cr0().read() & !control_mask()) | (word & control_mask()));
+                .modify(|w| w.0 = (w.0 & !control_mask()) | (word & control_mask()));
         });
     }
     fn clear(&mut self) {
-        unsafe {
-            I::regs().icr().write_value(0x7f & !flags());
-        }
+        I::regs().icr().write_value(regs::Icr(0x7f & !flags()));
     }
 }
 fn disarm_idle(io: &mut impl SequenceIo) -> Result<(), Error> {
@@ -583,18 +661,14 @@ fn prepare_sequence(io: &mut impl SequenceIo, cr: u32) -> Result<(), Error> {
     io.clear();
     Ok(())
 }
-impl<'d, I: Instance, const N: usize> Drop for Adc<'d, I, N> {
+impl<'d, I: Instance, M: Mode> Drop for Adc<'d, I, M> {
     fn drop(&mut self) {
         critical_section::with(|_| {
             // Also clean up a previously forgotten async future when its owner
             // is eventually dropped. Only this ADC is disabled, never its NVIC.
-            unsafe { I::regs().ier().write_value(0) };
+            I::regs().ier().write_value(regs::Ier(0));
             cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state());
-            unsafe {
-                I::regs()
-                    .cr0()
-                    .write_value(I::regs().cr0().read() & !control_mask());
-            }
+            I::regs().cr0().modify(|w| w.0 &= !control_mask());
         });
     }
 }

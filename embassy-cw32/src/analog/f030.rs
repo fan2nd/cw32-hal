@@ -7,13 +7,12 @@ use crate::{
     gpio::{AnyPin, Pin},
     pac, peripherals,
     rcc::PeripheralClock,
-    Peri, PeripheralType,
+    Async, Blocking, Mode, Peri, PeripheralType,
 };
-use pac::vc::fields as f;
 mod sealed {
     pub trait Pin<I, const SIGNAL: u8> {}
     pub(crate) trait VcInstance {
-        fn regs() -> crate::pac::vc::RegisterBlock;
+        fn regs() -> crate::pac::vc::Vc;
         fn state() -> &'static crate::async_support::EventState;
     }
 }
@@ -28,6 +27,7 @@ include!(concat!(env!("OUT_DIR"), "/_generated_analog.rs"));
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
     InvalidSignal,
+    Disabled,
     InvalidConfig,
     NotReady,
     OutputsEnabled,
@@ -87,109 +87,167 @@ fn comparator_words(
     positive: u8,
     negative: u8,
     config: ComparatorConfig,
-) -> Result<(u32, u32), Error> {
+) -> Result<(pac::vc::regs::Cr0, pac::vc::regs::Cr1), Error> {
     if positive > 7 || negative > 7 {
         return Err(Error::InvalidSignal);
     }
     if config.ready_poll_limit == 0 {
         return Err(Error::InvalidConfig);
     }
-    let mut cr0 = f::cr0::INP.write(0, positive.into());
-    cr0 = f::cr0::INN.write(cr0, negative.into());
-    cr0 = f::cr0::RESP.write(cr0, config.response as u32);
-    cr0 = f::cr0::HYS.write(cr0, config.hysteresis as u32);
-    cr0 = f::cr0::POL.write(cr0, config.inverted);
-    cr0 = f::cr0::EN.write(cr0, true);
-    let mut cr1 = f::cr1::FLTCLK.write(0, true);
+    let mut cr0 = pac::vc::regs::Cr0(0);
+    cr0.set_inp(positive);
+    cr0.set_inn(negative);
+    cr0.set_resp(config.response as u8);
+    cr0.set_hys(config.hysteresis as u8);
+    cr0.set_pol(config.inverted);
+    cr0.set_en(false);
+    let mut cr1 = pac::vc::regs::Cr1(0);
+    cr1.set_fltclk(true);
     if let Some(filter) = config.filter {
-        cr1 = f::cr1::FLTTIME.write(cr1, filter as u32);
-        cr1 = f::cr1::FLTEN.write(cr1, true);
+        cr1.set_flttime(filter as u8);
+        cr1.set_flten(true);
     }
     Ok((cr0, cr1))
 }
-/// External differential comparator. No shared divider, ADC or bandgap writes.
-pub struct Comparator<'d, I: VcInstance> {
+/// External differential comparator, configured but initially disabled.
+///
+/// Both modes own the same peripheral and input pins. `Async` also proves the
+/// interrupt binding and supports one-shot waits. This owner never writes the
+/// shared divider, ADC reference or bandgap control.
+pub struct Comp<'d, I: VcInstance, M: Mode> {
     _instance: Peri<'d, I>,
     _positive: Peri<'d, AnyPin>,
     _negative: Peri<'d, AnyPin>,
+    ready_poll_limit: u32,
+    _mode: core::marker::PhantomData<M>,
 }
-impl<'d, I: VcInstance> Comparator<'d, I> {
-    pub fn external<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
+impl<'d, I: VcInstance> Comp<'d, I, Blocking> {
+    /// Configure external inputs without enabling the comparator. Call `enable`
+    /// to start it and perform bounded hardware READY polling before reading it.
+    pub fn new_blocking<
+        P: SignalPin<I, PCH>,
+        N: SignalPin<I, NCH>,
+        const PCH: u8,
+        const NCH: u8,
+    >(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        negative: Peri<'d, N>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        Self::build(instance, positive, negative, config)
+    }
+}
+impl<'d, I: VcInstance> Comp<'d, I, Async> {
+    /// Configure external inputs and the interrupt binding without enabling the
+    /// comparator. Call `enable` before reading or waiting for its output.
+    pub fn new<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        negative: Peri<'d, N>,
+        _irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        use crate::interrupt::typelevel::Interrupt;
+        let comp = Self::build(instance, positive, negative, config)?;
+        // Construction disabled/cleared this source and its software state.
+        // Binding proves our handler is installed. Do not unpend a shared vector.
+        unsafe { I::Interrupt::enable() };
+        Ok(comp)
+    }
+}
+impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
+    fn build<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
         negative: Peri<'d, N>,
         config: ComparatorConfig,
     ) -> Result<Self, Error> {
         let (cr0, cr1) = comparator_words(PCH, NCH, config)?;
-        I::enable_and_reset(); // Shared VC reset is never asserted by generated clocks.
+        I::enable_and_reset(); // Generated clocks never assert shared VC/BGR reset.
         let positive: Peri<'d, AnyPin> = positive.into();
         let negative: Peri<'d, AnyPin> = negative.into();
         positive.configure_analog();
         negative.configure_analog();
         let r = I::regs();
-        unsafe {
-            r.cr0().write_value(0);
+        critical_section::with(|_| {
+            r.cr0().write_value(pac::vc::regs::Cr0(0));
             r.cr1().write_value(cr1);
-            r.sr().write_value(0);
-            r.cr0().write_value(cr0);
-        }
-        let comparator = Self {
+            r.sr().write_value(pac::vc::regs::Sr(0));
+            I::state().reset();
+        });
+        r.cr0().write_value(cr0);
+        Ok(Self {
             _instance: instance,
             _positive: positive,
             _negative: negative,
-        };
-        for _ in 0..config.ready_poll_limit {
-            if unsafe { f::sr::READY.read(r.sr().read()) } {
-                return Ok(comparator);
+            ready_poll_limit: config.ready_poll_limit,
+            _mode: core::marker::PhantomData,
+        })
+    }
+    /// Enable and wait for hardware READY with the configured register-poll
+    /// budget. A timeout disables this VC and its event source; its sibling and
+    /// the shared reference stay untouched. The same owner can be enabled again.
+    pub fn enable(&mut self) -> Result<(), Error> {
+        I::regs().cr0().modify(|w| w.set_en(true));
+        for _ in 0..self.ready_poll_limit {
+            if I::regs().sr().read().ready() {
+                return Ok(());
             }
             core::hint::spin_loop();
         }
-        // Owned temporary drops and disables this VC, without touching its sibling.
+        self.disable();
         Err(Error::NotReady)
     }
-    pub fn is_high(&self) -> bool {
-        unsafe { f::sr::FLTV.read(I::regs().sr().read()) }
+    /// Disable this comparator and its event source, preserving input/filter
+    /// configuration. If a brake guard was forgotten, power outputs are disabled
+    /// before releasing its route. Shared clock/BGR/NVIC state is left alone.
+    pub fn disable(&mut self) {
+        critical_section::with(|_| {
+            let mut io = VcHardware::<I>(core::marker::PhantomData);
+            io.disable();
+            shutdown_comparator(&mut ShutdownHardware::<I>(core::marker::PhantomData));
+            io.clear();
+            I::state().reset();
+        });
+    }
+    pub fn is_enabled(&self) -> bool {
+        I::regs().cr0().read().en()
+    }
+    /// Read the filtered, configured-polarity output only while enabled/ready.
+    pub fn output_level(&self) -> Result<bool, Error> {
+        if !self.is_enabled() {
+            return Err(Error::Disabled);
+        }
+        let status = I::regs().sr().read();
+        if !status.ready() {
+            return Err(Error::NotReady);
+        }
+        Ok(status.fltv())
     }
     pub const fn number(&self) -> u8 {
         I::NUMBER
     }
-    /// Route this live comparator to ATIM hardware brake while borrowing both
+    /// Route this ready comparator to ATIM hardware brake while borrowing both
     /// resources. Outputs must already be disabled. This is a wiring mechanism,
     /// not a certified motor-protection function; validate polarity and latency.
     pub fn atim_break<'a, 'p>(
         &'a self,
         pwm: &'a mut crate::atim::ThreePhasePwm<'p>,
-    ) -> Result<ComparatorBrake<'a, 'd, 'p, I>, Error> {
-        critical_section::with(|_| unsafe {
+    ) -> Result<ComparatorBrake<'a, 'd, 'p, I, M>, Error> {
+        self.output_level()?;
+        critical_section::with(|_| {
             validate_brake_route(
                 pwm.outputs_enabled(),
-                pac::atim::fields::dtr::VCE.read(pac::ATIM.dtr().read()),
-                // A forgotten guard may outlive an ATIM owner/reinitialization:
-                // timer reset clears VCE but not either VC's physical route.
-                f::cr1::ATIMBK.read(pac::VC1.cr1().read())
-                    || f::cr1::ATIMBK.read(pac::VC2.cr1().read()),
+                pac::ATIM.dtr().read().vce(),
+                // ATIM reset clears VCE but not a leaked VC's physical route.
+                pac::VC1.cr1().read().atimbk() || pac::VC2.cr1().read().atimbk(),
             )?;
-            I::regs()
-                .cr1()
-                .write_value(f::cr1::ATIMBK.write(I::regs().cr1().read(), true));
+            I::regs().cr1().modify(|w| w.set_atimbk(true));
             pwm.set_comparator_brake(true);
             Ok(())
         })?;
         Ok(ComparatorBrake { pwm, _source: self })
-    }
-    pub fn into_async(
-        self,
-        _irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
-    ) -> AsyncComparator<'d, I> {
-        use crate::interrupt::typelevel::Interrupt;
-        critical_section::with(|_| {
-            let mut io = VcHardware::<I>(core::marker::PhantomData);
-            io.disable();
-            io.clear();
-            I::state().reset();
-            unsafe { I::Interrupt::enable() };
-        });
-        AsyncComparator { inner: self }
     }
 }
 fn validate_brake_route(
@@ -210,33 +268,31 @@ fn validate_brake_route(
 ///
 /// The protection source cannot be dropped while its route is in use.
 /// Direct access to the PWM owner cannot overlap its route guard.
-pub struct ComparatorBrake<'a, 'd, 'p, I: VcInstance> {
+pub struct ComparatorBrake<'a, 'd, 'p, I: VcInstance, M: Mode> {
     pwm: &'a mut crate::atim::ThreePhasePwm<'p>,
-    _source: &'a Comparator<'d, I>,
+    _source: &'a Comp<'d, I, M>,
 }
-impl<'a, 'd, 'p, I: VcInstance> ComparatorBrake<'a, 'd, 'p, I> {
+impl<'a, 'd, 'p, I: VcInstance, M: Mode> ComparatorBrake<'a, 'd, 'p, I, M> {
     pub fn pwm(&mut self) -> &mut crate::atim::ThreePhasePwm<'p> {
         self.pwm
     }
 }
-impl<I: VcInstance> Drop for ComparatorBrake<'_, '_, '_, I> {
+impl<I: VcInstance, M: Mode> Drop for ComparatorBrake<'_, '_, '_, I, M> {
     fn drop(&mut self) {
-        critical_section::with(|_| unsafe {
+        critical_section::with(|_| {
             self.pwm.disable_outputs();
             self.pwm.set_comparator_brake(false);
-            I::regs()
-                .cr1()
-                .write_value(f::cr1::ATIMBK.write(I::regs().cr1().read(), false));
+            I::regs().cr1().modify(|w| w.set_atimbk(false));
         });
     }
 }
-impl<I: VcInstance> Drop for Comparator<'_, I> {
+impl<I: VcInstance, M: Mode> Drop for Comp<'_, I, M> {
     fn drop(&mut self) {
         // A safe caller can mem::forget a route guard. Inspect the physical
         // route as well as normal borrow/Drop ordering before removing its source.
-        critical_section::with(|_| {
-            shutdown_comparator(&mut ShutdownHardware::<I>(core::marker::PhantomData))
-        });
+        self.disable();
+        I::regs().cr0().write_value(pac::vc::regs::Cr0(0));
+        I::regs().cr1().write_value(pac::vc::regs::Cr1(0));
         self._positive.disconnect();
         self._negative.disconnect();
     }
@@ -255,25 +311,24 @@ fn shutdown_comparator(io: &mut impl ShutdownIo) {
 struct ShutdownHardware<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> ShutdownIo for ShutdownHardware<I> {
     fn routed(&mut self) -> bool {
-        unsafe { f::cr1::ATIMBK.read(I::regs().cr1().read()) }
+        I::regs().cr1().read().atimbk()
     }
     fn disable_power(&mut self) {
-        use pac::atim::fields::dtr;
-        unsafe {
-            let r = pac::ATIM.dtr();
-            // Only one safe route can be installed. Release the leaked route
-            // together with its power state so a surviving PWM can be reused.
-            r.write_value(r.read() & !(dtr::MOE.mask() | dtr::AOE.mask() | dtr::VCE.mask()));
-        }
+        // Only one safe route can be installed. Release the leaked route
+        // together with its power state so a surviving PWM can be reused.
+        pac::ATIM.dtr().modify(|w| {
+            w.set_moe(false);
+            w.set_aoe(false);
+            w.set_vce(false);
+        });
     }
     fn disable_comparator(&mut self) {
-        unsafe {
-            I::regs().cr0().write_value(0);
-            I::regs().cr1().write_value(0);
-            I::regs().sr().write_value(0);
-        }
+        // Preserve analog input/filter configuration across explicit disable.
+        I::regs().cr1().modify(|w| w.set_atimbk(false));
+        I::regs().cr0().modify(|w| w.set_en(false));
     }
 }
+
 pub struct InterruptHandler<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> crate::interrupt::typelevel::Handler<I::Interrupt> for InterruptHandler<I> {
     unsafe fn on_interrupt() {
@@ -286,56 +341,41 @@ impl<I: VcInstance> crate::interrupt::typelevel::Handler<I::Interrupt> for Inter
     }
 }
 
-/// IRQ-backed, cancel-safe comparator event waits. Edges are relative to the
-/// first poll, after stale flags are cleared and interrupt selection is enabled.
-/// One hardware INTF coalesces multiple edges; this API is not an edge counter.
-/// Rising/falling refer to the filtered, configured-polarity comparator output.
-/// There is no busy polling, DMA stream, or automatic hardware motor-trip route.
+/// IRQ-backed, cancel-safe one-shot waits. Edges are relative to the first poll,
+/// after stale flags are cleared and interrupt selection is enabled. Hardware
+/// coalesces edges; these methods are notifications, not an edge counter.
 ///
-/// Missing a Binding cannot enable interrupts.
-/// A live wait exclusively borrows this comparator.
-pub struct AsyncComparator<'d, I: VcInstance> {
-    inner: Comparator<'d, I>,
-}
-impl<'d, I: VcInstance> AsyncComparator<'d, I> {
-    pub fn is_high(&self) -> bool {
-        self.inner.is_high()
-    }
-    pub const fn number(&self) -> u8 {
-        I::NUMBER
-    }
-    /// Wait for a new rising edge. Earlier/stale INTF is deliberately discarded.
-    pub async fn wait_for_rising_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Rising).await
+/// Enable the comparator first. A disabled comparator returns `Error::Disabled`
+/// rather than enabling analog circuitry without its required startup checks.
+/// Cancellation clears only this VC's event source; it leaves the comparator
+/// enabled and never disables or unpends a shared NVIC vector.
+impl<I: VcInstance> Comp<'_, I, Async> {
+    /// Wait for a new rising edge of the filtered, configured-polarity output.
+    pub async fn wait_for_rising_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Rising).await
     }
     /// Wait for a new falling edge. Multiple edges may coalesce in hardware.
-    pub async fn wait_for_falling_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Falling).await
+    pub async fn wait_for_falling_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Falling).await
     }
     /// Wait for either edge; INTF does not retain which edge occurred.
-    pub async fn wait_for_any_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::AnyEdge).await
+    pub async fn wait_for_any_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::AnyEdge).await
     }
     /// Complete immediately if already high, otherwise await a high event.
     /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_high(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::High).await
+    pub async fn wait_for_high(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::High).await
     }
     /// Complete immediately if already low, otherwise await a falling event.
     /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_low(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Low).await
+    pub async fn wait_for_low(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Low).await
     }
-}
-impl<I: VcInstance> Drop for AsyncComparator<'_, I> {
-    fn drop(&mut self) {
-        critical_section::with(|_| {
-            let mut io = VcHardware::<I>(core::marker::PhantomData);
-            io.disable();
-            io.clear();
-            I::state().reset();
-        });
-        // The owned Comparator then shuts down and disconnects its own pins.
+    async fn wait(&mut self, kind: WaitKind) -> Result<(), Error> {
+        self.output_level()?;
+        VcWait::new(self, kind).await;
+        Ok(())
     }
 }
 
@@ -349,23 +389,23 @@ enum WaitKind {
 }
 impl WaitKind {
     fn bits(self) -> u32 {
-        use pac::vc::fields::cr1;
+        let mut selection = pac::vc::regs::Cr1(0);
         match self {
-            Self::Rising => cr1::RISEIE.mask(),
-            Self::Falling | Self::Low => cr1::FALLIE.mask(),
-            Self::AnyEdge => cr1::RISEIE.mask() | cr1::FALLIE.mask(),
-            Self::High => cr1::HIGHIE.mask(),
+            Self::Rising => selection.set_riseie(true),
+            Self::Falling | Self::Low => selection.set_fallie(true),
+            Self::AnyEdge => {
+                selection.set_riseie(true);
+                selection.set_fallie(true);
+            }
+            Self::High => selection.set_highie(true),
         }
+        selection.0
     }
     fn satisfied(self, high: bool) -> bool {
         matches!((self, high), (Self::High, true) | (Self::Low, false))
     }
 }
 const VC_EVENT: u32 = 1;
-fn vc_select_mask() -> u32 {
-    use pac::vc::fields::cr1;
-    cr1::HIGHIE.mask() | cr1::RISEIE.mask() | cr1::FALLIE.mask()
-}
 trait VcIo {
     fn disable(&mut self);
     fn clear(&mut self);
@@ -376,34 +416,33 @@ trait VcIo {
 struct VcHardware<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> VcIo for VcHardware<I> {
     fn disable(&mut self) {
-        use pac::vc::fields as f;
-        unsafe {
-            let r = I::regs();
-            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), false));
-            r.cr1().write_value(r.cr1().read() & !vc_select_mask());
-        }
+        let r = I::regs();
+        r.cr0().modify(|w| w.set_ie(false));
+        r.cr1().modify(|w| {
+            w.set_highie(false);
+            w.set_riseie(false);
+            w.set_fallie(false);
+        });
     }
     fn clear(&mut self) {
         // INTF is RW0; FLTV is RO. Write zero, never RMW this mixed register.
-        unsafe { I::regs().sr().write_value(0) };
+        I::regs().sr().write_value(pac::vc::regs::Sr(0));
     }
     fn arm(&mut self, selection: u32) {
-        use pac::vc::fields as f;
-        unsafe {
-            let r = I::regs();
-            r.cr1()
-                .write_value((r.cr1().read() & !vc_select_mask()) | selection);
-            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), true));
-        }
+        let r = I::regs();
+        let selection = pac::vc::regs::Cr1(selection);
+        r.cr1().modify(|w| {
+            w.set_highie(selection.highie());
+            w.set_riseie(selection.riseie());
+            w.set_fallie(selection.fallie());
+        });
+        r.cr0().modify(|w| w.set_ie(true));
     }
     fn pending(&mut self) -> bool {
-        use pac::vc::fields as f;
-        unsafe {
-            f::cr0::IE.read(I::regs().cr0().read()) && f::sr::INTF.read(I::regs().sr().read())
-        }
+        I::regs().cr0().read().ie() && I::regs().sr().read().intf()
     }
     fn high(&mut self) -> bool {
-        unsafe { pac::vc::fields::sr::FLTV.read(I::regs().sr().read()) }
+        I::regs().sr().read().fltv()
     }
 }
 fn service_vc_interrupt(
@@ -480,11 +519,11 @@ impl VcWaitCore {
     }
 }
 struct VcWait<'a, 'd, I: VcInstance> {
-    _driver: &'a mut Comparator<'d, I>,
+    _driver: &'a mut Comp<'d, I, Async>,
     core: VcWaitCore,
 }
 impl<'a, 'd, I: VcInstance> VcWait<'a, 'd, I> {
-    fn new(driver: &'a mut Comparator<'d, I>, kind: WaitKind) -> Self {
+    fn new(driver: &'a mut Comp<'d, I, Async>, kind: WaitKind) -> Self {
         Self {
             _driver: driver,
             core: VcWaitCore::new(kind),

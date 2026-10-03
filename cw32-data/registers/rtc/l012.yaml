@@ -2,12 +2,16 @@ name: rtc
 version: l012
 registers:
 - name: KEY
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.1, printed p175 (PDF p201); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.1, printed p175 (PDF p201); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 0
   access: wo
-  description: 'Register KEY; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write-only unlock sequence 0xCA then 0x53; lock with 0xCA then a value other than 0x53. SDK RTC_LOCK macro instead writes 0x55 twice and conflicts with the manual; do not copy that macro. Source: RM1.4 13.3.5; 13.5.1; SDK RTC_DeInit'
+  description: 'Register KEY; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Write-only unlock sequence 0xCA then 0x53; lock with 0xCA then a value other than 0x53. SDK RTC_LOCK macro
+    instead writes 0x55 twice and conflicts with the manual; do not copy that macro. Source: RM1.4 13.3.5; 13.5.1; SDK RTC_DeInit'
   fields:
   - name: KEY
     bit_offset: 0
@@ -18,12 +22,17 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: CR0
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.2, printed p175 (PDF p201); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.2, printed p175 (PDF p201); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 4
   access: rw
-  description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: START
     bit_offset: 7
@@ -52,12 +61,17 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR1
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.3, printed p176 (PDF p202); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.3, printed p176 (PDF p202); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 8
   access: rw
-  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: SOURCE
     bit_offset: 8
@@ -74,12 +88,17 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.4, printed p177 (PDF p203); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.4, printed p177 (PDF p203); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 12
   access: rw
-  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: ALARMBEN
     bit_offset: 10
@@ -131,35 +150,57 @@ registers:
     description: Field AWTPRS; raw encoding retained unless explicitly audited.
   write_behavior: keyed
   read_behavior: ordinary
-- name: PSC
-  reset_value: 0x00003fff
-  reset_source: "CW32L012 RM1.4 section 13.5.5, printed p178 (PDF p204); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
-  offset: 64
+- name: COMPCFR1
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.18, printed p185 (PDF p211); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
+  offset: 16
   access: rw
-  description: 'Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register COMPCFR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require
+    the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
-  - name: PSC1
-    bit_offset: 20
-    bit_size: 8
+  - name: EN
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field EN; raw encoding retained unless explicitly audited.
+  - name: SIGN
+    bit_offset: 14
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field SIGN; raw encoding retained unless explicitly audited.
+  - name: PERIOD
+    bit_offset: 12
+    bit_size: 2
     access: rw
     kind: raw
-    description: Field PSC1; raw encoding retained unless explicitly audited.
-  - name: PSC2
+    description: Field PERIOD; raw encoding retained unless explicitly audited.
+  - name: COMP
     bit_offset: 0
-    bit_size: 20
+    bit_size: 12
     access: rw
     kind: raw
-    description: Field PSC2; raw encoding retained unless explicitly audited.
+    description: Field COMP; raw encoding retained unless explicitly audited.
   write_behavior: keyed
   read_behavior: ordinary
 - name: DATE
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.6, printed p178 (PDF p204); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.6, printed p178 (PDF p204); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 20
   access: rw
-  description: 'Register DATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register DATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: WEEK
     bit_offset: 24
@@ -188,12 +229,17 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: TIME
-  reset_value: 0x00010000
-  reset_source: "CW32L012 RM1.4 section 13.5.7, printed p179 (PDF p205); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 65536
+  reset_source: CW32L012 RM1.4 section 13.5.7, printed p179 (PDF p205); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 24
   access: rw
-  description: 'Register TIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register TIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: HOUR
     bit_offset: 16
@@ -215,33 +261,16 @@ registers:
     description: Field SECOND; raw encoding retained unless explicitly audited.
   write_behavior: keyed
   read_behavior: ordinary
-- name: SSCNT
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.8, printed p179 (PDF p205); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
-  offset: 68
-  access: ro
-  description: Register SSCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: SSCNT1
-    bit_offset: 20
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: Field SSCNT1; raw encoding retained unless explicitly audited.
-  - name: SSCNT0
-    bit_offset: 0
-    bit_size: 20
-    access: ro
-    kind: raw
-    description: Field SSCNT0; raw encoding retained unless explicitly audited.
-- name: ALARMA
-  reset_value: 0x02121000
-  reset_source: "CW32L012 RM1.4 section 13.5.9, printed p180 (PDF p206); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+- name: ALARM
+  reset_value: null
+  reset_source: CW32L012 RM1.4 section 13.5.9, printed p180 (PDF p206); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: 'No common fieldset Default: full reset values differ by index. Generated indexed handles use each explicitly
+    documented element reset; see elements for values and evidence.'
   offset: 28
   access: rw
-  description: 'Register ALARMA; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Indexed ALARM: index 0 = ALARMA, index 1 = ALARMB. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
   fields:
   - name: WEEKMASK
     bit_offset: 24
@@ -287,65 +316,40 @@ registers:
     description: Field SECOND; raw encoding retained unless explicitly audited.
   write_behavior: keyed
   read_behavior: ordinary
-- name: ALARMB
-  reset_value: 0x04120000
-  reset_source: "CW32L012 RM1.4 section 13.5.10, printed p181 (PDF p207); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
-  offset: 32
-  access: rw
-  description: 'Register ALARMB; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
-  fields:
-  - name: WEEKMASK
-    bit_offset: 24
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: Field WEEKMASK; raw encoding retained unless explicitly audited.
-  - name: HOUREN
-    bit_offset: 23
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field HOUREN; raw encoding retained unless explicitly audited.
-  - name: HOUR
-    bit_offset: 16
-    bit_size: 6
-    access: rw
-    kind: raw
-    description: Field HOUR; raw encoding retained unless explicitly audited.
-  - name: MINUTEEN
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field MINUTEEN; raw encoding retained unless explicitly audited.
-  - name: MINUTE
-    bit_offset: 8
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: Field MINUTE; raw encoding retained unless explicitly audited.
-  - name: SECONDEN
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field SECONDEN; raw encoding retained unless explicitly audited.
-  - name: SECOND
-    bit_offset: 0
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: Field SECOND; raw encoding retained unless explicitly audited.
-  write_behavior: keyed
-  read_behavior: ordinary
+  array:
+    len: 2
+    stride: 4
+  elements:
+  - name: ALARMA
+    description: 'Register ALARMA; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require
+      the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable
+      when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+    reset_value: 34738176
+    reset_source: CW32L012 RM1.4 section 13.5.9, printed p180 (PDF p206); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+      RM1.4 section13.3.4, printed p167 (PDF p193)
+    reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+      p167/PDF193).
+  - name: ALARMB
+    description: 'Register ALARMB; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require
+      the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable
+      when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+    reset_value: 68288512
+    reset_source: CW32L012 RM1.4 section 13.5.10, printed p181 (PDF p207); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+      RM1.4 section13.3.4, printed p167 (PDF p193)
+    reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+      p167/PDF193).
 - name: TAMPDATE
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.11, printed p181 (PDF p207); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.11, printed p181 (PDF p207); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 36
   access: ro
-  description: Register TAMPDATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register TAMPDATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: WEEK
     bit_offset: 13
@@ -366,12 +370,15 @@ registers:
     kind: raw
     description: Field DAY; raw encoding retained unless explicitly audited.
 - name: TAMPTIME
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.12, printed p182 (PDF p208); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.12, printed p182 (PDF p208); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 40
   access: ro
-  description: Register TAMPTIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register TAMPTIME; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: HOUR
     bit_offset: 16
@@ -391,13 +398,39 @@ registers:
     access: ro
     kind: raw
     description: Field SECOND; raw encoding retained unless explicitly audited.
+- name: AWTARR
+  reset_value: 65535
+  reset_source: CW32L012 RM1.4 section 13.5.16, printed p184 (PDF p210); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
+  offset: 44
+  access: rw
+  description: 'Register AWTARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require
+    the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field ARR; raw encoding retained unless explicitly audited.
+  write_behavior: keyed
+  read_behavior: ordinary
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.13, printed p182 (PDF p208); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.13, printed p182 (PDF p208); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 48
   access: rw
-  description: 'Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
   - name: INTERVAL
     bit_offset: 6
@@ -438,12 +471,15 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.14, printed p183 (PDF p209); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.14, printed p183 (PDF p209); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 52
   access: ro
-  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: INTERVAL
     bit_offset: 6
@@ -482,12 +518,17 @@ registers:
     kind: bool
     description: Field ALARMA; raw encoding retained unless explicitly audited.
 - name: ICR
-  reset_value: 0x0000007f
-  reset_source: "CW32L012 RM1.4 section 13.5.15, printed p184 (PDF p210); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000020; retain them, do not mask to modeled fields. RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 127
+  reset_source: CW32L012 RM1.4 section 13.5.15, printed p184 (PDF p210); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: Full reset word includes unmodeled/reserved set bits 0x00000020; retain them, do not mask to modeled fields.
+    RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193).
   offset: 56
   access: rw
-  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 13.5.15; RM1.4 1.2'
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write
+    one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register;
+    reserved-bit policy remains register-specific. Source: RM1.4 13.5.15; RM1.4 1.2'
   fields:
   - name: INTERVAL
     bit_offset: 6
@@ -527,29 +568,16 @@ registers:
     description: Field ALARMA; raw encoding retained unless explicitly audited.
   write_behavior: zero_to_clear
   read_behavior: ordinary
-- name: AWTARR
-  reset_value: 0x0000ffff
-  reset_source: "CW32L012 RM1.4 section 13.5.16, printed p184 (PDF p210); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
-  offset: 44
-  access: rw
-  description: 'Register AWTARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
-  fields:
-  - name: ARR
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field ARR; raw encoding retained unless explicitly audited.
-  write_behavior: keyed
-  read_behavior: ordinary
 - name: AWTCNT
-  reset_value: 0x0000ffff
-  reset_source: "CW32L012 RM1.4 section 13.5.17, printed p185 (PDF p211); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
+  reset_value: 65535
+  reset_source: CW32L012 RM1.4 section 13.5.17, printed p185 (PDF p211); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
   offset: 60
   access: ro
-  description: Register AWTCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register AWTCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+    value semantics.
   fields:
   - name: CNT
     bit_offset: 0
@@ -557,38 +585,54 @@ registers:
     access: ro
     kind: raw
     description: Field CNT; raw encoding retained unless explicitly audited.
-- name: COMPCFR1
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 13.5.18, printed p185 (PDF p211); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section13.3.4, printed p167 (PDF p193)"
-  reset_note: "RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4 p167/PDF193)."
-  offset: 16
+- name: PSC
+  reset_value: 16383
+  reset_source: CW32L012 RM1.4 section 13.5.5, printed p178 (PDF p204); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
+  offset: 64
   access: rw
-  description: 'Register COMPCFR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
+  description: 'Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Protected by separate KEY sequence (not an embedded per-write key). DATE/TIME/AWTARR additionally require the
+    WAIT synchronization protocol while RTC runs. KEY and ICR are exempt; read-only registers do not become writable when
+    unlocked. Source: RM1.4 13.3.5-6; 13.5; SDK RTC_Init/RTC_SetTime/RTC_SetDate'
   fields:
-  - name: EN
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field EN; raw encoding retained unless explicitly audited.
-  - name: SIGN
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field SIGN; raw encoding retained unless explicitly audited.
-  - name: PERIOD
-    bit_offset: 12
-    bit_size: 2
+  - name: PSC1
+    bit_offset: 20
+    bit_size: 8
     access: rw
     kind: raw
-    description: Field PERIOD; raw encoding retained unless explicitly audited.
-  - name: COMP
+    description: Field PSC1; raw encoding retained unless explicitly audited.
+  - name: PSC2
     bit_offset: 0
-    bit_size: 12
+    bit_size: 20
     access: rw
     kind: raw
-    description: Field COMP; raw encoding retained unless explicitly audited.
+    description: Field PSC2; raw encoding retained unless explicitly audited.
   write_behavior: keyed
   read_behavior: ordinary
+- name: SSCNT
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 13.5.8, printed p179 (PDF p205); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf;
+    RM1.4 section13.3.4, printed p167 (PDF p193)
+  reset_note: RTC register defaults apply to POR; other reset conditions do not reset RTC and it continues timekeeping (RM13.3.4
+    p167/PDF193).
+  offset: 68
+  access: ro
+  description: Register SSCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: SSCNT1
+    bit_offset: 20
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field SSCNT1; raw encoding retained unless explicitly audited.
+  - name: SSCNT0
+    bit_offset: 0
+    bit_size: 20
+    access: ro
+    kind: raw
+    description: Field SSCNT0; raw encoding retained unless explicitly audited.
 constants: []

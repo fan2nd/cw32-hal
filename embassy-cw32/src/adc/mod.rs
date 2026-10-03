@@ -9,3 +9,6 @@ pub use l012::*;
 mod f030;
 #[cfg(adc_f030)]
 pub use f030::*;
+
+mod channel;
+pub use channel::{AdcChannel, BorrowedAdcChannel, BorrowedChannel};

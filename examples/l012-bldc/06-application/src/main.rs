@@ -15,23 +15,26 @@ async fn main(_spawner: embassy_executor::Spawner) {
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
     // Shared clock gates are configured once before splitting task ownership.
-    unsafe {
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::AHBEN,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | 1 | (1 << 4) | (1 << 5) | (1 << 6),
-        );
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::APBEN1,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | (1 << 0) | (1 << 3) | (1 << 5),
-        );
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::APBEN2,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | (1 << 2) | (1 << 9),
-        );
-    }
+
+    let mut ahben = pac::SYSCTRL.ahben().read();
+    ahben.set_key(0x5a5a);
+    ahben.set_dma(true);
+    ahben.set_gpioa(true);
+    ahben.set_gpiob(true);
+    ahben.set_gpioc(true);
+    pac::SYSCTRL.ahben().write_value(ahben);
+    let mut apben1 = pac::SYSCTRL.apben1().read();
+    apben1.set_key(0x5a5a);
+    apben1.set_adc(true);
+    apben1.set_atim(true);
+    apben1.set_uart1(true);
+    pac::SYSCTRL.apben1().write_value(apben1);
+    let mut apben2 = pac::SYSCTRL.apben2().read();
+    apben2.set_key(0x5a5a);
+    apben2.set_btim123(true);
+    apben2.set_opa(true);
+    pac::SYSCTRL.apben2().write_value(apben2);
+
     // Transfer the motor's singleton tokens out of the thread executor domain.
     motor::start((
         p.DMA, p.ATIM, p.ADC1, p.ADC2, p.OPA1, p.BGR, p.BTIM1, p.BTIM2, p.BTIM3, p.PA15, p.PB3,
@@ -49,52 +52,32 @@ pub(crate) enum PinMode {
     InputPullUp,
     Analog,
 }
-unsafe fn set_af(port: usize, pin: u32, af: u32) {
-    let offset = if pin < 8 {
-        pac::gpio::AFRL
+unsafe fn set_af(port: *mut (), pin: usize, af: u8) {
+    let port: pac::gpio::Gpio = unsafe { pac::gpio::Gpio::from_ptr(port) };
+    if pin < 8 {
+        port.afr(0).modify(|r| r.set_afr(pin, af));
     } else {
-        pac::gpio::AFRH
-    };
-    let shift = (pin % 8) * 4;
-    unsafe { pac::modify(port + offset, 0xf << shift, af << shift) };
+        port.afr(1).modify(|r| r.set_afr(pin - 8, af));
+    }
 }
-pub(crate) unsafe fn configure_pin(port: usize, pin: u32, mode: PinMode, af: u32) {
-    let mask = 1 << pin;
-    unsafe {
-        pac::modify(port + pac::gpio::DIR, 0, mask);
-        set_af(port, pin, af);
-        pac::modify(port + pac::gpio::RISEIE, mask, 0);
-        pac::modify(port + pac::gpio::FALLIE, mask, 0);
-        pac::modify(port + pac::gpio::OPENDRAIN, mask, 0);
-        pac::modify(
-            port + pac::gpio::PUR,
-            mask,
-            if matches!(mode, PinMode::InputPullUp) {
-                mask
-            } else {
-                0
-            },
-        );
-        pac::modify(
-            port + pac::gpio::ANALOG,
-            mask,
-            if matches!(mode, PinMode::Analog) {
-                mask
-            } else {
-                0
-            },
-        );
-        if matches!(mode, PinMode::OutputLow | PinMode::OutputHigh) {
-            pac::write(
-                port + if matches!(mode, PinMode::OutputHigh) {
-                    pac::gpio::BSRR
-                } else {
-                    pac::gpio::BRR
-                },
-                mask,
-            );
-            pac::modify(port + pac::gpio::DIR, mask, 0);
+pub(crate) unsafe fn configure_pin(port: *mut (), pin: usize, mode: PinMode, af: u8) {
+    let port: pac::gpio::Gpio = unsafe { pac::gpio::Gpio::from_ptr(port) };
+    port.dir().modify(|r| r.set_pin(pin, true));
+    unsafe { set_af(port.as_ptr(), pin, af) };
+    port.riseie().modify(|r| r.set_pin(pin, false));
+    port.fallie().modify(|r| r.set_pin(pin, false));
+    port.opendrain().modify(|r| r.set_pin(pin, false));
+    port.pur()
+        .modify(|r| r.set_pin(pin, matches!(mode, PinMode::InputPullUp)));
+    port.analog()
+        .modify(|r| r.set_pin(pin, matches!(mode, PinMode::Analog)));
+    if matches!(mode, PinMode::OutputLow | PinMode::OutputHigh) {
+        if matches!(mode, PinMode::OutputHigh) {
+            port.bsrr().write(|r| r.set_bss(pin, true));
+        } else {
+            port.brr().write(|r| r.set_brr(pin, true));
         }
+        port.dir().modify(|r| r.set_pin(pin, false));
     }
 }
 

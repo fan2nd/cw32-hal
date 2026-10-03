@@ -45,6 +45,10 @@ pub fn load(root: &Path, chip: &str) -> Result<Ir> {
     family.interrupts.sort_by_key(|i| i.number);
     family.constants.sort_by(|a, b| a.name.cmp(&b.name));
     for b in blocks.values_mut() {
+        b.blocks
+            .sort_by(|a, b| (a.offset, &a.name).cmp(&(b.offset, &b.name)));
+        // Array offsets and element metadata deliberately retain source index
+        // order; sorting either independently would change the hardware API.
         b.registers
             .sort_by(|a, b| (a.offset, &a.name).cmp(&(b.offset, &b.name)));
         for r in &mut b.registers {

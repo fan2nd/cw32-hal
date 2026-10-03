@@ -28,7 +28,7 @@
 
 上游引用三元组 `kind/version/block`：kind 是 IP 类别，version 是兼容接口版本，block 允许一个 IP 模型有多个寄存器块。实例地址、RCC 门控、IRQ、DMA 和引脚连接属于器件实例，不属于公共寄存器布局。chiptool IR 则进一步分开 devices、blocks、fieldsets 和 enums；寄存器引用 fieldset，fieldset 可复用，不必在每芯片复制整份代码。
 
-本项目目前每 kind/version 只有一个 RegisterBlock，字段内联，8/16/32-bit 总线访问寄存器是明确限制。它保留了共享 register JSON 与芯片实例分离，并不具备 chiptool 的多 block、继承、数组及完整变换能力。将来需要这些能力时应扩 schema 或采用 chiptool，不能靠重复复制芯片 PAC 隐藏差异。
+本项目 schema5 显式支持字段数组、寄存器数组（等距或逐项 offset）及可复用嵌套 block 引用，DMA channel 使用真实子块。字段仍内联，支持8/16/32-bit访问；共享 register JSON 与芯片实例分离。尚不具备 chiptool 通用继承和完整变换体系，不能把已实现数组等同于完整生成器兼容性。
 
 ## 3. 数据生成阶段是在建立可信契约
 
@@ -68,7 +68,7 @@ CW32 v0.7 直接使用官方 `embassy-hal-internal =0.5.0`：生成身份实现 
 
 现有 ADC、ATIM、模拟构造器使用 metadata 生成的 sealed instance/signal traits 限制已审核路线；并未扩展为全芯片 Pin/DMA 类型系统。公开关联表受 `metadata` feature 控制，仍只是数据；AFIO、quirk 文字和 IRQ 关联不会自行执行算法。原始 PAC 仅在 `unstable-pac` 下从 HAL 公开，unsafe steal/raw MMIO/clone_unchecked 仍可绕过安全所有权。
 
-IRQ 基础设施也已从仅有 marker 推进到实际分发。PAC 生成 `rt.rs`、`device.x`，按物理号布置向量；稀疏编号保留零槽而不紧缩。HAL 使用官方 `interrupt_mod!` 和类型级 Handler/Binding，`bind_interrupts!` 在 `rt` 下同时生成真实 ISR 调用与证明，共享向量可顺序调用多个 handler。现有 FOC 驱动仍不使用这些 IRQ；pending/clear/wake、NVIC 使能及 DMA 生命周期必须由具体驱动实现，不能把基础设施算成异步驱动完成。
+IRQ 基础设施也已从仅有 marker 推进到实际分发。PAC 生成 `rt.rs`、`device.x`，按物理号布置向量；稀疏编号保留零槽而不紧缩。HAL 使用官方 `interrupt_mod!` 和类型级 Handler/Binding，`bind_interrupts!` 在 `rt` 下同时生成真实 ISR 调用与证明，共享向量可顺序调用多个 handler。当前 ADC/VC/ATIM/CORDIC 和 GPIO interrupt input 已实现真实 pending/clear/wake、NVIC 使能及取消；DMA 生命周期仍未实现，不能仅凭基础设施声称 DMA 驱动完成。
 
 `init(Config) -> Peripherals` 与 `Config.rcc` 遵循官方入口形状，另保留可报告错误的 `try_init`。本地仅允许经过校验的复位 HSI/24，`rcc::clocks()` 返回保存的标称频率且在初始化前 panic；官方 getter 要求 RCC Peri，本地没有发出 SYSCTRL token，不能宣称 getter 签名完全相同。共享门控采用不在 drop 关闭的保守策略，共享 reset 不由单个实例断言；仍没有上游完整 clock 引用计数和低功耗管理。
 
@@ -76,7 +76,7 @@ HAL 默认只有 `rt`，芯片、`memory-x`、公开 `metadata` 和 `unstable-pa
 
 时间驱动按专用 GTIM1 设计：`time-driver-any` 是 `time-driver-gtim1` 的真实 alias，HAL 在 RCC 后自动初始化，配置中提供默认 P0 的 `time_interrupt_priority`。build.rs 从交给应用的 Peripherals 字段中移除 GTIM1，保留给时间驱动，因此不与应用或 FOC ATIM 重复取得硬件；不开启驱动时 GTIM1 仍归应用。标称 1 MHz 的 16-bit counter 每 65.536 ms wrap，从 overflow 到 ISR 清除 UIF 必须严格短于该周期，包含中断/critical-section 阻塞。compare 写入实际 deadline，写后重读并在必要时 pend IRQ；短 sleep 仍受 4 MHz CPU、MMIO、IRQ 和 executor 延迟影响。1 μs timestamp 分辨率不构成 HSI 精度、1 μs 唤醒准确度或低功耗连续性证明。实际算法及链接验证以 [API 对照](embassy-api-alignment.md) 和最终验证记录为准，SysTick 已不作为此版本的时间驱动方案。
 
-现有 blocking GPIO/RCC 的关键要求是：手写算法真正引用生成数据；只有chip.pins中审核过的引脚能力生成singleton，具体封装及PCB引出由板级负责；共享 GPIO 配置 RMW 受 critical section 保护；键值、动作寄存器和保留位语义不能由普通 RW 标签代替。RCC 已使用生成字段/BoolField；GPIO 使用生成地址、offset、AF 位宽与能力 mask。数据表不能替代这些算法审查。
+现有 blocking GPIO/RCC 的关键要求是：手写算法真正引用生成数据；只有chip.pins中审核过的引脚能力生成singleton，具体封装及PCB引出由板级负责；共享 GPIO 配置 RMW 受 critical section 保护；键值、动作寄存器和保留位语义不能由普通 RW 标签代替。RCC/GPIO 使用生成的 typed/indexed PAC setter 及 GPIO 能力 mask，不保留地址算术或旧字段描述器 facade。数据表不能替代这些算法审查。
 
 ## 6. 能编译却违背设计的反例
 

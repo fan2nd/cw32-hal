@@ -14,10 +14,10 @@
 //! if programming missed the match. Lateness still includes programming, IRQ
 //! and executor delay; at an 8 MHz CPU this can exceed one timer tick.
 //! This is a timestamp-resolution improvement, not a hard-real-time guarantee.
-use super::core::{prescaler, Counter, Hardware, COMPARE, ICR_FLAGS, ICR_MASK, UPDATE};
+use super::core::{prescaler, Counter, Hardware, ICR_FLAGS, ICR_MASK};
 use crate::{
     interrupt::{self, InterruptExt},
-    pac,
+    pac::{self, gtim::regs},
     rcc::PeripheralClock,
     time_driver::queue::Queue,
 };
@@ -26,31 +26,24 @@ use critical_section::Mutex;
 use embassy_time_driver::Driver;
 
 struct Registers;
-impl Registers {
-    fn read(offset: usize) -> u32 {
-        // SAFETY: only initialized, exclusively reserved GTIM1 is accessed.
-        unsafe { pac::read(pac::GTIM1_BASE + offset) }
-    }
-    fn write(offset: usize, value: u32) {
-        // SAFETY: exclusive ownership and CS serialization; values follow RM.
-        unsafe { pac::write(pac::GTIM1_BASE + offset, value) }
-    }
-}
 impl Hardware for Registers {
     fn flags(&mut self) -> u32 {
-        Self::read(pac::gtim::ISR)
+        pac::GTIM1.isr().read().0
     }
     fn counter(&mut self) -> u16 {
-        Self::read(pac::gtim::CNT) as u16
+        pac::GTIM1.cnt().read().0 as u16
     }
     fn clear(&mut self, flags: u32) {
-        Self::write(pac::gtim::ICR, ICR_MASK & !flags);
+        pac::GTIM1.icr().write_value(regs::Icr(ICR_MASK & !flags));
     }
     fn compare_irq(&mut self, enabled: bool) {
-        Self::write(pac::gtim::IER, UPDATE | if enabled { COMPARE } else { 0 });
+        pac::GTIM1.ier().write(|w| {
+            w.set_ov(true);
+            w.set_cc1(enabled);
+        });
     }
     fn compare(&mut self, value: u16) {
-        Self::write(pac::gtim::CCR1, u32::from(value));
+        pac::GTIM1.ccr(0).write(|w| w.set_ccr(value));
     }
     fn pend(&mut self) {
         interrupt::GTIM1.pend();
@@ -107,31 +100,30 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
         assert!(!state.started);
         interrupt::GTIM1.disable();
         <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
-        Registers::write(pac::gtim::CR0, 0); // stopped, PCLK source, no encoder/trigger
-        Registers::write(pac::gtim::IER, 0);
-        Registers::write(pac::gtim::DMA, 0);
-        Registers::write(pac::gtim::CR1, 0);
-        Registers::write(pac::gtim::ETR, 0);
-        Registers::write(pac::gtim::CMMR, 0);
-        Registers::write(pac::gtim::ARR, 0xffff);
-        Registers::write(pac::gtim::CNT, 0);
-        Registers::write(pac::gtim::CCR1, 0xffff);
+        pac::GTIM1.cr0().write_value(regs::Cr0(0)); // stopped, PCLK source, no encoder/trigger
+        pac::GTIM1.ier().write_value(regs::Ier(0));
+        pac::GTIM1.dma().write_value(regs::Dma(0));
+        pac::GTIM1.cr1().write_value(regs::Cr1(0));
+        pac::GTIM1.etr().write_value(regs::Etr(0));
+        pac::GTIM1.cmmr().write_value(regs::Cmmr(0));
+        pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
+        pac::GTIM1.cnt().write_value(regs::Cnt(0));
+        pac::GTIM1.ccr(0).write(|w| w.set_ccr(0xffff));
         // RM 14.3.4.1: CC1M=0xA sets CC1 on CNT==CCR1. No GPIO AF is
         // configured: only the internal comparator is used, not an output pin.
-        Registers::write(
-            pac::gtim::CMMR,
-            pac::gtim::fields::cmmr::CC1M.write(0, 0x0a),
-        );
+        pac::GTIM1.cmmr().write(|w| w.set_cc1m(0x0a));
         // W0 clears all implemented startup flags; preserve reserved reset bits.
-        Registers::write(pac::gtim::ICR, ICR_MASK & !ICR_FLAGS);
-        Registers::write(pac::gtim::IER, UPDATE);
+        pac::GTIM1
+            .icr()
+            .write_value(regs::Icr(ICR_MASK & !ICR_FLAGS));
+        pac::GTIM1.ier().write(|w| w.set_ov(true));
         // F030 has CR0.PRS (2^n), not an L012 PSC register or UIFREMAP.
         // EN's 0->1 transition loads PRS into PRSSTATUS (RM 14.8.1), so no
         // software update event is required. Reset PCLK 8 MHz /8 = 1 MHz.
-        Registers::write(
-            pac::gtim::CR0,
-            pac::gtim::fields::cr0::EN.write(pac::gtim::fields::cr0::PRS.write(0, prs), true),
-        );
+        pac::GTIM1.cr0().write(|w| {
+            w.set_prs(prs as u8);
+            w.set_en(true);
+        });
         state.started = true;
         interrupt::GTIM1.unpend();
         interrupt::GTIM1.set_priority(priority);

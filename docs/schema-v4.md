@@ -1,3 +1,5 @@
+Current normalized schema is [v5](schema-v5.md); v4 reset evidence remains preserved.
+
 # Normalized schema v4
 
 Version4 retains the schema3 chip pins, width, alias, ownership, behavior and kind/version architecture. It adds per-register `reset_value: Option<u32>`, `reset_source: Option<String>` and `reset_note: Option<String>`, plus each peripheral's `register_resets` list of authoritative instance-specific values.

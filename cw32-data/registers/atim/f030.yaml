@@ -2,11 +2,12 @@ name: atim
 version: f030
 registers:
 - name: ARR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.2, printed p297 (PDF p298); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.2, printed p297 (PDF p298); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 0
   access: rw
-  description: CW32F030 ATIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: ARR
     bit_offset: 0
@@ -15,11 +16,12 @@ registers:
     kind: raw
     description: CW32F030 ATIM.ARR.ARR; raw encoding.
 - name: CNT
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.3, printed p297 (PDF p298); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.3, printed p297 (PDF p298); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 ATIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: CNT
     bit_offset: 0
@@ -28,11 +30,14 @@ registers:
     kind: raw
     description: CW32F030 ATIM.CNT.CNT; raw encoding.
 - name: CR
-  reset_value: 0x00600008
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.1, printed p295 (PDF p296); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 6291464
+  reset_source: CW32x030 RM Rev2.5 section 15.7.1, printed p295 (PDF p296); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: 'CW32F030 ATIM.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. BG, UG and TG are self-clearing software commands. UG also initializes the counter, loads enabled shadows and resets the prescaler. DIR is writable only in edge-aligned mode; other bits configure counting and interrupts. Source: CW32x030 RM Rev 2.5 15.7.1'
+  description: 'CW32F030 ATIM.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. BG, UG and TG are self-clearing software commands. UG also initializes the counter, loads enabled shadows
+    and resets the prescaler. DIR is writable only in edge-aligned mode; other bits configure counting and interrupts. Source:
+    CW32x030 RM Rev 2.5 15.7.1'
   fields:
   - name: UNDE
     bit_offset: 29
@@ -163,11 +168,12 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.4, printed p298 (PDF p299); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.4, printed p298 (PDF p299); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 16
   access: ro
-  description: CW32F030 ATIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: C4AF
     bit_offset: 18
@@ -278,12 +284,15 @@ registers:
     kind: bool
     description: CW32F030 ATIM.ISR.UIF; raw encoding.
 - name: ICR
-  reset_value: 0x0007ffff
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.5, printed p300 (PDF p301); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000002; retain them, do not mask to modeled fields."
+  reset_value: 524287
+  reset_source: CW32x030 RM Rev2.5 section 15.7.5, printed p300 (PDF p301); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: Full reset word includes unmodeled/reserved set bits 0x00000002; retain them, do not mask to modeled fields.
   offset: 20
   access: rw
-  description: 'CW32F030 ATIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 15.7.5; 1.2'
+  description: 'CW32F030 ATIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
+    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
+    15.7.5; 1.2'
   fields:
   - name: C4AF
     bit_offset: 18
@@ -396,11 +405,12 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: MSCR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.6, printed p301 (PDF p302); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.6, printed p301 (PDF p302); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 24
   access: rw
-  description: CW32F030 ATIM.MSCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.MSCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: IB1S
     bit_offset: 12
@@ -439,11 +449,12 @@ registers:
     kind: raw
     description: CW32F030 ATIM.MSCR.MMS; raw encoding.
 - name: FLTR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.7, printed p302 (PDF p303); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.7, printed p302 (PDF p303); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 28
   access: rw
-  description: CW32F030 ATIM.FLTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.FLTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: ETP
     bit_offset: 31
@@ -542,11 +553,12 @@ registers:
     kind: raw
     description: CW32F030 ATIM.FLTR.OCM1AFLT1A; raw encoding.
 - name: TRIG
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.8, printed p304 (PDF p305); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.8, printed p304 (PDF p305); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 32
   access: rw
-  description: CW32F030 ATIM.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: ADTE
     bit_offset: 7
@@ -596,12 +608,13 @@ registers:
     access: rw
     kind: bool
     description: CW32F030 ATIM.TRIG.UEVE; raw encoding.
-- name: CH1CR
-  reset_value: 0x00003000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.11, printed p306 (PDF p307); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+- name: CHCR
+  reset_value: 12288
+  reset_source: CW32x030 RM Rev2.5 section 15.7.11, printed p306 (PDF p307); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 36
   access: rw
-  description: 'CW32F030 ATIM.CH1CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+  description: 'Indexed CHCR: index 0 = CH1CR, index 1 = CH2CR, index 2 = CH3CR. Complete field layout/access/side effects
+    are identical; offsets and element evidence are explicit.'
   fields:
   - name: CCGB
     bit_offset: 15
@@ -683,186 +696,38 @@ registers:
     description: CW32F030 ATIM.CH1CR.BKSA; raw encoding.
   write_behavior: mixed
   read_behavior: ordinary
-- name: CH2CR
-  reset_value: 0x00003000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.12, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 40
-  access: rw
-  description: 'CW32F030 ATIM.CH2CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
-  fields:
-  - name: CCGB
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CCGB; raw encoding.
-  - name: CCGA
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CCGA; raw encoding.
-  - name: CISB
-    bit_offset: 12
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH2CR.CISB; raw encoding.
-  - name: CDEB
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CDEB; raw encoding.
-  - name: CDEA
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CDEA; raw encoding.
-  - name: CIEB
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CIEB; raw encoding.
-  - name: CIEA
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CIEA; raw encoding.
-  - name: BUFEB
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.BUFEB; raw encoding.
-  - name: BUFEA
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.BUFEA; raw encoding.
-  - name: CSB
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CSB; raw encoding.
-  - name: CSA
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH2CR.CSA; raw encoding.
-  - name: BKSB
-    bit_offset: 2
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH2CR.BKSB; raw encoding.
-  - name: BKSA
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH2CR.BKSA; raw encoding.
-  write_behavior: mixed
-  read_behavior: ordinary
-- name: CH3CR
-  reset_value: 0x00003000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.13, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 44
-  access: rw
-  description: 'CW32F030 ATIM.CH3CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
-  fields:
-  - name: CCGB
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CCGB; raw encoding.
-  - name: CCGA
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CCGA; raw encoding.
-  - name: CISB
-    bit_offset: 12
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH3CR.CISB; raw encoding.
-  - name: CDEB
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CDEB; raw encoding.
-  - name: CDEA
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CDEA; raw encoding.
-  - name: CIEB
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CIEB; raw encoding.
-  - name: CIEA
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CIEA; raw encoding.
-  - name: BUFEB
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.BUFEB; raw encoding.
-  - name: BUFEA
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.BUFEA; raw encoding.
-  - name: CSB
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CSB; raw encoding.
-  - name: CSA
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 ATIM.CH3CR.CSA; raw encoding.
-  - name: BKSB
-    bit_offset: 2
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH3CR.BKSB; raw encoding.
-  - name: BKSA
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH3CR.BKSA; raw encoding.
-  write_behavior: mixed
-  read_behavior: ordinary
+  array:
+    len: 3
+    stride: 4
+  elements:
+  - name: CH1CR
+    description: 'CW32F030 ATIM.CH1CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare
+      and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+    reset_value: 12288
+    reset_source: CW32x030 RM Rev2.5 section 15.7.11, printed p306 (PDF p307); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH2CR
+    description: 'CW32F030 ATIM.CH2CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare
+      and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+    reset_value: 12288
+    reset_source: CW32x030 RM Rev2.5 section 15.7.12, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH3CR
+    description: 'CW32F030 ATIM.CH3CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings. CCGA and CCGB are self-clearing software capture/compare triggers; other bits configure capture/compare
+      and DMA. Source: CW32x030 RM Rev 2.5 15.7.11-13'
+    reset_value: 12288
+    reset_source: CW32x030 RM Rev2.5 section 15.7.13, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
 - name: DTR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.9, printed p305 (PDF p306); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.9, printed p305 (PDF p306); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 48
   access: rw
-  description: CW32F030 ATIM.DTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.DTR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: VCE
     bit_offset: 14
@@ -907,11 +772,12 @@ registers:
     kind: raw
     description: CW32F030 ATIM.DTR.DTR; raw encoding.
 - name: RCR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.10, printed p306 (PDF p307); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.10, printed p306 (PDF p307); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 52
   access: rw
-  description: CW32F030 ATIM.RCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.RCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: UD
     bit_offset: 9
@@ -931,90 +797,85 @@ registers:
     access: rw
     kind: raw
     description: CW32F030 ATIM.RCR.RCR; raw encoding.
-- name: CH1CCRA
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.15, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+- name: CCRA
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.15, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 60
   access: rw
-  description: CW32F030 ATIM.CH1CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: 'Indexed CCRA: index 0 = CH1CCRA, index 1 = CH2CCRA, index 2 = CH3CCRA. Complete field layout/access/side effects
+    are identical; offsets and element evidence are explicit.'
   fields:
-  - name: CCR1A
+  - name: CCR
     bit_offset: 0
     bit_size: 16
     access: rw
     kind: raw
     description: CW32F030 ATIM.CH1CCRA.CCR1A; raw encoding.
-- name: CH1CCRB
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.16, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  array:
+    len: 3
+    stride: 8
+  elements:
+  - name: CH1CCRA
+    description: CW32F030 ATIM.CH1CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.15, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH2CCRA
+    description: CW32F030 ATIM.CH2CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.17, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH3CCRA
+    description: CW32F030 ATIM.CH3CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.19, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+- name: CCRB
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.16, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 64
   access: rw
-  description: CW32F030 ATIM.CH1CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: 'Indexed CCRB: index 0 = CH1CCRB, index 1 = CH2CCRB, index 2 = CH3CCRB. Complete field layout/access/side effects
+    are identical; offsets and element evidence are explicit.'
   fields:
-  - name: CCR1B
+  - name: CCR
     bit_offset: 0
     bit_size: 16
     access: rw
     kind: raw
     description: CW32F030 ATIM.CH1CCRB.CCR1B; raw encoding.
-- name: CH2CCRA
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.17, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 68
-  access: rw
-  description: CW32F030 ATIM.CH2CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: CCR2A
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH2CCRA.CCR2A; raw encoding.
-- name: CH2CCRB
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.18, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 72
-  access: rw
-  description: CW32F030 ATIM.CH2CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: CCR2B
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH2CCRB.CCR2B; raw encoding.
-- name: CH3CCRA
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.19, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 76
-  access: rw
-  description: CW32F030 ATIM.CH3CCRA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: CCR3A
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH3CCRA.CCR3A; raw encoding.
-- name: CH3CCRB
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.20, printed p310 (PDF p311); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 80
-  access: rw
-  description: CW32F030 ATIM.CH3CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: CCR3B
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: CW32F030 ATIM.CH3CCRB.CCR3B; raw encoding.
+  array:
+    len: 3
+    stride: 8
+  elements:
+  - name: CH1CCRB
+    description: CW32F030 ATIM.CH1CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.16, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH2CCRB
+    description: CW32F030 ATIM.CH2CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.18, printed p309 (PDF p310); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: CH3CCRB
+    description: CW32F030 ATIM.CH3CCRB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 15.7.20, printed p310 (PDF p311); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
 - name: CH4CCR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.21, printed p310 (PDF p311); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.21, printed p310 (PDF p311); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 84
   access: rw
-  description: CW32F030 ATIM.CH4CCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.CH4CCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: CCR4
     bit_offset: 0
@@ -1023,11 +884,12 @@ registers:
     kind: raw
     description: CW32F030 ATIM.CH4CCR.CCR4; raw encoding.
 - name: CH4CR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 15.7.14, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 15.7.14, printed p308 (PDF p309); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 88
   access: rw
-  description: CW32F030 ATIM.CH4CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 ATIM.CH4CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: C4EN
     bit_offset: 5

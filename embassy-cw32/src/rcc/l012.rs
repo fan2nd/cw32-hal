@@ -6,8 +6,8 @@
 //! available for a 48 MHz PCLK. VDD must be >=1.8 V for 96 MHz operation.
 //! Frequencies are nominal, not a measurement or oscillator-accuracy guarantee.
 
-use crate::pac::sysctrl::fields;
-use crate::pac::{self, sysctrl, SYSCTRL_BASE};
+use crate::pac::sysctrl::regs;
+use crate::pac::{self, sysctrl};
 
 /// The two audited direct-reset HSI configurations. Other clock trees are rejected.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
@@ -58,9 +58,9 @@ pub fn clocks() -> Clocks {
 /// Nominal clock frequencies after checked reset-clock initialization.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Clocks {
-    pub sysclk: u32,
-    pub hclk: u32,
-    pub pclk: u32,
+    pub(crate) sysclk: u32,
+    pub(crate) hclk: u32,
+    pub(crate) pclk: u32,
 }
 
 impl Clocks {
@@ -89,62 +89,61 @@ pub enum ClockError {
 }
 
 trait HighSpeedIo {
-    fn bus(&mut self) -> u32;
-    fn set_bus(&mut self, word: u32);
-    fn flash_wait(&mut self) -> u32;
-    fn set_flash_wait(&mut self, word: u32);
-    fn hsi(&mut self) -> u32;
-    fn set_hsi(&mut self, word: u32);
+    fn bus(&mut self) -> regs::Cr0;
+    fn set_bus(&mut self, value: regs::Cr0);
+    fn flash_wait(&mut self) -> regs::Cr2;
+    fn set_flash_wait(&mut self, value: regs::Cr2);
+    fn hsi(&mut self) -> regs::Hsi;
+    fn set_hsi(&mut self, value: regs::Hsi);
 }
 struct HardwareHighSpeed;
 impl HighSpeedIo for HardwareHighSpeed {
-    fn bus(&mut self) -> u32 {
-        unsafe { pac::read(SYSCTRL_BASE + sysctrl::CR0) }
+    fn bus(&mut self) -> regs::Cr0 {
+        pac::SYSCTRL.cr0().read()
     }
-    fn set_bus(&mut self, word: u32) {
-        unsafe { pac::write(SYSCTRL_BASE + sysctrl::CR0, word) }
+    fn set_bus(&mut self, value: regs::Cr0) {
+        pac::SYSCTRL.cr0().write_value(value);
     }
-    fn flash_wait(&mut self) -> u32 {
-        unsafe { pac::read(SYSCTRL_BASE + sysctrl::CR2) }
+    fn flash_wait(&mut self) -> regs::Cr2 {
+        pac::SYSCTRL.cr2().read()
     }
-    fn set_flash_wait(&mut self, word: u32) {
-        unsafe { pac::write(SYSCTRL_BASE + sysctrl::CR2, word) }
+    fn set_flash_wait(&mut self, value: regs::Cr2) {
+        pac::SYSCTRL.cr2().write_value(value);
     }
-    fn hsi(&mut self) -> u32 {
-        unsafe { pac::read(SYSCTRL_BASE + sysctrl::HSI) }
+    fn hsi(&mut self) -> regs::Hsi {
+        pac::SYSCTRL.hsi().read()
     }
-    fn set_hsi(&mut self, word: u32) {
-        unsafe { pac::write(SYSCTRL_BASE + sysctrl::HSI, word) }
+    fn set_hsi(&mut self, value: regs::Hsi) {
+        pac::SYSCTRL.hsi().write_value(value);
     }
 }
 fn set_pclk_divider(io: &mut impl HighSpeedIo, divider: PclkDivider) -> Result<(), ClockError> {
-    let encoding = u32::from(divider == PclkDivider::Div2);
-    let old = io.bus();
-    io.set_bus(
-        fields::cr0::PCLKPRS.write(old & !pac::SYSCTRL_KEY_MASK, encoding) | pac::SYSCTRL_KEY,
-    );
-    if fields::cr0::PCLKPRS.read(io.bus()) != encoding {
+    let encoding = u8::from(divider == PclkDivider::Div2);
+    let mut value = io.bus();
+    value.set_key((pac::SYSCTRL_KEY >> 16) as u16);
+    value.set_pclkprs(encoding);
+    io.set_bus(value);
+    if io.bus().pclkprs() != encoding {
         return Err(ClockError::ClockReadbackMismatch);
     }
     Ok(())
 }
 fn raise_hsi_to_96(io: &mut impl HighSpeedIo, polls: u32) -> Result<(), ClockError> {
-    // Supplied official SDK SYSCTRL_HSI_Enable(DIV1): FLASHWAIT=3 must
-    // precede HSI.DIV=1. Preserve SWD, fault, wake and reserved fields.
-    let old = io.flash_wait();
-    let wait = fields::cr2::FLASHWAIT.write(old & !pac::SYSCTRL_KEY_MASK, 3) | pac::SYSCTRL_KEY;
+    // FLASHWAIT=3 precedes HSI.DIV=1. Preserve SWD/fault/wake/reserved fields.
+    let mut wait = io.flash_wait();
+    wait.set_key((pac::SYSCTRL_KEY >> 16) as u16);
+    wait.set_flashwait(3);
     io.set_flash_wait(wait);
-    if fields::cr2::FLASHWAIT.read(io.flash_wait()) != 3 {
+    if io.flash_wait().flashwait() != 3 {
         return Err(ClockError::FlashWaitReadbackMismatch);
     }
-    let hsi = fields::hsi::DIV.write(io.hsi(), 1);
+    let mut hsi = io.hsi();
+    hsi.set_div(1);
     io.set_hsi(hsi);
     for _ in 0..polls {
         let readback = io.hsi();
-        if fields::hsi::STABLE.read(readback) {
-            return if fields::hsi::DIV.read(readback) == 1
-                && fields::hsi::TRIM.read(readback) == fields::hsi::TRIM.read(hsi)
-            {
+        if readback.stable() {
+            return if readback.div() == 1 && readback.trim() == hsi.trim() {
                 Ok(())
             } else {
                 Err(ClockError::ClockReadbackMismatch)
@@ -155,17 +154,21 @@ fn raise_hsi_to_96(io: &mut impl HighSpeedIo, polls: u32) -> Result<(), ClockErr
     Err(ClockError::HsiNotStable)
 }
 
-fn validate_configuration(cr0: u32, cr1: u32, hsi: u32) -> Result<(), ClockError> {
-    if fields::cr0::SYSCLK.read(cr0) != 0 {
+fn validate_configuration(
+    cr0: regs::Cr0,
+    cr1: regs::Cr1,
+    hsi: regs::Hsi,
+) -> Result<(), ClockError> {
+    if cr0.sysclk() != 0 {
         return Err(ClockError::SystemClockNotHsi);
     }
-    if fields::cr0::HCLKPRS.read(cr0) != 0 || fields::cr0::PCLKPRS.read(cr0) != 0 {
+    if cr0.hclkprs() != 0 || cr0.pclkprs() != 0 {
         return Err(ClockError::BusPrescalerNotReset);
     }
-    if fields::hsi::DIV.read(hsi) != fields::hsi::DIV.read(sysctrl::HSI_DIV24) {
+    if hsi.div() != regs::Hsi(sysctrl::HSI_DIV24).div() {
         return Err(ClockError::HsiDividerNotReset);
     }
-    if !fields::cr1::HSIEN.read(cr1) {
+    if !cr1.hsien() {
         return Err(ClockError::HsiDisabled);
     }
     Ok(())
@@ -202,48 +205,40 @@ pub unsafe fn init_reset_clock() -> Result<Clocks, ClockError> {
 }
 pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
     // SAFETY: the caller guarantees this target and exclusive startup access.
-    let (cr0, cr1, hsi) = unsafe {
-        (
-            pac::read(SYSCTRL_BASE + sysctrl::CR0),
-            pac::read(SYSCTRL_BASE + sysctrl::CR1),
-            pac::read(SYSCTRL_BASE + sysctrl::HSI),
-        )
-    };
+    let (cr0, cr1, hsi) = (
+        pac::SYSCTRL.cr0().read(),
+        pac::SYSCTRL.cr1().read(),
+        pac::SYSCTRL.hsi().read(),
+    );
     validate_configuration(cr0, cr1, hsi)?;
 
     // The vendor startup uses halfword reads from these exact aligned addresses.
     // SAFETY: readable device factory calibration memory is a caller requirement.
     let hsi_trim = trim_or_fallback(
         unsafe { core::ptr::read_volatile(pac::HSI_TRIM_ADDRESS as *const u16) },
-        fields::hsi::TRIM.mask(),
+        u32::from(regs::Hsi(u32::MAX).trim()),
         pac::HSI_TRIM_FALLBACK,
     );
     // SAFETY: as above; the LSI code follows the HSI halfword.
     let lsi_trim = trim_or_fallback(
         unsafe { core::ptr::read_volatile(pac::LSI_TRIM_ADDRESS as *const u16) },
-        fields::lsi::TRIM.mask(),
+        u32::from(regs::Lsi(u32::MAX).trim()),
         pac::LSI_TRIM_FALLBACK,
     );
 
     // SAFETY: ordinary R/W fields, preserving divider and wait settings; unlike
     // CR0/CR1/AHBEN, HSI and LSI do not contain a keyed upper halfword.
-    unsafe {
-        let hsi = pac::read(SYSCTRL_BASE + sysctrl::HSI);
-        let lsi = pac::read(SYSCTRL_BASE + sysctrl::LSI);
-        pac::write(
-            SYSCTRL_BASE + sysctrl::HSI,
-            fields::hsi::TRIM.write(hsi, hsi_trim),
-        );
-        pac::write(
-            SYSCTRL_BASE + sysctrl::LSI,
-            fields::lsi::TRIM.write(lsi, lsi_trim),
-        );
-    }
+    let mut hsi = pac::SYSCTRL.hsi().read();
+    let mut lsi = pac::SYSCTRL.lsi().read();
+    hsi.set_trim(hsi_trim as _);
+    lsi.set_trim(lsi_trim as _);
+    pac::SYSCTRL.hsi().write_value(hsi);
+    pac::SYSCTRL.lsi().write_value(lsi);
 
     let mut stable = false;
     for _ in 0..config.hsi_stabilization_limit {
         // SAFETY: read-only observation of the exclusively owned controller.
-        if fields::hsi::STABLE.read(unsafe { pac::read(SYSCTRL_BASE + sysctrl::HSI) }) {
+        if pac::SYSCTRL.hsi().read().stable() {
             stable = true;
             break;
         }
@@ -254,16 +249,14 @@ pub(crate) unsafe fn init(config: Config) -> Result<Clocks, ClockError> {
     }
 
     // SAFETY: as above; verify settings and both trim fields after modification.
-    let (cr0, cr1, hsi, lsi) = unsafe {
-        (
-            pac::read(SYSCTRL_BASE + sysctrl::CR0),
-            pac::read(SYSCTRL_BASE + sysctrl::CR1),
-            pac::read(SYSCTRL_BASE + sysctrl::HSI),
-            pac::read(SYSCTRL_BASE + sysctrl::LSI),
-        )
-    };
+    let (cr0, cr1, hsi, lsi) = (
+        pac::SYSCTRL.cr0().read(),
+        pac::SYSCTRL.cr1().read(),
+        pac::SYSCTRL.hsi().read(),
+        pac::SYSCTRL.lsi().read(),
+    );
     validate_configuration(cr0, cr1, hsi)?;
-    if fields::hsi::TRIM.read(hsi) != hsi_trim || fields::lsi::TRIM.read(lsi) != lsi_trim {
+    if u32::from(hsi.trim()) != hsi_trim || u32::from(lsi.trim()) != lsi_trim {
         return Err(ClockError::TrimReadbackMismatch);
     }
     if config.pclk_divider != PclkDivider::Div1 {

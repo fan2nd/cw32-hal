@@ -6,6 +6,7 @@
 //! Poll budgets bound register reads, not wall-clock time. Hardware execution
 //! has not been verified on a board.
 use crate::{pac, peripherals::EAU, rcc::PeripheralClock, Peri};
+use pac::eau::regs;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
@@ -50,7 +51,7 @@ impl<'d> Eau<'d> {
     }
     pub fn is_busy(&self) -> bool {
         // SAFETY: exclusive clocked peripheral; status reads have no side effects.
-        pac::eau::fields::csr::BUSY.read(unsafe { pac::EAU.csr().read() })
+        pac::EAU.csr().read().busy()
     }
     pub fn divide_unsigned(
         &mut self,
@@ -148,34 +149,31 @@ trait Backend {
 struct Hardware;
 impl Backend for Hardware {
     fn read(&mut self, reg: Reg) -> u32 {
-        // SAFETY: ownership/clock established by Eau. Results read only when idle.
-        unsafe {
-            match reg {
-                Reg::Csr => pac::EAU.csr().read(),
-                Reg::Quotient => pac::EAU.quotient().read(),
-                Reg::Remainder => pac::EAU.remainder().read(),
-                _ => unreachable!(),
-            }
+        // Ownership/clock established by Eau. Results are read only when idle.
+        match reg {
+            Reg::Csr => pac::EAU.csr().read().0,
+            Reg::Quotient => pac::EAU.quotient().read().0,
+            Reg::Remainder => pac::EAU.remainder().read().0,
+            _ => unreachable!(),
         }
     }
     fn write(&mut self, reg: Reg, word: u32) {
-        // SAFETY: exclusively owned, valid operands/mode, BUSY checked clear.
-        unsafe {
-            match reg {
-                Reg::Csr => pac::EAU.csr().write_value(word),
-                Reg::Dividend => pac::EAU.dividend().write_value(word),
-                Reg::Divisor => pac::EAU.divisor().write_value(word),
-                _ => unreachable!(),
-            }
+        // Explicit whole-operand writes retain the computation trigger order.
+        match reg {
+            Reg::Csr => pac::EAU.csr().write_value(regs::Csr(word)),
+            Reg::Dividend => pac::EAU.dividend().write_value(regs::Dividend(word)),
+            Reg::Divisor => pac::EAU.divisor().write_value(regs::Divisor(word)),
+            _ => unreachable!(),
         }
     }
 }
+
 fn status_error(mode: Mode, status: u32) -> Result<(), Error> {
-    use pac::eau::fields::csr;
-    if mode != Mode::Sqrt && csr::ZERO.read(status) {
+    let status = regs::Csr(status);
+    if mode != Mode::Sqrt && status.zero() {
         return Err(Error::DivisionByZero);
     }
-    if mode == Mode::Signed && csr::OVR.read(status) {
+    if mode == Mode::Signed && status.ovr() {
         return Err(Error::SignedOverflow);
     }
     Ok(())
@@ -185,22 +183,23 @@ fn run(
     op: Operation,
     poll_budget: u32,
 ) -> Result<Division<u32>, Error> {
-    use pac::eau::fields::csr;
     if poll_budget == 0 {
         return Err(Error::ZeroPollBudget);
     }
-    if csr::BUSY.read(backend.read(Reg::Csr)) {
+    if regs::Csr(backend.read(Reg::Csr)).busy() {
         return Err(Error::Busy);
     }
     // Do not RMW status flags into a new configuration word.
-    backend.write(Reg::Csr, csr::MODE.write(0, op.mode as u32));
+    let mut control = regs::Csr(0);
+    control.set_mode(op.mode as u8);
+    backend.write(Reg::Csr, control.0);
     backend.write(Reg::Dividend, op.dividend);
     if let Some(divisor) = op.divisor {
         backend.write(Reg::Divisor, divisor);
     }
     for _ in 0..poll_budget {
         let status = backend.read(Reg::Csr);
-        if !csr::BUSY.read(status) {
+        if !regs::Csr(status).busy() {
             status_error(op.mode, status)?;
             return Ok(Division {
                 quotient: backend.read(Reg::Quotient),

@@ -3,1464 +3,290 @@ version: f030
 registers:
 - name: DIR
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: 'Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared
+    block has no single full reset value.'
   offset: 0
   access: rw
-  description: CW32F030 GPIO.DIR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.DIR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DIR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.DIR.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: OPENDRAIN
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.2, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.2, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 4
   access: rw
-  description: CW32F030 GPIO.OPENDRAIN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.OPENDRAIN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+    2.5 for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.OPENDRAIN.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: SPEED
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.3, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.3, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 8
   access: rw
-  description: CW32F030 GPIO.SPEED; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.SPEED; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.SPEED.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.SPEED.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: PDR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.4, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.4, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 12
   access: rw
-  description: CW32F030 GPIO.PDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.PDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PDR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.PDR.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: PUR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.5, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.5, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 16
   access: rw
-  description: CW32F030 GPIO.PUR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.PUR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.PUR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.PUR.PIN0; raw encoding.
-- name: AFRH
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.6, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
+- name: AFR
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.7, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 20
   access: rw
-  description: CW32F030 GPIO.AFRH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: 'Indexed AFR: index 0 = AFRL, index 1 = AFRH. Complete field layout/access/side effects are identical; offsets
+    and element evidence are explicit.'
   fields:
-  - name: AFR15
-    bit_offset: 28
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR15; raw encoding.
-  - name: AFR14
-    bit_offset: 24
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR14; raw encoding.
-  - name: AFR13
-    bit_offset: 20
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR13; raw encoding.
-  - name: AFR12
-    bit_offset: 16
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR12; raw encoding.
-  - name: AFR11
-    bit_offset: 12
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR11; raw encoding.
-  - name: AFR10
-    bit_offset: 8
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR10; raw encoding.
-  - name: AFR9
-    bit_offset: 4
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRH.AFR9; raw encoding.
-  - name: AFR8
+  - name: AFR
     bit_offset: 0
     bit_size: 4
     access: rw
     kind: raw
-    description: CW32F030 GPIO.AFRH.AFR8; raw encoding.
-- name: AFRL
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.7, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  offset: 24
-  access: rw
-  description: CW32F030 GPIO.AFRL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: AFR7
-    bit_offset: 28
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR7; raw encoding.
-  - name: AFR6
-    bit_offset: 24
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR6; raw encoding.
-  - name: AFR5
-    bit_offset: 20
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR5; raw encoding.
-  - name: AFR4
-    bit_offset: 16
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR4; raw encoding.
-  - name: AFR3
-    bit_offset: 12
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR3; raw encoding.
-  - name: AFR2
-    bit_offset: 8
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR2; raw encoding.
-  - name: AFR1
-    bit_offset: 4
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR1; raw encoding.
-  - name: AFR0
-    bit_offset: 0
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.AFRL.AFR0; raw encoding.
+    array:
+      len: 8
+      stride: 4
+    description: Indexed AFR; local index begins at zero, with explicitly modeled positions.
+  array:
+    offsets:
+    - 4
+    - 0
+  elements:
+  - name: AFRL
+    description: CW32F030 GPIO.AFRL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+      for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 9.6.7, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
+  - name: AFRH
+    description: CW32F030 GPIO.AFRH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+      for value encodings.
+    reset_value: 0
+    reset_source: CW32x030 RM Rev2.5 section 9.6.6, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: null
 - name: ANALOG
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Reset is instance-dependent: GPIOA=0x00009FFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000C3. Shared block has no single full reset value."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: 'Reset is instance-dependent: GPIOA=0x00009FFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000C3. Shared
+    block has no single full reset value.'
   offset: 28
   access: rw
-  description: CW32F030 GPIO.ANALOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.ANALOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.ANALOG.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: DRIVER
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.9, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.9, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 32
   access: rw
-  description: CW32F030 GPIO.DRIVER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.DRIVER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.DRIVER.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: RISEIE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.10, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.10, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 36
   access: rw
-  description: CW32F030 GPIO.RISEIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.RISEIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.RISEIE.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: FALLIE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.11, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.11, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 40
   access: rw
-  description: CW32F030 GPIO.FALLIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.FALLIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.FALLIE.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: HIGHIE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.12, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.12, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 44
   access: rw
-  description: CW32F030 GPIO.HIGHIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.HIGHIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.HIGHIE.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: LOWIE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.13, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.13, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 48
   access: rw
-  description: CW32F030 GPIO.LOWIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.LOWIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.LOWIE.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.14, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.14, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 52
   access: rw
-  description: CW32F030 GPIO.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ISR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.ISR.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: ICR
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: 'Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared
+    block has no single full reset value.'
   offset: 56
   access: rw
-  description: 'CW32F030 GPIO.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 9.6.15; 1.2'
+  description: 'CW32F030 GPIO.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
+    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
+    9.6.15; 1.2'
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ICR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.ICR.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: LOCK
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.16, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.16, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 60
   access: rw
-  description: 'CW32F030 GPIO.LOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 9.6.16'
+  description: 'CW32F030 GPIO.LOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write.
+    This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 9.6.16'
   fields:
   - name: KEY
     bit_offset: 16
@@ -1468,110 +294,25 @@ registers:
     access: wo
     kind: raw
     description: CW32F030 GPIO.LOCK.KEY; raw encoding.
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.LOCK.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.LOCK.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
   write_behavior: keyed
   read_behavior: ordinary
 - name: FILTER
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.17, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.17, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 64
   access: rw
-  description: CW32F030 GPIO.FILTER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.FILTER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: FLTCLK
     bit_offset: 16
@@ -1579,319 +320,67 @@ registers:
     access: rw
     kind: raw
     description: CW32F030 GPIO.FILTER.FLTCLK; raw encoding.
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.FILTER.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.FILTER.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: IDR
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Reset is instance-dependent: GPIOA=0x00006000, GPIOB=0x00000000, GPIOC=0x00000000, GPIOF=0x00000000. Shared block has no single full reset value. IDR reflects live pin input; listed reset is not a guarantee of the later sampled voltage."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: 'Reset is instance-dependent: GPIOA=0x00006000, GPIOB=0x00000000, GPIOC=0x00000000, GPIOF=0x00000000. Shared
+    block has no single full reset value. IDR reflects live pin input; listed reset is not a guarantee of the later sampled
+    voltage.'
   offset: 80
   access: ro
-  description: CW32F030 GPIO.IDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.IDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: CW32F030 GPIO.IDR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: ro
     kind: bool
-    description: CW32F030 GPIO.IDR.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
 - name: ODR
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance.
   offset: 84
   access: rw
-  description: CW32F030 GPIO.ODR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 GPIO.ODR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.ODR.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.ODR.PIN0; raw encoding.
-- name: ODRLOWBYTE
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
+- name: ODR_BYTE
   reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance. This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset."
+  reset_source: CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  reset_note: Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance.
+    This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset.
   offset: 84
   access: rw
-  description: CW32F030 GPIO.ODRLOWBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: 'Indexed ODR_BYTE: index 0 = ODRLOWBYTE, index 1 = ODRHIGHBYTE. Complete field layout/access/side effects are
+    identical; offsets and element evidence are explicit.'
   fields:
-  - name: LOWBYTE
+  - name: BYTE
     bit_offset: 0
     bit_size: 8
     access: rw
@@ -1899,431 +388,95 @@ registers:
     description: CW32F030 GPIO.ODRLOWBYTE.LOWBYTE; raw encoding.
   bit_size: 8
   alias_of: ODR
-- name: ODRHIGHBYTE
-  reset_value: null
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
-  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance. This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset."
-  offset: 85
-  access: rw
-  description: CW32F030 GPIO.ODRHIGHBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
-  fields:
-  - name: HIGHBYTE
-    bit_offset: 0
-    bit_size: 8
-    access: rw
-    kind: raw
-    description: CW32F030 GPIO.ODRHIGHBYTE.HIGHBYTE; raw encoding.
-  bit_size: 8
-  alias_of: ODR
+  array:
+    len: 2
+    stride: 1
+  elements:
+  - name: ODRLOWBYTE
+    description: CW32F030 GPIO.ODRLOWBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings.
+    reset_value: null
+    reset_source: CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance.
+      This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset.
+  - name: ODRHIGHBYTE
+    description: CW32F030 GPIO.ODRHIGHBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual
+      Rev 2.5 for value encodings.
+    reset_value: null
+    reset_source: CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    reset_note: Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance.
+      This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset.
 - name: BRR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.20, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.20, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 88
   access: rw
-  description: 'CW32F030 GPIO.BRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing a one clears the corresponding ODR pin. Reads return zero; zero writes do nothing. Source: CW32x030 RM Rev 2.5 9.6.20'
+  description: 'CW32F030 GPIO.BRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Writing a one clears the corresponding ODR pin. Reads return zero; zero writes do nothing. Source:
+    CW32x030 RM Rev 2.5 9.6.20'
   fields:
-  - name: BRR15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR15; raw encoding.
-  - name: BRR14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR14; raw encoding.
-  - name: BRR13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR13; raw encoding.
-  - name: BRR12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR12; raw encoding.
-  - name: BRR11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR11; raw encoding.
-  - name: BRR10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR10; raw encoding.
-  - name: BRR9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR9; raw encoding.
-  - name: BRR8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR8; raw encoding.
-  - name: BRR7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR7; raw encoding.
-  - name: BRR6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR6; raw encoding.
-  - name: BRR5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR5; raw encoding.
-  - name: BRR4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR4; raw encoding.
-  - name: BRR3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR3; raw encoding.
-  - name: BRR2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR2; raw encoding.
-  - name: BRR1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BRR.BRR1; raw encoding.
-  - name: BRR0
+  - name: BRR
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.BRR.BRR0; raw encoding.
+    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
   write_behavior: one_to_clear
   read_behavior: ordinary
 - name: BSRR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.21, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.21, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 92
   access: rw
-  description: 'CW32F030 GPIO.BSRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing one in bits 15:0 sets the corresponding ODR pin; writing one in bits 31:16 clears it. Set takes priority when both are selected. Reads return zero. Source: CW32x030 RM Rev 2.5 9.6.21'
+  description: 'CW32F030 GPIO.BSRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Writing one in bits 15:0 sets the corresponding ODR pin; writing one in bits 31:16 clears it. Set
+    takes priority when both are selected. Reads return zero. Source: CW32x030 RM Rev 2.5 9.6.21'
   fields:
-  - name: BRR15
-    bit_offset: 31
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR15; raw encoding.
-  - name: BRR14
-    bit_offset: 30
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR14; raw encoding.
-  - name: BRR13
-    bit_offset: 29
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR13; raw encoding.
-  - name: BRR12
-    bit_offset: 28
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR12; raw encoding.
-  - name: BRR11
-    bit_offset: 27
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR11; raw encoding.
-  - name: BRR10
-    bit_offset: 26
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR10; raw encoding.
-  - name: BRR9
-    bit_offset: 25
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR9; raw encoding.
-  - name: BRR8
-    bit_offset: 24
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR8; raw encoding.
-  - name: BRR7
-    bit_offset: 23
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR7; raw encoding.
-  - name: BRR6
-    bit_offset: 22
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR6; raw encoding.
-  - name: BRR5
-    bit_offset: 21
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR5; raw encoding.
-  - name: BRR4
-    bit_offset: 20
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR4; raw encoding.
-  - name: BRR3
-    bit_offset: 19
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR3; raw encoding.
-  - name: BRR2
-    bit_offset: 18
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR2; raw encoding.
-  - name: BRR1
-    bit_offset: 17
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BRR1; raw encoding.
-  - name: BRR0
+  - name: BRR
     bit_offset: 16
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.BSRR.BRR0; raw encoding.
-  - name: BSS15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS15; raw encoding.
-  - name: BSS14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS14; raw encoding.
-  - name: BSS13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS13; raw encoding.
-  - name: BSS12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS12; raw encoding.
-  - name: BSS11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS11; raw encoding.
-  - name: BSS10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS10; raw encoding.
-  - name: BSS9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS9; raw encoding.
-  - name: BSS8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS8; raw encoding.
-  - name: BSS7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS7; raw encoding.
-  - name: BSS6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS6; raw encoding.
-  - name: BSS5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS5; raw encoding.
-  - name: BSS4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS4; raw encoding.
-  - name: BSS3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS3; raw encoding.
-  - name: BSS2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS2; raw encoding.
-  - name: BSS1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.BSRR.BSS1; raw encoding.
-  - name: BSS0
+    description: Indexed BRR0..BRR15 fields; index 0 corresponds to BRR0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
+  - name: BSS
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.BSRR.BSS0; raw encoding.
+    description: Indexed BSS0..BSS15 fields; index 0 corresponds to BSS0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
   write_behavior: command
   read_behavior: ordinary
 - name: TOG
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 9.6.22, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 9.6.22, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   offset: 96
   access: rw
-  description: 'CW32F030 GPIO.TOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing a one toggles the corresponding ODR pin; zero has no effect and reads return zero. Source: CW32x030 RM Rev 2.5 9.6.22'
+  description: 'CW32F030 GPIO.TOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. Writing a one toggles the corresponding ODR pin; zero has no effect and reads return zero. Source:
+    CW32x030 RM Rev 2.5 9.6.22'
   fields:
-  - name: PIN15
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN15; raw encoding.
-  - name: PIN14
-    bit_offset: 14
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN14; raw encoding.
-  - name: PIN13
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN13; raw encoding.
-  - name: PIN12
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN12; raw encoding.
-  - name: PIN11
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN11; raw encoding.
-  - name: PIN10
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN10; raw encoding.
-  - name: PIN9
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN9; raw encoding.
-  - name: PIN8
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN8; raw encoding.
-  - name: PIN7
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN7; raw encoding.
-  - name: PIN6
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN6; raw encoding.
-  - name: PIN5
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN5; raw encoding.
-  - name: PIN4
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN4; raw encoding.
-  - name: PIN3
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN3; raw encoding.
-  - name: PIN2
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN2; raw encoding.
-  - name: PIN1
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 GPIO.TOG.PIN1; raw encoding.
-  - name: PIN0
+  - name: PIN
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 GPIO.TOG.PIN0; raw encoding.
+    description: Indexed PIN0..PIN15 fields; index 0 corresponds to PIN0. Same documented bit layout, represented as an explicit
+      array.
+    array:
+      len: 16
+      stride: 1
   write_behavior: toggle
   read_behavior: ordinary
 constants:

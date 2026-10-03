@@ -66,38 +66,42 @@ pub async fn run(
     // yielding to the thread executor. The boot-only critical section prevents
     // a motor-init GPIO register RMW from interleaving with UI pin setup.
     critical_section::with(|_| unsafe {
-        crate::configure_pin(pac::GPIOC_BASE, 13, crate::PinMode::OutputHigh, 0);
-        crate::configure_pin(pac::GPIOA_BASE, 3, crate::PinMode::InputPullUp, 0);
-        crate::configure_pin(pac::GPIOB_BASE, 12, crate::PinMode::OutputHigh, 1);
-        crate::configure_pin(pac::GPIOB_BASE, 11, crate::PinMode::InputPullUp, 1);
-        pac::UART1.ier().write_value(0);
-        pac::UART1.cr1().write_value(0x1003);
-        pac::UART1.cr2().write_value(0);
-        pac::UART1.cr3().write_value(0);
-        pac::UART1.brri().write_value(52);
-        pac::UART1.brrf().write_value(1);
+        crate::configure_pin(pac::GPIOC.as_ptr(), 13, crate::PinMode::OutputHigh, 0);
+        crate::configure_pin(pac::GPIOA.as_ptr(), 3, crate::PinMode::InputPullUp, 0);
+        crate::configure_pin(pac::GPIOB.as_ptr(), 12, crate::PinMode::OutputHigh, 1);
+        crate::configure_pin(pac::GPIOB.as_ptr(), 11, crate::PinMode::InputPullUp, 1);
+        pac::UART1.ier().write(|_| {});
+        pac::UART1.cr1().write(|r| {
+            r.set_source(1);
+            r.set_rxen(true);
+            r.set_txen(true);
+        });
+        pac::UART1.cr2().write(|_| {});
+        pac::UART1.cr3().write(|_| {});
+        pac::UART1.brri().write(|r| r.set_brri(52));
+        pac::UART1.brrf().write(|r| r.set_brrf(1));
     });
     let mut tx = FrameQueue::new();
     loop {
         let feedback = next_ui_tick().await;
-        let pressed = unsafe { pac::read(pac::GPIOA_BASE + pac::gpio::IDR) & (1 << 3) == 0 };
+        let pressed = !pac::GPIOA.idr().read().pin(3);
         critical_section::with(|cs| UI_LINK.borrow(cs).borrow_mut().command.update(pressed));
         if let Some(on) = feedback.led_on {
             // PC13 LED is active-low; SET/CLR does not race motor GPIO mux RMW.
-            unsafe {
-                pac::write(
-                    pac::GPIOC_BASE + if on { pac::gpio::BRR } else { pac::gpio::BSRR },
-                    1 << 13,
-                )
-            };
+
+            if on {
+                pac::GPIOC.brr().write(|r| r.set_brr(13, true));
+            } else {
+                pac::GPIOC.bsrr().write(|r| r.set_bss(13, true));
+            }
         }
         if let Some(frame) = feedback.telemetry {
             tx.push(frame);
         }
         // Nonblocking, at most one UART byte per task wake.
-        if unsafe { pac::uart::fields::isr::TXE.read(pac::UART1.isr().read()) } {
+        if pac::UART1.isr().read().txe() {
             if let Some(byte) = tx.pop_byte() {
-                unsafe { pac::UART1.tdr().write_value(u32::from(byte)) };
+                pac::UART1.tdr().write(|r| r.set_tdr(u16::from(byte)));
             }
         }
         core::hint::black_box((&led, &key, &uart, &tx_pin, &rx_pin));

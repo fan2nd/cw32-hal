@@ -14,7 +14,11 @@
 
 use crate::schema::{check_id, err, Block, Family, ReadBehavior, Result, WriteBehavior};
 use serde::Deserialize;
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    path::Path,
+};
 
 #[derive(Debug, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -51,7 +55,7 @@ enum Mode {
     Select,
 }
 
-/// This IR deliberately supports exactly one register block per peripheral.
+/// The selected root remains one RegisterBlock; it may reference nested blocks.
 #[derive(Debug, Deserialize)]
 enum RegisterBlock {
     RegisterBlock,
@@ -298,6 +302,65 @@ pub fn load_blocks(root: &Path, chip: &str, family: &Family) -> Result<BTreeMap<
             blocks.insert(peripheral.block.clone(), block);
         }
     }
+    // Child blocks are real reusable definitions, including when no family
+    // peripheral exposes them independently. Selected peripheral models still
+    // have raw identities here, so recognize their eventual canonical identity
+    // before trying to load the same kind under a second version.
+    let canonical_selections: BTreeSet<_> = selected
+        .values()
+        .map(|located| {
+            (
+                located.rule.normalize.kind.clone(),
+                located.rule.normalize.version.clone(),
+            )
+        })
+        .collect();
+    loop {
+        let dependencies: BTreeSet<_> = blocks
+            .values()
+            .flat_map(|block| block.blocks.iter())
+            .map(|item| (item.block.clone(), item.version.clone()))
+            .collect();
+        let mut added = false;
+        for (kind, version) in dependencies {
+            ids(&[&kind, &version])?;
+            if canonical_selections.contains(&(kind.clone(), version.clone())) {
+                continue;
+            }
+            if let Some(block) = blocks.get(&kind) {
+                if block.version != version {
+                    return Err(err(format!(
+                        "nested block version mismatch: {kind}/{version}, loaded {}",
+                        block.version
+                    )));
+                }
+                continue;
+            }
+            let path = root
+                .join("registers")
+                .join(&kind)
+                .join(format!("{version}.yaml"));
+            let source = fs::read_to_string(&path).map_err(|error| {
+                err(format!(
+                    "cannot load nested register model {}: {error}",
+                    path.display()
+                ))
+            })?;
+            let block: Block = serde_yaml::from_str(&source)
+                .map_err(|error| err(format!("{}: {error}", path.display())))?;
+            if block.name != kind || block.version != version {
+                return Err(err(format!(
+                    "nested block reference/name/version mismatch in {}",
+                    path.display()
+                )));
+            }
+            blocks.insert(kind, block);
+            added = true;
+        }
+        if !added {
+            break;
+        }
+    }
     Ok(blocks)
 }
 
@@ -466,35 +529,60 @@ fn apply_aliases(
         return Ok(());
     }
 
-    let mut normalized = BTreeMap::<String, Block>::new();
+    let mut identities = BTreeMap::<(String, String), BTreeSet<(String, String)>>::new();
     for peripheral in &mut family.peripherals {
-        let mut block = blocks
+        let block = blocks
             .get(&peripheral.block)
-            .ok_or_else(|| err(format!("missing source block {}", peripheral.block)))?
-            .clone();
+            .ok_or_else(|| err(format!("missing source block {}", peripheral.block)))?;
         if block.name != peripheral.block || block.version != peripheral.version {
             return Err(err(format!(
                 "source block identity mismatch for {}",
                 peripheral.name
             )));
         }
+        let original = (peripheral.block.clone(), peripheral.version.clone());
         if let Some(located) = selected.get(&peripheral.name) {
             peripheral.block.clone_from(&located.rule.normalize.kind);
             peripheral
                 .version
                 .clone_from(&located.rule.normalize.version);
         }
-        block.name.clone_from(&peripheral.block);
-        block.version.clone_from(&peripheral.version);
-        if let Some(previous) = normalized.get(&peripheral.block) {
-            if serde_json::to_value(previous)? != serde_json::to_value(&block)? {
-                return Err(err(format!(
-                    "conflicting normalized register models for kind {} (instance {}); multiple versions of one kind within a single chip are unsupported (distinct versions across chips are supported)",
-                    peripheral.block, peripheral.name
-                )));
+        identities
+            .entry(original)
+            .or_default()
+            .insert((peripheral.block.clone(), peripheral.version.clone()));
+    }
+    let mut normalized = BTreeMap::<String, Block>::new();
+    // Preserve recursively loaded dependencies and relabel their references
+    // alongside the definitions. A raw kind mapped to multiple canonical kinds
+    // cannot be an implicit nested target: the source must choose explicitly.
+    for source in blocks.values() {
+        let original = (source.name.clone(), source.version.clone());
+        let targets = identities
+            .get(&original)
+            .cloned()
+            .unwrap_or_else(|| BTreeSet::from([original]));
+        for (kind, version) in targets {
+            let mut block = source.clone();
+            block.name = kind;
+            block.version = version;
+            for item in &mut block.blocks {
+                if let Some(targets) = identities.get(&(item.block.clone(), item.version.clone())) {
+                    if targets.len() != 1 {
+                        return Err(err(format!("ambiguous normalized nested block {}.{}; reference an explicit canonical kind/version", block.name, item.name)));
+                    }
+                    let (kind, version) = targets.iter().next().unwrap();
+                    item.block.clone_from(kind);
+                    item.version.clone_from(version);
+                }
             }
-        } else {
-            normalized.insert(peripheral.block.clone(), block);
+            if let Some(previous) = normalized.get(&block.name) {
+                if serde_json::to_value(previous)? != serde_json::to_value(&block)? {
+                    return Err(err(format!("conflicting normalized register models for kind {}; multiple versions of one kind within a single chip are unsupported (distinct versions across chips are supported)", block.name)));
+                }
+            } else {
+                normalized.insert(block.name.clone(), block);
+            }
         }
     }
     *blocks = normalized;

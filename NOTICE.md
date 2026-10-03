@@ -28,3 +28,14 @@ third-party rights in the original application; confirm rights before external
 redistribution or commercial use. Included vendor headers remain governed by
 their existing notices. Original names, pins, constants and behavior are
 identified in `examples/l012-bldc/README.md` for traceability, not hardware certification.
+
+## Adapted chiptool register core
+
+The common typed register-access core in `cw32-gen/src/pac.rs` is adapted from
+embassy-rs/chiptool commit bcf538a2e7b8584ae874ee9ab72efb1576fc6152,
+`src/generate/common.rs`, under MIT OR Apache-2.0. Its original MIT notice is
+preserved in `vendor/licenses/chiptool-MIT.txt` (Copyright (c)2016 Jorge Aparicio).
+Changes add explicit hardware-side-effect and audited register/array reset policies.
+GPIO ownership/driver organization follows the fixed Embassy source listed in
+`docs/embassy-api-alignment.md`; CW32 register operations and capability checks
+remain chip-specific. This does not imply Embassy project endorsement.

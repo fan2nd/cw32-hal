@@ -38,211 +38,117 @@ pub fn load_json(path: &Path) -> Result<Ir> {
     Ok(ir)
 }
 
-const RAW_API: &str = r#"
-/// MMIO register handle. Direction, side effects, bus width and register value are typed.
-/// The word defaults to u32. An untyped handle has no reset-based closure write.
-pub struct Reg<A,W=Ordinary,R=Ordinary,T=u32,V=()> { address: usize, _access: core::marker::PhantomData<(A,W,R,T,V)> }
-impl<A,W,R,T,V> Copy for Reg<A,W,R,T,V> {}
-impl<A,W,R,T,V> Clone for Reg<A,W,R,T,V> {fn clone(&self)->Self {*self}}
-/// A register-specific, in-memory value. Field setters never access hardware.
-/// Sentinel used only in generic instance-independent register types.
-/// It lies outside every supported hardware word, and never implements Default.
-pub const UNKNOWN_RESET: u64 = 0x1_0000_0000;
-pub trait RegisterView: Copy {
-    type Word: RegisterValue;
-    fn from_bits(bits: Self::Word) -> Self;
-    fn bits(self) -> Self::Word;
-}
-mod register_value_sealed {
-    pub trait Sealed {}
-    impl Sealed for u8 {} impl Sealed for u16 {} impl Sealed for u32 {}
-}
-/// Hardware access words. Sealed to the three audited unsigned bus widths.
-pub trait RegisterValue: register_value_sealed::Sealed + Copy
-    + core::ops::Not<Output=Self> + core::ops::BitAnd<Output=Self>
-    + core::ops::BitOr<Output=Self> {}
-impl RegisterValue for u8 {} impl RegisterValue for u16 {} impl RegisterValue for u32 {}
-pub enum RW {} pub enum RO {} pub enum WO {}
-/// Behavior markers prevent ordinary read/modify/write on side-effect registers.
+// Adapted from chiptool bcf538a2e7b8584ae874ee9ab72efb1576fc6152 common.rs.
+// MIT OR Apache-2.0; original notice in vendor/licenses/chiptool-MIT.txt.
+// CW32 extends the surface with audited reset policies and side-effect typing.
+const COMMON_API: &str = r#"
+/// Low-level register access, following chiptool/stm32-metapac.
+/// Direct PAC access requires the caller to coordinate hardware ownership.
+pub mod common {
+/// Write/read behavior markers keep unsupported RMW operations unavailable.
 pub enum Ordinary {} pub enum ZeroToClear {} pub enum OneToClear {}
 pub enum OneToSet {} pub enum Toggle {} pub enum Command {} pub enum Keyed {}
 pub enum Mixed {} pub enum WriteOnce {} pub enum ReadClear {} pub enum Fifo {} pub enum Latch {}
-/// Pure register field descriptor. No hardware operation is performed.
-pub struct Field<A,T=u32> { mask:T, shift:u8, _access:core::marker::PhantomData<A> }
-impl<A,T:Copy> Field<A,T> {
-    pub const fn new(mask:T,shift:u8)->Self {Self{mask,shift,_access:core::marker::PhantomData}}
-    pub const fn mask(&self)->T {self.mask}
-    pub const fn shift(&self)->u8 {self.shift}
+use core::marker::PhantomData;
+
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct RW;
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct R;
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub struct W;
+
+mod sealed {
+    use super::*;
+    pub trait Access {}
+    impl Access for R {}
+    impl Access for W {}
+    impl Access for RW {}
 }
-/// A one-bit boolean field; unlike raw fields its value API is bool.
-pub struct BoolField<A,T=u32> {raw:Field<A,T>}
-impl<A,T:Copy> BoolField<A,T> {
- pub const fn new(mask:T,shift:u8)->Self {Self{raw:Field::new(mask,shift)}}
- pub const fn mask(&self)->T {self.raw.mask()}
- pub const fn shift(&self)->u8 {self.raw.shift()}
+
+pub trait Access: sealed::Access + Copy {}
+impl Access for R {}
+impl Access for W {}
+impl Access for RW {}
+
+pub trait Read: Access {}
+impl Read for RW {}
+impl Read for R {}
+
+pub trait Write: Access {}
+impl Write for RW {}
+impl Write for W {}
+
+/// Default policy is zero-sized for ordinary registers.
+#[derive(Copy,Clone)]
+pub struct DefaultReset;
+/// An indexed register whose documented complete reset differs per element.
+/// Constructed only from explicit normalized element reset metadata.
+#[derive(Copy,Clone)]
+pub struct GivenReset<T:Copy>(T);
+mod reset_sealed {pub trait Sealed {} impl Sealed for super::DefaultReset {} impl<T:Copy> Sealed for super::GivenReset<T> {}}
+#[doc(hidden)]
+pub trait Reset<T:Copy>:reset_sealed::Sealed {fn value(&self)->T;}
+impl<T:Copy+Default> Reset<T> for DefaultReset {fn value(&self)->T {T::default()}}
+impl<T:Copy> Reset<T> for GivenReset<T> {fn value(&self)->T {self.0}}
+
+pub struct Reg<T: Copy, A: Access, WB=Ordinary, RB=Ordinary, D=DefaultReset> {
+    ptr: *mut u8,
+    phantom: PhantomData<*mut (T, A, WB, RB)>,
+    reset: D,
 }
-/// A discrete field with explicit known values. Reserved encodings read as None.
-pub struct EnumField<A,T,U=u32> {raw:Field<A,U>,_value:core::marker::PhantomData<T>}
-impl<A,T,U:Copy> EnumField<A,T,U> {
- pub const fn new(mask:U,shift:u8)->Self {Self{raw:Field::new(mask,shift),_value:core::marker::PhantomData}}
- pub const fn mask(&self)->U {self.raw.mask()}
- pub const fn shift(&self)->u8 {self.raw.shift()}
-}
-// Primitive specializations keep the field helpers const while matching the
-// register word type. No field helper itself performs a hardware access.
-macro_rules! field_access {
- ($word:ty) => {
-  impl Field<RO,$word> {pub const fn read(&self,word:$word)->$word {(word&self.mask)>>self.shift}}
-  impl Field<RW,$word> {
-   pub const fn read(&self,word:$word)->$word {(word&self.mask)>>self.shift}
-   pub const fn write(&self,word:$word,value:$word)->$word {(word&!self.mask)|((value<<self.shift)&self.mask)}
-  }
-  impl Field<WO,$word> {pub const fn write(&self,word:$word,value:$word)->$word {(word&!self.mask)|((value<<self.shift)&self.mask)}}
-  impl BoolField<RO,$word> {pub const fn read(&self,word:$word)->bool {word&self.raw.mask!=0}}
-  impl BoolField<RW,$word> {
-   pub const fn read(&self,word:$word)->bool {word&self.raw.mask!=0}
-   pub const fn write(&self,word:$word,value:bool)->$word {(word&!self.raw.mask)|if value {self.raw.mask}else{0}}
-  }
-  impl BoolField<WO,$word> {pub const fn write(&self,word:$word,value:bool)->$word {(word&!self.raw.mask)|if value {self.raw.mask}else{0}}}
-  impl<T:TryFrom<u32>> EnumField<RO,T,$word> {pub fn read(&self,word:$word)->Option<T> {T::try_from(((word&self.raw.mask)>>self.raw.shift) as u32).ok()}}
-  impl<T:TryFrom<u32>+Into<u32>> EnumField<RW,T,$word> {
-   pub fn read(&self,word:$word)->Option<T> {T::try_from(((word&self.raw.mask)>>self.raw.shift) as u32).ok()}
-   pub fn write(&self,word:$word,value:T)->$word {(word&!self.raw.mask)|(((value.into()<<self.raw.shift) as $word)&self.raw.mask)}
-  }
-  impl<T:Into<u32>> EnumField<WO,T,$word> {pub fn write(&self,word:$word,value:T)->$word {(word&!self.raw.mask)|(((value.into()<<self.raw.shift) as $word)&self.raw.mask)}}
- };
-}
-field_access!(u8); field_access!(u16); field_access!(u32);
-impl<A,W,R,T:RegisterValue,V> Reg<A,W,R,T,V> {
+impl<T:Copy,A:Access,WB,RB,D:Copy> Copy for Reg<T,A,WB,RB,D> {}
+impl<T:Copy,A:Access,WB,RB,D:Copy> Clone for Reg<T,A,WB,RB,D> {fn clone(&self)->Self {*self}}
+impl<T:Copy,A:Access,WB,RB,D> PartialEq for Reg<T,A,WB,RB,D> {fn eq(&self,other:&Self)->bool {self.ptr==other.ptr}}
+impl<T:Copy,A:Access,WB,RB,D> Eq for Reg<T,A,WB,RB,D> {}
+unsafe impl<T:Copy,A:Access,WB,RB,D:Send> Send for Reg<T,A,WB,RB,D> {}
+unsafe impl<T:Copy,A:Access,WB,RB,D:Sync> Sync for Reg<T,A,WB,RB,D> {}
+
+impl<T:Copy,A:Access,WB,RB> Reg<T,A,WB,RB> {
     /// # Safety
-    /// Address must be a valid aligned register with the specified access mode.
-    pub const unsafe fn from_address(address: usize) -> Self { Self { address, _access: core::marker::PhantomData } }
-    pub const fn address(&self) -> usize { self.address }
+    /// Pointer must name a valid aligned register of exactly T's width/layout,
+    /// access and side effects. Respect hardware clocks, power and ownership.
+    #[inline(always)]
+    pub const unsafe fn from_ptr(ptr:*mut T)->Self {Self{ptr:ptr as _,phantom:PhantomData,reset:DefaultReset}}
 }
-impl<W,R,T:RegisterValue,V> Reg<RO,W,R,T,V> {
+impl<T:Copy,A:Access,WB,RB> Reg<T,A,WB,RB,GivenReset<T>> {
     /// # Safety
-    /// Clock/power and ownership must permit a read; account for side effects.
-    pub unsafe fn read(&self) -> T { unsafe { read_value(self.address) } }
+    /// from_ptr's contract applies. reset must be this exact register element's
+    /// audited complete reset value, including documented reserved bits.
+    #[inline(always)]
+    pub const unsafe fn from_ptr_with_reset(ptr:*mut T,reset:T)->Self {Self{ptr:ptr as _,phantom:PhantomData,reset:GivenReset(reset)}}
 }
-impl<W,R,T:RegisterValue,V> Reg<RW,W,R,T,V> {
-    /// # Safety
-    /// Clock/power and ownership must permit a read; account for side effects.
-    pub unsafe fn read(&self) -> T { unsafe { read_value(self.address) } }
-    /// # Safety
-    /// Value must obey reserved bits, keys and register semantics; serialize access.
-    pub unsafe fn write_value(&self, value: T) { unsafe { write_value(self.address, value) } }
+impl<T:Copy,A:Access,WB,RB,D> Reg<T,A,WB,RB,D> {
+    #[inline(always)] pub const fn as_ptr(&self)->*mut T {self.ptr as _}
 }
-impl<W,R,T:RegisterValue,V> Reg<WO,W,R,T,V> {
-    /// # Safety
-    /// Value must obey reserved bits, keys and register semantics; serialize access.
-    pub unsafe fn write_value(&self, value: T) { unsafe { write_value(self.address, value) } }
+impl<T:Copy,A:Read,WB,RB,D> Reg<T,A,WB,RB,D> {
+    #[inline(always)] pub fn read(&self)->T {unsafe{(self.ptr as *mut T).read_volatile()}}
 }
-impl<T:RegisterValue,V> Reg<RW,Ordinary,Ordinary,T,V> {
-    /// Raw clear/set read-modify-write, preserving the previous mask API.
-    /// # Safety
-    /// Serialize access and obey reserved bits. Only ordinary RW exposes this method.
-    pub unsafe fn modify_value(&self, clear:T, set:T) { unsafe { self.write_value((self.read()&!clear)|set) } }
+impl<T:Copy,A:Write,WB,RB,D> Reg<T,A,WB,RB,D> {
+    /// Write the explicit typed value; no default merge or hardware read.
+    #[inline(always)] pub fn write_value(&self,val:T) {unsafe{(self.ptr as *mut T).write_volatile(val)}}
 }
-impl<T:RegisterValue,V:RegisterView<Word=T>> Reg<RW,Ordinary,Ordinary,T,V> {
-    /// Read once, modify a typed in-memory value, then write once. Not atomic.
-    /// # Safety
-    /// Serialize access, satisfy clock/power/ownership, and obey reserved bits.
-    /// Not available on write-only or read/write-side-effect registers.
-    pub unsafe fn modify(&self, f: impl FnOnce(&mut V)) {
-        let mut value = V::from_bits(unsafe { self.read() });
-        f(&mut value);
-        unsafe { self.write_value(value.bits()) }
-    }
+impl<T:Copy,A:Write,WB,RB,D:Reset<T>> Reg<T,A,WB,RB,D> {
+    /// Initialize from this register/element's audited complete reset then write
+    /// once. Unknown defaults do not expose this method. A reset word is not a
+    /// neutral command: callers must still obey flags, keys and reserved bits.
+    #[inline(always)] pub fn write(&self,f:impl FnOnce(&mut T)) {let mut val=self.reset.value();f(&mut val);self.write_value(val);}
 }
-macro_rules! typed_read {
-    ($access:ty) => {
-        impl<W,R,T:RegisterValue,V:RegisterView<Word=T>> Reg<$access,W,R,T,V> {
-            /// Read a typed value from hardware; `write` performs no hardware read.
-            /// # Safety
-            /// The same clock, ownership and read-side-effect contract as `read`.
-            pub unsafe fn read_value(&self) -> V { V::from_bits(unsafe { self.read() }) }
-        }
-    }
+impl<T:Copy,A:Read+Write,D> Reg<T,A,Ordinary,Ordinary,D> {
+    /// One read and one write, not atomic. Only ordinary RW permits modify.
+    #[inline(always)] pub fn modify(&self,f:impl FnOnce(&mut T)) {let mut val=self.read();f(&mut val);self.write_value(val);}
 }
-typed_read!(RO); typed_read!(RW);
-macro_rules! typed_write {
-    ($access:ty) => {
-        impl<W,R,T:RegisterValue,V:RegisterView<Word=T>+Default> Reg<$access,W,R,T,V> {
-            /// Start at this register's documented reset value, run the setters,
-            /// and write once. No hardware read and no implicit reset command.
-            /// Only registers with a proven complete reset word expose this API.
-            /// # Safety
-            /// Obey reserved bits, keys, flags and other write semantics. A reset
-            /// value is not a neutral command: W0C/W1C/keyed registers still need
-            /// a deliberately chosen value. Serialize access and satisfy power,
-            /// clocks and ownership. Use `write_value` for an explicit raw word.
-            pub unsafe fn write(&self, f: impl FnOnce(&mut V)) {
-                let mut value = V::default();
-                f(&mut value);
-                unsafe { self.write_value(value.bits()) }
-            }
-        }
-    }
+
 }
-typed_write!(RW); typed_write!(WO);
-macro_rules! side_effect_writes {
-    ($access:ty) => {
-        impl<R,T:RegisterValue,V> Reg<$access,ZeroToClear,R,T,V> {
-            /// Raw full-word complement write: zero selected bits, one every other bit.
-            /// This does not infer a register-specific neutral word from its reset.
-            /// # Safety
-            /// Use only if ones are permitted in every unselected bit, including
-            /// reserved bits. Otherwise use an explicit `write_value` or a deliberately
-            /// constructed typed `write`. Mask must select valid flags; obey ownership.
-            pub unsafe fn clear(&self,mask:T) {unsafe {write_value(self.address,!mask)}}
-        }
-        impl<R,T:RegisterValue,V> Reg<$access,OneToClear,R,T,V> {
-            /// # Safety
-            /// Mask must select valid clearable flags; obey reserved bits and ownership.
-            pub unsafe fn clear(&self,mask:T) {unsafe {write_value(self.address,mask)}}
-        }
-        impl<R,T:RegisterValue,V> Reg<$access,OneToSet,R,T,V> {
-            /// # Safety
-            /// Mask must select valid settable bits; obey ownership and reserved bits.
-            pub unsafe fn set(&self,mask:T) {unsafe {write_value(self.address,mask)}}
-        }
-        impl<R,T:RegisterValue,V> Reg<$access,Toggle,R,T,V> {
-            /// # Safety
-            /// Mask must select valid toggle bits; obey ownership and reserved bits.
-            pub unsafe fn toggle(&self,mask:T) {unsafe {write_value(self.address,mask)}}
-        }
-        impl<R,T:RegisterValue,V> Reg<$access,Command,R,T,V> {
-            /// # Safety
-            /// Value must be a valid command and all hardware preconditions must hold.
-            pub unsafe fn command(&self,value:T) {unsafe {write_value(self.address,value)}}
-        }
-    }
-}
-side_effect_writes!(RW);
-side_effect_writes!(WO);
-// Monomorphization preserves the actual MMIO transaction width. In particular,
-// a narrow read is never implemented as a u32 read followed by truncation.
-#[inline] unsafe fn read_value<T:RegisterValue>(address:usize)->T { unsafe { core::ptr::read_volatile(address as *const T) } }
-#[inline] unsafe fn write_value<T:RegisterValue>(address:usize,value:T) { unsafe { core::ptr::write_volatile(address as *mut T,value) } }
-/// # Safety
-/// Address must identify a mapped aligned readable register. Respect clock,
-/// power, exclusive ownership and register side effects.
-#[inline] pub unsafe fn read(address: usize) -> u32 { unsafe { core::ptr::read_volatile(address as *const u32) } }
-/// # Safety
-/// Address and value must be valid for the register. Preserve reserved bits,
-/// provide write keys and synchronize with interrupts/DMA and other owners.
-#[inline] pub unsafe fn write(address: usize, value: u32) { unsafe { core::ptr::write_volatile(address as *mut u32,value) } }
-/// # Safety
-/// Read/write contracts apply. This is NOT atomic. Only use for ordinary RW
-/// registers, never W1C/W0C, write-only or read-side-effect registers.
-#[inline] pub unsafe fn modify(address: usize, clear: u32, set: u32) { unsafe { write(address,(read(address)&!clear)|set) } }
+/// Internal unknown-reset sentinel, outside every supported register word.
+pub const UNKNOWN_RESET: u64 = 0x1_0000_0000;
 "#;
 /// Render register declarations from the validated IR, never from a chip template.
 pub fn render_pac(ir: &Ir) -> Result<String> {
     validate(ir)?;
     let mut out =
         String::from("// Generated by cw32-gen (pac stage). Edit YAML sources, not this file.\n");
-    out.push_str(RAW_API);
+    out.push_str(COMMON_API);
     for c in &ir.family.constants {
         let ty = if c.name.ends_with("_ADDRESS") {
             "usize"
@@ -285,7 +191,8 @@ pub fn render_pac(ir: &Ir) -> Result<String> {
                 .collect();
             format!("<{}>", values.join(","))
         };
-        out.push_str(&format!("pub const {}: {}::RegisterBlock{arguments} = unsafe {{ {}::RegisterBlock::from_address({}_BASE) }};\n",p.name,p.block,p.block,p.name));
+        let peripheral_type = value_name(&p.block);
+        out.push_str(&format!("pub const {}: {}::{peripheral_type}{arguments} = unsafe {{ {}::{peripheral_type}::from_ptr({}_BASE as *mut ()) }};\n",p.name,p.block,p.block,p.name));
     }
     for b in ir.blocks.values() {
         let parameters = instance_reset_registers(ir, &b.name);
@@ -335,14 +242,58 @@ pub fn render_pac(ir: &Ir) -> Result<String> {
                     .join(",")
             )
         };
-        out.push_str(&format!("pub mod {} {{\n#[derive(Clone, Copy)]\npub struct RegisterBlock{declaration} {{ address: usize }}\nimpl{generics} RegisterBlock{arguments} {{\n/// # Safety\n/// The address and instance reset parameters must identify this register block on the selected chip.\npub const unsafe fn from_address(address:usize)->Self {{ Self {{address}} }}\n",b.name));
+        let peripheral_type = value_name(&b.name);
+        out.push_str(&format!("pub mod {} {{\n#[derive(Clone, Copy, PartialEq, Eq)]\npub struct {peripheral_type}{declaration} {{ ptr: *mut u8 }}\nunsafe impl{generics} Send for {peripheral_type}{arguments} {{}}\nunsafe impl{generics} Sync for {peripheral_type}{arguments} {{}}\nimpl{generics} {peripheral_type}{arguments} {{\n/// # Safety\n/// The pointer and instance reset parameters must identify this mapped register block.\n#[inline(always)] pub const unsafe fn from_ptr(ptr:*mut ())->Self {{ Self {{ptr:ptr as _}} }}\n#[inline(always)] pub const fn as_ptr(&self)->*mut () {{self.ptr as _}}\n",b.name));
         for r in &b.registers {
             let argument = if parameters.contains(&r.name) {
                 format!("<RESET_{}>", r.name)
             } else {
                 String::new()
             };
-            out.push_str(&format!("#[doc = {:?}]\npub const fn {}(&self)->super::Reg<super::{},super::{:?},super::{},u{},regs::{}{argument}> {{ unsafe {{ super::Reg::from_address(self.address + {}) }} }}\n",r.description,rust_ident(&r.name.to_ascii_lowercase()),r.access.to_ascii_uppercase(),r.write_behavior,read_marker(r.read_behavior),r.bit_size,value_name(&r.name),r.name));
+            let access = match r.access.as_str() {
+                "ro" => "R",
+                "wo" => "W",
+                _ => "RW",
+            };
+            let value = format!("regs::{}{argument}", value_name(&r.name));
+            let varying_reset = r.array.is_some()
+                && r.reset_value.is_none()
+                && r.elements.iter().all(|e| e.reset_value.is_some());
+            let behavior = if varying_reset
+                || r.write_behavior != crate::schema::WriteBehavior::Ordinary
+                || r.read_behavior != crate::schema::ReadBehavior::Ordinary
+            {
+                format!(
+                    ",crate::common::{:?},crate::common::{}",
+                    r.write_behavior,
+                    read_marker(r.read_behavior)
+                )
+            } else {
+                String::new()
+            };
+            let policy = if varying_reset {
+                format!(",crate::common::GivenReset<{value}>")
+            } else {
+                String::new()
+            };
+            let (index, check, offset) = indexed_offset(r.offset, r.array.as_ref());
+            let constructor = if varying_reset {
+                let defaults = r
+                    .elements
+                    .iter()
+                    .map(|e| e.reset_value.unwrap().to_string())
+                    .collect::<Vec<_>>()
+                    .join(",");
+                format!("crate::common::Reg::from_ptr_with_reset(self.ptr.wrapping_add({offset}) as _,{value}([{defaults}][n]))")
+            } else {
+                format!("crate::common::Reg::from_ptr(self.ptr.wrapping_add({offset}) as _)")
+            };
+            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {}(self,{index})->crate::common::Reg<{value},crate::common::{access}{behavior}{policy}> {{{check} unsafe {{{constructor}}} }}\n",r.description,rust_ident(&r.name.to_ascii_lowercase())));
+        }
+        for child in &b.blocks {
+            let (index, check, offset) = indexed_offset(child.offset, child.array.as_ref());
+            let ty = format!("crate::{}::{}", child.block, value_name(&child.block));
+            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {}(self,{index})->{ty} {{{check} unsafe {{{ty}::from_ptr(self.ptr.wrapping_add({offset}) as _)}} }}\n",child.description,rust_ident(&child.name.to_ascii_lowercase())));
         }
         out.push_str("}\n");
         for r in &b.registers {
@@ -370,39 +321,26 @@ pub fn render_pac(ir: &Ir) -> Result<String> {
             render_value(&mut out, r, &overrides);
         }
         out.push_str("}\n");
-        out.push_str("pub mod fields {\n");
+        out.push_str("pub mod vals {\n");
         for r in &b.registers {
-            if r.fields.is_empty() {
-                continue;
-            }
-            out.push_str(&format!(
-                "pub mod {} {{\n",
-                rust_ident(&r.name.to_ascii_lowercase())
-            ));
             for f in &r.fields {
-                let mask = (u32::MAX >> (32 - f.bit_size)) << f.bit_offset;
-                let access = f.access.to_ascii_uppercase();
-                let width = if r.bit_size == 32 {
-                    String::new()
-                } else {
-                    format!(",u{}", r.bit_size)
-                };
-                match f.kind.as_str() {
-                    "bool" => out.push_str(&format!("#[doc = {:?}]\npub const {}: crate::BoolField<crate::{access}{width}> = crate::BoolField::new({mask:#x}, {});\n",f.description,f.name,f.bit_offset)),
-                    "enum" => {
-                        let value_name=format!("{}Value",f.name);
-                        out.push_str(&format!("#[derive(Clone,Copy,Debug,PartialEq,Eq)]\n#[repr(u32)]\n#[allow(non_camel_case_types)]\npub enum {value_name} {{\n"));
-                        for v in &f.values {out.push_str(&format!("{} = {},\n",v.name,v.value));}
-                        out.push_str(&format!("}}\nimpl TryFrom<u32> for {value_name} {{type Error=();fn try_from(value:u32)->Result<Self,()> {{match value {{"));
-                        for v in &f.values {out.push_str(&format!("{}=>Ok(Self::{}),",v.value,v.name));}
-                        out.push_str("_=>Err(())}}}\n");
-                        out.push_str(&format!("impl From<{value_name}> for u32 {{fn from(value:{value_name})->u32 {{value as u32}}}}\n"));
-                        out.push_str(&format!("#[doc = {:?}]\npub const {}:crate::EnumField<crate::{access},{value_name}{width}>=crate::EnumField::new({mask:#x},{});\n",f.description,f.name,f.bit_offset));
-                    }
-                    _ => out.push_str(&format!("#[doc = {:?}]\npub const {}: crate::Field<crate::{access}{width}> = crate::Field::new({mask:#x}, {});\n",f.description,f.name,f.bit_offset))
+                if f.kind != "enum" {
+                    continue;
                 }
+                let name = format!("{}{}", value_name(&r.name), value_name(&f.name));
+                out.push_str(&format!("#[derive(Clone,Copy,Debug,PartialEq,Eq)]\n#[repr(u32)]\n#[allow(non_camel_case_types)]\npub enum {name} {{\n"));
+                for v in &f.values {
+                    out.push_str(&format!("{} = {},\n", v.name, v.value));
+                }
+                out.push_str(&format!("}}\nimpl {name} {{pub const fn from_bits(value:u32)->Option<Self> {{match value {{"));
+                for v in &f.values {
+                    out.push_str(&format!("{}=>Some(Self::{}),", v.value, v.name));
+                }
+                out.push_str("_=>None}}}\n");
+                out.push_str(&format!(
+                    "impl From<{name}> for u32 {{fn from(value:{name})->u32 {{value as u32}}}}\n"
+                ));
             }
-            out.push_str("}\n");
         }
         out.push_str("}\n}\n");
     }
@@ -412,6 +350,41 @@ pub fn render_pac(ir: &Ir) -> Result<String> {
     }
     out.push_str("}\nimpl Interrupt { pub const fn number(self)->u16 { self as u16 } }\n");
     Ok(out)
+}
+fn indexed_offset(base: usize, array: Option<&crate::schema::Array>) -> (String, String, String) {
+    match array {
+        None => (String::new(), String::new(), base.to_string()),
+        Some(array) => {
+            let offsets = array.offsets().expect("validated array");
+            let offset = match array {
+                crate::schema::Array::Regular(a) => format!("{base}+n*{}", a.stride),
+                crate::schema::Array::Explicit(_) => format!(
+                    "{base}+[{}][n]",
+                    offsets
+                        .iter()
+                        .map(usize::to_string)
+                        .collect::<Vec<_>>()
+                        .join(",")
+                ),
+            };
+            (
+                "n:usize".into(),
+                format!("assert!(n<{});", offsets.len()),
+                offset,
+            )
+        }
+    }
+}
+fn render_array(array: Option<&crate::schema::Array>) -> String {
+    match array {
+        None => "None".into(),
+        Some(crate::schema::Array::Regular(a)) => {
+            format!("Some(Array::Regular {{len:{},stride:{}}})", a.len, a.stride)
+        }
+        Some(crate::schema::Array::Explicit(a)) => {
+            format!("Some(Array::Explicit(&{:?}))", a.offsets)
+        }
+    }
 }
 /// Register values are deliberately distinct even when two layouts are identical.
 /// A reset value belongs to a register, not a reusable fieldset.
@@ -441,7 +414,6 @@ fn render_value(
 ) {
     let name = value_name(&r.name);
     let word = format!("u{}", r.bit_size);
-    let fields = rust_ident(&r.name.to_ascii_lowercase());
     let default = r.reset_value.map(u64::from).unwrap_or(0x1_0000_0000);
     let declaration = if overrides.is_empty() {
         String::new()
@@ -455,7 +427,6 @@ fn render_value(
     };
     let arguments = if overrides.is_empty() { "" } else { "<RESET>" };
     out.push_str(&format!("#[doc = {:?}]\n#[repr(transparent)]\n#[derive(Clone,Copy,Debug,PartialEq,Eq)]\npub struct {name}{declaration}(pub {word});\n", r.description));
-    out.push_str(&format!("impl{generics} crate::RegisterView for {name}{arguments} {{type Word={word}; fn from_bits(bits:{word})->Self {{Self(bits)}} fn bits(self)->{word} {{self.0}}}}\n"));
     let mut defaults = std::collections::BTreeMap::new();
     if let Some(value) = r.reset_value {
         defaults.insert(
@@ -503,28 +474,56 @@ fn render_value(
         )
     };
     out.push_str(&format!("impl{generics} {name}{arguments} {{\npub const RESET_VALUE:Option<{word}>={reset_value};\npub const RESET_SOURCE:Option<&'static str>={reset_source};\npub const RESET_NOTE:Option<&'static str>={reset_note};\npub const fn from_bits(bits:{word})->Self {{Self(bits)}}\npub const fn bits(self)->{word} {{self.0}}\n"));
+    if r.array.is_some() {
+        out.push_str(&format!("pub const RESET_VALUES:&'static [Option<{word}>]=&{:?};\npub const RESET_SOURCES:&'static [Option<&'static str>]=&{:?};\npub const RESET_NOTES:&'static [Option<&'static str>]=&{:?};\n",r.elements.iter().map(|e|e.reset_value).collect::<Vec<_>>(),r.elements.iter().map(|e|e.reset_source.as_deref()).collect::<Vec<_>>(),r.elements.iter().map(|e|e.reset_note.as_deref()).collect::<Vec<_>>()));
+    }
     for f in &r.fields {
         let method = rust_ident(&f.name.to_ascii_lowercase());
         let setter = format!("set_{}", f.name.to_ascii_lowercase());
-        let field = format!("super::fields::{fields}::{}", f.name);
+        let enum_type = format!(
+            "super::vals::{}{}",
+            value_name(&r.name),
+            value_name(&f.name)
+        );
         let ty = match f.kind.as_str() {
             "bool" => "bool".into(),
-            "enum" => format!("super::fields::{fields}::{}Value", f.name),
-            _ => word.clone(),
+            "enum" => enum_type.clone(),
+            _ => format!(
+                "u{}",
+                if f.bit_size <= 8 {
+                    8
+                } else if f.bit_size <= 16 {
+                    16
+                } else {
+                    32
+                }
+            ),
         };
-        if f.access != "wo" {
+        let (index, assertion, shift) = if let Some(array) = &f.array {
+            (
+                "n:usize,",
+                format!("assert!(n < {});", array.len),
+                format!("{} + n * {}", f.bit_offset, array.stride),
+            )
+        } else {
+            ("", String::new(), f.bit_offset.to_string())
+        };
+        let mask = u32::MAX >> (32 - f.bit_size);
+        let read = match f.kind.as_str() {
+            "bool" => format!("((self.0 >> ({shift})) & 1) != 0"),
+            "enum" => format!("{enum_type}::from_bits(((self.0 >> ({shift})) & {mask:#x}) as u32)"),
+            _ => format!("((self.0 >> ({shift})) & {mask:#x}) as {ty}"),
+        };
+        {
             let read_ty = if f.kind == "enum" {
                 format!("Option<{ty}>")
             } else {
                 ty.clone()
             };
-            out.push_str(&format!(
-                "#[doc = {:?}]\npub fn {method}(&self)->{read_ty} {{{field}.read(self.0)}}\n",
-                f.description
-            ));
+            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {method}(&self,{index})->{read_ty} {{{assertion}{read}}}\n", f.description));
         }
-        if f.access != "ro" {
-            out.push_str(&format!("#[doc = {:?}]\npub fn {setter}(&mut self,value:{ty}) {{self.0={field}.write(self.0,value);}}\n", f.description));
+        {
+            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {setter}(&mut self,{index}value:{ty}) {{{assertion}self.0=(self.0 & !(({mask:#x} as {word}) << ({shift}))) | (((value as {word}) & {mask:#x}) << ({shift}));}}\n", f.description));
         }
     }
     out.push_str("}\n");
@@ -657,7 +656,7 @@ const METADATA_TYPES: &str = r#"
 #[derive(Clone, Copy, Debug)]
 pub struct Metadata { pub schema_version:u32, pub name: &'static str, pub family: &'static str, pub core: &'static str, pub target: &'static str, pub peripherals: &'static [Peripheral], pub interrupts: &'static [Interrupt], pub pins: &'static [Pin], pub memory: &'static [Memory], pub interrupt_bindings:&'static [InterruptBinding], pub pin_routes:&'static [PinRoute], pub remaps:&'static [Remap], pub quirks:&'static [Quirk] }
 #[derive(Clone, Copy, Debug)]
-pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub ownership_parent:Option<&'static str>, pub registers:&'static [Register], pub implemented_mask: u16, pub pulldown_mask: u16 }
+pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub ownership_parent:Option<&'static str>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
 #[derive(Clone, Copy, Debug)]
 pub struct RegisterReset {pub register:&'static str,pub reset_value:u32,pub reset_source:&'static str,pub reset_note:Option<&'static str>}
 #[derive(Clone, Copy, Debug)]
@@ -669,9 +668,17 @@ pub enum WriteBehavior { Ordinary, ZeroToClear, OneToClear, OneToSet, Toggle, Co
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum ReadBehavior { Ordinary, Clear, Fifo, Latch }
 #[derive(Clone, Copy, Debug)]
-pub struct Register {pub name:&'static str,pub offset:usize,pub bit_size:u8,pub reset_value:Option<u32>,pub reset_source:Option<&'static str>,pub reset_note:Option<&'static str>,pub access:Access,pub alias_of:Option<&'static str>,pub write_behavior:WriteBehavior,pub read_behavior:ReadBehavior,pub fields:&'static [RegisterField]}
+pub struct Register {pub name:&'static str,pub offset:usize,pub bit_size:u8,pub array:Option<Array>,pub elements:&'static [RegisterElement],pub reset_value:Option<u32>,pub reset_source:Option<&'static str>,pub reset_note:Option<&'static str>,pub access:Access,pub alias_of:Option<&'static str>,pub write_behavior:WriteBehavior,pub read_behavior:ReadBehavior,pub fields:&'static [RegisterField]}
+#[derive(Clone,Copy,Debug)]
+pub enum Array {Regular {len:usize,stride:usize}, Explicit(&'static [usize])}
+#[derive(Clone,Copy,Debug)]
+pub struct RegisterElement {pub name:&'static str,pub description:&'static str,pub reset_value:Option<u32>,pub reset_source:Option<&'static str>,pub reset_note:Option<&'static str>}
+#[derive(Clone,Copy,Debug)]
+pub struct BlockItem {pub name:&'static str,pub offset:usize,pub block:&'static str,pub version:&'static str,pub array:Option<Array>,pub description:&'static str,pub source:&'static str,pub registers:&'static [Register],pub blocks:&'static [BlockItem]}
 #[derive(Clone, Copy, Debug)]
-pub struct RegisterField {pub name:&'static str,pub bit_offset:u8,pub bit_size:u8,pub access:Access}
+pub struct FieldArray {pub len:u8,pub stride:u8}
+#[derive(Clone, Copy, Debug)]
+pub struct RegisterField {pub name:&'static str,pub bit_offset:u8,pub bit_size:u8,pub array:Option<FieldArray>,pub access:Access}
 #[derive(Clone, Copy, Debug)]
 pub struct Interrupt { pub name: &'static str, pub number: u16 }
 #[derive(Clone, Copy, Debug)]
@@ -697,24 +704,35 @@ pub fn render_metadata(ir: &Ir) -> Result<String> {
             block.name.to_ascii_uppercase()
         ));
         for r in &block.registers {
-            out.push_str(&format!("Register {{name:{:?},offset:{},bit_size:{},reset_value:{:?},reset_source:{:?},reset_note:{:?},access:Access::{},alias_of:{:?},write_behavior:WriteBehavior::{:?},read_behavior:ReadBehavior::{:?},fields:&[",r.name,r.offset,r.bit_size,r.reset_value,r.reset_source,r.reset_note,access_marker(&r.access),r.alias_of,r.write_behavior,r.read_behavior));
+            let elements=r.elements.iter().map(|e|format!("RegisterElement {{name:{:?},description:{:?},reset_value:{:?},reset_source:{:?},reset_note:{:?}}}",e.name,e.description,e.reset_value,e.reset_source,e.reset_note)).collect::<Vec<_>>().join(",");
+            let array = render_array(r.array.as_ref());
+            out.push_str(&format!("Register {{name:{:?},offset:{},bit_size:{},array:{array},elements:&[{elements}],reset_value:{:?},reset_source:{:?},reset_note:{:?},access:Access::{},alias_of:{:?},write_behavior:WriteBehavior::{:?},read_behavior:ReadBehavior::{:?},fields:&[",r.name,r.offset,r.bit_size,r.reset_value,r.reset_source,r.reset_note,access_marker(&r.access),r.alias_of,r.write_behavior,r.read_behavior));
             for f in &r.fields {
                 out.push_str(&format!(
-                    "RegisterField {{name:{:?},bit_offset:{},bit_size:{},access:Access::{}}},",
+                    "RegisterField {{name:{:?},bit_offset:{},bit_size:{},array:{},access:Access::{}}},",
                     f.name,
                     f.bit_offset,
                     f.bit_size,
+                    f.array.as_ref().map(|a|format!("Some(FieldArray {{len:{},stride:{}}})",a.len,a.stride)).unwrap_or_else(||"None".into()),
                     access_marker(&f.access)
                 ));
             }
             out.push_str("]},\n");
         }
         out.push_str("];\n");
+        out.push_str(&format!(
+            "static BLOCKS_{}:&[BlockItem]=&[\n",
+            block.name.to_ascii_uppercase()
+        ));
+        for child in &block.blocks {
+            out.push_str(&format!("BlockItem {{name:{:?},offset:{},block:{:?},version:{:?},array:{},description:{:?},source:{:?},registers:REGISTERS_{},blocks:BLOCKS_{}}},\n",child.name,child.offset,child.block,child.version,render_array(child.array.as_ref()),child.description,child.source,child.block.to_ascii_uppercase(),child.block.to_ascii_uppercase()));
+        }
+        out.push_str("];\n");
     }
     out.push_str(&format!("pub static METADATA: Metadata = Metadata {{ schema_version:{}, name: {:?}, family: {:?}, core: {:?}, target: {:?},\nperipherals: &[\n",ir.schema_version,ir.chip.name,ir.family.name,ir.family.core,ir.family.target));
     for p in &ir.family.peripherals {
         let resets = p.register_resets.iter().map(|r| format!("RegisterReset {{register:{:?},reset_value:{},reset_source:{:?},reset_note:{:?}}}",r.register,r.reset_value,r.reset_source,r.reset_note)).collect::<Vec<_>>().join(",");
-        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, ownership_parent:{:?}, registers:REGISTERS_{}, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block.to_ascii_uppercase(),p.implemented_mask,p.pulldown_mask));
+        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, ownership_parent:{:?}, registers:REGISTERS_{}, blocks:BLOCKS_{}, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block.to_ascii_uppercase(),p.block.to_ascii_uppercase(),p.implemented_mask,p.pulldown_mask));
     }
     out.push_str("], interrupts: &[\n");
     for i in &ir.family.interrupts {

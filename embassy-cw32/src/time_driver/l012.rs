@@ -14,10 +14,10 @@
 //! if programming missed the match. Lateness still includes programming, IRQ
 //! and executor delay; at a 4 MHz CPU this can exceed one timer tick.
 //! This is a timestamp-resolution improvement, not a hard-real-time guarantee.
-use super::core::{Counter, Hardware, COMPARE, ICR_MASK, UPDATE};
+use super::core::{Counter, Hardware, ICR_MASK};
 use crate::{
     interrupt::{self, InterruptExt},
-    pac,
+    pac::{self, gtim::regs},
     rcc::PeripheralClock,
     time_driver::queue::Queue,
 };
@@ -26,28 +26,21 @@ use critical_section::Mutex;
 use embassy_time_driver::Driver;
 
 struct Registers;
-impl Registers {
-    fn read(offset: usize) -> u32 {
-        // SAFETY: only initialized, exclusively reserved GTIM1 is accessed.
-        unsafe { pac::read(pac::GTIM1_BASE + offset) }
-    }
-    fn write(offset: usize, value: u32) {
-        // SAFETY: exclusive ownership and CS serialization; values follow RM.
-        unsafe { pac::write(pac::GTIM1_BASE + offset, value) }
-    }
-}
 impl Hardware for Registers {
     fn counter(&mut self) -> u32 {
-        Self::read(pac::gtim::CNT)
+        pac::GTIM1.cnt().read().0
     }
     fn clear(&mut self, flags: u32) {
-        Self::write(pac::gtim::ICR, ICR_MASK & !flags);
+        pac::GTIM1.icr().write_value(regs::Icr(ICR_MASK & !flags));
     }
     fn compare_irq(&mut self, enabled: bool) {
-        Self::write(pac::gtim::IER, UPDATE | if enabled { COMPARE } else { 0 });
+        pac::GTIM1.ier().write(|w| {
+            w.set_uie(true);
+            w.set_cc1ie(enabled);
+        });
     }
     fn compare(&mut self, value: u16) {
-        Self::write(pac::gtim::CCR1, u32::from(value));
+        pac::GTIM1.ccr(0).write(|w| w.set_ccr(value));
     }
     fn pend(&mut self) {
         interrupt::GTIM1.pend();
@@ -104,23 +97,27 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
         assert!(!state.started);
         interrupt::GTIM1.disable();
         <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
-        Registers::write(pac::gtim::CR1, 0);
-        Registers::write(pac::gtim::IER, 0);
-        Registers::write(pac::gtim::CR2, 0);
-        Registers::write(pac::gtim::SMCR, 0); // internal PCLK, no slave trigger
-        Registers::write(pac::gtim::CCER, 0);
-        Registers::write(pac::gtim::CCMR1CMP, 0); // CC1 output/frozen, no preload
-        Registers::write(pac::gtim::CCMR2CMP, 0);
-        Registers::write(pac::gtim::PSC, divider - 1);
-        Registers::write(pac::gtim::ARR, 0xffff);
-        Registers::write(pac::gtim::CNT, 0);
-        Registers::write(pac::gtim::CCR1, 0);
-        Registers::write(pac::gtim::EGR, 1); // UG loads buffered PSC, resets CNT
-        Registers::write(pac::gtim::ICR, 0); // stopped/exclusive: clear all startup flags
-        Registers::write(pac::gtim::CCER, 1); // CC1 enabled, no GPIO AF configured
-        Registers::write(pac::gtim::IER, UPDATE);
+        pac::GTIM1.cr1().write_value(regs::Cr1(0));
+        pac::GTIM1.ier().write_value(regs::Ier(0));
+        pac::GTIM1.cr2().write_value(regs::Cr2(0));
+        pac::GTIM1.smcr().write_value(regs::Smcr(0)); // internal PCLK, no slave trigger
+        pac::GTIM1.ccer().write_value(regs::Ccer(0));
+        pac::GTIM1.ccmr_cmp(0).write_value(regs::CcmrCmp(0)); // CC1 output/frozen, no preload
+        pac::GTIM1.ccmr_cmp(1).write_value(regs::CcmrCmp(0));
+        pac::GTIM1.psc().write(|w| w.set_psc((divider - 1) as u16));
+        pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
+        pac::GTIM1.cnt().write_value(regs::Cnt(0));
+        pac::GTIM1.ccr(0).write_value(regs::Ccr(0));
+        pac::GTIM1.egr().write(|w| w.set_ug(true)); // UG loads buffered PSC, resets CNT
+        pac::GTIM1.icr().write_value(regs::Icr(0)); // stopped/exclusive: clear all startup flags
+        pac::GTIM1.ccer().write(|w| w.set_cc1e(true)); // CC1 enabled, no GPIO AF configured
+        pac::GTIM1.ier().write(|w| w.set_uie(true));
         // UIFREMAP=1, URS=1, CEN=1, upcounting, continuous, updates enabled.
-        Registers::write(pac::gtim::CR1, (1 << 11) | (1 << 2) | 1);
+        pac::GTIM1.cr1().write(|w| {
+            w.set_uifremap(true);
+            w.set_urs(true);
+            w.set_cen(true);
+        });
         state.started = true;
         interrupt::GTIM1.unpend();
         interrupt::GTIM1.set_priority(priority);

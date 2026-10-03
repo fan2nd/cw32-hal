@@ -2,11 +2,12 @@ name: gtim
 version: l012
 registers:
 - name: CR1
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.1, printed p284 (PDF p310); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.1, printed p284 (PDF p310); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 0
   access: rw
-  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: UIFREMAP
     bit_offset: 11
@@ -63,11 +64,12 @@ registers:
     kind: bool
     description: Field CEN; raw encoding retained unless explicitly audited.
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.2, printed p285 (PDF p311); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.2, printed p285 (PDF p311); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 4
   access: rw
-  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: MMSH
     bit_offset: 25
@@ -94,11 +96,12 @@ registers:
     kind: bool
     description: Field CCDS; raw encoding retained unless explicitly audited.
 - name: SMCR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.3, printed p287 (PDF p313); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.3, printed p287 (PDF p313); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 8
   access: rw
-  description: Register SMCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register SMCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: SMSPS
     bit_offset: 25
@@ -173,11 +176,12 @@ registers:
     kind: raw
     description: Field SMS; raw encoding retained unless explicitly audited.
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.4, printed p290 (PDF p316); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.4, printed p290 (PDF p316); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 12
   access: rw
-  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: TERRIE
     bit_offset: 23
@@ -276,11 +280,12 @@ registers:
     kind: bool
     description: Field UIE; raw encoding retained unless explicitly audited.
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.5, printed p292 (PDF p318); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.5, printed p292 (PDF p318); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 16
   access: ro
-  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
+  description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
   fields:
   - name: TERRF
     bit_offset: 23
@@ -366,12 +371,465 @@ registers:
     access: ro
     kind: bool
     description: Field UIF; raw encoding retained unless explicitly audited.
+- name: EGR
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.7, printed p295 (PDF p321); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 20
+  access: rw
+  description: 'Register EGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Writing selected event bits generates update/trigger/capture or brake events; hardware clears event bits. Events
+    can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE. Do not use generic RMW.
+    Source: RM1.4 16.10.7'
+  fields:
+  - name: TG
+    bit_offset: 6
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field TG; raw encoding retained unless explicitly audited.
+  - name: CC4G
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC4G; raw encoding retained unless explicitly audited.
+  - name: CC3G
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC3G; raw encoding retained unless explicitly audited.
+  - name: CC2G
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC2G; raw encoding retained unless explicitly audited.
+  - name: CC1G
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC1G; raw encoding retained unless explicitly audited.
+  - name: UG
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field UG; raw encoding retained unless explicitly audited.
+  write_behavior: command
+  read_behavior: ordinary
+- name: CCMR_CAP
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.8, printed p296 (PDF p322); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 24
+  access: rw
+  description: 'Indexed CCMR_CAP: index 0 = CCMR1CAP, index 1 = CCMR2CAP. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
+  fields:
+  - name: CCS
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    array:
+      len: 2
+      stride: 8
+    description: Indexed CCS; local index begins at zero, with explicitly modeled positions.
+  - name: ICPSC
+    bit_offset: 2
+    bit_size: 2
+    access: rw
+    kind: raw
+    array:
+      len: 2
+      stride: 8
+    description: Indexed ICPSC; local index begins at zero, with explicitly modeled positions.
+  - name: ICF
+    bit_offset: 4
+    bit_size: 4
+    access: rw
+    kind: raw
+    array:
+      len: 2
+      stride: 8
+    description: Indexed ICF; local index begins at zero, with explicitly modeled positions.
+  array:
+    len: 2
+    stride: 4
+  elements:
+  - name: CCMR1CAP
+    description: Register CCMR1CAP; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics.
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.8, printed p296 (PDF p322); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+  - name: CCMR2CAP
+    description: Register CCMR2CAP; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics.
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.10, printed p300 (PDF p326); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+- name: CCMR_CMP
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.9, printed p297 (PDF p323); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 24
+  access: rw
+  description: 'Indexed CCMR_CMP: index 0 = CCMR1CMP, index 1 = CCMR2CMP. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
+  fields:
+  - name: CCS
+    bit_offset: 0
+    bit_size: 2
+    access: rw
+    kind: raw
+    array:
+      len: 2
+      stride: 8
+    description: Indexed CCS; local index begins at zero, with explicitly modeled positions.
+  - name: OCFE
+    bit_offset: 2
+    bit_size: 1
+    access: rw
+    kind: bool
+    array:
+      len: 2
+      stride: 8
+    description: Indexed OCFE; local index begins at zero, with explicitly modeled positions.
+  - name: OCPE
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    array:
+      len: 2
+      stride: 8
+    description: Indexed OCPE; local index begins at zero, with explicitly modeled positions.
+  - name: OCM
+    bit_offset: 4
+    bit_size: 3
+    access: rw
+    kind: raw
+    array:
+      len: 2
+      stride: 8
+    description: Indexed OCM; local index begins at zero, with explicitly modeled positions.
+  - name: OCCE
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    array:
+      len: 2
+      stride: 8
+    description: Indexed OCCE; local index begins at zero, with explicitly modeled positions.
+  - name: OCMH
+    bit_offset: 16
+    bit_size: 1
+    access: rw
+    kind: bool
+    array:
+      len: 2
+      stride: 8
+    description: Indexed OCMH; local index begins at zero, with explicitly modeled positions.
+  alias_of: CCMR_CAP
+  array:
+    len: 2
+    stride: 4
+  elements:
+  - name: CCMR1CMP
+    description: Register CCMR1CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics.
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.9, printed p297 (PDF p323); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+  - name: CCMR2CMP
+    description: Register CCMR2CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual
+      for value semantics.
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.11, printed p301 (PDF p327); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+- name: CCER
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.12, printed p302 (PDF p328); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 32
+  access: rw
+  description: Register CCER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: CC4NP
+    bit_offset: 15
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC4NP; raw encoding retained unless explicitly audited.
+  - name: CC4P
+    bit_offset: 13
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC4P; raw encoding retained unless explicitly audited.
+  - name: CC4E
+    bit_offset: 12
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC4E; raw encoding retained unless explicitly audited.
+  - name: CC3NP
+    bit_offset: 11
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC3NP; raw encoding retained unless explicitly audited.
+  - name: CC3P
+    bit_offset: 9
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC3P; raw encoding retained unless explicitly audited.
+  - name: CC3E
+    bit_offset: 8
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC3E; raw encoding retained unless explicitly audited.
+  - name: CC2NP
+    bit_offset: 7
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC2NP; raw encoding retained unless explicitly audited.
+  - name: CC2P
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC2P; raw encoding retained unless explicitly audited.
+  - name: CC2E
+    bit_offset: 4
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC2E; raw encoding retained unless explicitly audited.
+  - name: CC1NP
+    bit_offset: 3
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC1NP; raw encoding retained unless explicitly audited.
+  - name: CC1P
+    bit_offset: 1
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC1P; raw encoding retained unless explicitly audited.
+  - name: CC1E
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field CC1E; raw encoding retained unless explicitly audited.
+- name: CNT
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.13, printed p303 (PDF p329); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 36
+  access: rw
+  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: UIFCPY
+    bit_offset: 31
+    bit_size: 1
+    access: ro
+    kind: bool
+    description: Field UIFCPY; raw encoding retained unless explicitly audited.
+  - name: CNT
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CNT; raw encoding retained unless explicitly audited.
+- name: PSC
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.14, printed p303 (PDF p329); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 40
+  access: rw
+  description: Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: PSC
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field PSC; raw encoding retained unless explicitly audited.
+- name: ARR
+  reset_value: 65535
+  reset_source: CW32L012 RM1.4 section 16.10.15, printed p304 (PDF p330); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 44
+  access: rw
+  description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: ARR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field ARR; raw encoding retained unless explicitly audited.
+- name: CCR
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.16, printed p304 (PDF p330); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 52
+  access: rw
+  description: 'Indexed CCR: index 0 = CCR1, index 1 = CCR2, index 2 = CCR3, index 3 = CCR4. Complete field layout/access/side
+    effects are identical; offsets and element evidence are explicit.'
+  fields:
+  - name: CCR
+    bit_offset: 0
+    bit_size: 16
+    access: rw
+    kind: raw
+    description: Field CCR1; raw encoding retained unless explicitly audited.
+  write_behavior: ordinary
+  read_behavior: clear
+  array:
+    len: 4
+    stride: 4
+  elements:
+  - name: CCR1
+    description: 'Register CCR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. In input-capture mode, reading CCR1 clears ISR.CC1IF; overcapture is separately cleared via ICR. In
+      output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically
+      neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.16, printed p304 (PDF p330); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+  - name: CCR2
+    description: 'Register CCR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. In input-capture mode, reading CCR2 clears ISR.CC2IF; overcapture is separately cleared via ICR. In
+      output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically
+      neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.17, printed p305 (PDF p331); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+  - name: CCR3
+    description: 'Register CCR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. In input-capture mode, reading CCR3 clears ISR.CC3IF; overcapture is separately cleared via ICR. In
+      output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically
+      neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.18, printed p305 (PDF p331); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+  - name: CCR4
+    description: 'Register CCR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for
+      value semantics. In input-capture mode, reading CCR4 clears ISR.CC4IF; overcapture is separately cleared via ICR. In
+      output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically
+      neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
+    reset_value: 0
+    reset_source: CW32L012 RM1.4 section 16.10.19, printed p306 (PDF p332); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    reset_note: null
+- name: ECR
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.20, printed p307 (PDF p333); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 88
+  access: rw
+  description: Register ECR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: IPOS
+    bit_offset: 6
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field IPOS; raw encoding retained unless explicitly audited.
+  - name: FIDX
+    bit_offset: 5
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field FIDX; raw encoding retained unless explicitly audited.
+  - name: IDIR
+    bit_offset: 1
+    bit_size: 2
+    access: rw
+    kind: raw
+    description: Field IDIR; raw encoding retained unless explicitly audited.
+  - name: IE
+    bit_offset: 0
+    bit_size: 1
+    access: rw
+    kind: bool
+    description: Field IE; raw encoding retained unless explicitly audited.
+- name: TISEL
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.21, printed p308 (PDF p334); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 92
+  access: rw
+  description: Register TISEL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: TI4SEL
+    bit_offset: 24
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TI4SEL; raw encoding retained unless explicitly audited.
+  - name: TI3SEL
+    bit_offset: 16
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TI3SEL; raw encoding retained unless explicitly audited.
+  - name: TI2SEL
+    bit_offset: 8
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TI2SEL; raw encoding retained unless explicitly audited.
+  - name: TI1SEL
+    bit_offset: 0
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field TI1SEL; raw encoding retained unless explicitly audited.
+- name: AF1
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.22, printed p310 (PDF p336); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 96
+  access: rw
+  description: Register AF1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: ETRSEL
+    bit_offset: 14
+    bit_size: 4
+    access: rw
+    kind: raw
+    description: Field ETRSEL; raw encoding retained unless explicitly audited.
+- name: AF2
+  reset_value: 0
+  reset_source: CW32L012 RM1.4 section 16.10.23, printed p311 (PDF p337); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+  offset: 100
+  access: rw
+  description: Register AF2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics.
+  fields:
+  - name: OCRSEL
+    bit_offset: 16
+    bit_size: 3
+    access: rw
+    kind: raw
+    description: Field OCRSEL; raw encoding retained unless explicitly audited.
 - name: ICR
-  reset_value: 0x00f01e5f
-  reset_source: "CW32L012 RM1.4 section 16.10.6, printed p294 (PDF p320); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_value: 15736415
+  reset_source: CW32L012 RM1.4 section 16.10.6, printed p294 (PDF p320); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
   offset: 112
   access: rw
-  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 16.10.6; RM1.4 1.2'
+  description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value
+    semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write
+    one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register;
+    reserved-bit policy remains register-specific. Source: RM1.4 16.10.6; RM1.4 1.2'
   fields:
   - name: TERRF
     bit_offset: 23
@@ -459,567 +917,4 @@ registers:
     description: Field UIF; raw encoding retained unless explicitly audited.
   write_behavior: zero_to_clear
   read_behavior: ordinary
-- name: EGR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.7, printed p295 (PDF p321); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 20
-  access: rw
-  description: 'Register EGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Writing selected event bits generates update/trigger/capture or brake events; hardware clears event bits. Events can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE. Do not use generic RMW. Source: RM1.4 16.10.7'
-  fields:
-  - name: TG
-    bit_offset: 6
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field TG; raw encoding retained unless explicitly audited.
-  - name: CC4G
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC4G; raw encoding retained unless explicitly audited.
-  - name: CC3G
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC3G; raw encoding retained unless explicitly audited.
-  - name: CC2G
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC2G; raw encoding retained unless explicitly audited.
-  - name: CC1G
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC1G; raw encoding retained unless explicitly audited.
-  - name: UG
-    bit_offset: 0
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field UG; raw encoding retained unless explicitly audited.
-  write_behavior: command
-  read_behavior: ordinary
-- name: CCMR1CAP
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.8, printed p296 (PDF p322); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 24
-  access: rw
-  description: Register CCMR1CAP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: IC2F
-    bit_offset: 12
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field IC2F; raw encoding retained unless explicitly audited.
-  - name: IC2PSC
-    bit_offset: 10
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IC2PSC; raw encoding retained unless explicitly audited.
-  - name: CC2S
-    bit_offset: 8
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC2S; raw encoding retained unless explicitly audited.
-  - name: IC1F
-    bit_offset: 4
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field IC1F; raw encoding retained unless explicitly audited.
-  - name: IC1PSC
-    bit_offset: 2
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IC1PSC; raw encoding retained unless explicitly audited.
-  - name: CC1S
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC1S; raw encoding retained unless explicitly audited.
-- name: CCMR1CMP
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.9, printed p297 (PDF p323); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 24
-  access: rw
-  description: Register CCMR1CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: OC2MH
-    bit_offset: 24
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC2MH; raw encoding retained unless explicitly audited.
-  - name: OC1MH
-    bit_offset: 16
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC1MH; raw encoding retained unless explicitly audited.
-  - name: OC2CE
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC2CE; raw encoding retained unless explicitly audited.
-  - name: OC2M
-    bit_offset: 12
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: Field OC2M; raw encoding retained unless explicitly audited.
-  - name: OC2PE
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC2PE; raw encoding retained unless explicitly audited.
-  - name: OC2FE
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC2FE; raw encoding retained unless explicitly audited.
-  - name: CC2S
-    bit_offset: 8
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC2S; raw encoding retained unless explicitly audited.
-  - name: OC1CE
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC1CE; raw encoding retained unless explicitly audited.
-  - name: OC1M
-    bit_offset: 4
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: Field OC1M; raw encoding retained unless explicitly audited.
-  - name: OC1PE
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC1PE; raw encoding retained unless explicitly audited.
-  - name: OC1FE
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC1FE; raw encoding retained unless explicitly audited.
-  - name: CC1S
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC1S; raw encoding retained unless explicitly audited.
-  alias_of: CCMR1CAP
-- name: CCMR2CAP
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.10, printed p300 (PDF p326); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 28
-  access: rw
-  description: Register CCMR2CAP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: IC4F
-    bit_offset: 12
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field IC4F; raw encoding retained unless explicitly audited.
-  - name: IC4PSC
-    bit_offset: 10
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IC4PSC; raw encoding retained unless explicitly audited.
-  - name: CC4S
-    bit_offset: 8
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC4S; raw encoding retained unless explicitly audited.
-  - name: IC3F
-    bit_offset: 4
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field IC3F; raw encoding retained unless explicitly audited.
-  - name: IC3PSC
-    bit_offset: 2
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IC3PSC; raw encoding retained unless explicitly audited.
-  - name: CC3S
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC3S; raw encoding retained unless explicitly audited.
-- name: CCMR2CMP
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.11, printed p301 (PDF p327); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 28
-  access: rw
-  description: Register CCMR2CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: OC4MH
-    bit_offset: 24
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC4MH; raw encoding retained unless explicitly audited.
-  - name: OC3MH
-    bit_offset: 16
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC3MH; raw encoding retained unless explicitly audited.
-  - name: OC4CE
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC4CE; raw encoding retained unless explicitly audited.
-  - name: OC4M
-    bit_offset: 12
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: Field OC4M; raw encoding retained unless explicitly audited.
-  - name: OC4PE
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC4PE; raw encoding retained unless explicitly audited.
-  - name: OC4FE
-    bit_offset: 10
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC4FE; raw encoding retained unless explicitly audited.
-  - name: CC4S
-    bit_offset: 8
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC4S; raw encoding retained unless explicitly audited.
-  - name: OC3CE
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC3CE; raw encoding retained unless explicitly audited.
-  - name: OC3M
-    bit_offset: 4
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: Field OC3M; raw encoding retained unless explicitly audited.
-  - name: OC3PE
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC3PE; raw encoding retained unless explicitly audited.
-  - name: OC3FE
-    bit_offset: 2
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field OC3FE; raw encoding retained unless explicitly audited.
-  - name: CC3S
-    bit_offset: 0
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field CC3S; raw encoding retained unless explicitly audited.
-  alias_of: CCMR2CAP
-- name: CCER
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.12, printed p302 (PDF p328); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 32
-  access: rw
-  description: Register CCER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: CC4NP
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC4NP; raw encoding retained unless explicitly audited.
-  - name: CC4P
-    bit_offset: 13
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC4P; raw encoding retained unless explicitly audited.
-  - name: CC4E
-    bit_offset: 12
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC4E; raw encoding retained unless explicitly audited.
-  - name: CC3NP
-    bit_offset: 11
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC3NP; raw encoding retained unless explicitly audited.
-  - name: CC3P
-    bit_offset: 9
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC3P; raw encoding retained unless explicitly audited.
-  - name: CC3E
-    bit_offset: 8
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC3E; raw encoding retained unless explicitly audited.
-  - name: CC2NP
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC2NP; raw encoding retained unless explicitly audited.
-  - name: CC2P
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC2P; raw encoding retained unless explicitly audited.
-  - name: CC2E
-    bit_offset: 4
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC2E; raw encoding retained unless explicitly audited.
-  - name: CC1NP
-    bit_offset: 3
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC1NP; raw encoding retained unless explicitly audited.
-  - name: CC1P
-    bit_offset: 1
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC1P; raw encoding retained unless explicitly audited.
-  - name: CC1E
-    bit_offset: 0
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field CC1E; raw encoding retained unless explicitly audited.
-- name: CNT
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.13, printed p303 (PDF p329); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 36
-  access: rw
-  description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: UIFCPY
-    bit_offset: 31
-    bit_size: 1
-    access: ro
-    kind: bool
-    description: Field UIFCPY; raw encoding retained unless explicitly audited.
-  - name: CNT
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field CNT; raw encoding retained unless explicitly audited.
-- name: PSC
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.14, printed p303 (PDF p329); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 40
-  access: rw
-  description: Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: PSC
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field PSC; raw encoding retained unless explicitly audited.
-- name: ARR
-  reset_value: 0x0000ffff
-  reset_source: "CW32L012 RM1.4 section 16.10.15, printed p304 (PDF p330); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 44
-  access: rw
-  description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: ARR
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field ARR; raw encoding retained unless explicitly audited.
-- name: CCR1
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.16, printed p304 (PDF p330); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 52
-  access: rw
-  description: 'Register CCR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In input-capture mode, reading CCR1 clears ISR.CC1IF; overcapture is separately cleared via ICR. In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
-  fields:
-  - name: CCR1
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field CCR1; raw encoding retained unless explicitly audited.
-  write_behavior: ordinary
-  read_behavior: clear
-- name: CCR2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.17, printed p305 (PDF p331); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 56
-  access: rw
-  description: 'Register CCR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In input-capture mode, reading CCR2 clears ISR.CC2IF; overcapture is separately cleared via ICR. In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
-  fields:
-  - name: CCR2
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field CCR2; raw encoding retained unless explicitly audited.
-  write_behavior: ordinary
-  read_behavior: clear
-- name: CCR3
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.18, printed p305 (PDF p331); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 60
-  access: rw
-  description: 'Register CCR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In input-capture mode, reading CCR3 clears ISR.CC3IF; overcapture is separately cleared via ICR. In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
-  fields:
-  - name: CCR3
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field CCR3; raw encoding retained unless explicitly audited.
-  write_behavior: ordinary
-  read_behavior: clear
-- name: CCR4
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.19, printed p306 (PDF p332); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 64
-  access: rw
-  description: 'Register CCR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In input-capture mode, reading CCR4 clears ISR.CC4IF; overcapture is separately cleared via ICR. In output-compare mode the register is a configuration/preload value. Reads for debugging or generic modify are not semantically neutral. Source: RM1.4 16.4; 16.7; 16.10.16-19'
-  fields:
-  - name: CCR4
-    bit_offset: 0
-    bit_size: 16
-    access: rw
-    kind: raw
-    description: Field CCR4; raw encoding retained unless explicitly audited.
-  write_behavior: ordinary
-  read_behavior: clear
-- name: ECR
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.20, printed p307 (PDF p333); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 88
-  access: rw
-  description: Register ECR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: IPOS
-    bit_offset: 6
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IPOS; raw encoding retained unless explicitly audited.
-  - name: FIDX
-    bit_offset: 5
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field FIDX; raw encoding retained unless explicitly audited.
-  - name: IDIR
-    bit_offset: 1
-    bit_size: 2
-    access: rw
-    kind: raw
-    description: Field IDIR; raw encoding retained unless explicitly audited.
-  - name: IE
-    bit_offset: 0
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: Field IE; raw encoding retained unless explicitly audited.
-- name: TISEL
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.21, printed p308 (PDF p334); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 92
-  access: rw
-  description: Register TISEL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: TI4SEL
-    bit_offset: 24
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field TI4SEL; raw encoding retained unless explicitly audited.
-  - name: TI3SEL
-    bit_offset: 16
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field TI3SEL; raw encoding retained unless explicitly audited.
-  - name: TI2SEL
-    bit_offset: 8
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field TI2SEL; raw encoding retained unless explicitly audited.
-  - name: TI1SEL
-    bit_offset: 0
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field TI1SEL; raw encoding retained unless explicitly audited.
-- name: AF1
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.22, printed p310 (PDF p336); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 96
-  access: rw
-  description: Register AF1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: ETRSEL
-    bit_offset: 14
-    bit_size: 4
-    access: rw
-    kind: raw
-    description: Field ETRSEL; raw encoding retained unless explicitly audited.
-- name: AF2
-  reset_value: 0x00000000
-  reset_source: "CW32L012 RM1.4 section 16.10.23, printed p311 (PDF p337); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
-  offset: 100
-  access: rw
-  description: Register AF2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
-  fields:
-  - name: OCRSEL
-    bit_offset: 16
-    bit_size: 3
-    access: rw
-    kind: raw
-    description: Field OCRSEL; raw encoding retained unless explicitly audited.
 constants: []

@@ -15,6 +15,7 @@
 //! Q1.15 and DMA are intentionally not exposed.
 
 use crate::{pac, peripherals::CORDIC, rcc::PeripheralClock, Peri};
+use pac::cordic::regs;
 
 /// Signed fixed point: the mathematical value is `bits / 2^31`, in [-1, 1).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, PartialOrd, Ord)]
@@ -140,7 +141,7 @@ impl<'d> Cordic<'d> {
     }
     pub fn is_busy(&self) -> bool {
         // SAFETY: owned token and clock enabled by construction; CSR is RO for status.
-        pac::cordic::fields::csr::BUSY.read(unsafe { pac::CORDIC.csr().read() })
+        pac::CORDIC.csr().read().busy()
     }
     /// Return both sin(angle*pi) and cos(angle*pi) in one hardware operation.
     /// `poll_budget` bounds CSR polls, not elapsed time or HCLK cycles.
@@ -246,19 +247,18 @@ impl crate::interrupt::typelevel::Handler<crate::interrupt::typelevel::CORDIC>
     }
 }
 fn complete_async(hw: &mut impl Backend) -> Option<[Q31; 3]> {
-    use pac::cordic::fields::csr;
-    let status = hw.read(Reg::Csr);
-    if !csr::IE.read(status) || !csr::EOC.read(status) || csr::BUSY.read(status) {
+    let mut status = regs::Csr(hw.read(Reg::Csr));
+    if !status.ie() || !status.eoc() || status.busy() {
         return None;
     }
-    hw.write(Reg::Csr, csr::IE.write(status, false));
+    status.set_ie(false);
+    hw.write(Reg::Csr, status.0);
     // The first read clears EOC, not the result bank. No new operation can start
     // while the future holds the exclusive owner borrow.
     Some([Reg::X, Reg::Y, Reg::Z].map(|r| Q31::from_bits(hw.read(r) as i32)))
 }
 fn begin_async(hw: &mut impl Backend, config: Config, op: &Operation) -> Result<(), Error> {
-    use pac::cordic::fields::csr;
-    if csr::BUSY.read(hw.read(Reg::Csr)) {
+    if regs::Csr(hw.read(Reg::Csr)).busy() {
         return Err(Error::Busy);
     }
     EVENT.reset();
@@ -266,7 +266,9 @@ fn begin_async(hw: &mut impl Backend, config: Config, op: &Operation) -> Result<
     for reg in [Reg::X, Reg::Y, Reg::Z] {
         let _ = hw.read(reg);
     }
-    hw.write(Reg::Csr, csr::IE.write(control_word(config, op), true));
+    let mut control = regs::Csr(control_word(config, op));
+    control.set_ie(true);
+    hw.write(Reg::Csr, control.0);
     for (index, reg) in [Reg::X, Reg::Y, Reg::Z].iter().enumerate() {
         if let Some(value) = op.inputs[index] {
             hw.write(*reg, value.to_bits() as u32);
@@ -415,10 +417,10 @@ impl Drop for Cancel {
         critical_section::with(|_| {
             // Dedicated AHBRST.CORDIC reset cancels hardware, including a
             // computation that has not reached EOC. No shared reset is asserted.
-            use pac::cordic::fields::csr;
             let mut hw = Hardware;
-            let status = hw.read(Reg::Csr);
-            hw.write(Reg::Csr, csr::IE.write(status, false));
+            let mut status = regs::Csr(hw.read(Reg::Csr));
+            status.set_ie(false);
+            hw.write(Reg::Csr, status.0);
             <CORDIC as PeripheralClock>::enable_and_reset();
             EVENT.reset();
         });
@@ -523,13 +525,14 @@ fn validate_input(function: Function, scale: u8, value: Q31) -> Result<(), Error
 }
 
 fn control_word(config: Config, op: &Operation) -> u32 {
-    use pac::cordic::fields::csr;
-    let word = csr::FUNC.write(0, op.function as u32);
-    let word = csr::SCALE.write(word, u32::from(op.scale));
-    let word = csr::FORMAT.write(word, true); // Q1.31, unlike STM32 encoding.
-    let word = csr::ITER.write(word, u32::from(config.iterations.0));
+    let mut word = regs::Csr(0);
+    word.set_func(op.function as u8);
+    word.set_scale(op.scale);
+    word.set_format(true); // Q1.31, unlike STM32 encoding.
+    word.set_iter(config.iterations.0);
     // COMP=0: hardware gain compensation; IE/DMAEOC/DMAIDLE remain disabled.
-    csr::COMP.write(word, false)
+    word.set_comp(false);
+    word.0
 }
 
 trait Backend {
@@ -539,41 +542,37 @@ trait Backend {
 struct Hardware;
 impl Backend for Hardware {
     fn read(&mut self, reg: Reg) -> u32 {
-        // SAFETY: reachable only through an exclusively owned, clocked Cordic.
-        // Status polling reads CSR; result reads occur only after BUSY=0/EOC=1.
-        unsafe {
-            match reg {
-                Reg::Csr => pac::CORDIC.csr().read(),
-                Reg::X => pac::CORDIC.x().read(),
-                Reg::Y => pac::CORDIC.y().read(),
-                Reg::Z => pac::CORDIC.z().read(),
-            }
+        // Owned and clocked Cordic; CSR polling does not drain result flags.
+        // Each result access remains exactly one read, which clears EOC.
+        match reg {
+            Reg::Csr => pac::CORDIC.csr().read().0,
+            Reg::X => pac::CORDIC.x().read().0,
+            Reg::Y => pac::CORDIC.y().read().0,
+            Reg::Z => pac::CORDIC.z().read().0,
         }
     }
     fn write(&mut self, reg: Reg, word: u32) {
-        // SAFETY: ownership excludes competing MMIO. Configuration has been
-        // checked and BUSY is clear; inputs are written in hardware trigger order.
-        unsafe {
-            match reg {
-                Reg::Csr => pac::CORDIC.csr().write_value(word),
-                Reg::X => pac::CORDIC.x().write_value(word),
-                Reg::Y => pac::CORDIC.y().write_value(word),
-                Reg::Z => pac::CORDIC.z().write_value(word),
-            }
+        // Validated configuration and inputs cross the raw algorithm boundary
+        // exactly once, retaining the hardware's final-input trigger ordering.
+        match reg {
+            Reg::Csr => pac::CORDIC.csr().write_value(regs::Csr(word)),
+            Reg::X => pac::CORDIC.x().write_value(regs::X(word)),
+            Reg::Y => pac::CORDIC.y().write_value(regs::Y(word)),
+            Reg::Z => pac::CORDIC.z().write_value(regs::Z(word)),
         }
     }
 }
+
 fn run(
     backend: &mut impl Backend,
     config: Config,
     op: Operation,
     poll_budget: u32,
 ) -> Result<[Q31; 3], Error> {
-    use pac::cordic::fields::csr;
     if poll_budget == 0 {
         return Err(Error::ZeroPollBudget);
     }
-    if csr::BUSY.read(backend.read(Reg::Csr)) {
+    if regs::Csr(backend.read(Reg::Csr)).busy() {
         return Err(Error::Busy);
     }
     backend.write(Reg::Csr, control_word(config, &op));
@@ -584,8 +583,8 @@ fn run(
         }
     }
     for _ in 0..poll_budget {
-        let status = backend.read(Reg::Csr);
-        if !csr::BUSY.read(status) && csr::EOC.read(status) {
+        let status = regs::Csr(backend.read(Reg::Csr));
+        if !status.busy() && status.eoc() {
             let mut results = [Q31::ZERO; 3];
             // The first data read clears EOC, but all results remain valid while
             // idle. Do not wait for EOC again between two results of one operation.

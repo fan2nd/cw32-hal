@@ -19,19 +19,19 @@ use crate::{
     gpio::{AnyPin, Pin},
     pac, peripherals,
     rcc::PeripheralClock,
-    Peri, PeripheralType,
+    Async, Blocking, Mode, Peri, PeripheralType,
 };
 use embedded_hal::delay::DelayNs;
 
 mod sealed {
     pub(crate) trait OpaInstance {
-        fn regs() -> crate::pac::opa::RegisterBlock;
+        fn regs() -> crate::pac::opa::Opa;
     }
     pub(crate) trait RefInstance {
-        fn regs() -> crate::pac::vcref::RegisterBlock;
+        fn regs() -> crate::pac::vcref::Vcref;
     }
     pub(crate) trait VcInstance {
-        fn regs() -> crate::pac::vc::RegisterBlock;
+        fn regs() -> crate::pac::vc::Vc;
         fn state() -> &'static crate::async_support::EventState;
     }
     pub trait Pin<I, const S: u8> {}
@@ -56,6 +56,8 @@ include!(concat!(env!("OUT_DIR"), "/_generated_analog.rs"));
 pub enum Error {
     InvalidCode,
     InvalidSignal,
+    Disabled,
+    NotReady,
     InvalidDivider,
     InvalidCalibration,
     Busy,
@@ -72,12 +74,9 @@ pub struct Bandgap<'d> {
 }
 impl<'d> Bandgap<'d> {
     pub fn new(token: Peri<'d, peripherals::BGR>, delay: &mut impl DelayNs) -> Self {
-        critical_section::with(|_| unsafe {
+        critical_section::with(|_| {
             // Preserve TSEN; BGR has no peripheral gate/reset. RM 25.12.19.
-            let value = pac::BGR.cr().read();
-            pac::BGR
-                .cr()
-                .write_value(pac::bgr::fields::cr::BGREN.write(value, true));
+            pac::BGR.cr().modify(|w| w.set_bgren(true));
         });
         delay.delay_us(32); // RM says approximately 30us, including hardware enable.
         Self { _token: token }
@@ -100,77 +99,71 @@ pub struct Dac<'d> {
     _token: Peri<'d, peripherals::DAC>,
     output1: Option<Peri<'d, AnyPin>>,
     output2: Option<Peri<'d, AnyPin>>,
-    route: u32,
+    route: pac::dac::regs::Cr1,
 }
 impl<'d> Dac<'d> {
     pub fn new(token: Peri<'d, peripherals::DAC>, delay: &mut impl DelayNs) -> Self {
         <peripherals::DAC as PeripheralClock>::enable_and_reset();
-        use pac::dac::fields as f;
-        // SAFETY: exclusive whole-DAC token; triggers/DMA/interrupts/waves off.
-        unsafe {
-            pac::DAC.cr0().write_value(0);
-            pac::DAC.cr1().write_value(0);
-            pac::DAC.dhr12r1().write_value(0);
-            pac::DAC.dhr12r2().write_value(0);
-            pac::DAC
-                .cr0()
-                .write_value(f::cr0::EN2.write(f::cr0::EN1.write(0, true), true));
-        }
+        // Exclusive whole-DAC token; triggers/DMA/interrupts/waves off.
+        pac::DAC.cr0().write_value(pac::dac::regs::Cr0(0));
+        pac::DAC.cr1().write_value(pac::dac::regs::Cr1(0));
+        pac::DAC.dhr12r(0).write_value(pac::dac::regs::Dhr12r(0));
+        pac::DAC.dhr12r(1).write_value(pac::dac::regs::Dhr12r(0));
+        pac::DAC.cr0().write(|w| {
+            w.set_en1(true);
+            w.set_en2(true);
+        });
         delay.delay_us(10); // datasheet tSTART typical 3us, not a characterized max.
         Self {
             _token: token,
             output1: None,
             output2: None,
-            route: 0,
+            route: pac::dac::regs::Cr1(0),
         }
     }
     pub fn with_output1<P: SignalPin<peripherals::DAC, 1>>(mut self, pin: Peri<'d, P>) -> Self {
         let pin: Peri<'d, AnyPin> = pin.into();
         pin.configure_analog();
-        self.route = pac::dac::fields::cr1::C1OUT.write(self.route, true);
-        unsafe {
-            pac::DAC.cr1().write_value(self.route);
-        }
+        self.route.set_c1out(true);
+        pac::DAC.cr1().write_value(self.route);
         self.output1 = Some(pin);
         self
     }
     pub fn with_output2<P: SignalPin<peripherals::DAC, 2>>(mut self, pin: Peri<'d, P>) -> Self {
         let pin: Peri<'d, AnyPin> = pin.into();
         pin.configure_analog();
-        self.route = pac::dac::fields::cr1::C2OUT.write(self.route, true);
-        unsafe {
-            pac::DAC.cr1().write_value(self.route);
-        }
+        self.route.set_c2out(true);
+        pac::DAC.cr1().write_value(self.route);
         self.output2 = Some(pin);
         self
     }
     /// Write a 12-bit right-aligned code. TEN=0 transfers it to DOR after one
     /// peripheral clock; analog settling takes additional time. No blocking wait.
     pub fn set(&mut self, channel: Channel, code: u16) -> Result<(), Error> {
-        let word = dac_code(code)?;
-        unsafe {
-            match channel {
-                Channel::One => pac::DAC.dhr12r1().write_value(word),
-                Channel::Two => pac::DAC.dhr12r2().write_value(word),
-            }
-        }
+        let code = dac_code(code)? as u16;
+        let n = match channel {
+            Channel::One => 0,
+            Channel::Two => 1,
+        };
+        pac::DAC.dhr12r(n).write(|w| w.set_data(code));
         Ok(())
     }
     /// Set both holding registers with one 32-bit write.
     pub fn set_pair(&mut self, one: u16, two: u16) -> Result<(), Error> {
-        let word = dac_code(one)? | (dac_code(two)? << 16);
-        unsafe {
-            pac::DAC.dhr12rd().write_value(word);
-        }
+        let one = dac_code(one)? as u16;
+        let two = dac_code(two)? as u16;
+        pac::DAC.dhr12rd().write(|w| {
+            w.set_c1data(one);
+            w.set_c2data(two);
+        });
         Ok(())
     }
     pub fn output_code(&self, channel: Channel) -> u16 {
-        (unsafe {
-            match channel {
-                Channel::One => pac::DAC.dor1().read(),
-                Channel::Two => pac::DAC.dor2().read(),
-            }
-        } & 0xfff) as u16
+        let n = match channel {
+            Channel::One => 0,
+            Channel::Two => 1,
+        };
+        pac::DAC.dor(n).read().data()
     }
 }
 fn dac_code(code: u16) -> Result<u32, Error> {
@@ -182,10 +175,8 @@ fn dac_code(code: u16) -> Result<u32, Error> {
 }
 impl Drop for Dac<'_> {
     fn drop(&mut self) {
-        unsafe {
-            pac::DAC.cr1().write_value(0);
-            pac::DAC.cr0().write_value(0);
-        }
+        pac::DAC.cr1().write_value(pac::dac::regs::Cr1(0));
+        pac::DAC.cr0().write_value(pac::dac::regs::Cr0(0));
         if let Some(pin) = &self.output1 {
             pin.disconnect();
         }
@@ -206,18 +197,15 @@ pub struct DividerConfig {
     /// 0..=7: output = source_voltage * (step+1) / 8. Vcore is nominally 1.6V.
     pub step: u8,
 }
-fn divider_word(config: DividerConfig) -> Result<u32, Error> {
+fn divider_word(config: DividerConfig) -> Result<pac::vcref::regs::Ref, Error> {
     if config.step > 7 {
         return Err(Error::InvalidDivider);
     }
-    use pac::vcref::fields::r#ref as f;
-    Ok(f::EN.write(
-        f::VIN.write(
-            f::DIV.write(0, config.step.into()),
-            config.source == ReferenceSource::Vcore,
-        ),
-        true,
-    ))
+    let mut word = pac::vcref::regs::Ref(0);
+    word.set_div(config.step);
+    word.set_vin(config.source == ReferenceSource::Vcore);
+    word.set_en(true);
+    Ok(word)
 }
 /// VC1/2 share one divider, VC3/4 another. A reference borrow prevents a live
 /// comparator's divider from being reconfigured or dropped by safe Rust.
@@ -232,9 +220,7 @@ impl<'d, I: RefInstance> RefDivider<'d, I> {
     ) -> Result<Self, Error> {
         let word = divider_word(config)?;
         I::enable_and_reset();
-        unsafe {
-            I::regs().r#ref().write_value(word);
-        }
+        I::regs().r#ref().write_value(word);
         delay.delay_us(32);
         Ok(Self {
             _instance: instance,
@@ -243,9 +229,7 @@ impl<'d, I: RefInstance> RefDivider<'d, I> {
 }
 impl<I: RefInstance> Drop for RefDivider<'_, I> {
     fn drop(&mut self) {
-        unsafe {
-            I::regs().r#ref().write_value(0);
-        }
+        I::regs().r#ref().write_value(pac::vcref::regs::Ref(0));
     }
 }
 
@@ -283,44 +267,179 @@ fn comparator_words(
     positive: u8,
     negative: u8,
     config: ComparatorConfig,
-) -> Result<(u32, u32), Error> {
+) -> Result<(pac::vc::regs::Cr0, pac::vc::regs::Cr1), Error> {
     if positive > 3 || negative > 3 {
         return Err(Error::InvalidSignal);
     }
-    use pac::vc::fields as f;
-    let mut cr0 = f::cr0::INP.write(0, positive.into());
-    cr0 = f::cr0::INN.write(cr0, negative.into());
-    cr0 = f::cr0::RESP.write(cr0, config.high_speed);
-    cr0 = f::cr0::HYS.write(cr0, config.hysteresis);
-    cr0 = f::cr0::POL.write(cr0, config.inverted);
-    cr0 = f::cr0::EN.write(cr0, true);
-    let cr1 = f::cr1::FLTTIME.write(f::cr1::FLTCLK.write(0, true), config.filter as u32);
+    let mut cr0 = pac::vc::regs::Cr0(0);
+    cr0.set_inp(positive);
+    cr0.set_inn(negative);
+    cr0.set_resp(config.high_speed);
+    cr0.set_hys(config.hysteresis);
+    cr0.set_pol(config.inverted);
+    cr0.set_en(false);
+    let mut cr1 = pac::vc::regs::Cr1(0);
+    cr1.set_fltclk(true);
+    cr1.set_flttime(config.filter as u8);
     Ok((cr0, cr1))
 }
-/// Polling comparator. All input resources remain owned/borrowed for its life.
+/// Comparator owner, configured but initially disabled.
+///
+/// `Blocking` reads the output directly; `Async` additionally owns an interrupt
+/// binding and provides one-shot event waits. Both modes retain every input pin
+/// and the bandgap, divider or DAC borrow until the comparator is dropped.
 /// VC pair reference identity is independent of the shared IRQ13/IRQ24 pairing.
-///
-/// A live comparator prevents mutation of its DAC threshold.
-///
-/// VC1 cannot use the divider physically shared by VC3/VC4.
-pub struct Comparator<'d, I: VcInstance> {
+pub struct Comp<'d, I: VcInstance, M: Mode> {
     _instance: Peri<'d, I>,
     _positive: Peri<'d, AnyPin>,
     _negative: Option<Peri<'d, AnyPin>>,
     _reference: Option<&'d RefDivider<'d, I::Reference>>,
     _dac: Option<&'d Dac<'d>>,
     _bandgap: &'d Bandgap<'d>,
+    settled: bool,
+    _mode: core::marker::PhantomData<M>,
 }
-impl<'d, I: VcInstance> Comparator<'d, I> {
-    pub fn external<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
+impl<'d, I: VcInstance> Comp<'d, I, Blocking> {
+    /// Configure external positive and negative inputs. Call `enable` before
+    /// sampling the output. Only CH0/CH1 can be used as the negative input.
+    pub fn new_blocking<
+        P: SignalPin<I, PCH>,
+        N: SignalPin<I, NCH>,
+        const PCH: u8,
+        const NCH: u8,
+    >(
         instance: Peri<'d, I>,
         positive: Peri<'d, P>,
         negative: Peri<'d, N>,
         bandgap: &'d Bandgap<'d>,
         config: ComparatorConfig,
-        delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
-        // Only CH0/CH1 are connected to the negative input mux.
+        Self::build_external(instance, positive, negative, bandgap, config)
+    }
+    /// Borrow this VC pair's reference divider. The borrow prevents changing or
+    /// dropping the reference until the comparator owner is dropped.
+    pub fn new_blocking_with_reference<P: SignalPin<I, PCH>, const PCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        reference: &'d RefDivider<'d, I::Reference>,
+        bandgap: &'d Bandgap<'d>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        Self::build(
+            instance,
+            positive.into(),
+            PCH,
+            None,
+            3,
+            Some(reference),
+            None,
+            bandgap,
+            config,
+        )
+    }
+    /// Borrow the DAC threshold: VC1/3 use channel 1 and VC2/4 use channel 2.
+    /// Set the threshold before borrowing the DAC here.
+    pub fn new_blocking_with_dac<P: SignalPin<I, PCH>, const PCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        dac: &'d Dac<'d>,
+        bandgap: &'d Bandgap<'d>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        Self::build(
+            instance,
+            positive.into(),
+            PCH,
+            None,
+            2,
+            None,
+            Some(dac),
+            bandgap,
+            config,
+        )
+    }
+}
+impl<'d, I: VcInstance> Comp<'d, I, Async> {
+    /// Configure external inputs and install the binding for one-shot event waits.
+    /// Call `enable` before waiting. The binding must dispatch this instance's
+    /// handler on its physical shared IRQ; sibling handlers remain independent.
+    pub fn new<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        negative: Peri<'d, N>,
+        bandgap: &'d Bandgap<'d>,
+        irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        let mut comp = Self::build_external(instance, positive, negative, bandgap, config)?;
+        comp.init_interrupt(irq);
+        Ok(comp)
+    }
+    /// Configure a borrowed reference-divider input and an interrupt binding.
+    pub fn new_with_reference<P: SignalPin<I, PCH>, const PCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        reference: &'d RefDivider<'d, I::Reference>,
+        bandgap: &'d Bandgap<'d>,
+        irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        let mut comp = Self::build(
+            instance,
+            positive.into(),
+            PCH,
+            None,
+            3,
+            Some(reference),
+            None,
+            bandgap,
+            config,
+        )?;
+        comp.init_interrupt(irq);
+        Ok(comp)
+    }
+    /// Configure a borrowed DAC threshold and an interrupt binding. VC1/3 use
+    /// channel 1 and VC2/4 use channel 2; the entire DAC remains borrowed.
+    pub fn new_with_dac<P: SignalPin<I, PCH>, const PCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        dac: &'d Dac<'d>,
+        bandgap: &'d Bandgap<'d>,
+        irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
+        let mut comp = Self::build(
+            instance,
+            positive.into(),
+            PCH,
+            None,
+            2,
+            None,
+            Some(dac),
+            bandgap,
+            config,
+        )?;
+        comp.init_interrupt(irq);
+        Ok(comp)
+    }
+    fn init_interrupt(
+        &mut self,
+        _irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
+    ) {
+        use crate::interrupt::typelevel::Interrupt;
+        // Construction has disabled/cleared this source and its software state.
+        // Never unpend the shared vector: a sibling may already have an event.
+        unsafe { I::Interrupt::enable() };
+    }
+}
+impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
+    fn build_external<P: SignalPin<I, PCH>, N: SignalPin<I, NCH>, const PCH: u8, const NCH: u8>(
+        instance: Peri<'d, I>,
+        positive: Peri<'d, P>,
+        negative: Peri<'d, N>,
+        bandgap: &'d Bandgap<'d>,
+        config: ComparatorConfig,
+    ) -> Result<Self, Error> {
         if NCH > 1 {
             return Err(Error::InvalidSignal);
         }
@@ -334,51 +453,6 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
             None,
             bandgap,
             config,
-            delay,
-        )
-    }
-    pub fn with_reference<P: SignalPin<I, PCH>, const PCH: u8>(
-        instance: Peri<'d, I>,
-        positive: Peri<'d, P>,
-        reference: &'d RefDivider<'d, I::Reference>,
-        bandgap: &'d Bandgap<'d>,
-        config: ComparatorConfig,
-        delay: &mut impl DelayNs,
-    ) -> Result<Self, Error> {
-        Self::build(
-            instance,
-            positive.into(),
-            PCH,
-            None,
-            3,
-            Some(reference),
-            None,
-            bandgap,
-            config,
-            delay,
-        )
-    }
-    /// VC1/3 use internal DAC channel 1, VC2/4 use channel 2. Both DAC channels
-    /// are enabled by Dac::new. Set the threshold before borrowing the DAC here.
-    pub fn with_dac<P: SignalPin<I, PCH>, const PCH: u8>(
-        instance: Peri<'d, I>,
-        positive: Peri<'d, P>,
-        dac: &'d Dac<'d>,
-        bandgap: &'d Bandgap<'d>,
-        config: ComparatorConfig,
-        delay: &mut impl DelayNs,
-    ) -> Result<Self, Error> {
-        Self::build(
-            instance,
-            positive.into(),
-            PCH,
-            None,
-            2,
-            None,
-            Some(dac),
-            bandgap,
-            config,
-            delay,
         )
     }
     #[allow(clippy::too_many_arguments)]
@@ -392,26 +466,23 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
         dac: Option<&'d Dac<'d>>,
         bandgap: &'d Bandgap<'d>,
         config: ComparatorConfig,
-        delay: &mut impl DelayNs,
     ) -> Result<Self, Error> {
         let (cr0, cr1) = comparator_words(pch, nch, config)?;
         I::enable_and_reset();
         let r = I::regs();
-        // Configure this VC only: no shared resets or reference-register writes.
-        unsafe {
-            r.cr0().write_value(0);
-            r.cr2().write_value(0);
+        critical_section::with(|_| {
+            // Configure this VC only: no shared reset/reference-register writes.
+            r.cr0().write_value(pac::vc::regs::Cr0(0));
+            r.cr2().write_value(pac::vc::regs::Cr2(0));
             r.cr1().write_value(cr1);
-            r.sr().write_value(0);
-        }
+            r.sr().write_value(pac::vc::regs::Sr(0));
+            I::state().reset();
+        });
         positive.configure_analog();
         if let Some(pin) = &negative {
             pin.configure_analog();
         }
-        unsafe {
-            r.cr0().write_value(cr0);
-        }
-        delay.delay_us(32);
+        r.cr0().write_value(cr0);
         Ok(Self {
             _instance: instance,
             _positive: positive,
@@ -419,42 +490,60 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
             _reference: reference,
             _dac: dac,
             _bandgap: bandgap,
+            settled: false,
+            _mode: core::marker::PhantomData,
         })
     }
-    /// Add IRQ-backed one-shot waits, preserving every analog resource borrow.
-    /// The binding must dispatch this instance's handler on its physical shared IRQ.
-    /// Shared NVIC state is never disabled or unpended by this driver.
-    pub fn into_async(
-        self,
-        _irq: impl crate::interrupt::typelevel::Binding<I::Interrupt, InterruptHandler<I>>,
-    ) -> AsyncComparator<'d, I> {
-        use crate::interrupt::typelevel::Interrupt;
+    /// Enable and allow a conservative 32 us startup delay. This differs from
+    /// STM32's bare enable bit so output/waits do not silently skip CW32 settling.
+    /// Calling this on an already enabled comparator does not restart it.
+    pub fn enable(&mut self, delay: &mut impl DelayNs) {
+        if !self.is_enabled() {
+            self.settled = false;
+            I::regs().cr0().modify(|w| w.set_en(true));
+        }
+        if !self.settled {
+            delay.delay_us(32);
+            self.settled = true;
+        }
+    }
+    /// Disable this comparator and its event source, preserving input selection
+    /// and every resource borrow. Shared clock/BGR/NVIC state is left untouched.
+    pub fn disable(&mut self) {
+        self.settled = false;
         critical_section::with(|_| {
             let mut io = VcHardware::<I>(core::marker::PhantomData);
             io.disable();
+            I::regs().cr0().modify(|w| w.set_en(false));
             io.clear();
             I::state().reset();
-            // SAFETY: Binding proves our handler is installed in the physical vector.
-            unsafe { I::Interrupt::enable() };
         });
-        AsyncComparator { inner: self }
     }
-    pub fn is_high(&self) -> bool {
-        unsafe { pac::vc::fields::sr::FLTV.read(I::regs().sr().read()) }
+    pub fn is_enabled(&self) -> bool {
+        I::regs().cr0().read().en()
     }
-    /// Identifier only. Installing a VC->ATIM break route belongs to ATIM;
-    /// reading this comparator does not itself implement an overcurrent trip.
+    /// Read the filtered, configured-polarity output only while enabled/settled.
+    /// An interrupted startup delay cannot make an unsettled output readable.
+    pub fn output_level(&self) -> Result<bool, Error> {
+        if !self.is_enabled() {
+            return Err(Error::Disabled);
+        }
+        if !self.settled {
+            return Err(Error::NotReady);
+        }
+        Ok(I::regs().sr().read().fltv())
+    }
+    /// Identifier only; this does not install an automatic hardware motor trip.
     pub const fn number(&self) -> u8 {
         I::NUMBER
     }
 }
-impl<I: VcInstance> Drop for Comparator<'_, I> {
+impl<I: VcInstance, M: Mode> Drop for Comp<'_, I, M> {
     fn drop(&mut self) {
-        unsafe {
-            I::regs().cr0().write_value(0);
-            I::regs().cr2().write_value(0);
-            I::regs().cr1().write_value(0x10);
-        }
+        self.disable();
+        I::regs().cr0().write_value(pac::vc::regs::Cr0(0));
+        I::regs().cr2().write_value(pac::vc::regs::Cr2(0));
+        I::regs().cr1().write_value(pac::vc::regs::Cr1(0x10));
         self._positive.disconnect();
         if let Some(pin) = &self._negative {
             pin.disconnect();
@@ -477,56 +566,41 @@ impl<I: VcInstance> crate::interrupt::typelevel::Handler<I::Interrupt> for Inter
     }
 }
 
-/// IRQ-backed, cancel-safe comparator event waits. Edges are relative to the
-/// first poll, after stale flags are cleared and interrupt selection is enabled.
-/// One hardware INTF coalesces multiple edges; this API is not an edge counter.
-/// Rising/falling refer to the filtered, configured-polarity comparator output.
-/// There is no busy polling, DMA stream, or automatic hardware motor-trip route.
+/// IRQ-backed, cancel-safe one-shot waits. Edges are relative to the first poll,
+/// after stale flags are cleared and interrupt selection is enabled. Hardware
+/// coalesces edges; these methods are notifications, not an edge counter.
 ///
-/// Missing a Binding cannot enable interrupts.
-/// A live wait exclusively borrows this comparator.
-pub struct AsyncComparator<'d, I: VcInstance> {
-    inner: Comparator<'d, I>,
-}
-impl<'d, I: VcInstance> AsyncComparator<'d, I> {
-    pub fn is_high(&self) -> bool {
-        self.inner.is_high()
-    }
-    pub const fn number(&self) -> u8 {
-        I::NUMBER
-    }
-    /// Wait for a new rising edge. Earlier/stale INTF is deliberately discarded.
-    pub async fn wait_for_rising_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Rising).await
+/// Enable the comparator first. A disabled comparator returns `Error::Disabled`
+/// rather than enabling analog circuitry without its required startup checks.
+/// Cancellation clears only this VC's event source; it leaves the comparator
+/// enabled and never disables or unpends a shared NVIC vector.
+impl<I: VcInstance> Comp<'_, I, Async> {
+    /// Wait for a new rising edge of the filtered, configured-polarity output.
+    pub async fn wait_for_rising_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Rising).await
     }
     /// Wait for a new falling edge. Multiple edges may coalesce in hardware.
-    pub async fn wait_for_falling_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Falling).await
+    pub async fn wait_for_falling_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Falling).await
     }
     /// Wait for either edge; INTF does not retain which edge occurred.
-    pub async fn wait_for_any_edge(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::AnyEdge).await
+    pub async fn wait_for_any_edge(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::AnyEdge).await
     }
     /// Complete immediately if already high, otherwise await a high event.
     /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_high(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::High).await
+    pub async fn wait_for_high(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::High).await
     }
     /// Complete immediately if already low, otherwise await a falling event.
     /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_low(&mut self) {
-        VcWait::new(&mut self.inner, WaitKind::Low).await
+    pub async fn wait_for_low(&mut self) -> Result<(), Error> {
+        self.wait(WaitKind::Low).await
     }
-}
-impl<I: VcInstance> Drop for AsyncComparator<'_, I> {
-    fn drop(&mut self) {
-        critical_section::with(|_| {
-            let mut io = VcHardware::<I>(core::marker::PhantomData);
-            io.disable();
-            io.clear();
-            I::state().reset();
-        });
-        // The owned Comparator then shuts down and disconnects its own pins.
+    async fn wait(&mut self, kind: WaitKind) -> Result<(), Error> {
+        self.output_level()?;
+        VcWait::new(self, kind).await;
+        Ok(())
     }
 }
 
@@ -540,23 +614,23 @@ enum WaitKind {
 }
 impl WaitKind {
     fn bits(self) -> u32 {
-        use pac::vc::fields::cr1;
+        let mut selection = pac::vc::regs::Cr1(0);
         match self {
-            Self::Rising => cr1::RISEIE.mask(),
-            Self::Falling | Self::Low => cr1::FALLIE.mask(),
-            Self::AnyEdge => cr1::RISEIE.mask() | cr1::FALLIE.mask(),
-            Self::High => cr1::HIGHIE.mask(),
+            Self::Rising => selection.set_riseie(true),
+            Self::Falling | Self::Low => selection.set_fallie(true),
+            Self::AnyEdge => {
+                selection.set_riseie(true);
+                selection.set_fallie(true);
+            }
+            Self::High => selection.set_highie(true),
         }
+        selection.0
     }
     fn satisfied(self, high: bool) -> bool {
         matches!((self, high), (Self::High, true) | (Self::Low, false))
     }
 }
 const VC_EVENT: u32 = 1;
-fn vc_select_mask() -> u32 {
-    use pac::vc::fields::cr1;
-    cr1::HIGHIE.mask() | cr1::RISEIE.mask() | cr1::FALLIE.mask()
-}
 trait VcIo {
     fn disable(&mut self);
     fn clear(&mut self);
@@ -567,34 +641,33 @@ trait VcIo {
 struct VcHardware<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> VcIo for VcHardware<I> {
     fn disable(&mut self) {
-        use pac::vc::fields as f;
-        unsafe {
-            let r = I::regs();
-            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), false));
-            r.cr1().write_value(r.cr1().read() & !vc_select_mask());
-        }
+        let r = I::regs();
+        r.cr0().modify(|w| w.set_ie(false));
+        r.cr1().modify(|w| {
+            w.set_highie(false);
+            w.set_riseie(false);
+            w.set_fallie(false);
+        });
     }
     fn clear(&mut self) {
         // INTF is RW0; FLTV is RO. Write zero, never RMW this mixed register.
-        unsafe { I::regs().sr().write_value(0) };
+        I::regs().sr().write_value(pac::vc::regs::Sr(0));
     }
     fn arm(&mut self, selection: u32) {
-        use pac::vc::fields as f;
-        unsafe {
-            let r = I::regs();
-            r.cr1()
-                .write_value((r.cr1().read() & !vc_select_mask()) | selection);
-            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), true));
-        }
+        let r = I::regs();
+        let selection = pac::vc::regs::Cr1(selection);
+        r.cr1().modify(|w| {
+            w.set_highie(selection.highie());
+            w.set_riseie(selection.riseie());
+            w.set_fallie(selection.fallie());
+        });
+        r.cr0().modify(|w| w.set_ie(true));
     }
     fn pending(&mut self) -> bool {
-        use pac::vc::fields as f;
-        unsafe {
-            f::cr0::IE.read(I::regs().cr0().read()) && f::sr::INTF.read(I::regs().sr().read())
-        }
+        I::regs().cr0().read().ie() && I::regs().sr().read().intf()
     }
     fn high(&mut self) -> bool {
-        unsafe { pac::vc::fields::sr::FLTV.read(I::regs().sr().read()) }
+        I::regs().sr().read().fltv()
     }
 }
 fn service_vc_interrupt(
@@ -671,11 +744,11 @@ impl VcWaitCore {
     }
 }
 struct VcWait<'a, 'd, I: VcInstance> {
-    _driver: &'a mut Comparator<'d, I>,
+    _driver: &'a mut Comp<'d, I, Async>,
     core: VcWaitCore,
 }
 impl<'a, 'd, I: VcInstance> VcWait<'a, 'd, I> {
-    fn new(driver: &'a mut Comparator<'d, I>, kind: WaitKind) -> Self {
+    fn new(driver: &'a mut Comp<'d, I, Async>, kind: WaitKind) -> Self {
         Self {
             _driver: driver,
             core: VcWaitCore::new(kind),
@@ -728,30 +801,31 @@ fn opa_word(
     mode: u8,
     gain: Gain,
     config: OpaConfig,
-) -> Result<u32, Error> {
+) -> Result<pac::opa::regs::Cr, Error> {
     if !(1..=4).contains(&pch) || config.bias > 7 {
         return Err(Error::InvalidSignal);
     }
     if nch.is_some_and(|n| n != 11 && n != 12) {
         return Err(Error::InvalidSignal);
     }
-    use pac::opa::fields::cr as f;
-    let mut word = f::BIAS.write(0, config.bias.into());
-    word = f::AMP.write(word, gain as u32);
-    word = f::MODE.write(word, mode.into());
-    word = match pch {
-        1 => f::INP1EN.write(word, true),
-        2 => f::INP2EN.write(word, true),
-        3 => f::INP3EN.write(word, true),
-        4 => f::INP4EN.write(word, true),
+    let mut word = pac::opa::regs::Cr(0);
+    word.set_bias(config.bias);
+    word.set_amp(gain as u8);
+    word.set_mode(mode);
+    match pch {
+        1 => word.set_inp1en(true),
+        2 => word.set_inp2en(true),
+        3 => word.set_inp3en(true),
+        4 => word.set_inp4en(true),
         _ => unreachable!(),
-    };
-    word = match nch {
-        Some(11) => f::INN1EN.write(word, true),
-        Some(12) => f::INN2EN.write(word, true),
-        _ => word,
-    };
-    Ok(f::EN.write(word, true))
+    }
+    match nch {
+        Some(11) => word.set_inn1en(true),
+        Some(12) => word.set_inn2en(true),
+        _ => {}
+    }
+    word.set_en(true);
+    Ok(word)
 }
 /// Triggered calibration configuration. Field encoding is explicit because the
 /// SDK's period comments are twice the CSR table's values. RM: duration is
@@ -761,18 +835,15 @@ pub struct Calibration {
     pub divider_log2: u8,
     pub period_code: u8,
 }
-fn calibration_word(config: Calibration) -> Result<u32, Error> {
+fn calibration_word(config: Calibration) -> Result<pac::opa::regs::Cal, Error> {
     if config.divider_log2 > 7 || config.period_code > 15 {
         return Err(Error::InvalidCalibration);
     }
-    use pac::opa::fields::cal as f;
-    Ok(f::CALEN.write(
-        f::CALPERIOD.write(
-            f::CLKDIV.write(0, config.divider_log2.into()),
-            config.period_code.into(),
-        ),
-        true,
-    ))
+    let mut word = pac::opa::regs::Cal(0);
+    word.set_clkdiv(config.divider_log2);
+    word.set_calperiod(config.period_code);
+    word.set_calen(true);
+    Ok(word)
 }
 /// Single OPA with one positive route and, in external mode, one negative route.
 /// Output pin is always owned, preventing a simultaneous DAC output on that pad.
@@ -915,10 +986,8 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         let word = opa_word(pch, nch, mode, gain, config)?;
         I::enable_and_reset();
         let r = I::regs();
-        unsafe {
-            r.cr().write_value(0xe000);
-            r.cal().write_value(0);
-        }
+        r.cr().write_value(pac::opa::regs::Cr(0xe000));
+        r.cal().write_value(pac::opa::regs::Cal(0));
         if let Some(pin) = &positive {
             pin.configure_analog();
         }
@@ -926,9 +995,7 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
             pin.configure_analog();
         }
         output.configure_analog();
-        unsafe {
-            r.cr().write_value(word);
-        }
+        r.cr().write_value(word);
         delay.delay_us(40);
         Ok(Self {
             _instance: instance,
@@ -954,22 +1021,21 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         if poll_budget == 0 {
             return Err(Error::ZeroPollBudget);
         }
-        use pac::opa::fields::cal as f;
         let r = I::regs();
-        if unsafe { f::AZRUN.read(r.cal().read()) } {
+        if r.cal().read().azrun() {
             return Err(Error::Busy);
         }
         // Do not RMW the trigger/status register: SOFTTRIG is a write-one command.
-        unsafe {
-            r.cal().write_value(word);
-            r.cal().write_value(f::SOFTTRIG.write(word, true));
-        }
-        wait_calibration(poll_budget, || unsafe { f::AZRUN.read(r.cal().read()) })?;
+        r.cal().write_value(word);
+        let mut trigger = word;
+        trigger.set_softtrig(true);
+        r.cal().write_value(trigger);
+        wait_calibration(poll_budget, || r.cal().read().azrun())?;
         delay.delay_us(10);
         Ok(())
     }
     pub fn is_calibrating(&self) -> bool {
-        unsafe { pac::opa::fields::cal::AZRUN.read(I::regs().cal().read()) }
+        I::regs().cal().read().azrun()
     }
 }
 // SOFTTRIG crosses to OPACLK. Idle immediately after the write may precede
@@ -991,10 +1057,8 @@ fn wait_calibration(poll_budget: u32, mut is_busy: impl FnMut() -> bool) -> Resu
 
 impl<I: OpaInstance> Drop for Opa<'_, I> {
     fn drop(&mut self) {
-        unsafe {
-            I::regs().cr().write_value(0xe000);
-            I::regs().cal().write_value(0);
-        }
+        I::regs().cr().write_value(pac::opa::regs::Cr(0xe000));
+        I::regs().cal().write_value(pac::opa::regs::Cal(0));
         if let Some(pin) = &self._positive {
             pin.disconnect();
         }

@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.12.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版补齐有官方证据的寄存器/实例 reset defaults，并增加从真实 Default 开始的 typed closure write 与显式 write_value；ADC、VC、ATIM 事件及 CORDIC 的真实 IRQ 异步接口继续保留；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.13.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版采用 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道，并新增拥有真实路由的通用 Timer/SimplePwm；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -14,7 +14,7 @@ CW32L012C8 与 CW32F030C8，实验性 **v0.12.0**，尚未上板验证。数据�
 - GPIO 的 `Pin` 是 sealed trait，`AnyPin` 是擦除具体引脚身份后的类型；身份可复制不代表独占 `Peri` 可复制。外设信号约束仍要求具体的已审核 pin 类型。
 - `init(Config) -> Peripherals` 采用 Embassy 入口形状；需要处理错误时用 `try_init(Config) -> Result<Peripherals, InitError>`。配置包含 `config.rcc`；通过 `rcc::clocks()` 读取已初始化的标称时钟，不再使用 `p.clocks`。
 - 默认 feature 只有 `rt`；芯片、`memory-x`、`metadata` 和 `unstable-pac` 均显式选择。`example` 汇总例程需要的芯片、内存和示例依赖。`defmt` 启用实际依赖和上游 singleton/`Peri` 格式化实现。
-- `rt` 提供生成的物理 IRQ 向量及 `device.x`；`bind_interrupts!` 生成真实分发入口和对应 Binding。`Adc`、`Comparator`、`ThreePhasePwm`、`Cordic` 通过 `into_async(binding)` 转移到异步 owner；它们的等待由外设 IRQ 唤醒，不是包在 `async fn` 中的 busy loop。共享向量必须列出每个实际使用的 handler。
+- `rt` 提供生成的物理 IRQ 向量及 `device.x`；`bind_interrupts!` 生成真实分发入口和对应 Binding。`Adc<I, M>` 与 `Comp<I, M>` 通过 `new_blocking` 或带 Binding 的 `new` 选择模式；GPIO `InterruptInput` 持有逐 pin 的 Binding。现有 `ThreePhasePwm` 与 `Cordic` 保留 `into_async(binding)`；等待均由真实外设 IRQ 唤醒。共享向量必须列出每个实际使用的 handler。
 - ADC 等待完整序列、VC 等待边沿/电平、ATIM 等待 update/break、CORDIC 等待运算完成。取消 future 撤销本次等待；ATIM 取消等待不自动关闭已有功率输出或确认故障。EAU 和 OPA 校准没有经审查的完成 IRQ，保留有界阻塞接口。
 - **时间驱动使用独立 GTIM1，HAL init 在 RCC 之后自动启动。** `time-driver-any` 实际启用 `time-driver-gtim1`，从交给应用的 Peripherals 字段中移除 GTIM1，保留给时间驱动，不占 ATIM 或 SysTick；标称 1 μs 分辨率不表示实测准确度或任务调度精度。没有空的 `time`、EXTI 或 DMA feature。
 
@@ -50,7 +50,7 @@ xtask/                         统一生成库的薄封装：regenerate、漂移
 vendor/                        固定原厂 header/SVD，离线证据；不是生成输入
 ```
 
-芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version，这与受查上游生成器的限制相同。当前 block 字段表示简化的 kind，一个 kind/version 一个 RegisterBlock；尚未扩成上游多个 block/继承模型。共享register JSON已去重，Rust寄存器类型当前在每个chip PAC内复用，尚未把跨chip公共Rust模块独立打包。
+芯片 family 不等于 IP version；同一芯片内多个兼容 GPIO 实例复用同一 register block，F030 的不兼容布局采用专用 IP version。单一芯片当前不支持同一个 kind 同时选多个 version，这与受查上游生成器的限制相同。schema5 通过显式 block 引用支持嵌套子块及数组，DMA channel 是真实子块；尚未实现上游通用继承和完整变换体系。共享register JSON已去重，Rust寄存器类型当前在每个chip PAC内复用，尚未把跨chip公共Rust模块独立打包。
 
 外设 IP 版本统一使用芯片系列标识 `l012`、`f030`，不使用 `v1`/`v2`。它是寄存器兼容模型的名称，不是芯片白名单：F030 的 IWDT/WWDT 经审查与 L012 相同，仍引用 `l012`，不复制一份。YAML 文件名、version 字段、normalized JSON、PAC metadata、HAL cfg 与后端文件名沿用同一标识。JSON schema 的版本号与原厂文档修订号是独立概念。
 
@@ -101,12 +101,12 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 ## 已实现的数据能力及约束
 
-- register：名称、offset、access、字段范围与 overlap；Field、BoolField、EnumField。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。
-- JSON schema v4 增加有来源的完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 提供对应清除操作；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
-- perimap：精确 chip+instance+vendor_ip/vendor_version（或原block/version）匹配，保留datasheet实例名。mode: select在加载前选择规范kind/version/register block文件，即使原vendor名没有本地文件也可；mode: alias仅relabel已加载模型。当前只支持RegisterBlock单block、精确匹配，不支持上游通用数据库/正则映射。同chip相同原block身份不能选互相矛盾的模型，必须先区分源身份。
+- register：名称、offset、access、字段范围与 overlap；生成 typed raw/bool/enum getter 与 setter。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。
+- JSON schema v5 显式维护字段、寄存器及子块数组，保留完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 提供对应清除操作；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
+- perimap：精确 chip+instance+vendor_ip/vendor_version（或原block/version）匹配，保留datasheet实例名。mode: select在加载前选择规范kind/version/register block文件，即使原vendor名没有本地文件也可；mode: alias仅relabel已加载模型。外设根 block 的 perimap 仍精确匹配；嵌套 block 依赖显式解析，不支持上游通用数据库/正则映射。同chip相同原block身份不能选互相矛盾的模型，必须先区分源身份。
 - fixes：原block名下的寄存器/字段纠错，先于alias；要求source/reason，未知目标、错键、冲突均报错，失败回滚。当前selector作用于该chip中共享这个block的全部实例，不支持仅GPIOA特例。局部布局差异应拆版本/数据模型，不能改坏公共 l012 模型。
 - shared IRQ：物理 IRQ 表唯一；peripheral signal→IRQ 可多对多。重复引用不复制物理向量。PAC runtime 按物理 IRQ 号生成向量，稀疏编号保留空槽；HAL `bind_interrupts!` 只为实际声明的 handler 生成入口和 Binding，不从关联表批量生成空证明。
-- 芯片 `pins`、pin-signal routes 与 remap 分开；route 验证目标存在。引脚 token 表示芯片能力，不保证某封装或开发板实际接出。尚未审核的非 FOC pinmux 不会推断生成。quirks 与数据 fixes 分开；未列 quirk 不代表不存在 errata。
+- 芯片 `pins`、pin-signal routes 与 remap 分开；route 验证目标存在。引脚 token 表示芯片能力，不保证某封装或开发板实际接出。现有 FOC 与新增 ATIM/GTIM main-output 路由有逐项证据，尚未审核的其他信号不会推断生成。quirks 与数据 fixes 分开；未列 quirk 不代表不存在 errata。
 - 确定性排序，不含时间戳/绝对源路径；JSON schema_version校验；两chip fixture证明共享寄存器复用、芯片pin集合隔离、同名异内容拒绝、拆新version后共存。
 
 当前输入是人工审计的分层YAML，不是自动融合所有SVD/厂商数据库的通用导入器。原始 vendor/cw32l012.h、CW32L012.svd 及人工审计 manifest.json 是必要的只读证据，不是可再生成产物。可重新下载的 SDK 压缩包放 vendor/cache/ 或 vendor/downloads/，这两处与 vendor 下 zip/pack 都被 ignore，不进入源码包。原始vendor证据只读，源差异记录在provenance；禁止把教学fixture作为真实芯片资料。
@@ -115,7 +115,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 - 50 个实例/视图、28 类 IP、306 个逻辑寄存器、1713 个字段；统计包含有声明的 I2C 同址视图和 DMA 重叠视图，不把它们误算成独立可占有硬件。
 - 32 个物理 IRQ、46 个外设信号绑定、45 组门控/复位关联；共享 IRQ 引用不复制向量。runtime 提供中断入口连接机制，具体外设驱动仍须实现 pending/clear/wake 算法。
-- L012C8 直接维护40个 GPIO 能力和82条FOC路由（ATIM28、ADC24、OPA12、VC16、DAC2），不在数据模型中保存封装脚号。
+- L012C8 直接维护40个 GPIO 能力和126条路由（ATIM31、GTIM41、ADC24、OPA12、VC16、DAC2），不在数据模型中保存封装脚号。
 - 106 项已审查副作用信息。头文件、SVD 与手册的差异逐项记录；VCREF DIV、I2C RXWATER 等尚有原厂资料冲突，采用有证据的保守范围，不能称为已获硅验证。
 - 64 KiB Flash、8 KiB RAM，未把有资料冲突的 Boot ROM 区域作为可用链接内存。
 
@@ -123,7 +123,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 ## F030C8 新增支持
 
-选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、61条已审核 ADC/ATIM/VC 路由；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
+选择 `cw32f030c8`；不要附加 T6/T7/U7。它与 `cw32l012c8` 必须互斥，HAL 和 PAC 必须选择同一芯片。F030C8 为64 KiB Flash、8 KiB SRAM，39个 GPIO 能力、107条已审核 ADC/ATIM/GTIM/VC 路由；完整原厂寄存器覆盖与驱动差异见 [F030支持说明](docs/cw32f030-support.md)。
 
 F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存在的模块和外设不会出现在该芯片的安全API中。ADC/ATIM/VC以及RCC/GTIM使用独立寄存器版本与驱动。F030 ATIM硬件有比较影子寄存器，但本版严格三相批量 `set_duty` 尚不承诺运行中无扰原子提交；功率输出开启时返回 Busy。这是本版API的限制，不是硬件不支持运行时PWM更新。不能据此声称完整实时FOC控制已可用。
 
@@ -136,11 +136,11 @@ F030只有一路ADC、两路VC，没有L012的OPA、DAC、CORDIC、EAU；不存�
 
 `rcc::clocks()` 在成功初始化前会 panic。
 
-启用 `time-driver-any` 或 `time-driver-gtim1` 后，HAL 初始化自动启动专用 16-bit GTIM1；`Config.time_interrupt_priority` 默认 P0。GTIM1 从交给应用的 `Peripherals` 字段中移除，保留给时间驱动，不占用 FOC 的 ATIM；关闭时间驱动时仍可安全取得 GTIM1。旧 `time-driver-systick` 和手动转交 `core.SYST` 的接口已撤销，。
+启用 `time-driver-any` 或 `time-driver-gtim1` 后，HAL 初始化自动启动专用 16-bit GTIM1；`Config.time_interrupt_priority` 默认 P0。GTIM1 从交给应用的 `Peripherals` 字段中移除，保留给时间驱动，不占用 FOC 的 ATIM；关闭时间驱动时仍可安全取得 GTIM1。旧 `time-driver-systick` 和手动转交 `core.SYST` 的接口已撤销。
 
 L012 的4 MHz PCLK 经 PSC=3 得到标称1 MHz计数；F030用8 MHz PCLK及CR0.PRS=3的2ⁿ分频也得到标称1 MHz计数，其OV/CNT/OV一致快照算法不依赖不存在的UIFREMAP，ARR=65535，每 65.536 ms 溢出。从 overflow 到 ISR 清除 UIF 必须严格小于一个完整周期，包含 IRQ/critical-section/优先级阻塞时间。compare 写入实际 deadline，写后重读计数并在必要时 pend IRQ，避免错过已到期限。短 sleep 仍受所选芯片 CPU、MMIO、IRQ 和 executor 实际延迟影响。**1 μs timestamp 分辨率不等于 HSI 实测精度，也不保证 1 μs 唤醒准确度。** 未支持 STOP 或动态调频。实际算法、链接与测试结果见 [验证记录](docs/validation-v0.11.6.md)，不能从 API 文档推断已经完成硅验证。
 
-L012 的 FOC 对应硬件为：ATIM、ADC1/2、OPA1/2、VC1～4、DAC、CORDIC，另有 EAU 数学运算接口。保留 `atim`、`analog`、`eau` 模块，不为外形相似而虚构 STM32 `timer`/`opamp` API 兼容性。CW32 只有两路 OPA，不把 STM32G431 的 OPAMP3 虚构为对应外设。原阻塞接口继续保留；ADC、VC、ATIM 事件和 CORDIC 可显式转换为 IRQ-driven async owner。ADC/CORDIC 还可 `into_blocking()`，VC/ATIM 当前没有该逆转换。并不宣称连续 DMA 采样或硬实时 FOC 闭环。
+L012 的 FOC 对应硬件为：ATIM、ADC1/2、OPA1/2、VC1～4、DAC、CORDIC，另有 EAU 数学运算接口。保留 `atim`、`analog`、`eau` 硬件专用模块；`timer::low_level::Timer` 与 `timer::simple_pwm::SimplePwm` 提供真实通用计数器、可选逐路引脚与借用 channel。CW32 只有两路 OPA，不把 STM32G431 的 OPAMP3 虚构为对应外设。ADC/Comp 使用共享的 `Blocking`/`Async` 模式 owner，ADC 按每次调用借入通道，固定序列是借用 owner 的 `Sequence` 扩展。ATIM/CORDIC 保留现有专用异步 owner；CORDIC 可 `into_blocking()`。并不宣称连续 DMA 采样或硬实时 FOC 闭环。
 
 异步方法本身没有内置超时；外部 timeout/select 必须实际 drop future 才触发清理。详见 [异步 API](docs/async-api.md)。
 
@@ -148,9 +148,9 @@ L012 的 FOC 对应硬件为：ATIM、ADC1/2、OPA1/2、VC1～4、DAC、CORDIC�
 
 ## 安全与未完成内容
 
-GPIO/SYSCTRL 为 HAL 共享资源，不发会与 pin token 冲突的独立寄存器所有权 token。正常 init 只交付一次资源；驱动持有相关外设与引脚的 `Peri`，可拥有 `'static` 资源或持有受约束的短借用。原始 PAC 访问、`peripherals::T::steal()`、`AnyPin::steal()` 与 `Peri::clone_unchecked()` 仍是显式 unsafe 边界。类型化方向和副作用不能证明时钟、供电、保护极性、外部接线或所有保留位均正确。
+GPIO/SYSCTRL 为 HAL 共享资源，不发会与 pin token 冲突的独立寄存器所有权 token。正常 init 只交付一次资源；驱动持有相关外设与引脚的 `Peri`，可拥有 `'static` 资源或持有受约束的短借用。原始 PAC 的寄存器方法并非都要求 unsafe；应用须自行承担时钟、资源别名与副作用责任。`peripherals::T::steal()`、`AnyPin::steal()` 与 `Peri::clone_unchecked()` 是显式 unsafe 边界。类型化方向和副作用不能证明时钟、供电、保护极性、外部接线或所有保留位均正确。
 
-仍未实现 UART/SPI/I2C/DMA/EXTI 等通用 HAL、全芯片所有信号的类型约束或全部 silicon workaround。已有 FOC 驱动的约束不能外推到这些未实现驱动。`bind_interrupts!` 本身只负责分发与 Binding；已有异步 driver 的 `into_async` 负责启用 NVIC，handler/future 负责本源状态、唤醒及取消。ADC2_DAC、VC13/VC24 的兄弟源必须各自正确绑定，取消不禁用共享 NVIC；未绑定向量进入默认 handler。自定义启动/向量表必须保持 runtime 的分发契约。
+仍未实现 UART/SPI/I2C/DMA 等通用 HAL；GPIO 中断使用真实 CW32 port IRQ，不虚构 STM32 EXTI token。全芯片其他路由的类型约束及全部 silicon workaround 也未实现。已有 FOC 驱动的约束不能外推到这些未实现驱动。`bind_interrupts!` 本身只负责分发与 Binding；相应 async 构造器或专用转换负责启用 NVIC，handler/future 负责本源状态、唤醒及取消。ADC2_DAC、VC13/VC24 的兄弟源必须各自正确绑定，取消不禁用共享 NVIC；未绑定向量进入默认 handler。自定义启动/向量表必须保持 runtime 的分发契约。
 
 共享复位位不会由某个实例的构造器无条件触发；时钟门控保守保持开启，不因一个驱动释放而关闭兄弟实例。ATIM 构造保持功率输出禁能，启用由调用者显式执行。驱动的保守策略不等于板级安全认证。
 
@@ -172,14 +172,16 @@ serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的
 
 ## 源码交付与 ignore
 
-源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/src/chips/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 YAML、修正规则、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。所有开发与校验命令均为 Rust/Cargo，无 Python 或 PyYAML 前置条件。
+源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/src/chips/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 YAML、修正规则、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。源码自举、生成及文档列出的日常校验只需 Rust/Cargo，无 Python 或 PyYAML 前置条件；外部审查探针的编排脚本不属于源码项目。
 
 
 `--check` 是只读漂移检查，可捕获缺失文件、多余文件和内容变化。生成工具仅替换两个明确拥有的生成目录，不能用于存放手写代码。临时校验和变异测试使用独立临时目录并自动清理。离线命令需要提前缓存所有 Rust 依赖与目标工具链；缺缓存时先联网执行正常 Cargo 命令。
 
-本版API迁移、数据证据与实际检查见[v0.12.0验证记录](docs/validation-v0.12.0.md)。
+本版完成 PAC/数组、GPIO共享与异步实现、ADC/Comp模式所有权及通用timer/PWM的逐项重构；不宣称覆盖全部 embassy-stm32 驱动或全部芯片功能。见[逐模块现状](docs/embassy-api-alignment.md)。
 
-## 上传 C 工程的递进 Rust 例程（v0.12.0）
+本版API迁移、数据证据与实际检查见[v0.13.0验证记录](docs/validation-v0.13.0.md)。
+
+## 上传 C 工程的递进 Rust 例程（v0.13.0）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

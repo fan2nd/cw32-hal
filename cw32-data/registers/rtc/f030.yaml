@@ -2,12 +2,17 @@ name: rtc
 version: f030
 registers:
 - name: KEY
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.1, printed p186 (PDF p187); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.1, printed p186 (PDF p187); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 0
   access: wo
-  description: 'CW32F030 RTC.KEY; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Write 0xCA then 0x53 to unlock RTC writes. Write 0xCA then another value to lock all registers except KEY and ICR. Source: CW32x030 RM Rev 2.5 12.5.1'
+  description: 'CW32F030 RTC.KEY; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. Write 0xCA then 0x53 to unlock RTC writes. Write 0xCA then another value to lock all registers except
+    KEY and ICR. Source: CW32x030 RM Rev 2.5 12.5.1'
   fields:
   - name: KEY
     bit_offset: 0
@@ -18,12 +23,18 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: CR0
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.2, printed p186 (PDF p187); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.2, printed p186 (PDF p187); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 4
   access: rw
-  description: 'CW32F030 RTC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the
+    WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5;
+    12.5.1-9; 12.5.12-13'
   fields:
   - name: START
     bit_offset: 7
@@ -52,12 +63,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR1
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.3, printed p187 (PDF p188); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.3, printed p187 (PDF p188); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 8
   access: rw
-  description: 'CW32F030 RTC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the
+    WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5;
+    12.5.1-9; 12.5.12-13'
   fields:
   - name: SOURCE
     bit_offset: 8
@@ -80,12 +97,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.4, printed p188 (PDF p189); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.4, printed p188 (PDF p189); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 12
   access: rw
-  description: 'CW32F030 RTC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the
+    WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5;
+    12.5.1-9; 12.5.12-13'
   fields:
   - name: ALARMBEN
     bit_offset: 10
@@ -132,12 +155,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: COMPEN
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.5, printed p189 (PDF p190); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.5, printed p189 (PDF p190); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 16
   access: rw
-  description: 'CW32F030 RTC.COMPEN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.COMPEN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and
+    the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5
+    12.3.4-5; 12.5.1-9; 12.5.12-13'
   fields:
   - name: FREQ
     bit_offset: 16
@@ -172,12 +201,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: DATE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.6, printed p189 (PDF p190); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.6, printed p189 (PDF p190); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 20
   access: rw
-  description: 'CW32F030 RTC.DATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.DATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and
+    the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5
+    12.3.4-5; 12.5.1-9; 12.5.12-13'
   fields:
   - name: WEEK
     bit_offset: 24
@@ -206,12 +241,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: TIME
-  reset_value: 0x00120000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.7, printed p190 (PDF p191); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 1179648
+  reset_source: CW32x030 RM Rev2.5 section 12.5.7, printed p190 (PDF p191); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 24
   access: rw
-  description: 'CW32F030 RTC.TIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.TIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and
+    the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5
+    12.3.4-5; 12.5.1-9; 12.5.12-13'
   fields:
   - name: HOUR
     bit_offset: 16
@@ -233,13 +274,17 @@ registers:
     description: CW32F030 RTC.TIME.SECOND; raw encoding.
   write_behavior: keyed
   read_behavior: ordinary
-- name: ALARMA
-  reset_value: 0x00120000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.8, printed p190 (PDF p191); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+- name: ALARM
+  reset_value: 1179648
+  reset_source: CW32x030 RM Rev2.5 section 12.5.8, printed p190 (PDF p191); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 28
   access: rw
-  description: 'CW32F030 RTC.ALARMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'Indexed ALARM: index 0 = ALARMA, index 1 = ALARMB. Complete field layout/access/side effects are identical;
+    offsets and element evidence are explicit.'
   fields:
   - name: WEEKMASK
     bit_offset: 24
@@ -285,65 +330,45 @@ registers:
     description: CW32F030 RTC.ALARMA.SECOND; raw encoding.
   write_behavior: keyed
   read_behavior: ordinary
-- name: ALARMB
-  reset_value: 0x00120000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.9, printed p191 (PDF p192); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
-  offset: 32
-  access: rw
-  description: 'CW32F030 RTC.ALARMB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
-  fields:
-  - name: WEEKMASK
-    bit_offset: 24
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: CW32F030 RTC.ALARMB.WEEKMASK; raw encoding.
-  - name: HOUREN
-    bit_offset: 23
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 RTC.ALARMB.HOUREN; raw encoding.
-  - name: HOUR
-    bit_offset: 16
-    bit_size: 6
-    access: rw
-    kind: raw
-    description: CW32F030 RTC.ALARMB.HOUR; raw encoding.
-  - name: MINUTEEN
-    bit_offset: 15
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 RTC.ALARMB.MINUTEEN; raw encoding.
-  - name: MINUTE
-    bit_offset: 8
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: CW32F030 RTC.ALARMB.MINUTE; raw encoding.
-  - name: SECONDEN
-    bit_offset: 7
-    bit_size: 1
-    access: rw
-    kind: bool
-    description: CW32F030 RTC.ALARMB.SECONDEN; raw encoding.
-  - name: SECOND
-    bit_offset: 0
-    bit_size: 7
-    access: rw
-    kind: raw
-    description: CW32F030 RTC.ALARMB.SECOND; raw encoding.
-  write_behavior: keyed
-  read_behavior: ordinary
+  array:
+    len: 2
+    stride: 4
+  elements:
+  - name: ALARMA
+    description: 'CW32F030 RTC.ALARMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS
+      and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM
+      Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+    reset_value: 1179648
+    reset_source: CW32x030 RM Rev2.5 section 12.5.8, printed p190 (PDF p191); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+      RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+    reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+      already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+      Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to
+      F030.
+  - name: ALARMB
+    description: 'CW32F030 RTC.ALARMB; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev
+      2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS
+      and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM
+      Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+    reset_value: 1179648
+    reset_source: CW32x030 RM Rev2.5 section 12.5.9, printed p191 (PDF p192); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+      RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+    reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+      already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+      Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to
+      F030.
 - name: TAMPDATE
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.10, printed p191 (PDF p192); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.10, printed p191 (PDF p192); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 36
   access: ro
-  description: CW32F030 RTC.TAMPDATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 RTC.TAMPDATE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: WEEK
     bit_offset: 13
@@ -364,12 +389,16 @@ registers:
     kind: raw
     description: CW32F030 RTC.TAMPDATE.DAY; raw encoding.
 - name: TAMPTIME
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.11, printed p192 (PDF p193); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.11, printed p192 (PDF p193); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 40
   access: ro
-  description: CW32F030 RTC.TAMPTIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 RTC.TAMPTIME; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings.
   fields:
   - name: HOUR
     bit_offset: 16
@@ -390,12 +419,18 @@ registers:
     kind: raw
     description: CW32F030 RTC.TAMPTIME.SECOND; raw encoding.
 - name: AWTARR
-  reset_value: 0x0000ffff
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.12, printed p192 (PDF p193); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 65535
+  reset_source: CW32x030 RM Rev2.5 section 12.5.12, printed p192 (PDF p193); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 44
   access: rw
-  description: 'CW32F030 RTC.AWTARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.AWTARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5
+    for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and
+    the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5
+    12.3.4-5; 12.5.1-9; 12.5.12-13'
   fields:
   - name: ARR
     bit_offset: 0
@@ -406,12 +441,18 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: IER
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.13, printed p193 (PDF p194); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.13, printed p193 (PDF p194); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 48
   access: rw
-  description: 'CW32F030 RTC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5; 12.5.1-9; 12.5.12-13'
+  description: 'CW32F030 RTC.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. RTC writes require prior KEY unlock. Calendar-related access additionally requires CR1.ACCESS and the
+    WINDOW handshake; finish within one second and clear ACCESS to avoid timekeeping error. Source: CW32x030 RM Rev 2.5 12.3.4-5;
+    12.5.1-9; 12.5.12-13'
   fields:
   - name: INTERVAL
     bit_offset: 6
@@ -452,12 +493,16 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: ISR
-  reset_value: 0x00000000
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.14, printed p194 (PDF p195); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 0
+  reset_source: CW32x030 RM Rev2.5 section 12.5.14, printed p194 (PDF p195); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is
+    already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and
+    Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 52
   access: ro
-  description: CW32F030 RTC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
+  description: CW32F030 RTC.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings.
   fields:
   - name: INTERVAL
     bit_offset: 6
@@ -496,12 +541,19 @@ registers:
     kind: bool
     description: CW32F030 RTC.ISR.ALARMA; raw encoding.
 - name: ICR
-  reset_value: 0x0000007f
-  reset_source: "CW32x030 RM Rev2.5 section 12.5.15, printed p195 (PDF p196); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section12.3.3, printed p177 (PDF p178)"
-  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000020; retain them, do not mask to modeled fields. Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030."
+  reset_value: 127
+  reset_source: CW32x030 RM Rev2.5 section 12.5.15, printed p195 (PDF p196); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf;
+    RM Rev2.5 section12.3.3, printed p177 (PDF p178)
+  reset_note: Full reset word includes unmodeled/reserved set bits 0x00000020; retain them, do not mask to modeled fields.
+    Power-on/default value, not a guarantee after every system reset. RM12.3.3 requires checking whether RTC is already running
+    and the reset cause before reinitializing; DATE/TIME can be retained on non-POR resets. The prose and Figure12-2 differ
+    in their non-POR branching, so do not generalize the L012 all-register POR-only retention rule to F030.
   offset: 56
   access: rw
-  description: 'CW32F030 RTC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 12.5.15; 1.2'
+  description: 'CW32F030 RTC.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for
+    value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves
+    it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5
+    12.5.15; 1.2'
   fields:
   - name: INTERVAL
     bit_offset: 6

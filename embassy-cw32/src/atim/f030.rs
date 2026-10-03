@@ -28,6 +28,7 @@ use crate::{
     rcc::PeripheralClock,
     Peri,
 };
+use pac::atim::regs;
 
 mod sealed {
     pub trait Sealed {}
@@ -42,28 +43,8 @@ pub trait BrakePin: sealed::Sealed + Pin {
 }
 include!(concat!(env!("OUT_DIR"), "/_generated_atim_pins.rs"));
 
-const EN: u32 = 1;
-const COMP: u32 = 1 << 1;
-const SINGLE_COMPARE: u32 = 1 << 3;
-const PERIOD_BUFFER: u32 = 1 << 7;
-const UPDATE_IE: u32 = 1 << 10;
-const BREAK_IE: u32 = 1 << 20;
-const UG: u32 = 1 << 25;
-// Never replay a self-clearing software trigger during a CR read-modify-write.
-const CR_COMMANDS: u32 = (1 << 24) | (1 << 25) | (1 << 26);
-const MOE: u32 = 1 << 12;
-const AOE: u32 = 1 << 11;
-const BKE: u32 = 1 << 10;
-const DTEN: u32 = 1 << 9;
-const VCE: u32 = 1 << 14;
 const UIF: u32 = 1;
 const BIF: u32 = 1 << 14;
-// RM 15.7.5 documented reset: R1W0 unrelated flags stay 1, including RFU bit 1.
-const ICR_PRESERVE: u32 = 0x0007_ffff;
-// RM 15.7.8: global ADTE and update UEVE only. No compare-trigger selections.
-const ADC_UPDATE_TRIGGER: u32 = (1 << 7) | 1;
-// RM 15.7.11: A/B compare buffers; both brake output states forced low (10b).
-const CHANNEL_CONFIG: u32 = (1 << 6) | (1 << 7) | (2 << 2) | 2;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
@@ -152,29 +133,48 @@ impl Config {
         Ok(())
     }
 }
-fn control_config(c: &Config) -> u32 {
-    COMP | SINGLE_COMPARE
-        | PERIOD_BUFFER
-        | ((c.prescaler as u32) << 4)
-        | ((if c.alignment == Alignment::Center {
-            3
-        } else {
-            2
-        }) << 12)
+fn control_config(c: &Config) -> regs::Cr {
+    // The driver intentionally clears the reset CISA selection (0b11).
+    let mut value = regs::Cr(0);
+    value.set_comp(true);
+    value.set_pwm2s(true);
+    value.set_bufpen(true);
+    value.set_prs(c.prescaler as u8);
+    value.set_mode(if c.alignment == Alignment::Center {
+        3
+    } else {
+        2
+    });
+    value
 }
-fn filter_config(c: &Config) -> u32 {
-    0x0066_6666 | (u32::from(c.brake_filter) << 24) | (u32::from(!c.brake_active_high) << 27)
+fn filter_config(c: &Config) -> regs::Fltr {
+    let mut value = regs::Fltr::default();
+    value.set_ocm1aflt1a(6);
+    value.set_ocm1bflt1b(6);
+    value.set_ocm2aflt2a(6);
+    value.set_ocm2bflt2b(6);
+    value.set_ocm3aflt3a(6);
+    value.set_ocm3bflt3b(6);
+    value.set_fltbk(c.brake_filter);
+    value.set_bkp(!c.brake_active_high);
+    value
 }
-fn deadtime_config(c: &Config) -> Result<u32, Error> {
-    Ok(BKE
-        | if c.dead_time_ticks == 0 {
-            0
-        } else {
-            DTEN | u32::from(encode_dead_time(c.dead_time_ticks)?)
-        })
+fn deadtime_config(c: &Config) -> Result<regs::Dtr, Error> {
+    let mut value = regs::Dtr::default();
+    value.set_bke(true);
+    if c.dead_time_ticks != 0 {
+        value.set_dten(true);
+        value.set_dtr(encode_dead_time(c.dead_time_ticks)?);
+    }
+    Ok(value)
 }
 fn control_without_commands(word: u32) -> u32 {
-    word & !CR_COMMANDS
+    // Never replay a self-clearing software trigger during a CR RMW.
+    let mut value = regs::Cr(word);
+    value.set_bg(false);
+    value.set_ug(false);
+    value.set_tg(false);
+    value.0
 }
 
 /// Owns the timer, six real A/B pins and an external BK input.
@@ -209,33 +209,43 @@ impl<'d> ThreePhasePwm<'d> {
         let control = control_config(&config);
         let deadtime = deadtime_config(&config)?;
         <peripherals::ATIM as PeripheralClock>::enable_and_reset();
-        // SAFETY: owned singleton; clock/reset established before any access.
-        unsafe {
-            pac::ATIM.dtr().write_value(0);
-            pac::ATIM.cr().write_value(control);
-            pac::ATIM.trig().write_value(0);
-            pac::ATIM.arr().write_value(config.period.into());
-            pac::ATIM.cnt().write_value(0);
-            pac::ATIM.rcr().write_value(0);
-            pac::ATIM.mscr().write_value(0);
-            pac::ATIM.ch1cr().write_value(CHANNEL_CONFIG);
-            pac::ATIM.ch2cr().write_value(CHANNEL_CONFIG);
-            pac::ATIM.ch3cr().write_value(CHANNEL_CONFIG);
-            pac::ATIM.ch4cr().write_value(0);
-            pac::ATIM.ch1ccra().write_value(0);
-            pac::ATIM.ch1ccrb().write_value(0);
-            pac::ATIM.ch2ccra().write_value(0);
-            pac::ATIM.ch2ccrb().write_value(0);
-            pac::ATIM.ch3ccra().write_value(0);
-            pac::ATIM.ch3ccrb().write_value(0);
-            pac::ATIM.fltr().write_value(filter_config(&config));
-            // BKE on, AOE/MOE/VCE/SAFEEN off. Comparator routing is a scoped guard.
-            pac::ATIM.dtr().write_value(deadtime);
-            pac::ATIM.cr().write_value(control | UG);
-            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
-            // ADC owns its trigger receiver. This timer emits only real updates.
-            pac::ATIM.trig().write_value(ADC_UPDATE_TRIGGER);
+        // Owned singleton; clock/reset established before any access.
+        pac::ATIM.dtr().write_value(regs::Dtr(0));
+        pac::ATIM.cr().write_value(control);
+        pac::ATIM.trig().write_value(regs::Trig(0));
+        pac::ATIM.arr().write(|v| v.set_arr(config.period));
+        pac::ATIM.cnt().write_value(regs::Cnt(0));
+        pac::ATIM.rcr().write_value(regs::Rcr(0));
+        pac::ATIM.mscr().write_value(regs::Mscr(0));
+        // A/B buffers enabled and both brake states forced low (10b).
+        // Explicit zero seeds also clear the reset CISB selection (0b11).
+        for n in 0..3 {
+            pac::ATIM.chcr(n).write(|v| {
+                *v = regs::Chcr(0);
+                v.set_bufea(true);
+                v.set_bufeb(true);
+                v.set_bksa(2);
+                v.set_bksb(2);
+            });
         }
+        pac::ATIM.ch4cr().write_value(regs::Ch4cr(0));
+        for n in 0..3 {
+            pac::ATIM.ccra(n).write_value(regs::Ccra(0));
+            pac::ATIM.ccrb(n).write_value(regs::Ccrb(0));
+        }
+        pac::ATIM.fltr().write_value(filter_config(&config));
+        // BKE on, AOE/MOE/VCE/SAFEEN off. Comparator routing is a scoped guard.
+        pac::ATIM.dtr().write_value(deadtime);
+        let mut update = control;
+        update.set_ug(true);
+        pac::ATIM.cr().write_value(update);
+        // R1W0: start at the full documented reset, preserving RFU bit 1.
+        pac::ATIM.icr().write(|v| v.set_uif(false));
+        // ADC owns its trigger receiver. This timer emits only real updates.
+        pac::ATIM.trig().write(|v| {
+            v.set_adte(true);
+            v.set_ueve(true);
+        });
         let pins = [
             a.into(),
             b.into(),
@@ -271,25 +281,25 @@ impl<'d> ThreePhasePwm<'d> {
     }
     /// Start counting/ADC triggers without enabling the phase outputs.
     pub fn start_counter(&mut self) {
-        critical_section::with(|_| unsafe {
-            pac::ATIM
-                .cr()
-                .write_value(control_without_commands(pac::ATIM.cr().read()) | EN);
+        critical_section::with(|_| {
+            let mut value = regs::Cr(control_without_commands(pac::ATIM.cr().read().0));
+            value.set_en(true);
+            pac::ATIM.cr().write_value(value);
         });
     }
     /// Stop counting. Does not itself remove a static level from an enabled output.
     pub fn stop_counter(&mut self) {
-        critical_section::with(|_| unsafe {
-            pac::ATIM
-                .cr()
-                .write_value(control_without_commands(pac::ATIM.cr().read()) & !EN);
+        critical_section::with(|_| {
+            let mut value = regs::Cr(control_without_commands(pac::ATIM.cr().read().0));
+            value.set_en(false);
+            pac::ATIM.cr().write_value(value);
         });
     }
     pub fn fault_pending(&self) -> bool {
-        unsafe { pac::ATIM.isr().read() & BIF != 0 }
+        pac::ATIM.isr().read().bif()
     }
     pub fn outputs_enabled(&self) -> bool {
-        unsafe { pac::ATIM.dtr().read() & MOE != 0 }
+        pac::ATIM.dtr().read().moe()
     }
     /// Explicit power-output arm. The caller must establish board-level safety.
     /// A pending or newly detected break prevents successful arming.
@@ -297,18 +307,17 @@ impl<'d> ThreePhasePwm<'d> {
         critical_section::with(|_| arm_sequence(&mut HardwareArm))
     }
     pub fn disable_outputs(&mut self) {
-        critical_section::with(|_| unsafe {
-            pac::ATIM
-                .dtr()
-                .write_value(pac::ATIM.dtr().read() & !(MOE | AOE));
+        critical_section::with(|_| {
+            pac::ATIM.dtr().modify(|v| {
+                v.set_moe(false);
+                v.set_aoe(false);
+            });
         });
     }
     /// Clears only BIF while keeping outputs disabled. Never auto-rearms.
     pub fn acknowledge_fault(&mut self) -> Result<(), Error> {
         self.disable_outputs();
-        unsafe {
-            pac::ATIM.icr().write_value(ICR_PRESERVE & !BIF);
-        }
+        pac::ATIM.icr().write(|v| v.set_bif(false));
         if self.fault_pending() {
             Err(Error::FaultActive)
         } else {
@@ -317,11 +326,12 @@ impl<'d> ThreePhasePwm<'d> {
     }
     /// Used only by a comparator guard that owns both borrows and checks MOE=0.
     pub(crate) fn set_comparator_brake(&mut self, enabled: bool) {
-        critical_section::with(|_| unsafe {
-            let old = pac::ATIM.dtr().read() & !(MOE | AOE | VCE);
-            pac::ATIM
-                .dtr()
-                .write_value(old | if enabled { VCE } else { 0 });
+        critical_section::with(|_| {
+            pac::ATIM.dtr().modify(|v| {
+                v.set_moe(false);
+                v.set_aoe(false);
+                v.set_vce(enabled);
+            });
         });
     }
 }
@@ -338,35 +348,27 @@ trait DutyIo {
 struct HardwareDuty;
 impl DutyIo for HardwareDuty {
     fn outputs_enabled(&mut self) -> bool {
-        unsafe { pac::ATIM.dtr().read() & MOE != 0 }
+        pac::ATIM.dtr().read().moe()
     }
     fn control(&mut self) -> u32 {
-        unsafe { pac::ATIM.cr().read() }
+        pac::ATIM.cr().read().0
     }
     fn trigger(&mut self) -> u32 {
-        unsafe { pac::ATIM.trig().read() }
+        pac::ATIM.trig().read().0
     }
     fn write_control(&mut self, value: u32) {
-        unsafe {
-            pac::ATIM.cr().write_value(value);
-        }
+        pac::ATIM.cr().write_value(regs::Cr(value));
     }
     fn write_trigger(&mut self, value: u32) {
-        unsafe {
-            pac::ATIM.trig().write_value(value);
-        }
+        pac::ATIM.trig().write_value(regs::Trig(value));
     }
     fn write_compares(&mut self, duty: [u16; 3]) {
-        unsafe {
-            pac::ATIM.ch1ccra().write_value(duty[0].into());
-            pac::ATIM.ch2ccra().write_value(duty[1].into());
-            pac::ATIM.ch3ccra().write_value(duty[2].into());
+        for (n, value) in duty.into_iter().enumerate() {
+            pac::ATIM.ccra(n).write(|v| v.set_ccr(value));
         }
     }
     fn clear_update(&mut self) {
-        unsafe {
-            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
-        }
+        pac::ATIM.icr().write(|v| v.set_uif(false));
     }
 }
 fn program_duty(io: &mut impl DutyIo, duty: [u16; 3]) -> Result<(), Error> {
@@ -375,11 +377,16 @@ fn program_duty(io: &mut impl DutyIo, duty: [u16; 3]) -> Result<(), Error> {
     }
     let control = control_without_commands(io.control());
     let trigger = io.trigger();
-    let paused = control & !(EN | UPDATE_IE);
-    io.write_control(paused);
-    io.write_trigger(trigger & !(1 << 7));
+    let mut paused = regs::Cr(control);
+    paused.set_en(false);
+    paused.set_uie(false);
+    io.write_control(paused.0);
+    let mut gated = regs::Trig(trigger);
+    gated.set_adte(false);
+    io.write_trigger(gated.0);
     io.write_compares(duty);
-    io.write_control(paused | UG);
+    paused.set_ug(true);
+    io.write_control(paused.0);
     io.clear_update();
     io.write_trigger(trigger);
     io.write_control(control);
@@ -394,18 +401,16 @@ trait ArmIo {
 struct HardwareArm;
 impl ArmIo for HardwareArm {
     fn master(&mut self, enabled: bool) {
-        unsafe {
-            let old = pac::ATIM.dtr().read() & !(MOE | AOE);
-            pac::ATIM
-                .dtr()
-                .write_value(old | if enabled { MOE } else { 0 });
-        }
+        pac::ATIM.dtr().modify(|v| {
+            v.set_moe(enabled);
+            v.set_aoe(false);
+        });
     }
     fn fault(&mut self) -> bool {
-        unsafe { pac::ATIM.isr().read() & BIF != 0 }
+        pac::ATIM.isr().read().bif()
     }
     fn enabled(&mut self) -> bool {
-        unsafe { pac::ATIM.dtr().read() & MOE != 0 }
+        pac::ATIM.dtr().read().moe()
     }
 }
 fn arm_sequence(io: &mut impl ArmIo) -> Result<(), Error> {
@@ -439,12 +444,6 @@ enum WaitEvent {
     Break,
 }
 impl WaitEvent {
-    fn ie(self) -> u32 {
-        match self {
-            Self::Update => UPDATE_IE,
-            Self::Break => BREAK_IE,
-        }
-    }
     fn flags(self) -> u32 {
         match self {
             Self::Update => UIF,
@@ -467,29 +466,27 @@ trait EventIo {
 struct HardwareEvents;
 impl EventIo for HardwareEvents {
     fn enables(&mut self) -> u32 {
-        unsafe { control_without_commands(pac::ATIM.cr().read()) }
+        control_without_commands(pac::ATIM.cr().read().0)
     }
     fn status(&mut self) -> u32 {
-        unsafe { pac::ATIM.isr().read() }
+        pac::ATIM.isr().read().0
     }
     fn set_enables(&mut self, value: u32) {
-        unsafe {
-            pac::ATIM.cr().write_value(control_without_commands(value));
-        }
+        pac::ATIM
+            .cr()
+            .write_value(regs::Cr(control_without_commands(value)));
     }
     fn clear_update(&mut self) {
-        unsafe {
-            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
-        }
+        pac::ATIM.icr().write(|v| v.set_uif(false));
     }
 }
 fn set_event_enabled(io: &mut impl EventIo, event: WaitEvent, enabled: bool) {
-    let old = control_without_commands(io.enables());
-    io.set_enables(if enabled {
-        old | event.ie()
-    } else {
-        old & !event.ie()
-    });
+    let mut value = regs::Cr(control_without_commands(io.enables()));
+    match event {
+        WaitEvent::Update => value.set_uie(enabled),
+        WaitEvent::Break => value.set_bie(enabled),
+    }
+    io.set_enables(value.0);
 }
 fn prepare_event(io: &mut impl EventIo, event: WaitEvent) {
     set_event_enabled(io, event, false);
@@ -499,21 +496,18 @@ fn prepare_event(io: &mut impl EventIo, event: WaitEvent) {
     set_event_enabled(io, event, true);
 }
 fn service_events(io: &mut impl EventIo) -> (u32, u32) {
-    let enabled = control_without_commands(io.enables());
+    let mut enabled = regs::Cr(control_without_commands(io.enables()));
     let flags = io.status();
-    let update = if enabled & UPDATE_IE != 0 {
-        flags & UIF
-    } else {
-        0
-    };
-    let fault = if enabled & BREAK_IE != 0 {
-        flags & BIF
-    } else {
-        0
-    };
-    let mask = if update != 0 { UPDATE_IE } else { 0 } | if fault != 0 { BREAK_IE } else { 0 };
-    if mask != 0 {
-        io.set_enables(enabled & !mask);
+    let update = if enabled.uie() { flags & UIF } else { 0 };
+    let fault = if enabled.bie() { flags & BIF } else { 0 };
+    if update != 0 || fault != 0 {
+        if update != 0 {
+            enabled.set_uie(false);
+        }
+        if fault != 0 {
+            enabled.set_bie(false);
+        }
+        io.set_enables(enabled.0);
     }
     if update != 0 {
         io.clear_update();
@@ -631,9 +625,7 @@ impl Drop for ThreePhasePwm<'_> {
     fn drop(&mut self) {
         self.disable_outputs();
         self.stop_counter();
-        unsafe {
-            pac::ATIM.trig().write_value(0);
-        }
+        pac::ATIM.trig().write_value(regs::Trig(0));
         for pin in &self.pins {
             pin.disconnect();
         }

@@ -1,0 +1,1472 @@
+schema_version: 1
+scope: Audited GTIM1-4 main-output routes and L012 ATIM.CH4, imported into the chip pin-route sources. Physical routing evidence
+  does not establish board electrical safety.
+sources:
+  f030_rm:
+    url: https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+    version: '2.5'
+    sha256: 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2
+  f030_ds:
+    url: https://www.whxy.com/uploads/files/20251229/CW32F030_DataSheet_CN_V1.9.pdf
+    version: '1.9'
+    sha256: 04ef91434320e5d05a3b6690fead0fedb31a7d9bad28c96b655a6e13a22e46b2
+  l012_rm:
+    url: https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf
+    version: '1.4'
+    sha256: a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340
+  l012_gpio:
+    sdk_url: https://www.whxy.com/uploads/files/20260701/CW32L012_StandardPeripheralLib_V1.0.5.zip
+    sdk_version: 1.0.5
+    path: vendor/cw32l012_gpio.h
+    upstream_path: Libraries/inc/cw32l012_gpio.h
+    sha256: 45f356e8028475c2e25d135c5fdd0b75babb6b1c83f1d5534038e9355822d717
+constraint_sets:
+  common_gpio:
+    direction: Set GPIOx_ANALOG.PINy=0 and GPIOx_DIR.PINy=0, then the stated AFRL/AFRH value; GPIO clock must be enabled.
+      Select suitable push-pull/open-drain and board electrical parameters. Existing pin ownership rules remain.
+    sources:
+    - f030_rm sections 9.4.1/9.4.4 p150 (GPIO lock must also be unlocked)
+    - l012_rm sections 9.4.1/9.4.4 p131
+  f030_gtim:
+    output_proof: RM2.5 section14.3.4.1 Table14-6 p229 explicitly covers GTIMx_CHy for x,y=1..4 as output compare/PWM channels.
+      CCyM=0xE gives high when CNT>=CCR; CCyM=0xF gives high when CNT<CCR. These are CHy main signals, not the distinct TOGP/TOGN
+      signals.
+    gpio: common_gpio
+    sysctrl_output_remap: null
+    remap_reason: SYSCTRL_GTIMxCAP is capture input source only (sections4.7.20-23 pp89-90 and 14.3.3.2/Table14-5 p228); it
+      is not an output remap and must not be written merely to select PWM output. Output uses the stated AF plus digital-output
+      mode.
+    channel_gate: 'Do not infer L012 CCER-style channel enable semantics: F030 mode selection is CMMR.CCyM.'
+  l012_gtim:
+    output_proof: RM1.4 section16.3.4/Table16-9 p262 and section16.3.4.3/Table16-10 p264 explicitly support CHy PWM outputs;
+      section16.8.8 p282 is an external output example.
+    gpio: common_gpio
+    selection: Set CCMR1CMP/CCMR2CMP.CCyS=0 while CCER.CCyE=0; choose OCyM=6/7, then CCER.CCyE=1 and desired CCyP. CCyNP must
+      remain 0 in output mode (section16.10.12 pp302-303). Timer clocks/timebase/start remain separate driver operations.
+    sysctrl_output_remap: null
+    remap_reason: GTIMx_TISEL.TIySEL selects capture input sources (section16.3.3.2/Table16-8 p261). It is not a PWM output
+      route selector. No SYSCTRL remap step is in the external-output programming example.
+  l012_atim_ch4:
+    output_proof: RM1.4 section17.3.1.10 p327 explicitly supports independent CH1..CH6 outputs; section17.3.4 p341 and Table9-2
+      pp128-129 establish external CH4.
+    gpio: common_gpio
+    selection: Set CCMR2CMP.CC4S=0 while CCER.CC4E=0; choose OC4M including OC4MH consistently, enable CCER.CC4E, and configure
+      desired CC4P. ATIM output additionally depends on BDTR.MOE, break state, OSSI/OSSR, OIS4/OIS4N and CC4NE. This route
+      does not establish safe break/dead-time configuration.
+    sysctrl_output_remap: null
+    remap_reason: ATIM_TISELx selects input-capture sources only; the stated AF plus output direction selects the external
+      CH4 output.
+    sources:
+    - section17.10.11 p391 (CC4S/OC4M)
+    - section17.10.14 pp394-395 (CC4E and output gating)
+    - BDTR.MOE p402
+chips:
+  cw32f030c8:
+    pin_routes:
+    - pin: PA6
+      peripheral: GTIM1
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB4
+      peripheral: GTIM1
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA7
+      peripheral: GTIM1
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB5
+      peripheral: GTIM1
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB0
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB8
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB1
+      peripheral: GTIM1
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB9
+      peripheral: GTIM1
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA0
+      peripheral: GTIM2
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PA5
+      peripheral: GTIM2
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PA15
+      peripheral: GTIM2
+      signal: CH1
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB14
+      peripheral: GTIM2
+      signal: CH1
+      af: 1
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA1
+      peripheral: GTIM2
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PA3
+      peripheral: GTIM2
+      signal: CH2
+      af: 3
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB3
+      peripheral: GTIM2
+      signal: CH2
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB15
+      peripheral: GTIM2
+      signal: CH2
+      af: 1
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA2
+      peripheral: GTIM2
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB10
+      peripheral: GTIM2
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA3
+      peripheral: GTIM2
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB11
+      peripheral: GTIM2
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PA6
+      peripheral: GTIM3
+      signal: CH1
+      af: 1
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PA9
+      peripheral: GTIM3
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB8
+      peripheral: GTIM3
+      signal: CH1
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PC14
+      peripheral: GTIM3
+      signal: CH1
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-5
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA10
+      peripheral: GTIM3
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB7
+      peripheral: GTIM3
+      signal: CH2
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PC15
+      peripheral: GTIM3
+      signal: CH2
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-5
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA11
+      peripheral: GTIM3
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB6
+      peripheral: GTIM3
+      signal: CH3
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PF0
+      peripheral: GTIM3
+      signal: CH3
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-6
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA12
+      peripheral: GTIM3
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB5
+      peripheral: GTIM3
+      signal: CH4
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PF1
+      peripheral: GTIM3
+      signal: CH4
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-6
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA7
+      peripheral: GTIM4
+      signal: CH1
+      af: 1
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 146
+        datasheet: f030_ds
+        datasheet_table: 5-3
+        datasheet_printed_page: 28
+    - pin: PB9
+      peripheral: GTIM4
+      signal: CH1
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB15
+      peripheral: GTIM4
+      signal: CH1
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PF1
+      peripheral: GTIM4
+      signal: CH1
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-6
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PB8
+      peripheral: GTIM4
+      signal: CH2
+      af: 4
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB14
+      peripheral: GTIM4
+      signal: CH2
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PF0
+      peripheral: GTIM4
+      signal: CH2
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-6
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PB7
+      peripheral: GTIM4
+      signal: CH3
+      af: 4
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB13
+      peripheral: GTIM4
+      signal: CH3
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PC15
+      peripheral: GTIM4
+      signal: CH3
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-5
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PB6
+      peripheral: GTIM4
+      signal: CH4
+      af: 4
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PB12
+      peripheral: GTIM4
+      signal: CH4
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-4
+        datasheet_printed_page: 29
+    - pin: PC14
+      peripheral: GTIM4
+      signal: CH4
+      af: 2
+      remap: null
+      direction: main_output_capable
+      constraint_set: f030_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: f030_rm
+        table: 9-2
+        printed_page: 147
+        datasheet: f030_ds
+        datasheet_table: 5-5
+        datasheet_printed_page: 29
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+  cw32l012c8:
+    pin_routes:
+    - pin: PA3
+      peripheral: ATIM
+      signal: CH4
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_atim_ch4
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA03_AFx_ATIMCH4()
+        header_line: 664
+    - pin: PA11
+      peripheral: ATIM
+      signal: CH4
+      af: 7
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_atim_ch4
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA11_AFx_ATIMCH4()
+        header_line: 742
+    - pin: PB9
+      peripheral: ATIM
+      signal: CH4
+      af: 5
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_atim_ch4
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB09_AFx_ATIMCH4()
+        header_line: 880
+    - pin: PA6
+      peripheral: GTIM1
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA06_AFx_GTIM1CH1()
+        header_line: 693
+    - pin: PB4
+      peripheral: GTIM1
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB04_AFx_GTIM1CH1()
+        header_line: 832
+    - pin: PA7
+      peripheral: GTIM1
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA07_AFx_GTIM1CH2()
+        header_line: 702
+    - pin: PB5
+      peripheral: GTIM1
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB05_AFx_GTIM1CH2()
+        header_line: 842
+    - pin: PA5
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA05_AFx_GTIM1CH3()
+        header_line: 683
+    - pin: PB0
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB00_AFx_GTIM1CH3()
+        header_line: 792
+    - pin: PB6
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB06_AFx_GTIM1CH3()
+        header_line: 852
+    - pin: PB8
+      peripheral: GTIM1
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB08_AFx_GTIM1CH3()
+        header_line: 872
+    - pin: PB1
+      peripheral: GTIM1
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB01_AFx_GTIM1CH4()
+        header_line: 802
+    - pin: PB7
+      peripheral: GTIM1
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB07_AFx_GTIM1CH4()
+        header_line: 862
+    - pin: PB9
+      peripheral: GTIM1
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB09_AFx_GTIM1CH4()
+        header_line: 881
+    - pin: PA0
+      peripheral: GTIM2
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA00_AFx_GTIM2CH1()
+        header_line: 635
+    - pin: PA15
+      peripheral: GTIM2
+      signal: CH1
+      af: 5
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA15_AFx_GTIM2CH1()
+        header_line: 778
+    - pin: PB14
+      peripheral: GTIM2
+      signal: CH1
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB14_AFx_GTIM2CH1()
+        header_line: 930
+    - pin: PA1
+      peripheral: GTIM2
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA01_AFx_GTIM2CH2()
+        header_line: 645
+    - pin: PA11
+      peripheral: GTIM2
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA11_AFx_GTIM2CH2()
+        header_line: 741
+    - pin: PB3
+      peripheral: GTIM2
+      signal: CH2
+      af: 5
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB03_AFx_GTIM2CH2()
+        header_line: 821
+    - pin: PB15
+      peripheral: GTIM2
+      signal: CH2
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB15_AFx_GTIM2CH2()
+        header_line: 940
+    - pin: PA2
+      peripheral: GTIM2
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA02_AFx_GTIM2CH3()
+        header_line: 654
+    - pin: PA12
+      peripheral: GTIM2
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA12_AFx_GTIM2CH3()
+        header_line: 751
+    - pin: PB6
+      peripheral: GTIM2
+      signal: CH3
+      af: 5
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB06_AFx_GTIM2CH3()
+        header_line: 851
+    - pin: PB10
+      peripheral: GTIM2
+      signal: CH3
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB10_AFx_GTIM2CH3()
+        header_line: 890
+    - pin: PA3
+      peripheral: GTIM2
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA03_AFx_GTIM2CH4()
+        header_line: 663
+    - pin: PB7
+      peripheral: GTIM2
+      signal: CH4
+      af: 5
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB07_AFx_GTIM2CH4()
+        header_line: 861
+    - pin: PB11
+      peripheral: GTIM2
+      signal: CH4
+      af: 6
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PB11_AFx_GTIM2CH4()
+        header_line: 900
+    - pin: PA4
+      peripheral: GTIM3
+      signal: CH1
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA04_AFx_GTIM3CH1()
+        header_line: 675
+    - pin: PA15
+      peripheral: GTIM3
+      signal: CH1
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA15_AFx_GTIM3CH1()
+        header_line: 781
+    - pin: PA5
+      peripheral: GTIM3
+      signal: CH2
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA05_AFx_GTIM3CH2()
+        header_line: 685
+    - pin: PB3
+      peripheral: GTIM3
+      signal: CH2
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB03_AFx_GTIM3CH2()
+        header_line: 824
+    - pin: PA6
+      peripheral: GTIM3
+      signal: CH3
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA06_AFx_GTIM3CH3()
+        header_line: 695
+    - pin: PB4
+      peripheral: GTIM3
+      signal: CH3
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB04_AFx_GTIM3CH3()
+        header_line: 834
+    - pin: PA7
+      peripheral: GTIM3
+      signal: CH4
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA07_AFx_GTIM3CH4()
+        header_line: 704
+    - pin: PB5
+      peripheral: GTIM3
+      signal: CH4
+      af: 8
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PB05_AFx_GTIM3CH4()
+        header_line: 844
+    - pin: PA9
+      peripheral: GTIM4
+      signal: CH1
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA09_AFx_GTIM4CH1()
+        header_line: 724
+    - pin: PC14
+      peripheral: GTIM4
+      signal: CH1
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PC14_AFx_GTIM4CH1()
+        header_line: 965
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA10
+      peripheral: GTIM4
+      signal: CH2
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA10_AFx_GTIM4CH2()
+        header_line: 734
+    - pin: PC15
+      peripheral: GTIM4
+      signal: CH2
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PC15_AFx_GTIM4CH2()
+        header_line: 975
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA11
+      peripheral: GTIM4
+      signal: CH3
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA11_AFx_GTIM4CH3()
+        header_line: 744
+    - pin: PF0
+      peripheral: GTIM4
+      signal: CH3
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PF00_AFx_GTIM4CH3()
+        header_line: 986
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+    - pin: PA12
+      peripheral: GTIM4
+      signal: CH4
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 128
+        sdk_header: l012_gpio
+        macro: PA12_AFx_GTIM4CH4()
+        header_line: 754
+    - pin: PF1
+      peripheral: GTIM4
+      signal: CH4
+      af: 9
+      remap: null
+      direction: main_output_capable
+      constraint_set: l012_gtim
+      pin_capability_verified: true
+      evidence:
+        manual: l012_rm
+        table: 9-2
+        printed_page: 129
+        sdk_header: l012_gpio
+        macro: PF01_AFx_GTIM4CH4()
+        header_line: 996
+      pin_caution: 'Oscillator-shared pin: verify board wiring and selected oscillator configuration before digital output;
+        route existence does not reclaim an active oscillator.'
+exceptions:
+- chip: cw32f030c8
+  signal: ATIM.CH4
+  status: no_external_pin_by_explicit_manual_definition
+  evidence: RM2.5 section15.3.1.6 p264 explicitly states CH4 is internal-only, no external pin; compare-only, not capture.
+    This is not inferred from missing metadata.
+- chip: cw32l012c8
+  signals:
+  - ATIM.CH4N
+  - ATIM.CH5
+  - ATIM.CH5N
+  - ATIM.CH6
+  - ATIM.CH6N
+  status: outside_requested_main_CH1_to_CH4_route_scope
+  evidence: CH4N is explicitly PA2 AF7 and PB8 AF5 in RM1.4 Table9-2 and SDK macros; not inserted in main-output route list.
+    CH5/6 likewise exist but were outside bounded audit.
+- chips:
+  - cw32f030c8
+  - cw32l012c8
+  signals:
+  - GTIMx.ETR
+  - GTIMx.TRGO
+  - GTIMx.TOGP
+  - GTIMx.TOGN
+  status: outside_main_CHy_PWM_route_scope
+  evidence: Not substituted for CHy outputs; input trigger, trigger output and toggle-output signals remain distinct.
+- chip: cw32l012c8
+  topic: AF8/AF9
+  status: confirmed
+  evidence: RM1.4 Table9-1 prints only AF0..7, but Table9-2 explicitly includes AF8/AF9 and every proposed AF8/9 route is
+    independently matched to an SDK macro writing 8/9 into the four-bit AFR field.

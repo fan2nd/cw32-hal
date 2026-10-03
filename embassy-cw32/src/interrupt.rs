@@ -1,7 +1,7 @@
 //! Audited device interrupts and Embassy's type-level binding contracts.
 //!
 //! The PAC runtime's generated vector table connects these names to real IRQ
-//! slots. Enable `rt` to use [`crate::bind_interrupts!`]. Drivers should require
+//! slots. Enable `rt` to use `bind_interrupts!`. Drivers should require
 //! the appropriate [`typelevel::Binding`] proof before enabling their IRQs.
 
 // Use the official Embassy implementation, including its sealed IRQ markers,

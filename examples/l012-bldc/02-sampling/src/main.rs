@@ -11,9 +11,7 @@ use embassy_cw32::{
 
 const CPU_HZ: u32 = 96_000_000;
 const SAMPLING_PERIOD: u16 = 4800; // 96 MHz / 20 kHz, original scale.
-const ADC_ICR_MASK: u32 = 0xf;
-const BTIM_ICR_MASK: u32 = 0x41;
-// DMA is the only writer after setup. CPU uses raw volatile reads, never Rust references.
+                                   // DMA is the only writer after setup. CPU uses raw volatile reads, never Rust references.
 static mut ADC2_DMA: [u32; 5] = [0; 5];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
@@ -41,178 +39,191 @@ fn main() -> ! {
     // SAFETY: HAL initialization transferred the peripheral singletons;
     // main keeps the singleton tokens; it never accesses hardware after unmask.
     unsafe {
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::AHBEN,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | 1 | (1 << 4) | (1 << 5) | (1 << 6),
-        );
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::APBEN1,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | (1 << 0) | (1 << 5),
-        );
+        let mut ahben = pac::SYSCTRL.ahben().read();
+        ahben.set_key(0x5a5a);
+        ahben.set_dma(true);
+        ahben.set_gpioa(true);
+        ahben.set_gpiob(true);
+        ahben.set_gpioc(true);
+        pac::SYSCTRL.ahben().write_value(ahben);
+        let mut apben1 = pac::SYSCTRL.apben1().read();
+        apben1.set_key(0x5a5a);
+        apben1.set_adc(true);
+        apben1.set_atim(true);
+        pac::SYSCTRL.apben1().write_value(apben1);
         // Basic timers share this clock gate; only timer 1 is accessed.
-        pac::modify(
-            pac::SYSCTRL_BASE + pac::sysctrl::APBEN2,
-            pac::SYSCTRL_KEY_MASK,
-            pac::SYSCTRL_KEY | (1 << 2) | (1 << 9),
-        );
+        let mut apben2 = pac::SYSCTRL.apben2().read();
+        apben2.set_key(0x5a5a);
+        apben2.set_btim123(true);
+        apben2.set_opa(true);
+        pac::SYSCTRL.apben2().write_value(apben2);
         // LED/key plus analog inputs only; bridge gate pins are untouched.
         for (port, pin, analog, pull_up, output) in [
-            (pac::GPIOC_BASE, 13, false, false, true),
-            (pac::GPIOA_BASE, 3, false, true, false),
-            (pac::GPIOA_BASE, 0, true, false, false),
-            (pac::GPIOA_BASE, 1, true, false, false),
-            (pac::GPIOA_BASE, 2, true, false, false),
-            (pac::GPIOA_BASE, 6, true, false, false),
-            (pac::GPIOA_BASE, 7, true, false, false),
-            (pac::GPIOB_BASE, 0, true, false, false),
-            (pac::GPIOB_BASE, 2, true, false, false),
-            (pac::GPIOA_BASE, 8, true, false, false),
-            (pac::GPIOA_BASE, 10, true, false, false),
-            (pac::GPIOA_BASE, 11, true, false, false),
+            (pac::GPIOC.as_ptr(), 13, false, false, true),
+            (pac::GPIOA.as_ptr(), 3, false, true, false),
+            (pac::GPIOA.as_ptr(), 0, true, false, false),
+            (pac::GPIOA.as_ptr(), 1, true, false, false),
+            (pac::GPIOA.as_ptr(), 2, true, false, false),
+            (pac::GPIOA.as_ptr(), 6, true, false, false),
+            (pac::GPIOA.as_ptr(), 7, true, false, false),
+            (pac::GPIOB.as_ptr(), 0, true, false, false),
+            (pac::GPIOB.as_ptr(), 2, true, false, false),
+            (pac::GPIOA.as_ptr(), 8, true, false, false),
+            (pac::GPIOA.as_ptr(), 10, true, false, false),
+            (pac::GPIOA.as_ptr(), 11, true, false, false),
         ] {
-            let mask = 1 << pin;
-            let af = if pin < 8 {
-                pac::gpio::AFRL
-            } else {
-                pac::gpio::AFRH
-            };
-            pac::modify(port + pac::gpio::DIR, 0, mask);
-            pac::modify(port + af, 0xf << ((pin % 8) * 4), 0);
-            pac::modify(port + pac::gpio::RISEIE, mask, 0);
-            pac::modify(port + pac::gpio::FALLIE, mask, 0);
-            pac::modify(port + pac::gpio::OPENDRAIN, mask, 0);
-            pac::modify(port + pac::gpio::PUR, mask, if pull_up { mask } else { 0 });
-            pac::modify(
-                port + pac::gpio::ANALOG,
-                mask,
-                if analog { mask } else { 0 },
-            );
+            let port: pac::gpio::Gpio = pac::gpio::Gpio::from_ptr(port);
+            port.dir().modify(|w| w.set_pin(pin, true));
+            port.afr(pin / 8).modify(|w| w.set_afr(pin % 8, 0));
+            port.riseie().modify(|w| w.set_pin(pin, false));
+            port.fallie().modify(|w| w.set_pin(pin, false));
+            port.opendrain().modify(|w| w.set_pin(pin, false));
+            port.pur().modify(|w| w.set_pin(pin, pull_up));
+            port.analog().modify(|w| w.set_pin(pin, analog));
             if output {
-                pac::write(port + pac::gpio::BSRR, mask);
-                pac::modify(port + pac::gpio::DIR, mask, 0);
+                port.bsrr().write(|w| w.set_bss(pin, true));
+                port.dir().modify(|w| w.set_pin(pin, false));
             }
         }
 
-        pac::ATIM
-            .cr1()
-            .write_value(pac::atim::fields::cr1::ARPE.mask());
-        pac::ATIM.bdtr().write_value(0);
-        pac::ATIM.dier().write_value(0);
-        pac::ATIM.ccer().write_value(0);
-        pac::ATIM.cr2().write_value(0);
-        pac::ATIM.smcr().write_value(0);
-        pac::ATIM.psc().write_value(0);
-        pac::ATIM.arr().write_value(u32::from(SAMPLING_PERIOD - 1));
-        pac::ATIM.rcr().write_value(0);
-        pac::ATIM.cnt().write_value(0);
+        pac::ATIM.cr1().write(|w| w.set_arpe(true));
+        pac::ATIM.bdtr().write(|_| {});
+        pac::ATIM.dier().write(|_| {});
+        pac::ATIM.ccer().write(|_| {});
+        pac::ATIM.cr2().write(|_| {});
+        pac::ATIM.smcr().write(|_| {});
+        pac::ATIM.psc().write(|w| w.set_psc(0));
+        pac::ATIM.arr().write(|w| w.set_arr(SAMPLING_PERIOD - 1));
+        pac::ATIM.rcr().write(|w| w.set_rep(0));
+        pac::ATIM.cnt().write(|w| w.set_cnt(0));
         // No phase PWM mode, channel enable or alternate-function gate mux.
-        pac::ATIM.ccmr1cmp().write_value(0);
+        pac::ATIM.ccmr_cmp(0).write(|_| {});
         // Preserve original PWM1: OC4REFC rises at reload, not at CCR4.
-        pac::ATIM.ccmr2cmp().write_value(
-            pac::atim::fields::ccmr2cmp::OC4PE
-                .write(pac::atim::fields::ccmr2cmp::OC4M.write(0, 6), true),
-        );
-        pac::ATIM.ccr1().write_value(0);
-        pac::ATIM.ccr2().write_value(0);
-        pac::ATIM.ccr3().write_value(0);
-        pac::ATIM.ccr4().write_value(2400); // Original PWM_PERIOD / 2 at initialization.
-        pac::ATIM.dtr2().write_value(0);
-        pac::ATIM.af1().write_value(0);
-        pac::ATIM.af2().write_value(0);
-        pac::ATIM
-            .ccer()
-            .write_value(pac::atim::fields::ccer::CC4E.mask());
-        pac::ATIM.icr().write_value(0);
+        pac::ATIM.ccmr_cmp(1).write(|w| {
+            w.set_ocm(1, 6);
+            w.set_ocpe(1, true);
+        });
+        pac::ATIM.ccr(0).write(|w| w.set_ccr(0));
+        pac::ATIM.ccr(1).write(|w| w.set_ccr(0));
+        pac::ATIM.ccr(2).write(|w| w.set_ccr(0));
+        pac::ATIM.ccr(3).write(|w| w.set_ccr(2400)); // Original PWM_PERIOD / 2 at initialization.
+        pac::ATIM.dtr2().write(|_| {});
+        pac::ATIM.af1().write(|w| w.set_bkine(false));
+        pac::ATIM.af2().write(|w| w.set_bk2ine(false));
+        pac::ATIM.ccer().write(|w| w.set_cc4e(true));
+        pac::ATIM.icr().write_value(pac::atim::regs::Icr(0));
 
         // External-feedback OPA1: PA6 INP2, PA7 INN2, PB0 output/ADC1 CH8.
-        pac::BGR
-            .cr()
-            .write_value(pac::bgr::fields::cr::BGREN.write(pac::BGR.cr().read(), true));
-        pac::OPA1.cr().write_value(0xe220);
-        pac::OPA1.cal().write_value(0);
-        pac::OPA1.cr().write_value(0xe221);
+        pac::BGR.cr().modify(|w| w.set_bgren(true));
+        pac::OPA1.cr().write(|w| {
+            w.set_inn2en(true);
+            w.set_inp2en(true);
+        });
+        pac::OPA1.cal().write(|_| {});
+        pac::OPA1.cr().write(|w| {
+            w.set_inn2en(true);
+            w.set_inp2en(true);
+            w.set_en(true);
+        });
         for (r, length, channels, sample, divider) in [
-            (pac::ADC1, 4, 0x2108, 0x9999, 1),
-            (pac::ADC2, 5, 0xf875b, 0xfffff, 3),
+            (pac::ADC1, 4, [8, 0, 1, 2, 0], [9, 9, 9, 9, 0], 1),
+            (pac::ADC2, 5, [11, 5, 7, 8, 15], [15; 5], 3),
         ] {
-            r.trigger().write_value(0);
-            r.start().write_value(0);
-            r.ier().write_value(0);
+            r.trigger().write(|_| {});
+            r.start().write(|_| {});
+            r.ier().write(|_| {});
             // Preserve reserved CR bits; the uploaded SDK's SAM[9:8] disagrees
             // with the pinned official header / RM and is deliberately not used.
-            let reserved = r.cr().read() & !0xff;
-            r.cr().write_value(reserved);
-            r.awdcr().write_value(0);
-            r.sqrcfr().write_value(channels);
-            r.sample().write_value(sample);
-            r.icr().write_value(0);
-            r.cr().write_value(pac::adc::fields::cr::EN.write(
-                pac::adc::fields::cr::ENS.write(
-                    pac::adc::fields::cr::CLK.write(reserved, divider),
-                    length - 1,
-                ),
-                true,
-            ));
+            let mut cr = r.cr().read();
+            cr.set_slave(false);
+            cr.set_ens(0);
+            cr.set_clk(0);
+            cr.set_cont(false);
+            cr.set_en(false);
+            r.cr().write_value(cr);
+            r.awdcr().write(|_| {});
+            r.sqrcfr().write(|w| {
+                w.set_sqrch(0, channels[0]);
+                w.set_sqrch(1, channels[1]);
+                w.set_sqrch(2, channels[2]);
+                w.set_sqrch(3, channels[3]);
+                w.set_sqrch(4, channels[4]);
+            });
+            r.sample().write(|w| {
+                w.set_sqrch(0, sample[0]);
+                w.set_sqrch(1, sample[1]);
+                w.set_sqrch(2, sample[2]);
+                w.set_sqrch(3, sample[3]);
+                w.set_sqrch(4, sample[4]);
+            });
+            r.icr().write_value(pac::adc::regs::Icr(0));
+            cr.set_clk(divider);
+            cr.set_ens(length - 1);
+            cr.set_en(true);
+            r.cr().write_value(cr);
         }
 
-        pac::BTIM1.cr1().write_value(0);
-        pac::BTIM1.dier().write_value(0);
-        pac::BTIM1.cr2().write_value(0);
-        pac::BTIM1.smcr().write_value(0);
-        pac::BTIM1.psc().write_value(95);
-        pac::BTIM1.arr().write_value(999);
-        pac::BTIM1.cnt().write_value(0);
-        pac::BTIM1.icr().write_value(0);
+        pac::BTIM1.cr1().write(|_| {});
+        pac::BTIM1.dier().write(|_| {});
+        pac::BTIM1.cr2().write(|_| {});
+        pac::BTIM1.smcr().write(|_| {});
+        pac::BTIM1.psc().write(|w| w.set_psc(95));
+        pac::BTIM1.arr().write(|w| w.set_arr(999));
+        pac::BTIM1.cnt().write(|w| w.set_cnt(0));
+        pac::BTIM1.icr().write_value(pac::btim::regs::Icr(0));
     }
     // Nominal >= 1 ms startup settling; not used as a sample timebase.
     cortex_m::asm::delay(CPU_HZ / 1_000);
     INITIALIZED.store(true, Ordering::Release);
 
     unsafe {
-        pac::ADC1.icr().write_value(0);
-        pac::ADC2.icr().write_value(0);
-        pac::ADC1
-            .ier()
-            .write_value(pac::adc::fields::ier::EOS.mask());
+        pac::ADC1.icr().write_value(pac::adc::regs::Icr(0));
+        pac::ADC2.icr().write_value(pac::adc::regs::Icr(0));
+        pac::ADC1.ier().write(|w| w.set_eos(true));
         // Original EOC + BLOCK intent: one 32-bit result per conversion.
         // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
         // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
-        pac::DMA.csr2().write_value(0);
-        pac::DMA.cnt2().write_value((1 << 16) | 5);
+        pac::DMA.ch(1).csr().write(|_| {});
+        pac::DMA.ch(1).cnt().write(|w| {
+            w.set_repeat(1);
+            w.set_cnt(5);
+        });
         pac::DMA
-            .srcaddr2()
-            .write_value((pac::ADC2_BASE + pac::adc::RESULT0) as u32);
-        pac::DMA
-            .dstaddr2()
-            .write_value(core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>() as u32);
-        pac::DMA.trig2().write_value(1 | (15 << 2));
-        pac::DMA
-            .csr2()
-            .write_value((1 << 11) | (2 << 6) | (1 << 5) | (1 << 4) | (1 << 3) | 1);
-        pac::ADC2
-            .ier()
-            .write_value(pac::adc::fields::ier::DMAEOC.mask());
-        pac::ADC2
-            .trigger()
-            .write_value(pac::adc::fields::trigger::ATIMOC4REFC.mask());
+            .ch(1)
+            .srcaddr()
+            .write(|w| w.set_srcaddr(pac::ADC2.result(0).as_ptr() as u32));
+        pac::DMA.ch(1).dstaddr().write(|w| {
+            w.set_dstaddr(core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>() as u32);
+        });
+        pac::DMA.ch(1).trig().write(|w| {
+            w.set_type(true);
+            w.set_hardsrc(15);
+        });
+        pac::DMA.ch(1).csr().write(|w| {
+            w.set_restart(true);
+            w.set_size(2);
+            w.set_dstinc(true);
+            w.set_srcinc(true);
+            w.set_trans(true);
+            w.set_en(true);
+        });
+        pac::ADC2.ier().write(|w| w.set_dmaeoc(true));
+        pac::ADC2.trigger().write(|w| w.set_atimoc4refc(true));
 
-        pac::BTIM1.icr().write_value(BTIM_ICR_MASK & !1);
-        pac::BTIM1.dier().write_value(1);
+        pac::BTIM1.icr().write(|w| w.set_uif(false));
+        pac::BTIM1.dier().write(|w| w.set_uie(true));
         for irq in [interrupt::ADC1, interrupt::BTIM1] {
             irq.unpend();
             irq.set_priority(interrupt::Priority::P1);
         }
-        pac::ADC1
-            .trigger()
-            .write_value(pac::adc::fields::trigger::ATIMOC4REFC.mask());
-        pac::BTIM1.cr1().write_value(1); // Original timer enable.
-        pac::ATIM
-            .cr1()
-            .write_value(pac::atim::fields::cr1::ARPE.mask() | 1);
+        pac::ADC1.trigger().write(|w| w.set_atimoc4refc(true));
+        pac::BTIM1.cr1().write(|w| w.set_en(true)); // Original timer enable.
+        pac::ATIM.cr1().write(|w| {
+            w.set_arpe(true);
+            w.set_cen(true);
+        });
 
-        pac::ADC2.start().write_value(1);
+        pac::ADC2.start().write(|w| w.set_start(true));
         // Initialization and all borrows finish before any IRQ can run.
         core::sync::atomic::compiler_fence(Ordering::Release);
         for irq in [interrupt::ADC1, interrupt::BTIM1] {
@@ -230,15 +241,15 @@ unsafe extern "C" fn ADC1() {
     // SAFETY: only the non-nesting P1 handlers access these static variables.
     unsafe {
         let r = pac::ADC1;
-        if !pac::adc::fields::isr::EOS.read(r.isr().read()) {
+        if !r.isr().read().eos() {
             return;
         }
-        r.icr().write_value(0);
+        r.icr().write_value(pac::adc::regs::Icr(0));
         ADC1_RAW = [
-            r.result0().read() as u16 & 4095,
-            r.result1().read() as u16 & 4095,
-            r.result2().read() as u16 & 4095,
-            r.result3().read() as u16 & 4095,
+            r.result(0).read().result(),
+            r.result(1).read().result(),
+            r.result(2).read().result(),
+            r.result(3).read().result(),
         ];
         ADC1_SEQUENCES = ADC1_SEQUENCES.wrapping_add(1);
         core::hint::black_box((
@@ -252,20 +263,18 @@ unsafe extern "C" fn ADC1() {
 #[no_mangle]
 unsafe extern "C" fn BTIM1() {
     unsafe {
-        if pac::BTIM1.isr().read() & pac::BTIM1.dier().read() & 1 == 0 {
+        if !(pac::BTIM1.isr().read().uif() & pac::BTIM1.dier().read().uie()) {
             return;
         }
-        pac::BTIM1.icr().write_value(BTIM_ICR_MASK & !1);
+        pac::BTIM1.icr().write(|w| w.set_uif(false));
         MILLISECONDS = MILLISECONDS.wrapping_add(1);
         let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
         for i in 0..5 {
             ADC2_RAW[i] = core::ptr::read_volatile(dma.add(i)) as u16;
         }
-        if pac::adc::fields::isr::EOS.read(pac::ADC2.isr().read()) {
+        if pac::ADC2.isr().read().eos() {
             ADC2_SEQUENCES = ADC2_SEQUENCES.wrapping_add(1);
-            pac::ADC2
-                .icr()
-                .write_value(ADC_ICR_MASK & !pac::adc::fields::icr::EOS.mask());
+            pac::ADC2.icr().write(|w| w.set_eos(false));
         }
         core::hint::black_box((
             &*core::ptr::addr_of!(ADC2_RAW),
@@ -275,18 +284,14 @@ unsafe extern "C" fn BTIM1() {
         ADC2_ELAPSED_MS += 1;
         if ADC2_ELAPSED_MS == 5 {
             ADC2_ELAPSED_MS = 0;
-            pac::ADC2.start().write_value(1);
+            pac::ADC2.start().write(|w| w.set_start(true));
         }
-        let pressed = pac::read(pac::GPIOA_BASE + pac::gpio::IDR) & (1 << 3) == 0;
-        pac::write(
-            pac::GPIOC_BASE
-                + if pressed {
-                    pac::gpio::BRR
-                } else {
-                    pac::gpio::BSRR
-                },
-            1 << 13,
-        );
+        let pressed = !pac::GPIOA.idr().read().pin(3);
+        if pressed {
+            pac::GPIOC.brr().write(|w| w.set_brr(13, true));
+        } else {
+            pac::GPIOC.bsrr().write(|w| w.set_bss(13, true));
+        }
         core::hint::black_box(&*core::ptr::addr_of!(MILLISECONDS));
     }
 }
@@ -295,12 +300,8 @@ fn fatal() -> ! {
     cortex_m::interrupt::disable();
     // No software-state borrow, even when an exception interrupted an ISR.
     if INITIALIZED.load(Ordering::Acquire) {
-        unsafe {
-            pac::ATIM.bdtr().write_value(0);
-            pac::ATIM
-                .ccer()
-                .write_value(pac::atim::fields::ccer::CC4E.mask());
-        }
+        pac::ATIM.bdtr().write(|_| {});
+        pac::ATIM.ccer().write(|w| w.set_cc4e(true));
     }
     loop {
         cortex_m::asm::wfi();

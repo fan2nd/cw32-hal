@@ -2,7 +2,13 @@
 //! No register addresses, chip pin lists or interrupt numbers live in this file.
 mod build_support;
 use cw32_metapac::metadata::METADATA;
-use std::{collections::BTreeSet, env, fmt::Write, fs, path::PathBuf};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    env,
+    fmt::Write,
+    fs,
+    path::PathBuf,
+};
 
 fn ident(value: &str) -> &str {
     assert!(
@@ -99,7 +105,6 @@ fn main() {
     ports.push_str("}\nimpl Port {\n");
     for (method, ty) in [
         ("base", "usize"),
-        ("clock_bit", "u32"),
         ("implemented_mask", "u16"),
         ("pulldown_mask", "u16"),
     ] {
@@ -112,21 +117,6 @@ fn main() {
             let variant = ident(p.name.strip_prefix("GPIO").unwrap());
             let value = match method {
                 "base" => p.address as u64,
-                "clock_bit" => {
-                    let gate = p
-                        .clock_gate
-                        .expect("GPIO peripheral missing audited clock gate");
-                    assert_eq!((gate.peripheral, gate.register), ("SYSCTRL", "AHBEN"));
-                    let bit = gate.bit;
-                    if let Some(legacy) = p.clock_bit {
-                        assert_eq!(
-                            legacy, bit,
-                            "legacy GPIO clock_bit disagrees with clock_gate"
-                        );
-                    }
-                    assert!(bit < 16, "GPIO clock bit overlaps SYSCTRL key");
-                    1u64 << bit
-                }
                 "implemented_mask" => u64::from(p.implemented_mask),
                 _ => {
                     assert_eq!(p.pulldown_mask & !p.implemented_mask, 0);
@@ -137,7 +127,62 @@ fn main() {
         }
         ports.push_str("    }}\n");
     }
-    ports.push_str("}\n");
+    ports.push_str("pub(crate) const fn number(self)->u8 {match self {\n");
+    for p in &gpios {
+        let letter = p.name.strip_prefix("GPIO").unwrap();
+        assert!(letter.len() == 1 && letter.as_bytes()[0].is_ascii_uppercase());
+        writeln!(
+            ports,
+            "Self::{}=>{},",
+            ident(letter),
+            letter.as_bytes()[0] - b'A'
+        )
+        .unwrap();
+    }
+    ports
+        .push_str("}}\npub(crate) const fn from_number(number:u8)->Option<Self> {match number {\n");
+    for p in &gpios {
+        let letter = p.name.strip_prefix("GPIO").unwrap();
+        writeln!(
+            ports,
+            "{}=>Some(Self::{}),",
+            letter.as_bytes()[0] - b'A',
+            ident(letter)
+        )
+        .unwrap();
+    }
+    ports.push_str("_=>None}}\n");
+    ports.push_str("pub(crate) fn enable_clock(self) {match self {\n");
+    for p in &gpios {
+        let variant = ident(p.name.strip_prefix("GPIO").unwrap());
+        let gate = p.clock_gate.expect("GPIO clock gate");
+        assert_eq!((gate.peripheral, gate.register), ("SYSCTRL", "AHBEN"));
+        assert!(gate.bit < 16, "GPIO clock bit overlaps key");
+        if let Some(bit) = p.clock_bit {
+            assert_eq!(bit, gate.bit, "legacy GPIO clock bit differs");
+        }
+        let owner = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == gate.peripheral)
+            .unwrap();
+        assert!(
+            matches!(owner.version, "l012" | "f030"),
+            "unaudited GPIO clock controller"
+        );
+        let register = gate.register.to_ascii_lowercase();
+        let field = gate.field.to_ascii_lowercase();
+        if owner.version == "l012" {
+            writeln!(ports,"Self::{variant}=>{{let mut value=pac::SYSCTRL.{register}().read();value.set_key((pac::SYSCTRL_KEY>>16) as u16);value.set_{field}(true);pac::SYSCTRL.{register}().write_value(value);}},").unwrap();
+        } else {
+            writeln!(
+                ports,
+                "Self::{variant}=>pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true)),"
+            )
+            .unwrap();
+        }
+    }
+    ports.push_str("}}\n}\n");
     fs::write(out.join("_generated_gpio.rs"), ports).unwrap();
 
     // GPIO port registers and SYSCTRL are HAL-managed shared resources. Only
@@ -217,8 +262,22 @@ fn main() {
     for pin in md.pins {
         let variant = ident(pin.port.strip_prefix("GPIO").unwrap());
         writeln!(generated,
-            "impl From<peripherals::{name}> for crate::gpio::AnyPin {{ fn from(_: peripherals::{name}) -> Self {{ crate::gpio::AnyPin::new(crate::gpio::Port::{variant}, {number}) }} }}\nimpl crate::gpio::sealed::Pin for peripherals::{name} {{}}\nimpl crate::gpio::Pin for peripherals::{name} {{}}",
+            "impl From<peripherals::{name}> for crate::gpio::AnyPin {{ fn from(_: peripherals::{name}) -> Self {{ crate::gpio::AnyPin::new(crate::gpio::Port::{variant}, {number}) }} }}\nimpl crate::gpio::sealed::Pin for peripherals::{name} {{fn pin_port(&self)->u8 {{crate::gpio::Port::{variant}.number()*16+{number} }} }}\nimpl crate::gpio::Pin for peripherals::{name} {{}}",
             name=pin.name, number=pin.number).unwrap();
+        let irq_bindings: Vec<_> = md
+            .interrupt_bindings
+            .iter()
+            .filter(|binding| binding.peripheral == pin.port && binding.signal == "GLOBAL")
+            .collect();
+        assert_eq!(
+            irq_bindings.len(),
+            1,
+            "GPIO async input requires one audited port IRQ"
+        );
+        let irq = ident(irq_bindings[0].interrupt);
+        writeln!(generated,
+            "impl crate::gpio::interrupt_input::sealed::InterruptPin for peripherals::{name} {{ const PORT:crate::gpio::Port=crate::gpio::Port::{variant}; const NUMBER:u8={number}; fn state()->&'static crate::async_support::EventState {{ static STATE:crate::async_support::EventState=crate::async_support::EventState::new(); &STATE }} }}\nimpl crate::gpio::InterruptPin for peripherals::{name} {{ type Interrupt=crate::interrupt::typelevel::{irq}; }}",
+            name=pin.name,number=pin.number).unwrap();
     }
     generated.push_str("unsafe fn take_generated() -> Peripherals {\n    Peripherals {\n");
     for name in &owned_names {
@@ -248,21 +307,15 @@ fn main() {
                 "clock key semantics need audit for new controller"
             );
             assert!(matches!(gate.register, "AHBEN" | "APBEN1" | "APBEN2"));
-            writeln!(clocks, "impl PeripheralClock for crate::peripherals::{} {{ fn enable_and_reset() {{ critical_section::with(|_| unsafe {{", ident(p.name)).unwrap();
+            writeln!(clocks, "impl PeripheralClock for crate::peripherals::{} {{ fn enable_and_reset() {{ critical_section::with(|_| {{", ident(p.name)).unwrap();
+            let register = gate.register.to_ascii_lowercase();
+            let field = gate.field.to_ascii_lowercase();
             if owner.version == "l012" {
-                writeln!(
-                    clocks,
-                    "pac::modify({:#x}, pac::SYSCTRL_KEY_MASK, pac::SYSCTRL_KEY | (1u32 << {}));",
-                    owner.address + gate.offset,
-                    gate.bit
-                )
-                .unwrap();
+                writeln!(clocks,"let mut value=pac::SYSCTRL.{register}().read();value.set_key((pac::SYSCTRL_KEY>>16) as u16);value.set_{field}(true);pac::SYSCTRL.{register}().write_value(value);").unwrap();
             } else if owner.version == "f030" {
                 writeln!(
                     clocks,
-                    "pac::modify({:#x}, 0, 1u32 << {});",
-                    owner.address + gate.offset,
-                    gate.bit
+                    "pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true));"
                 )
                 .unwrap();
             } else {
@@ -275,21 +328,11 @@ fn main() {
                 .as_ref()
                 .filter(|r| !r.shared && !(md.family == "cw32f030" && p.block == "adc"))
             {
-                let owner = md
-                    .peripherals
-                    .iter()
-                    .find(|p| p.name == reset.peripheral)
-                    .expect("reset owner");
+                assert_eq!(reset.peripheral, "SYSCTRL");
                 assert!(matches!(reset.register, "AHBRST" | "APBRST1" | "APBRST2"));
-                writeln!(
-                    clocks,
-                    "pac::modify({:#x}, 1u32 << {}, 0); pac::modify({:#x}, 0, 1u32 << {});",
-                    owner.address + reset.offset,
-                    reset.bit,
-                    owner.address + reset.offset,
-                    reset.bit
-                )
-                .unwrap();
+                let register = reset.register.to_ascii_lowercase();
+                let field = reset.field.to_ascii_lowercase();
+                writeln!(clocks,"pac::SYSCTRL.{register}().modify(|w|w.set_{field}(false));pac::SYSCTRL.{register}().modify(|w|w.set_{field}(true));").unwrap();
             }
             clocks.push_str("}); } }\n");
         }
@@ -337,6 +380,51 @@ fn main() {
         .unwrap();
     }
     fs::write(out.join("_generated_atim_pins.rs"), atim_pins).unwrap();
+    let mut timer = String::new();
+    let timers: Vec<_> = md
+        .peripherals
+        .iter()
+        .filter(|p| matches!(p.block, "atim" | "gtim") && p.ownership_parent.is_none())
+        .collect();
+    for p in &timers {
+        assert!(matches!(p.version, "l012" | "f030"), "unaudited timer IP");
+        let name = ident(p.name);
+        let variant = if p.block == "atim" { "Atim" } else { "Gtim" };
+        writeln!(timer,"impl sealed::Instance for peripherals::{name} {{fn regs()->Registers {{Registers::{variant}(pac::{name})}} }} impl CoreInstance for peripherals::{name} {{}} impl sealed::PwmInstance for peripherals::{name} {{}} impl PwmInstance for peripherals::{name} {{}}").unwrap();
+    }
+    let mut timer_routes = BTreeMap::new();
+    for route in md.pin_routes {
+        let Some(p) = timers.iter().find(|p| p.name == route.peripheral) else {
+            continue;
+        };
+        if route.remap.is_some() || matches!(route.pin, "PA13" | "PA14") {
+            continue;
+        }
+        let Some(af) = route.af else { continue };
+        let channel = match route.signal {
+            "CH1" | "CH1A" => 1,
+            "CH2" | "CH2A" => 2,
+            "CH3" | "CH3A" => 3,
+            "CH4" => 4,
+            _ => continue,
+        };
+        if p.block == "atim" && p.version == "f030" && channel == 4 {
+            panic!("F030 ATIM CH4 has no external output route");
+        }
+        assert!(
+            md.pins.iter().any(|pin| pin.name == route.pin),
+            "timer route references missing pin"
+        );
+        let key = (route.pin, route.peripheral, channel);
+        if let Some(previous) = timer_routes.insert(key, af) {
+            assert_eq!(previous, af, "ambiguous timer output AF");
+            continue;
+        }
+        let pin = ident(route.pin);
+        let peripheral = ident(route.peripheral);
+        writeln!(timer,"impl sealed::Pin<peripherals::{peripheral},Ch{channel}> for peripherals::{pin} {{}} impl TimerPin<peripherals::{peripheral},Ch{channel}> for peripherals::{pin} {{const AF:u8={af};}}").unwrap();
+    }
+    fs::write(out.join("_generated_timer.rs"), timer).unwrap();
     let mut adc = String::new();
     for p in md
         .peripherals
@@ -350,7 +438,7 @@ fn main() {
             .find(|b| b.peripheral == p.name && b.signal == "GLOBAL")
             .expect("ADC global IRQ")
             .interrupt;
-        writeln!(adc,"impl sealed::Sealed for peripherals::{name} {{fn regs()->pac::adc::RegisterBlock {{pac::{name}}} fn state()->&'static crate::async_support::EventState {{static STATE:crate::async_support::EventState=crate::async_support::EventState::new(); &STATE}} }} impl Instance for peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}} ").unwrap();
+        writeln!(adc,"impl sealed::Sealed for peripherals::{name} {{fn regs()->pac::adc::Adc {{pac::{name}}} fn state()->&'static crate::async_support::EventState {{static STATE:crate::async_support::EventState=crate::async_support::EventState::new(); &STATE}} }} impl Instance for peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}} ").unwrap();
         for route in md
             .pin_routes
             .iter()
@@ -383,7 +471,8 @@ fn main() {
             "vc" => ("VcInstance", "vc"),
             _ => ("RefInstance", "vcref"),
         };
-        writeln!(analog,"impl sealed::{instance} for peripherals::{name} {{ fn regs()->pac::{block}::RegisterBlock {{pac::{name}}}").unwrap();
+        let block_type = format!("{}{}", block[..1].to_ascii_uppercase(), &block[1..]);
+        writeln!(analog,"impl sealed::{instance} for peripherals::{name} {{ fn regs()->pac::{block}::{block_type} {{pac::{name}}}").unwrap();
         if p.block == "vc" {
             writeln!(analog,"fn state()->&'static crate::async_support::EventState {{ static STATE:crate::async_support::EventState=crate::async_support::EventState::new(); &STATE }}").unwrap();
         }
