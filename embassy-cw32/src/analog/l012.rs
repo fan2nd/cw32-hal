@@ -77,7 +77,7 @@ impl<'d> Bandgap<'d> {
             let value = pac::BGR.cr().read();
             pac::BGR
                 .cr()
-                .write(pac::bgr::fields::cr::BGREN.write(value, true));
+                .write_value(pac::bgr::fields::cr::BGREN.write(value, true));
         });
         delay.delay_us(32); // RM says approximately 30us, including hardware enable.
         Self { _token: token }
@@ -108,13 +108,13 @@ impl<'d> Dac<'d> {
         use pac::dac::fields as f;
         // SAFETY: exclusive whole-DAC token; triggers/DMA/interrupts/waves off.
         unsafe {
-            pac::DAC.cr0().write(0);
-            pac::DAC.cr1().write(0);
-            pac::DAC.dhr12r1().write(0);
-            pac::DAC.dhr12r2().write(0);
+            pac::DAC.cr0().write_value(0);
+            pac::DAC.cr1().write_value(0);
+            pac::DAC.dhr12r1().write_value(0);
+            pac::DAC.dhr12r2().write_value(0);
             pac::DAC
                 .cr0()
-                .write(f::cr0::EN2.write(f::cr0::EN1.write(0, true), true));
+                .write_value(f::cr0::EN2.write(f::cr0::EN1.write(0, true), true));
         }
         delay.delay_us(10); // datasheet tSTART typical 3us, not a characterized max.
         Self {
@@ -129,7 +129,7 @@ impl<'d> Dac<'d> {
         pin.configure_analog();
         self.route = pac::dac::fields::cr1::C1OUT.write(self.route, true);
         unsafe {
-            pac::DAC.cr1().write(self.route);
+            pac::DAC.cr1().write_value(self.route);
         }
         self.output1 = Some(pin);
         self
@@ -139,7 +139,7 @@ impl<'d> Dac<'d> {
         pin.configure_analog();
         self.route = pac::dac::fields::cr1::C2OUT.write(self.route, true);
         unsafe {
-            pac::DAC.cr1().write(self.route);
+            pac::DAC.cr1().write_value(self.route);
         }
         self.output2 = Some(pin);
         self
@@ -150,8 +150,8 @@ impl<'d> Dac<'d> {
         let word = dac_code(code)?;
         unsafe {
             match channel {
-                Channel::One => pac::DAC.dhr12r1().write(word),
-                Channel::Two => pac::DAC.dhr12r2().write(word),
+                Channel::One => pac::DAC.dhr12r1().write_value(word),
+                Channel::Two => pac::DAC.dhr12r2().write_value(word),
             }
         }
         Ok(())
@@ -160,7 +160,7 @@ impl<'d> Dac<'d> {
     pub fn set_pair(&mut self, one: u16, two: u16) -> Result<(), Error> {
         let word = dac_code(one)? | (dac_code(two)? << 16);
         unsafe {
-            pac::DAC.dhr12rd().write(word);
+            pac::DAC.dhr12rd().write_value(word);
         }
         Ok(())
     }
@@ -183,8 +183,8 @@ fn dac_code(code: u16) -> Result<u32, Error> {
 impl Drop for Dac<'_> {
     fn drop(&mut self) {
         unsafe {
-            pac::DAC.cr1().write(0);
-            pac::DAC.cr0().write(0);
+            pac::DAC.cr1().write_value(0);
+            pac::DAC.cr0().write_value(0);
         }
         if let Some(pin) = &self.output1 {
             pin.disconnect();
@@ -233,7 +233,7 @@ impl<'d, I: RefInstance> RefDivider<'d, I> {
         let word = divider_word(config)?;
         I::enable_and_reset();
         unsafe {
-            I::regs().r#ref().write(word);
+            I::regs().r#ref().write_value(word);
         }
         delay.delay_us(32);
         Ok(Self {
@@ -244,7 +244,7 @@ impl<'d, I: RefInstance> RefDivider<'d, I> {
 impl<I: RefInstance> Drop for RefDivider<'_, I> {
     fn drop(&mut self) {
         unsafe {
-            I::regs().r#ref().write(0);
+            I::regs().r#ref().write_value(0);
         }
     }
 }
@@ -399,17 +399,17 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
         let r = I::regs();
         // Configure this VC only: no shared resets or reference-register writes.
         unsafe {
-            r.cr0().write(0);
-            r.cr2().write(0);
-            r.cr1().write(cr1);
-            r.sr().write(0);
+            r.cr0().write_value(0);
+            r.cr2().write_value(0);
+            r.cr1().write_value(cr1);
+            r.sr().write_value(0);
         }
         positive.configure_analog();
         if let Some(pin) = &negative {
             pin.configure_analog();
         }
         unsafe {
-            r.cr0().write(cr0);
+            r.cr0().write_value(cr0);
         }
         delay.delay_us(32);
         Ok(Self {
@@ -451,9 +451,9 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
 impl<I: VcInstance> Drop for Comparator<'_, I> {
     fn drop(&mut self) {
         unsafe {
-            I::regs().cr0().write(0);
-            I::regs().cr2().write(0);
-            I::regs().cr1().write(0x10);
+            I::regs().cr0().write_value(0);
+            I::regs().cr2().write_value(0);
+            I::regs().cr1().write_value(0x10);
         }
         self._positive.disconnect();
         if let Some(pin) = &self._negative {
@@ -570,21 +570,21 @@ impl<I: VcInstance> VcIo for VcHardware<I> {
         use pac::vc::fields as f;
         unsafe {
             let r = I::regs();
-            r.cr0().write(f::cr0::IE.write(r.cr0().read(), false));
-            r.cr1().write(r.cr1().read() & !vc_select_mask());
+            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), false));
+            r.cr1().write_value(r.cr1().read() & !vc_select_mask());
         }
     }
     fn clear(&mut self) {
         // INTF is RW0; FLTV is RO. Write zero, never RMW this mixed register.
-        unsafe { I::regs().sr().write(0) };
+        unsafe { I::regs().sr().write_value(0) };
     }
     fn arm(&mut self, selection: u32) {
         use pac::vc::fields as f;
         unsafe {
             let r = I::regs();
             r.cr1()
-                .write((r.cr1().read() & !vc_select_mask()) | selection);
-            r.cr0().write(f::cr0::IE.write(r.cr0().read(), true));
+                .write_value((r.cr1().read() & !vc_select_mask()) | selection);
+            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), true));
         }
     }
     fn pending(&mut self) -> bool {
@@ -916,8 +916,8 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         I::enable_and_reset();
         let r = I::regs();
         unsafe {
-            r.cr().write(0xe000);
-            r.cal().write(0);
+            r.cr().write_value(0xe000);
+            r.cal().write_value(0);
         }
         if let Some(pin) = &positive {
             pin.configure_analog();
@@ -927,7 +927,7 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         }
         output.configure_analog();
         unsafe {
-            r.cr().write(word);
+            r.cr().write_value(word);
         }
         delay.delay_us(40);
         Ok(Self {
@@ -961,8 +961,8 @@ impl<'d, I: OpaInstance> Opa<'d, I> {
         }
         // Do not RMW the trigger/status register: SOFTTRIG is a write-one command.
         unsafe {
-            r.cal().write(word);
-            r.cal().write(f::SOFTTRIG.write(word, true));
+            r.cal().write_value(word);
+            r.cal().write_value(f::SOFTTRIG.write(word, true));
         }
         wait_calibration(poll_budget, || unsafe { f::AZRUN.read(r.cal().read()) })?;
         delay.delay_us(10);
@@ -992,8 +992,8 @@ fn wait_calibration(poll_budget: u32, mut is_busy: impl FnMut() -> bool) -> Resu
 impl<I: OpaInstance> Drop for Opa<'_, I> {
     fn drop(&mut self) {
         unsafe {
-            I::regs().cr().write(0xe000);
-            I::regs().cal().write(0);
+            I::regs().cr().write_value(0xe000);
+            I::regs().cal().write_value(0);
         }
         if let Some(pin) = &self._positive {
             pin.disconnect();

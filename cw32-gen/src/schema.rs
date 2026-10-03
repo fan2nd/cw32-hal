@@ -2,11 +2,11 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-/// Version 3 makes pins a chip capability, removes all package models, and adds
-/// explicit register bus widths. Older normalized JSON must be regenerated;
-/// unknown legacy fields are rejected rather than silently ignored. In source
-/// YAML an omitted register `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 3;
+/// Version 4 adds audited per-register reset values and their evidence. Older
+/// normalized JSON must be regenerated; unknown legacy fields are rejected.
+/// An omitted reset value is unknown, never an implicit zero. An omitted source
+/// YAML `bit_size` still means a 32-bit bus transaction.
+pub const SCHEMA_VERSION: u32 = 4;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -86,6 +86,16 @@ pub struct Register {
         skip_serializing_if = "is_default_register_bit_size"
     )]
     pub bit_size: u8,
+    /// Full reset word, including documented reserved bits. None means unknown,
+    /// variable, or not applicable, and never enables a fabricated Default.
+    #[serde(default)]
+    pub reset_value: Option<u32>,
+    /// Authoritative manual/version/section evidence for this reset word.
+    #[serde(default)]
+    pub reset_source: Option<String>,
+    /// Qualifications, including why a complete reset word is not known.
+    #[serde(default)]
+    pub reset_note: Option<String>,
     pub access: String,
     pub description: String,
     #[serde(default)]
@@ -112,11 +122,23 @@ model!(RegisterBit {
 });
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
+pub struct RegisterReset {
+    pub register: String,
+    pub reset_value: u32,
+    pub reset_source: String,
+    #[serde(default)]
+    pub reset_note: Option<String>,
+}
+#[derive(Debug, Clone, Deserialize, Serialize)]
+#[serde(deny_unknown_fields)]
 pub struct Peripheral {
     pub name: String,
     pub block: String,
     pub version: String,
     pub address: usize,
+    /// Known instance-specific resets override the reusable block's value.
+    #[serde(default)]
+    pub register_resets: Vec<RegisterReset>,
     pub clock_bit: Option<u8>,
     #[serde(default, alias = "clock")]
     pub clock_gate: Option<RegisterBit>,
@@ -256,6 +278,29 @@ pub fn validate(ir: &Ir) -> Result<()> {
         if block.version != p.version {
             return Err(err("peripheral version mismatch"));
         }
+        unique(
+            p.register_resets
+                .iter()
+                .map(|reset| reset.register.as_str()),
+            "instance register reset",
+        )?;
+        for reset in &p.register_resets {
+            let r = block
+                .registers
+                .iter()
+                .find(|r| r.name == reset.register)
+                .ok_or_else(|| err("instance reset refers to unknown register"))?;
+            if ![8, 16, 32].contains(&r.bit_size)
+                || reset.reset_value & !(u32::MAX >> (32 - r.bit_size)) != 0
+                || reset.reset_source.trim().is_empty()
+                || reset
+                    .reset_note
+                    .as_ref()
+                    .is_some_and(|note| note.trim().is_empty())
+            {
+                return Err(err("invalid instance reset width or evidence"));
+            }
+        }
     }
     for p in &ir.family.peripherals {
         let mut refs = BTreeSet::new();
@@ -309,6 +354,32 @@ pub fn validate(ir: &Ir) -> Result<()> {
             if ![8, 16, 32].contains(&r.bit_size) {
                 return Err(err("register access width must be 8, 16 or 32 bits"));
             }
+            let width_mask = u32::MAX >> (32 - r.bit_size);
+            if r.reset_value.is_some_and(|value| value & !width_mask != 0) {
+                return Err(err(format!(
+                    "{}.{}: reset value exceeds register width",
+                    b.name, r.name
+                )));
+            }
+            if r.reset_value.is_some()
+                && r.reset_source
+                    .as_ref()
+                    .is_none_or(|source| source.trim().is_empty())
+            {
+                return Err(err(format!(
+                    "{}.{}: known reset value requires authoritative reset_source",
+                    b.name, r.name
+                )));
+            }
+            if [&r.reset_source, &r.reset_note]
+                .into_iter()
+                .flatten()
+                .any(|s| s.trim().is_empty())
+            {
+                return Err(err(
+                    "reset evidence and notes must be nonempty when present",
+                ));
+            }
             let bytes = usize::from(r.bit_size / 8);
             let end = r
                 .offset
@@ -340,6 +411,33 @@ pub fn validate(ir: &Ir) -> Result<()> {
                     || target.access != r.access
                 {
                     return Err(err(format!("{}.{} at {:#x}: register alias must reference a distinct canonical register containing its full byte range with the same access", b.name, r.name, r.offset)));
+                }
+                if let (Some(value), Some(target_value)) = (r.reset_value, target.reset_value) {
+                    let shift = (r.offset - target.offset) * 8;
+                    if value != (target_value >> shift) & width_mask {
+                        return Err(err(format!(
+                            "{}.{}: reset value conflicts with its canonical alias",
+                            b.name, r.name
+                        )));
+                    }
+                }
+                for p in ir.family.peripherals.iter().filter(|p| p.block == b.name) {
+                    let effective = |register: &Register| {
+                        p.register_resets
+                            .iter()
+                            .find(|reset| reset.register == register.name)
+                            .map(|reset| reset.reset_value)
+                            .or(register.reset_value)
+                    };
+                    if let (Some(value), Some(target_value)) = (effective(r), effective(target)) {
+                        let shift = (r.offset - target.offset) * 8;
+                        if value != (target_value >> shift) & width_mask {
+                            return Err(err(format!(
+                                "{}.{}: instance reset conflicts with its canonical alias",
+                                p.name, r.name
+                            )));
+                        }
+                    }
                 }
                 alias.as_str()
             } else {

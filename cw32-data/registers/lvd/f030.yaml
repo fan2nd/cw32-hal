@@ -2,6 +2,8 @@ name: lvd
 version: f030
 registers:
 - name: CR0
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 24.7.1, printed p491 (PDF p492); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 LVD.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -37,6 +39,8 @@ registers:
     kind: bool
     description: CW32F030 LVD.CR0.EN; raw encoding.
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 24.7.2, printed p492 (PDF p493); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 LVD.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -78,6 +82,8 @@ registers:
     kind: bool
     description: CW32F030 LVD.CR1.FLTEN; raw encoding.
 - name: SR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 24.7.3, printed p493 (PDF p494); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: 'CW32F030 LVD.SR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. INTF is cleared by writing zero; FLTV is read-only status. Source: CW32x030 RM Rev 2.5 24.7.3'

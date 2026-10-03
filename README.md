@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.11.6**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版在 Embassy 风格的所有权、初始化、metadata 专化与中断运行时之上，增加 ADC、VC、ATIM 事件及 CORDIC 的真实 IRQ 异步接口；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.12.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。本版补齐有官方证据的寄存器/实例 reset defaults，并增加从真实 Default 开始的 typed closure write 与显式 write_value；ADC、VC、ATIM 事件及 CORDIC 的真实 IRQ 异步接口继续保留；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -102,7 +102,7 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 ## 已实现的数据能力及约束
 
 - register：名称、offset、access、字段范围与 overlap；Field、BoolField、EnumField。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。
-- JSON schema v3 不再包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 提供对应清除操作；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
+- JSON schema v4 增加有来源的完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 提供对应清除操作；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
 - perimap：精确 chip+instance+vendor_ip/vendor_version（或原block/version）匹配，保留datasheet实例名。mode: select在加载前选择规范kind/version/register block文件，即使原vendor名没有本地文件也可；mode: alias仅relabel已加载模型。当前只支持RegisterBlock单block、精确匹配，不支持上游通用数据库/正则映射。同chip相同原block身份不能选互相矛盾的模型，必须先区分源身份。
 - fixes：原block名下的寄存器/字段纠错，先于alias；要求source/reason，未知目标、错键、冲突均报错，失败回滚。当前selector作用于该chip中共享这个block的全部实例，不支持仅GPIOA特例。局部布局差异应拆版本/数据模型，不能改坏公共 l012 模型。
 - shared IRQ：物理 IRQ 表唯一；peripheral signal→IRQ 可多对多。重复引用不复制物理向量。PAC runtime 按物理 IRQ 号生成向量，稀疏编号保留空槽；HAL `bind_interrupts!` 只为实际声明的 handler 生成入口和 Binding，不从关联表批量生成空证明。
@@ -150,7 +150,7 @@ L012 的 FOC 对应硬件为：ATIM、ADC1/2、OPA1/2、VC1～4、DAC、CORDIC�
 
 GPIO/SYSCTRL 为 HAL 共享资源，不发会与 pin token 冲突的独立寄存器所有权 token。正常 init 只交付一次资源；驱动持有相关外设与引脚的 `Peri`，可拥有 `'static` 资源或持有受约束的短借用。原始 PAC 访问、`peripherals::T::steal()`、`AnyPin::steal()` 与 `Peri::clone_unchecked()` 仍是显式 unsafe 边界。类型化方向和副作用不能证明时钟、供电、保护极性、外部接线或所有保留位均正确。
 
-仍未实现 UART/SPI/I2C/DMA/EXTI 等通用 HAL、全芯片所有信号的类型约束、完整 reset-value 模型或全部 silicon workaround。已有 FOC 驱动的约束不能外推到这些未实现驱动。`bind_interrupts!` 本身只负责分发与 Binding；已有异步 driver 的 `into_async` 负责启用 NVIC，handler/future 负责本源状态、唤醒及取消。ADC2_DAC、VC13/VC24 的兄弟源必须各自正确绑定，取消不禁用共享 NVIC；未绑定向量进入默认 handler。自定义启动/向量表必须保持 runtime 的分发契约。
+仍未实现 UART/SPI/I2C/DMA/EXTI 等通用 HAL、全芯片所有信号的类型约束或全部 silicon workaround。已有 FOC 驱动的约束不能外推到这些未实现驱动。`bind_interrupts!` 本身只负责分发与 Binding；已有异步 driver 的 `into_async` 负责启用 NVIC，handler/future 负责本源状态、唤醒及取消。ADC2_DAC、VC13/VC24 的兄弟源必须各自正确绑定，取消不禁用共享 NVIC；未绑定向量进入默认 handler。自定义启动/向量表必须保持 runtime 的分发契约。
 
 共享复位位不会由某个实例的构造器无条件触发；时钟门控保守保持开启，不因一个驱动释放而关闭兄弟实例。ATIM 构造保持功率输出禁能，启用由调用者显式执行。驱动的保守策略不等于板级安全认证。
 
@@ -177,7 +177,9 @@ serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的
 
 `--check` 是只读漂移检查，可捕获缺失文件、多余文件和内容变化。生成工具仅替换两个明确拥有的生成目录，不能用于存放手写代码。临时校验和变异测试使用独立临时目录并自动清理。离线命令需要提前缓存所有 Rust 依赖与目标工具链；缺缓存时先联网执行正常 Cargo 命令。
 
-## 上传 C 工程的递进 Rust 例程（v0.11.6）
+本版API迁移、数据证据与实际检查见[v0.12.0验证记录](docs/validation-v0.12.0.md)。
+
+## 上传 C 工程的递进 Rust 例程（v0.12.0）
 
 新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 

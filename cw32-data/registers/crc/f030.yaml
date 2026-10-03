@@ -2,6 +2,8 @@ name: crc
 version: f030
 registers:
 - name: CR
+  reset_value: 0x00000004
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.1, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: 'CW32F030 CRC.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Selecting the CRC algorithm initializes the calculation state; it is not an ordinary software-owned latch. Source: CW32x030 RM Rev 2.5 10.4; 10.6.1'
@@ -15,6 +17,9 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DR32
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.2, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual describes CRC_DR; the modeled DR32 is its 32-bit access view at the same address."
   offset: 8
   access: rw
   description: 'CW32F030 CRC.DR32; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
@@ -28,6 +33,9 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DR16
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.2, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual describes CRC_DR; the modeled DR16 is its 16-bit access view at the same address."
   offset: 8
   access: rw
   description: 'CW32F030 CRC.DR16; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
@@ -43,6 +51,9 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DR8
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.2, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual describes CRC_DR; the modeled DR8 is its 8-bit access view at the same address."
   offset: 8
   access: rw
   description: 'CW32F030 CRC.DR8; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing feeds one datum into the CRC engine. The actual bus access width selects 8, 16 or 32 input bits; aliases must retain their access width. Source: CW32x030 RM Rev 2.5 10.3; 10.6.2'
@@ -58,6 +69,9 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: RESULT32
+  reset_value: 0x0000ffff
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.3, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual describes CRC_RESULT; the modeled RESULT32 is its 32-bit access view at the same address."
   offset: 12
   access: ro
   description: CW32F030 CRC.RESULT32; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -69,6 +83,9 @@ registers:
     kind: raw
     description: CW32F030 CRC.RESULT32.RESULT32; raw encoding.
 - name: RESULT16
+  reset_value: 0x0000ffff
+  reset_source: "CW32x030 RM Rev2.5 section 10.6.3, printed p164 (PDF p165); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual describes CRC_RESULT; the modeled RESULT16 is its 16-bit access view at the same address."
   offset: 12
   access: ro
   description: CW32F030 CRC.RESULT16; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.

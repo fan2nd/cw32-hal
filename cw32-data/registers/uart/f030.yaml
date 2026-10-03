@@ -2,6 +2,8 @@ name: uart
 version: f030
 registers:
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.1, printed p355 (PDF p356); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 UART.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -49,6 +51,8 @@ registers:
     kind: bool
     description: CW32F030 UART.CR1.TXEN; raw encoding.
 - name: CR2
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.2, printed p356 (PDF p357); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 UART.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -108,6 +112,8 @@ registers:
     kind: bool
     description: CW32F030 UART.CR2.ADDREN; raw encoding.
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.7, printed p358 (PDF p359); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: CW32F030 UART.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -149,6 +155,8 @@ registers:
     kind: bool
     description: CW32F030 UART.IER.TXE; raw encoding.
 - name: BRRI
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.3, printed p357 (PDF p358); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: CW32F030 UART.BRRI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -160,6 +168,8 @@ registers:
     kind: raw
     description: CW32F030 UART.BRRI.BRRI; raw encoding.
 - name: BRRF
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.4, printed p357 (PDF p358); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: CW32F030 UART.BRRF; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -171,6 +181,8 @@ registers:
     kind: raw
     description: CW32F030 UART.BRRF.BRRF; raw encoding.
 - name: ISR
+  reset_value: 0x00000001
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.8, printed p359 (PDF p360); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 28
   access: ro
   description: CW32F030 UART.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -230,6 +242,9 @@ registers:
     kind: bool
     description: CW32F030 UART.ISR.TXE; raw encoding.
 - name: ICR
+  reset_value: 0x000000ff
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.9, printed p360 (PDF p361); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x000000A1; retain them, do not mask to modeled fields."
   offset: 32
   access: rw
   description: 'CW32F030 UART.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 18.9.9; 1.2'
@@ -267,6 +282,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: RDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.6, printed p357 (PDF p358); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 36
   access: ro
   description: CW32F030 UART.RDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -278,6 +295,8 @@ registers:
     kind: raw
     description: CW32F030 UART.RDR.RDR; raw encoding.
 - name: TDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.5, printed p357 (PDF p358); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 40
   access: wo
   description: 'CW32F030 UART.TDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing queues a transmit frame and clears TXE. RDR does not automatically clear RC; software clears RC separately through ICR. Source: CW32x030 RM Rev 2.5 18.5; 18.9.5-6'
@@ -291,6 +310,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: ADDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.10, printed p360 (PDF p361); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 48
   access: rw
   description: CW32F030 UART.ADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -302,6 +323,8 @@ registers:
     kind: raw
     description: CW32F030 UART.ADDR.ADDR; raw encoding.
 - name: MASK
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 18.9.11, printed p360 (PDF p361); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 52
   access: rw
   description: CW32F030 UART.MASK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.

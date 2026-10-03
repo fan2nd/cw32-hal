@@ -2,6 +2,8 @@ name: dmachannel
 version: f030
 registers:
 - name: CSR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 8.8.3, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 DMACHANNEL.CSR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -55,6 +57,8 @@ registers:
     kind: bool
     description: CW32F030 DMACHANNEL.CSR.EN; raw encoding.
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 8.8.5, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 DMACHANNEL.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -72,6 +76,8 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.CNT.CNT; raw encoding.
 - name: SRCADDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 8.8.6, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: CW32F030 DMACHANNEL.SRCADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -83,6 +89,8 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.SRCADDR.SRCADDR; raw encoding.
 - name: DSTADDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 8.8.7, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: CW32F030 DMACHANNEL.DSTADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -94,6 +102,8 @@ registers:
     kind: raw
     description: CW32F030 DMACHANNEL.DSTADDR.DSTADDR; raw encoding.
 - name: TRIG
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 8.8.4, printed p139 (PDF p140); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: 'CW32F030 DMACHANNEL.TRIG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. SOFTSRC: one starts a transfer; zero has no function. Reads report active transfer and hardware clears it on completion. TYPE and HARDSRC are configuration. Source: CW32x030 RM Rev 2.5 8.8.4'

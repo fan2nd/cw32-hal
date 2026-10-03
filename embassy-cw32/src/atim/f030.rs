@@ -211,30 +211,30 @@ impl<'d> ThreePhasePwm<'d> {
         <peripherals::ATIM as PeripheralClock>::enable_and_reset();
         // SAFETY: owned singleton; clock/reset established before any access.
         unsafe {
-            pac::ATIM.dtr().write(0);
-            pac::ATIM.cr().write(control);
-            pac::ATIM.trig().write(0);
-            pac::ATIM.arr().write(config.period.into());
-            pac::ATIM.cnt().write(0);
-            pac::ATIM.rcr().write(0);
-            pac::ATIM.mscr().write(0);
-            pac::ATIM.ch1cr().write(CHANNEL_CONFIG);
-            pac::ATIM.ch2cr().write(CHANNEL_CONFIG);
-            pac::ATIM.ch3cr().write(CHANNEL_CONFIG);
-            pac::ATIM.ch4cr().write(0);
-            pac::ATIM.ch1ccra().write(0);
-            pac::ATIM.ch1ccrb().write(0);
-            pac::ATIM.ch2ccra().write(0);
-            pac::ATIM.ch2ccrb().write(0);
-            pac::ATIM.ch3ccra().write(0);
-            pac::ATIM.ch3ccrb().write(0);
-            pac::ATIM.fltr().write(filter_config(&config));
+            pac::ATIM.dtr().write_value(0);
+            pac::ATIM.cr().write_value(control);
+            pac::ATIM.trig().write_value(0);
+            pac::ATIM.arr().write_value(config.period.into());
+            pac::ATIM.cnt().write_value(0);
+            pac::ATIM.rcr().write_value(0);
+            pac::ATIM.mscr().write_value(0);
+            pac::ATIM.ch1cr().write_value(CHANNEL_CONFIG);
+            pac::ATIM.ch2cr().write_value(CHANNEL_CONFIG);
+            pac::ATIM.ch3cr().write_value(CHANNEL_CONFIG);
+            pac::ATIM.ch4cr().write_value(0);
+            pac::ATIM.ch1ccra().write_value(0);
+            pac::ATIM.ch1ccrb().write_value(0);
+            pac::ATIM.ch2ccra().write_value(0);
+            pac::ATIM.ch2ccrb().write_value(0);
+            pac::ATIM.ch3ccra().write_value(0);
+            pac::ATIM.ch3ccrb().write_value(0);
+            pac::ATIM.fltr().write_value(filter_config(&config));
             // BKE on, AOE/MOE/VCE/SAFEEN off. Comparator routing is a scoped guard.
-            pac::ATIM.dtr().write(deadtime);
-            pac::ATIM.cr().write(control | UG);
-            pac::ATIM.icr().write(ICR_PRESERVE & !UIF);
+            pac::ATIM.dtr().write_value(deadtime);
+            pac::ATIM.cr().write_value(control | UG);
+            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
             // ADC owns its trigger receiver. This timer emits only real updates.
-            pac::ATIM.trig().write(ADC_UPDATE_TRIGGER);
+            pac::ATIM.trig().write_value(ADC_UPDATE_TRIGGER);
         }
         let pins = [
             a.into(),
@@ -274,7 +274,7 @@ impl<'d> ThreePhasePwm<'d> {
         critical_section::with(|_| unsafe {
             pac::ATIM
                 .cr()
-                .write(control_without_commands(pac::ATIM.cr().read()) | EN);
+                .write_value(control_without_commands(pac::ATIM.cr().read()) | EN);
         });
     }
     /// Stop counting. Does not itself remove a static level from an enabled output.
@@ -282,7 +282,7 @@ impl<'d> ThreePhasePwm<'d> {
         critical_section::with(|_| unsafe {
             pac::ATIM
                 .cr()
-                .write(control_without_commands(pac::ATIM.cr().read()) & !EN);
+                .write_value(control_without_commands(pac::ATIM.cr().read()) & !EN);
         });
     }
     pub fn fault_pending(&self) -> bool {
@@ -298,14 +298,16 @@ impl<'d> ThreePhasePwm<'d> {
     }
     pub fn disable_outputs(&mut self) {
         critical_section::with(|_| unsafe {
-            pac::ATIM.dtr().write(pac::ATIM.dtr().read() & !(MOE | AOE));
+            pac::ATIM
+                .dtr()
+                .write_value(pac::ATIM.dtr().read() & !(MOE | AOE));
         });
     }
     /// Clears only BIF while keeping outputs disabled. Never auto-rearms.
     pub fn acknowledge_fault(&mut self) -> Result<(), Error> {
         self.disable_outputs();
         unsafe {
-            pac::ATIM.icr().write(ICR_PRESERVE & !BIF);
+            pac::ATIM.icr().write_value(ICR_PRESERVE & !BIF);
         }
         if self.fault_pending() {
             Err(Error::FaultActive)
@@ -317,7 +319,9 @@ impl<'d> ThreePhasePwm<'d> {
     pub(crate) fn set_comparator_brake(&mut self, enabled: bool) {
         critical_section::with(|_| unsafe {
             let old = pac::ATIM.dtr().read() & !(MOE | AOE | VCE);
-            pac::ATIM.dtr().write(old | if enabled { VCE } else { 0 });
+            pac::ATIM
+                .dtr()
+                .write_value(old | if enabled { VCE } else { 0 });
         });
     }
 }
@@ -344,24 +348,24 @@ impl DutyIo for HardwareDuty {
     }
     fn write_control(&mut self, value: u32) {
         unsafe {
-            pac::ATIM.cr().write(value);
+            pac::ATIM.cr().write_value(value);
         }
     }
     fn write_trigger(&mut self, value: u32) {
         unsafe {
-            pac::ATIM.trig().write(value);
+            pac::ATIM.trig().write_value(value);
         }
     }
     fn write_compares(&mut self, duty: [u16; 3]) {
         unsafe {
-            pac::ATIM.ch1ccra().write(duty[0].into());
-            pac::ATIM.ch2ccra().write(duty[1].into());
-            pac::ATIM.ch3ccra().write(duty[2].into());
+            pac::ATIM.ch1ccra().write_value(duty[0].into());
+            pac::ATIM.ch2ccra().write_value(duty[1].into());
+            pac::ATIM.ch3ccra().write_value(duty[2].into());
         }
     }
     fn clear_update(&mut self) {
         unsafe {
-            pac::ATIM.icr().write(ICR_PRESERVE & !UIF);
+            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
         }
     }
 }
@@ -392,7 +396,9 @@ impl ArmIo for HardwareArm {
     fn master(&mut self, enabled: bool) {
         unsafe {
             let old = pac::ATIM.dtr().read() & !(MOE | AOE);
-            pac::ATIM.dtr().write(old | if enabled { MOE } else { 0 });
+            pac::ATIM
+                .dtr()
+                .write_value(old | if enabled { MOE } else { 0 });
         }
     }
     fn fault(&mut self) -> bool {
@@ -468,12 +474,12 @@ impl EventIo for HardwareEvents {
     }
     fn set_enables(&mut self, value: u32) {
         unsafe {
-            pac::ATIM.cr().write(control_without_commands(value));
+            pac::ATIM.cr().write_value(control_without_commands(value));
         }
     }
     fn clear_update(&mut self) {
         unsafe {
-            pac::ATIM.icr().write(ICR_PRESERVE & !UIF);
+            pac::ATIM.icr().write_value(ICR_PRESERVE & !UIF);
         }
     }
 }
@@ -626,7 +632,7 @@ impl Drop for ThreePhasePwm<'_> {
         self.disable_outputs();
         self.stop_counter();
         unsafe {
-            pac::ATIM.trig().write(0);
+            pac::ATIM.trig().write_value(0);
         }
         for pin in &self.pins {
             pin.disconnect();

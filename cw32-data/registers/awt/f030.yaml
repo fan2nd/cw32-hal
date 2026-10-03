@@ -2,6 +2,8 @@ name: awt
 version: f030
 registers:
 - name: CR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.1, printed p172 (PDF p173); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 AWT.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -31,6 +33,8 @@ registers:
     kind: bool
     description: CW32F030 AWT.CR.EN; raw encoding.
 - name: ARR
+  reset_value: 0x0000ffff
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.2, printed p172 (PDF p173); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 AWT.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -42,6 +46,8 @@ registers:
     kind: raw
     description: CW32F030 AWT.ARR.ARR; raw encoding.
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.3, printed p173 (PDF p174); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: ro
   description: CW32F030 AWT.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -53,6 +59,8 @@ registers:
     kind: raw
     description: CW32F030 AWT.CNT.CNT; raw encoding.
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.4, printed p173 (PDF p174); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: CW32F030 AWT.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -64,6 +72,8 @@ registers:
     kind: bool
     description: CW32F030 AWT.IER.UD; raw encoding.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.5, printed p173 (PDF p174); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 20
   access: ro
   description: CW32F030 AWT.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -75,6 +85,9 @@ registers:
     kind: bool
     description: CW32F030 AWT.ISR.UD; raw encoding.
 - name: ICR
+  reset_value: 0x0000003f
+  reset_source: "CW32x030 RM Rev2.5 section 11.8.6, printed p173 (PDF p174); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000037; retain them, do not mask to modeled fields."
   offset: 28
   access: rw
   description: 'CW32F030 AWT.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 11.8.6; 1.2'

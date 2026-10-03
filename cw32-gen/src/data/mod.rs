@@ -35,6 +35,8 @@ pub fn load(root: &Path, chip: &str) -> Result<Ir> {
     chip.remaps.sort_by(|a, b| a.name.cmp(&b.name));
     chip.quirks.sort_by(|a, b| a.name.cmp(&b.name));
     for p in &mut family.peripherals {
+        p.register_resets
+            .sort_by(|a, b| a.register.cmp(&b.register));
         p.interrupts
             .sort_by(|a, b| (&a.signal, &a.interrupt).cmp(&(&b.signal, &b.interrupt)));
         p.quirks.sort_by(|a, b| a.name.cmp(&b.name));

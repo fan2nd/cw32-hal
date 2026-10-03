@@ -70,12 +70,12 @@ pub async fn run(
         crate::configure_pin(pac::GPIOA_BASE, 3, crate::PinMode::InputPullUp, 0);
         crate::configure_pin(pac::GPIOB_BASE, 12, crate::PinMode::OutputHigh, 1);
         crate::configure_pin(pac::GPIOB_BASE, 11, crate::PinMode::InputPullUp, 1);
-        pac::UART1.ier().write(0);
-        pac::UART1.cr1().write(0x1003);
-        pac::UART1.cr2().write(0);
-        pac::UART1.cr3().write(0);
-        pac::UART1.brri().write(52);
-        pac::UART1.brrf().write(1);
+        pac::UART1.ier().write_value(0);
+        pac::UART1.cr1().write_value(0x1003);
+        pac::UART1.cr2().write_value(0);
+        pac::UART1.cr3().write_value(0);
+        pac::UART1.brri().write_value(52);
+        pac::UART1.brrf().write_value(1);
     });
     let mut tx = FrameQueue::new();
     loop {
@@ -97,7 +97,7 @@ pub async fn run(
         // Nonblocking, at most one UART byte per task wake.
         if unsafe { pac::uart::fields::isr::TXE.read(pac::UART1.isr().read()) } {
             if let Some(byte) = tx.pop_byte() {
-                unsafe { pac::UART1.tdr().write(u32::from(byte)) };
+                unsafe { pac::UART1.tdr().write_value(u32::from(byte)) };
             }
         }
         core::hint::black_box((&led, &key, &uart, &tx_pin, &rx_pin));

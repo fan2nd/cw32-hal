@@ -2,6 +2,8 @@ name: ram
 version: f030
 registers:
 - name: IER
+  reset_value: 0x00000001
+  reset_source: "CW32x030 RM Rev2.5 section 6.6.2, printed p109 (PDF p110); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 RAM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -19,6 +21,8 @@ registers:
     kind: bool
     description: CW32F030 RAM.IER.EN; raw encoding.
 - name: ADDR
+  reset_value: 0x20000000
+  reset_source: "CW32x030 RM Rev2.5 section 6.6.1, printed p109 (PDF p110); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: ro
   description: CW32F030 RAM.ADDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -30,6 +34,8 @@ registers:
     kind: raw
     description: CW32F030 RAM.ADDR.ADDR; raw encoding.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 6.6.3, printed p109 (PDF p110); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: ro
   description: CW32F030 RAM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -41,6 +47,8 @@ registers:
     kind: bool
     description: CW32F030 RAM.ISR.PARITY; raw encoding.
 - name: ICR
+  reset_value: 0x00000001
+  reset_source: "CW32x030 RM Rev2.5 section 6.6.4, printed p110 (PDF p111); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: 'CW32F030 RAM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 6.6.4; 1.2'

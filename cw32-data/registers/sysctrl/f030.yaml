@@ -2,6 +2,8 @@ name: sysctrl
 version: f030
 registers:
 - name: CR0
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.1, printed p69 (PDF p70); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: 'CW32F030 SYSCTRL.CR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.1'
@@ -33,6 +35,9 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR1
+  reset_value: 0x00000001
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.2, printed p70 (PDF p71); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "The listed full word is the power-on default. LSEEN is reset only by POR (RM4.7.2 p70/PDF71)."
   offset: 4
   access: rw
   description: 'CW32F030 SYSCTRL.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only. LSELOCK can make LSEEN set-only; LSEEN is reset only by power-on reset. CLKCCS, HSECCS and LSECCS must remain one per this manual revision. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.2'
@@ -100,6 +105,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.3, printed p71 (PDF p72); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: 'CW32F030 SYSCTRL.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.3'
@@ -131,6 +138,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.9, printed p77 (PDF p78); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: 'CW32F030 SYSCTRL.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 4.7.9'
@@ -198,6 +207,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: ISR
+  reset_value: 0x00000801
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.10, printed p78 (PDF p79); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: ro
   description: CW32F030 SYSCTRL.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -287,6 +298,8 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.ISR.HSIRDY; raw encoding.
 - name: ICR
+  reset_value: 0x000001ff
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.11, printed p80 (PDF p81); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 20
   access: rw
   description: 'CW32F030 SYSCTRL.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 4.7.11; 1.2'
@@ -348,6 +361,9 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: HSI
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.4, printed p72 (PDF p73); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 24
   access: rw
   description: CW32F030 SYSCTRL.HSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -371,6 +387,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.HSI.TRIM; raw encoding.
 - name: HSE
+  reset_value: 0x0007ff22
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.6, printed p74 (PDF p75); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 28
   access: rw
   description: CW32F030 SYSCTRL.HSE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -418,6 +436,9 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.HSE.DRIVER; raw encoding.
 - name: LSI
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.5, printed p73 (PDF p74); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 32
   access: rw
   description: CW32F030 SYSCTRL.LSI; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -441,6 +462,9 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.LSI.TRIM; raw encoding.
 - name: LSE
+  reset_value: 0x0000002b
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.7, printed p75 (PDF p76); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Only POR resets this register (RM4.7.7 p75/PDF76). Other reset sources retain its configuration."
   offset: 36
   access: rw
   description: CW32F030 SYSCTRL.LSE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -476,6 +500,9 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.LSE.DRIVER; raw encoding.
 - name: PLL
+  reset_value: 0x00053483
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.8, printed p76 (PDF p77); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00050000; retain them, do not mask to modeled fields."
   offset: 40
   access: rw
   description: CW32F030 SYSCTRL.PLL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -517,6 +544,9 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.PLL.SOURCE; raw encoding.
 - name: DEBUG
+  reset_value: 0x000007ff
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.19, printed p88 (PDF p89); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000080; retain them, do not mask to modeled fields."
   offset: 44
   access: rw
   description: CW32F030 SYSCTRL.DEBUG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -582,6 +612,8 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.DEBUG.ATIM; raw encoding.
 - name: AHBEN
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.12, printed p81 (PDF p82); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 48
   access: rw
   description: CW32F030 SYSCTRL.AHBEN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -629,6 +661,9 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.AHBEN.DMA; raw encoding.
 - name: APBEN2
+  reset_value: 0x00008000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.14, printed p83 (PDF p84); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00008000; retain them, do not mask to modeled fields."
   offset: 52
   access: rw
   description: CW32F030 SYSCTRL.APBEN2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -688,6 +723,8 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.APBEN2.ADC; raw encoding.
 - name: APBEN1
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.13, printed p82 (PDF p83); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 56
   access: rw
   description: CW32F030 SYSCTRL.APBEN1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -753,6 +790,8 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.APBEN1.GTIM1; raw encoding.
 - name: AHBRST
+  reset_value: 0x00000277
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.15, printed p84 (PDF p85); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 64
   access: rw
   description: CW32F030 SYSCTRL.AHBRST; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -800,6 +839,9 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.AHBRST.DMA; raw encoding.
 - name: APBRST2
+  reset_value: 0x0000bf9d
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.17, printed p86 (PDF p87); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00008009; retain them, do not mask to modeled fields."
   offset: 68
   access: rw
   description: CW32F030 SYSCTRL.APBRST2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -859,6 +901,9 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.APBRST2.ADC; raw encoding.
 - name: APBRST1
+  reset_value: 0x000019ff
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.16, printed p85 (PDF p86); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000001; retain them, do not mask to modeled fields."
   offset: 72
   access: rw
   description: CW32F030 SYSCTRL.APBRST1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -924,6 +969,9 @@ registers:
     kind: bool
     description: CW32F030 SYSCTRL.APBRST1.GTIM1; raw encoding.
 - name: RESETFLAG
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.18, printed p87 (PDF p88); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 76
   access: rw
   description: 'CW32F030 SYSCTRL.RESETFLAG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Reset-cause flags are RW0: reads report actual causes; zero clears and one preserves. Source: CW32x030 RM Rev 2.5 4.7.18'
@@ -973,6 +1021,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: GTIM1CAP
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.20, printed p89 (PDF p90); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 80
   access: rw
   description: CW32F030 SYSCTRL.GTIM1CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1002,6 +1052,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.GTIM1CAP.CH1; raw encoding.
 - name: GTIM2CAP
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.21, printed p89 (PDF p90); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 84
   access: rw
   description: CW32F030 SYSCTRL.GTIM2CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1031,6 +1083,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.GTIM2CAP.CH1; raw encoding.
 - name: GTIM3CAP
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.22, printed p90 (PDF p91); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 88
   access: rw
   description: CW32F030 SYSCTRL.GTIM3CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1060,6 +1114,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.GTIM3CAP.CH1; raw encoding.
 - name: GTIM4CAP
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.23, printed p90 (PDF p91); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 92
   access: rw
   description: CW32F030 SYSCTRL.GTIM4CAP; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1089,6 +1145,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.GTIM4CAP.CH1; raw encoding.
 - name: ATIMETR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.24, printed p91 (PDF p92); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 96
   access: rw
   description: CW32F030 SYSCTRL.ATIMETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1100,6 +1158,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.ATIMETR.ATIMETR; raw encoding.
 - name: GTIMETR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.25, printed p91 (PDF p92); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 100
   access: rw
   description: CW32F030 SYSCTRL.GTIMETR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1129,6 +1189,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.GTIMETR.GTIM1ETR; raw encoding.
 - name: TIMITR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.26, printed p92 (PDF p93); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 108
   access: rw
   description: CW32F030 SYSCTRL.TIMITR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1182,6 +1244,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.TIMITR.ATIMITR; raw encoding.
 - name: MCO
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 4.7.27, printed p93 (PDF p94); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 112
   access: rw
   description: CW32F030 SYSCTRL.MCO; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1199,6 +1263,8 @@ registers:
     kind: raw
     description: CW32F030 SYSCTRL.MCO.SOURCE; raw encoding.
 - name: IRMOD
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 21.4, printed p432 (PDF p433); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 116
   access: rw
   description: CW32F030 SYSCTRL.IRMOD; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.

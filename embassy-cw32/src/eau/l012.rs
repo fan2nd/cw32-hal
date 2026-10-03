@@ -162,9 +162,9 @@ impl Backend for Hardware {
         // SAFETY: exclusively owned, valid operands/mode, BUSY checked clear.
         unsafe {
             match reg {
-                Reg::Csr => pac::EAU.csr().write(word),
-                Reg::Dividend => pac::EAU.dividend().write(word),
-                Reg::Divisor => pac::EAU.divisor().write(word),
+                Reg::Csr => pac::EAU.csr().write_value(word),
+                Reg::Dividend => pac::EAU.dividend().write_value(word),
+                Reg::Divisor => pac::EAU.divisor().write_value(word),
                 _ => unreachable!(),
             }
         }

@@ -2,6 +2,8 @@ name: eau
 version: l012
 registers:
 - name: CSR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 11.7.1, printed p152 (PDF p178); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -31,6 +33,8 @@ registers:
     kind: raw
     description: Field MODE; raw encoding retained unless explicitly audited.
 - name: DIVIDEND
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 11.7.2, printed p152 (PDF p178); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: 'Register DIVIDEND; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported. Source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation'
@@ -44,6 +48,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DIVISOR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 11.7.3, printed p153 (PDF p179); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'Register DIVISOR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. In divide mode DIVISOR write starts computation after DIVIDEND; in square-root mode DIVIDEND write starts it and DIVISOR is unused. Writes while BUSY are ignored; only 32-bit register accesses are supported. Source: RM1.4 11.5; 11.7.2-3; SDK EAU_StartOperation'
@@ -57,6 +63,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: QUOTIENT
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 11.7.4, printed p153 (PDF p179); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: ro
   description: Register QUOTIENT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -68,6 +76,8 @@ registers:
     kind: raw
     description: Field QUOTIENT; raw encoding retained unless explicitly audited.
 - name: REMAINDER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 11.7.5, printed p153 (PDF p179); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: ro
   description: Register REMAINDER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

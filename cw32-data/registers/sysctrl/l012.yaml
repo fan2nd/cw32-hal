@@ -2,6 +2,8 @@ name: sysctrl
 version: l012
 registers:
 - name: CR0
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 4.7.1, printed p44 (PDF p70); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: 'System-clock source and bus prescalers; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.1; SDK cw32l012_sysctrl.c'
@@ -30,6 +32,9 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR1
+  reset_value: 0x00000001
+  reset_source: "CW32L012 RM1.4 section 4.7.2, printed p45 (PDF p71); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "The listed full word is the power-on default. LSELOCK and LSEEN include POR-only reset qualifications (RM4.7.2 p45/PDF71)."
   offset: 4
   access: rw
   description: 'Clock-source enables; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.2; SDK cw32l012_sysctrl.c'
@@ -91,6 +96,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
+  reset_value: 0x00000c00
+  reset_source: "CW32L012 RM1.4 section 4.7.3, printed p47 (PDF p73); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'System control including SWD and Flash wait states; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.3; SDK cw32l012_sysctrl.c'
@@ -163,6 +170,9 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: HSI
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 4.7.4, printed p48 (PDF p74); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "RM reset heading 0x0001F772 conflicts with TRIM[10:0] hardware-default prose 0x172 (heading implies 0x772). DIV default is 0b1110. Bits31:16 are reserved, including set bit16 in heading; reserved ones alone are not proof of error. No authoritative unambiguous full reset word."
   offset: 24
   access: rw
   description: Internal high-speed oscillator trim, divider and stability fields.
@@ -184,6 +194,9 @@ registers:
     access: rw
     description: Internal high-speed oscillator calibration code.
 - name: LSI
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 4.7.5, printed p49 (PDF p75); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 32
   access: rw
   description: Internal low-speed oscillator trim and stability fields.
@@ -206,6 +219,8 @@ registers:
     access: rw
     description: Internal low-speed oscillator calibration code.
 - name: HSE
+  reset_value: 0x0027ff22
+  reset_source: "CW32L012 RM1.4 section 4.7.6, printed p50 (PDF p76); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 28
   access: rw
   description: External high-speed oscillator control.
@@ -259,6 +274,9 @@ registers:
     kind: raw
     description: Field DRIVER; raw encoding retained unless explicitly audited.
 - name: LSE
+  reset_value: 0x00000a22
+  reset_source: "CW32L012 RM1.4 section 4.7.7, printed p51 (PDF p77); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Only POR resets this register (RM4.7.7 p51/PDF77). Other reset sources retain its configuration."
   offset: 36
   access: rw
   description: 'External low-speed oscillator control. PINLOCK becomes sticky until power-on reset when enabled; effective with CR1.LSELOCK. Other fields are configuration/status. No unrestricted generic modify contract. Source: RM1.4 4.7.7'
@@ -302,6 +320,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 4.7.8, printed p52 (PDF p78); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: 'System-controller interrupt enable. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.8; SDK cw32l012_sysctrl.c'
@@ -363,6 +383,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: ISR
+  reset_value: 0x00000801
+  reset_source: "CW32L012 RM1.4 section 4.7.9, printed p53 (PDF p79); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: ro
   description: Read-only system-controller interrupt status.
@@ -440,6 +462,9 @@ registers:
     kind: bool
     description: Field HSIRDY; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: 0x000000ff
+  reset_source: "CW32L012 RM1.4 section 4.7.10, printed p55 (PDF p81); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000004; retain them, do not mask to modeled fields."
   offset: 20
   access: rw
   description: 'System-controller interrupt clear; follow vendor field semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 4.7.10; RM1.4 1.2'
@@ -495,6 +520,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: AHBEN
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 4.7.11, printed p56 (PDF p82); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 48
   access: rw
   description: 'AHB clock enable; GPIO clocks use bits 4 through 7; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.11; SDK cw32l012_sysctrl.c'
@@ -562,6 +589,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: APBEN1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 4.7.12, printed p57 (PDF p83); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 56
   access: rw
   description: 'APB1 clock enable; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.12; SDK cw32l012_sysctrl.c'
@@ -653,6 +682,9 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: APBEN2
+  reset_value: 0x00000100
+  reset_source: "CW32L012 RM1.4 section 4.7.13, printed p59 (PDF p85); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000100; retain them, do not mask to modeled fields."
   offset: 52
   access: rw
   description: 'APB2 clock enable; BTIM1/2/3 share bit 2; writes require SYSCTRL_KEY. Every write requires KEY[31:16]=0x5A5A; KEY is write-only. CR1 additionally contains POR-sticky LSELOCK; CR2 changes SWD, fault-brake and clock-safety policy. Do not infer a key requirement for AHBRST/APBRST. Source: RM1.4 4.7.13; SDK cw32l012_sysctrl.c'
@@ -726,6 +758,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: AHBRST
+  reset_value: 0x0000007f
+  reset_source: "CW32L012 RM1.4 section 4.7.14, printed p60 (PDF p86); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 64
   access: rw
   description: 'AHB peripheral reset is active LOW: clear to assert, set to release.'
@@ -785,6 +819,8 @@ registers:
     kind: bool
     description: Field DMA; raw encoding retained unless explicitly audited.
 - name: APBRST1
+  reset_value: 0x000001ff
+  reset_source: "CW32L012 RM1.4 section 4.7.15, printed p61 (PDF p87); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 72
   access: rw
   description: 'APB1 peripheral reset is active LOW: clear to assert, set to release.'
@@ -868,6 +904,9 @@ registers:
     kind: bool
     description: Field ADC; raw encoding retained unless explicitly audited.
 - name: APBRST2
+  reset_value: 0x000000ff
+  reset_source: "CW32L012 RM1.4 section 4.7.16, printed p63 (PDF p89); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000009; retain them, do not mask to modeled fields."
   offset: 68
   access: rw
   description: 'APB2 peripheral reset is active LOW: clear to assert, set to release.'
@@ -933,6 +972,9 @@ registers:
     kind: bool
     description: Field RTC; raw encoding retained unless explicitly audited.
 - name: RESETFLAG
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 4.7.17, printed p64 (PDF p90); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 76
   access: rw
   description: 'Reset-source flags. RW0 reset-cause flags: reads report actual causes, unlike R1W0 ICR. Zero clears, one preserves. Generic RMW can lose a newly asserted flag. Source: RM1.4 4.7.17; SDK SYSCTRL_ClearRstFlag'
@@ -982,6 +1024,9 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: DEBUG
+  reset_value: 0x000007e7
+  reset_source: "CW32L012 RM1.4 section 4.7.18, printed p65 (PDF p91); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000080; retain them, do not mask to modeled fields."
   offset: 44
   access: rw
   description: Debug control.
@@ -1053,6 +1098,8 @@ registers:
     kind: bool
     description: Field ATIM; raw encoding retained unless explicitly audited.
 - name: MCO
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 4.7.19, printed p66 (PDF p92); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 112
   access: rw
   description: Microcontroller clock output selection.

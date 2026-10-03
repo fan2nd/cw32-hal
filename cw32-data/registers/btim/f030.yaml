@@ -2,6 +2,8 @@ name: btim
 version: f030
 registers:
 - name: ARR
+  reset_value: 0x0000ffff
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.3, printed p213 (PDF p214); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 BTIM.ARR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -13,6 +15,8 @@ registers:
     kind: raw
     description: CW32F030 BTIM.ARR.ARR; raw encoding.
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.4, printed p213 (PDF p214); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 BTIM.CNT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -24,6 +28,8 @@ registers:
     kind: raw
     description: CW32F030 BTIM.CNT.CNT; raw encoding.
 - name: ACR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.2, printed p213 (PDF p214); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: CW32F030 BTIM.ACR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -35,6 +41,8 @@ registers:
     kind: raw
     description: CW32F030 BTIM.ACR.ETRFLT; raw encoding.
 - name: BCR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.1, printed p212 (PDF p213); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: CW32F030 BTIM.BCR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -88,6 +96,8 @@ registers:
     kind: bool
     description: CW32F030 BTIM.BCR.EN; raw encoding.
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.5, printed p214 (PDF p215); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 20
   access: rw
   description: CW32F030 BTIM.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -111,6 +121,8 @@ registers:
     kind: bool
     description: CW32F030 BTIM.IER.OV; raw encoding.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.6, printed p214 (PDF p215); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 24
   access: ro
   description: CW32F030 BTIM.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -134,6 +146,8 @@ registers:
     kind: bool
     description: CW32F030 BTIM.ISR.OV; raw encoding.
 - name: ICR
+  reset_value: 0x00000007
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.7, printed p215 (PDF p216); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 28
   access: rw
   description: 'CW32F030 BTIM.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 13.7.7; 1.2'
@@ -159,6 +173,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: DMA
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 13.7.8, printed p215 (PDF p216); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 32
   access: rw
   description: CW32F030 BTIM.DMA; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.

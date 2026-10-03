@@ -2,6 +2,8 @@ name: ram
 version: l012
 registers:
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 6.6.1, printed p85 (PDF p111); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -13,6 +15,8 @@ registers:
     kind: bool
     description: Field PARITY; raw encoding retained unless explicitly audited.
 - name: ADDR
+  reset_value: 0x20000000
+  reset_source: "CW32L012 RM1.4 section 6.6.2, printed p85 (PDF p111); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: ro
   description: Register ADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -24,6 +28,8 @@ registers:
     kind: raw
     description: Field ADDR; raw encoding retained unless explicitly audited.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 6.6.3, printed p85 (PDF p111); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: ro
   description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -35,6 +41,8 @@ registers:
     kind: bool
     description: Field PARITY; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: 0x00000001
+  reset_source: "CW32L012 RM1.4 section 6.6.4, printed p85 (PDF p111); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 6.6.4; RM1.4 1.2'

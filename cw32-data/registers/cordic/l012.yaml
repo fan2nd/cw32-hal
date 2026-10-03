@@ -2,6 +2,8 @@ name: cordic
 version: l012
 registers:
 - name: CSR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 12.6.1, printed p160 (PDF p186); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -67,6 +69,8 @@ registers:
     kind: raw
     description: Field FUNC; raw encoding retained unless explicitly audited.
 - name: X
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 12.6.2, printed p161 (PDF p187); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: 'Register X; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'
@@ -80,6 +84,8 @@ registers:
   write_behavior: command
   read_behavior: clear
 - name: Y
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 12.6.3, printed p161 (PDF p187); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'Register Y; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'
@@ -93,6 +99,8 @@ registers:
   write_behavior: command
   read_behavior: clear
 - name: Z
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 12.6.4, printed p161 (PDF p187); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: 'Register Z; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Operand writes can start computation, depending on FUNC: the sole used operand starts a one-input function, and Y starts two-input functions. Reading computation results clears CSR.EOC. Manual does not precisely define multi-result read ordering; do not invent it. CORDIC_StartComputation in SDK is empty and is not a start strobe. Source: RM1.4 12.3; 12.6.1; SDK CORDIC_StartComputation'

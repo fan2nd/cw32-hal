@@ -2,6 +2,8 @@ name: dac
 version: l012
 registers:
 - name: CR0
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.1, printed p609 (PDF p635); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -91,6 +93,8 @@ registers:
     kind: bool
     description: Field EN1; raw encoding retained unless explicitly audited.
 - name: SWTRGR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.2, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: 'Register SWTRGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write one triggers the selected DAC channel; hardware clears the trigger after transfer of its data-holding value. Do not RMW. Source: RM1.4 26.10.2; SDK DAC_SoftwareTriggerCmd'
@@ -110,6 +114,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12R1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.3, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'Register DHR12R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -123,6 +129,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12L1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.4, printed p612 (PDF p638); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: 'Register DHR12L1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -136,6 +144,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR8R1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.5, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: rw
   description: 'Register DHR8R1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -149,6 +159,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12R2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.6, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: rw
   description: 'Register DHR12R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -162,6 +174,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12L2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.7, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: rw
   description: 'Register DHR12L2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -175,6 +189,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR8R2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.8, printed p613 (PDF p639); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 28
   access: rw
   description: 'Register DHR8R2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -188,6 +204,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12RD
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.9, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 32
   access: rw
   description: 'Register DHR12RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -207,6 +225,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR12LD
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.10, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 36
   access: rw
   description: 'Register DHR12LD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -226,6 +246,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DHR8RD
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.11, printed p614 (PDF p640); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 40
   access: rw
   description: 'Register DHR8RD; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Data-holding port write with format/channel-specific packing; when triggering is disabled a write transfers the value to the output after the documented delay. Not a generic software storage register. Source: RM1.4 26.5; 26.6; 26.10.3-11; SDK DAC_SetChannel1Data/DAC_SetChannel2Data/DAC_SetDualChannelData'
@@ -245,6 +267,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: DOR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.12, printed p615 (PDF p641); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 44
   access: rw
   description: 'Register DOR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
@@ -264,6 +288,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: DOR2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.13, printed p615 (PDF p641); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 48
   access: rw
   description: 'Register DOR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Only DMAUDR bit 15 is writable and is RW0; DATA[11:0] is RO. Clear underrun with zero; do not generate a writable data-output field. Source: RM1.4 26.10.12-13; SDK DAC_ClearFlag'
@@ -283,6 +309,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 26.10.14, printed p616 (PDF p642); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 52
   access: rw
   description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

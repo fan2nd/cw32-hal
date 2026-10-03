@@ -128,10 +128,10 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
         negative.configure_analog();
         let r = I::regs();
         unsafe {
-            r.cr0().write(0);
-            r.cr1().write(cr1);
-            r.sr().write(0);
-            r.cr0().write(cr0);
+            r.cr0().write_value(0);
+            r.cr1().write_value(cr1);
+            r.sr().write_value(0);
+            r.cr0().write_value(cr0);
         }
         let comparator = Self {
             _instance: instance,
@@ -171,7 +171,7 @@ impl<'d, I: VcInstance> Comparator<'d, I> {
             )?;
             I::regs()
                 .cr1()
-                .write(f::cr1::ATIMBK.write(I::regs().cr1().read(), true));
+                .write_value(f::cr1::ATIMBK.write(I::regs().cr1().read(), true));
             pwm.set_comparator_brake(true);
             Ok(())
         })?;
@@ -226,7 +226,7 @@ impl<I: VcInstance> Drop for ComparatorBrake<'_, '_, '_, I> {
             self.pwm.set_comparator_brake(false);
             I::regs()
                 .cr1()
-                .write(f::cr1::ATIMBK.write(I::regs().cr1().read(), false));
+                .write_value(f::cr1::ATIMBK.write(I::regs().cr1().read(), false));
         });
     }
 }
@@ -263,14 +263,14 @@ impl<I: VcInstance> ShutdownIo for ShutdownHardware<I> {
             let r = pac::ATIM.dtr();
             // Only one safe route can be installed. Release the leaked route
             // together with its power state so a surviving PWM can be reused.
-            r.write(r.read() & !(dtr::MOE.mask() | dtr::AOE.mask() | dtr::VCE.mask()));
+            r.write_value(r.read() & !(dtr::MOE.mask() | dtr::AOE.mask() | dtr::VCE.mask()));
         }
     }
     fn disable_comparator(&mut self) {
         unsafe {
-            I::regs().cr0().write(0);
-            I::regs().cr1().write(0);
-            I::regs().sr().write(0);
+            I::regs().cr0().write_value(0);
+            I::regs().cr1().write_value(0);
+            I::regs().sr().write_value(0);
         }
     }
 }
@@ -379,21 +379,21 @@ impl<I: VcInstance> VcIo for VcHardware<I> {
         use pac::vc::fields as f;
         unsafe {
             let r = I::regs();
-            r.cr0().write(f::cr0::IE.write(r.cr0().read(), false));
-            r.cr1().write(r.cr1().read() & !vc_select_mask());
+            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), false));
+            r.cr1().write_value(r.cr1().read() & !vc_select_mask());
         }
     }
     fn clear(&mut self) {
         // INTF is RW0; FLTV is RO. Write zero, never RMW this mixed register.
-        unsafe { I::regs().sr().write(0) };
+        unsafe { I::regs().sr().write_value(0) };
     }
     fn arm(&mut self, selection: u32) {
         use pac::vc::fields as f;
         unsafe {
             let r = I::regs();
             r.cr1()
-                .write((r.cr1().read() & !vc_select_mask()) | selection);
-            r.cr0().write(f::cr0::IE.write(r.cr0().read(), true));
+                .write_value((r.cr1().read() & !vc_select_mask()) | selection);
+            r.cr0().write_value(f::cr0::IE.write(r.cr0().read(), true));
         }
     }
     fn pending(&mut self) -> bool {

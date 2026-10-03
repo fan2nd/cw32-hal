@@ -276,6 +276,20 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: GPIOA
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000ffff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ANALOG
+    reset_value: 0x00009fff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ICR
+    reset_value: 0x0000ffff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: IDR
+    reset_value: 0x00006000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: sdk_v2_2
   vendor_ip: GPIO
@@ -301,6 +315,20 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOB
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000ffff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ANALOG
+    reset_value: 0x0000ffff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ICR
+    reset_value: 0x0000ffff
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: IDR
+    reset_value: 0x00000000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: sdk_v2_2
   vendor_ip: GPIO
@@ -326,6 +354,20 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOC
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000e000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ANALOG
+    reset_value: 0x0000e000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ICR
+    reset_value: 0x0000e000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: IDR
+    reset_value: 0x00000000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: sdk_v2_2
   vendor_ip: GPIO
@@ -351,6 +393,20 @@ peripherals:
     description: The shared raw GPIO model is the union of ports. GPIOC has no AFRL and GPIOF has no AFRH; access only implemented pins/registers. Safe HAL masks unimplemented pins.
     source: SDK V2.2 GPIO/GPIOC/GPIOF structs; CW32x030 RM 9.6
 - name: GPIOF
+  register_resets:
+  - register: DIR
+    reset_value: 0x000000cb
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ANALOG
+    reset_value: 0x000000c3
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: ICR
+    reset_value: 0x000000cb
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  - register: IDR
+    reset_value: 0x00000000
+    reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: sdk_v2_2
   vendor_ip: GPIO

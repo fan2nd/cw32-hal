@@ -2,6 +2,8 @@ name: irmod
 version: l012
 registers:
 - name: CR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 24.4, printed p571 (PDF p597); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

@@ -2,6 +2,8 @@ name: lptim
 version: l012
 registers:
 - name: CFGR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.1, printed p226 (PDF p252); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: Register CFGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -91,6 +93,8 @@ registers:
     kind: bool
     description: Field CKSEL; raw encoding retained unless explicitly audited.
 - name: CR0
+  reset_value: 0x00000018
+  reset_source: "CW32L012 RM1.4 section 15.7.2, printed p228 (PDF p254); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: rw
   description: 'Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. ARST/SRST are write-zero reset commands and read completion state; write zero only after read one. CNTSTART/SNGSTART are write-one start commands; EN is ordinary control. Reset value 0x18 is not a universal write initializer. Source: RM1.4 15.7.2'
@@ -128,6 +132,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: ARR
+  reset_value: 0x00000001
+  reset_source: "CW32L012 RM1.4 section 15.7.3, printed p229 (PDF p255); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: rw
   description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -139,6 +145,8 @@ registers:
     kind: raw
     description: Field ARR; raw encoding retained unless explicitly audited.
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.4, printed p229 (PDF p255); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 28
   access: ro
   description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -150,6 +158,8 @@ registers:
     kind: raw
     description: Field CNT; raw encoding retained unless explicitly audited.
 - name: CMP
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.5, printed p229 (PDF p255); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: rw
   description: Register CMP; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -161,6 +171,8 @@ registers:
     kind: raw
     description: Field CMP; raw encoding retained unless explicitly audited.
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.6, printed p230 (PDF p256); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: Register IER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -208,6 +220,8 @@ registers:
     kind: bool
     description: Field CMPM; raw encoding retained unless explicitly audited.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.7, printed p231 (PDF p257); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: ro
   description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -261,6 +275,8 @@ registers:
     kind: bool
     description: Field CMPM; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: 0x0000007f
+  reset_source: "CW32L012 RM1.4 section 15.7.8, printed p232 (PDF p258); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 15.7.8; RM1.4 1.2'
@@ -310,6 +326,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 15.7.9, printed p233 (PDF p259); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 32
   access: rw
   description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

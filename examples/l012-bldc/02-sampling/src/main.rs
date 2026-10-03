@@ -95,56 +95,60 @@ fn main() -> ! {
             }
         }
 
-        pac::ATIM.cr1().write(pac::atim::fields::cr1::ARPE.mask());
-        pac::ATIM.bdtr().write(0);
-        pac::ATIM.dier().write(0);
-        pac::ATIM.ccer().write(0);
-        pac::ATIM.cr2().write(0);
-        pac::ATIM.smcr().write(0);
-        pac::ATIM.psc().write(0);
-        pac::ATIM.arr().write(u32::from(SAMPLING_PERIOD - 1));
-        pac::ATIM.rcr().write(0);
-        pac::ATIM.cnt().write(0);
+        pac::ATIM
+            .cr1()
+            .write_value(pac::atim::fields::cr1::ARPE.mask());
+        pac::ATIM.bdtr().write_value(0);
+        pac::ATIM.dier().write_value(0);
+        pac::ATIM.ccer().write_value(0);
+        pac::ATIM.cr2().write_value(0);
+        pac::ATIM.smcr().write_value(0);
+        pac::ATIM.psc().write_value(0);
+        pac::ATIM.arr().write_value(u32::from(SAMPLING_PERIOD - 1));
+        pac::ATIM.rcr().write_value(0);
+        pac::ATIM.cnt().write_value(0);
         // No phase PWM mode, channel enable or alternate-function gate mux.
-        pac::ATIM.ccmr1cmp().write(0);
+        pac::ATIM.ccmr1cmp().write_value(0);
         // Preserve original PWM1: OC4REFC rises at reload, not at CCR4.
-        pac::ATIM.ccmr2cmp().write(
+        pac::ATIM.ccmr2cmp().write_value(
             pac::atim::fields::ccmr2cmp::OC4PE
                 .write(pac::atim::fields::ccmr2cmp::OC4M.write(0, 6), true),
         );
-        pac::ATIM.ccr1().write(0);
-        pac::ATIM.ccr2().write(0);
-        pac::ATIM.ccr3().write(0);
-        pac::ATIM.ccr4().write(2400); // Original PWM_PERIOD / 2 at initialization.
-        pac::ATIM.dtr2().write(0);
-        pac::ATIM.af1().write(0);
-        pac::ATIM.af2().write(0);
-        pac::ATIM.ccer().write(pac::atim::fields::ccer::CC4E.mask());
-        pac::ATIM.icr().write(0);
+        pac::ATIM.ccr1().write_value(0);
+        pac::ATIM.ccr2().write_value(0);
+        pac::ATIM.ccr3().write_value(0);
+        pac::ATIM.ccr4().write_value(2400); // Original PWM_PERIOD / 2 at initialization.
+        pac::ATIM.dtr2().write_value(0);
+        pac::ATIM.af1().write_value(0);
+        pac::ATIM.af2().write_value(0);
+        pac::ATIM
+            .ccer()
+            .write_value(pac::atim::fields::ccer::CC4E.mask());
+        pac::ATIM.icr().write_value(0);
 
         // External-feedback OPA1: PA6 INP2, PA7 INN2, PB0 output/ADC1 CH8.
         pac::BGR
             .cr()
-            .write(pac::bgr::fields::cr::BGREN.write(pac::BGR.cr().read(), true));
-        pac::OPA1.cr().write(0xe220);
-        pac::OPA1.cal().write(0);
-        pac::OPA1.cr().write(0xe221);
+            .write_value(pac::bgr::fields::cr::BGREN.write(pac::BGR.cr().read(), true));
+        pac::OPA1.cr().write_value(0xe220);
+        pac::OPA1.cal().write_value(0);
+        pac::OPA1.cr().write_value(0xe221);
         for (r, length, channels, sample, divider) in [
             (pac::ADC1, 4, 0x2108, 0x9999, 1),
             (pac::ADC2, 5, 0xf875b, 0xfffff, 3),
         ] {
-            r.trigger().write(0);
-            r.start().write(0);
-            r.ier().write(0);
+            r.trigger().write_value(0);
+            r.start().write_value(0);
+            r.ier().write_value(0);
             // Preserve reserved CR bits; the uploaded SDK's SAM[9:8] disagrees
             // with the pinned official header / RM and is deliberately not used.
             let reserved = r.cr().read() & !0xff;
-            r.cr().write(reserved);
-            r.awdcr().write(0);
-            r.sqrcfr().write(channels);
-            r.sample().write(sample);
-            r.icr().write(0);
-            r.cr().write(pac::adc::fields::cr::EN.write(
+            r.cr().write_value(reserved);
+            r.awdcr().write_value(0);
+            r.sqrcfr().write_value(channels);
+            r.sample().write_value(sample);
+            r.icr().write_value(0);
+            r.cr().write_value(pac::adc::fields::cr::EN.write(
                 pac::adc::fields::cr::ENS.write(
                     pac::adc::fields::cr::CLK.write(reserved, divider),
                     length - 1,
@@ -153,58 +157,62 @@ fn main() -> ! {
             ));
         }
 
-        pac::BTIM1.cr1().write(0);
-        pac::BTIM1.dier().write(0);
-        pac::BTIM1.cr2().write(0);
-        pac::BTIM1.smcr().write(0);
-        pac::BTIM1.psc().write(95);
-        pac::BTIM1.arr().write(999);
-        pac::BTIM1.cnt().write(0);
-        pac::BTIM1.icr().write(0);
+        pac::BTIM1.cr1().write_value(0);
+        pac::BTIM1.dier().write_value(0);
+        pac::BTIM1.cr2().write_value(0);
+        pac::BTIM1.smcr().write_value(0);
+        pac::BTIM1.psc().write_value(95);
+        pac::BTIM1.arr().write_value(999);
+        pac::BTIM1.cnt().write_value(0);
+        pac::BTIM1.icr().write_value(0);
     }
     // Nominal >= 1 ms startup settling; not used as a sample timebase.
     cortex_m::asm::delay(CPU_HZ / 1_000);
     INITIALIZED.store(true, Ordering::Release);
 
     unsafe {
-        pac::ADC1.icr().write(0);
-        pac::ADC2.icr().write(0);
-        pac::ADC1.ier().write(pac::adc::fields::ier::EOS.mask());
+        pac::ADC1.icr().write_value(0);
+        pac::ADC2.icr().write_value(0);
+        pac::ADC1
+            .ier()
+            .write_value(pac::adc::fields::ier::EOS.mask());
         // Original EOC + BLOCK intent: one 32-bit result per conversion.
         // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
         // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
-        pac::DMA.csr2().write(0);
-        pac::DMA.cnt2().write((1 << 16) | 5);
+        pac::DMA.csr2().write_value(0);
+        pac::DMA.cnt2().write_value((1 << 16) | 5);
         pac::DMA
             .srcaddr2()
-            .write((pac::ADC2_BASE + pac::adc::RESULT0) as u32);
+            .write_value((pac::ADC2_BASE + pac::adc::RESULT0) as u32);
         pac::DMA
             .dstaddr2()
-            .write(core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>() as u32);
-        pac::DMA.trig2().write(1 | (15 << 2));
+            .write_value(core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>() as u32);
+        pac::DMA.trig2().write_value(1 | (15 << 2));
         pac::DMA
             .csr2()
-            .write((1 << 11) | (2 << 6) | (1 << 5) | (1 << 4) | (1 << 3) | 1);
-        pac::ADC2.ier().write(pac::adc::fields::ier::DMAEOC.mask());
+            .write_value((1 << 11) | (2 << 6) | (1 << 5) | (1 << 4) | (1 << 3) | 1);
+        pac::ADC2
+            .ier()
+            .write_value(pac::adc::fields::ier::DMAEOC.mask());
         pac::ADC2
             .trigger()
-            .write(pac::adc::fields::trigger::ATIMOC4REFC.mask());
+            .write_value(pac::adc::fields::trigger::ATIMOC4REFC.mask());
 
-        pac::BTIM1.icr().write(BTIM_ICR_MASK & !1);
-        pac::BTIM1.dier().write(1);
+        pac::BTIM1.icr().write_value(BTIM_ICR_MASK & !1);
+        pac::BTIM1.dier().write_value(1);
         for irq in [interrupt::ADC1, interrupt::BTIM1] {
             irq.unpend();
             irq.set_priority(interrupt::Priority::P1);
         }
         pac::ADC1
             .trigger()
-            .write(pac::adc::fields::trigger::ATIMOC4REFC.mask());
-        pac::BTIM1.cr1().write(1); // Original timer enable.
+            .write_value(pac::adc::fields::trigger::ATIMOC4REFC.mask());
+        pac::BTIM1.cr1().write_value(1); // Original timer enable.
         pac::ATIM
             .cr1()
-            .write(pac::atim::fields::cr1::ARPE.mask() | 1);
+            .write_value(pac::atim::fields::cr1::ARPE.mask() | 1);
 
-        pac::ADC2.start().write(1);
+        pac::ADC2.start().write_value(1);
         // Initialization and all borrows finish before any IRQ can run.
         core::sync::atomic::compiler_fence(Ordering::Release);
         for irq in [interrupt::ADC1, interrupt::BTIM1] {
@@ -225,7 +233,7 @@ unsafe extern "C" fn ADC1() {
         if !pac::adc::fields::isr::EOS.read(r.isr().read()) {
             return;
         }
-        r.icr().write(0);
+        r.icr().write_value(0);
         ADC1_RAW = [
             r.result0().read() as u16 & 4095,
             r.result1().read() as u16 & 4095,
@@ -247,7 +255,7 @@ unsafe extern "C" fn BTIM1() {
         if pac::BTIM1.isr().read() & pac::BTIM1.dier().read() & 1 == 0 {
             return;
         }
-        pac::BTIM1.icr().write(BTIM_ICR_MASK & !1);
+        pac::BTIM1.icr().write_value(BTIM_ICR_MASK & !1);
         MILLISECONDS = MILLISECONDS.wrapping_add(1);
         let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
         for i in 0..5 {
@@ -257,7 +265,7 @@ unsafe extern "C" fn BTIM1() {
             ADC2_SEQUENCES = ADC2_SEQUENCES.wrapping_add(1);
             pac::ADC2
                 .icr()
-                .write(ADC_ICR_MASK & !pac::adc::fields::icr::EOS.mask());
+                .write_value(ADC_ICR_MASK & !pac::adc::fields::icr::EOS.mask());
         }
         core::hint::black_box((
             &*core::ptr::addr_of!(ADC2_RAW),
@@ -267,7 +275,7 @@ unsafe extern "C" fn BTIM1() {
         ADC2_ELAPSED_MS += 1;
         if ADC2_ELAPSED_MS == 5 {
             ADC2_ELAPSED_MS = 0;
-            pac::ADC2.start().write(1);
+            pac::ADC2.start().write_value(1);
         }
         let pressed = pac::read(pac::GPIOA_BASE + pac::gpio::IDR) & (1 << 3) == 0;
         pac::write(
@@ -288,8 +296,10 @@ fn fatal() -> ! {
     // No software-state borrow, even when an exception interrupted an ISR.
     if INITIALIZED.load(Ordering::Acquire) {
         unsafe {
-            pac::ATIM.bdtr().write(0);
-            pac::ATIM.ccer().write(pac::atim::fields::ccer::CC4E.mask());
+            pac::ATIM.bdtr().write_value(0);
+            pac::ATIM
+                .ccer()
+                .write_value(pac::atim::fields::ccer::CC4E.mask());
         }
     }
     loop {

@@ -555,10 +555,10 @@ impl Backend for Hardware {
         // checked and BUSY is clear; inputs are written in hardware trigger order.
         unsafe {
             match reg {
-                Reg::Csr => pac::CORDIC.csr().write(word),
-                Reg::X => pac::CORDIC.x().write(word),
-                Reg::Y => pac::CORDIC.y().write(word),
-                Reg::Z => pac::CORDIC.z().write(word),
+                Reg::Csr => pac::CORDIC.csr().write_value(word),
+                Reg::X => pac::CORDIC.x().write_value(word),
+                Reg::Y => pac::CORDIC.y().write_value(word),
+                Reg::Z => pac::CORDIC.z().write_value(word),
             }
         }
     }

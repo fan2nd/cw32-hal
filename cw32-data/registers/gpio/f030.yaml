@@ -2,6 +2,9 @@ name: gpio
 version: f030
 registers:
 - name: DIR
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.1, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value."
   offset: 0
   access: rw
   description: CW32F030 GPIO.DIR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -103,6 +106,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.DIR.PIN0; raw encoding.
 - name: OPENDRAIN
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.2, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 GPIO.OPENDRAIN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -204,6 +209,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.OPENDRAIN.PIN0; raw encoding.
 - name: SPEED
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.3, printed p152 (PDF p153); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: CW32F030 GPIO.SPEED; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -305,6 +312,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.SPEED.PIN0; raw encoding.
 - name: PDR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.4, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: CW32F030 GPIO.PDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -406,6 +415,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.PDR.PIN0; raw encoding.
 - name: PUR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.5, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: CW32F030 GPIO.PUR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -507,6 +518,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.PUR.PIN0; raw encoding.
 - name: AFRH
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.6, printed p153 (PDF p154); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 20
   access: rw
   description: CW32F030 GPIO.AFRH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -560,6 +573,8 @@ registers:
     kind: raw
     description: CW32F030 GPIO.AFRH.AFR8; raw encoding.
 - name: AFRL
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.7, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 24
   access: rw
   description: CW32F030 GPIO.AFRL; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -613,6 +628,9 @@ registers:
     kind: raw
     description: CW32F030 GPIO.AFRL.AFR0; raw encoding.
 - name: ANALOG
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.8, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x00009FFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000C3. Shared block has no single full reset value."
   offset: 28
   access: rw
   description: CW32F030 GPIO.ANALOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -714,6 +732,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.ANALOG.PIN0; raw encoding.
 - name: DRIVER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.9, printed p154 (PDF p155); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 32
   access: rw
   description: CW32F030 GPIO.DRIVER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -815,6 +835,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.DRIVER.PIN0; raw encoding.
 - name: RISEIE
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.10, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 36
   access: rw
   description: CW32F030 GPIO.RISEIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -916,6 +938,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.RISEIE.PIN0; raw encoding.
 - name: FALLIE
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.11, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 40
   access: rw
   description: CW32F030 GPIO.FALLIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1017,6 +1041,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.FALLIE.PIN0; raw encoding.
 - name: HIGHIE
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.12, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 44
   access: rw
   description: CW32F030 GPIO.HIGHIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1118,6 +1144,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.HIGHIE.PIN0; raw encoding.
 - name: LOWIE
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.13, printed p155 (PDF p156); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 48
   access: rw
   description: CW32F030 GPIO.LOWIE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1219,6 +1247,8 @@ registers:
     kind: bool
     description: CW32F030 GPIO.LOWIE.PIN0; raw encoding.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.14, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 52
   access: rw
   description: CW32F030 GPIO.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1320,6 +1350,9 @@ registers:
     kind: bool
     description: CW32F030 GPIO.ISR.PIN0; raw encoding.
 - name: ICR
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.15, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value."
   offset: 56
   access: rw
   description: 'CW32F030 GPIO.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 9.6.15; 1.2'
@@ -1423,6 +1456,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: LOCK
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.16, printed p156 (PDF p157); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 60
   access: rw
   description: 'CW32F030 GPIO.LOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 9.6.16'
@@ -1532,6 +1567,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: FILTER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.17, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 64
   access: rw
   description: CW32F030 GPIO.FILTER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1639,6 +1676,9 @@ registers:
     kind: bool
     description: CW32F030 GPIO.FILTER.PIN0; raw encoding.
 - name: IDR
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x00006000, GPIOB=0x00000000, GPIOC=0x00000000, GPIOF=0x00000000. Shared block has no single full reset value. IDR reflects live pin input; listed reset is not a guarantee of the later sampled voltage."
   offset: 80
   access: ro
   description: CW32F030 GPIO.IDR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1740,6 +1780,9 @@ registers:
     kind: bool
     description: CW32F030 GPIO.IDR.PIN0; raw encoding.
 - name: ODR
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 84
   access: rw
   description: CW32F030 GPIO.ODR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1841,6 +1884,9 @@ registers:
     kind: bool
     description: CW32F030 GPIO.ODR.PIN0; raw encoding.
 - name: ODRLOWBYTE
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance. This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset."
   offset: 84
   access: rw
   description: CW32F030 GPIO.ODRLOWBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1854,6 +1900,9 @@ registers:
   bit_size: 8
   alias_of: ODR
 - name: ODRHIGHBYTE
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.19, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance. This 8-bit access alias is part of the unknown-reset GPIOx_ODR; neither byte has a documented reset."
   offset: 85
   access: rw
   description: CW32F030 GPIO.ODRHIGHBYTE; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -1867,6 +1916,8 @@ registers:
   bit_size: 8
   alias_of: ODR
 - name: BRR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.20, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 88
   access: rw
   description: 'CW32F030 GPIO.BRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing a one clears the corresponding ODR pin. Reads return zero; zero writes do nothing. Source: CW32x030 RM Rev 2.5 9.6.20'
@@ -1970,6 +2021,8 @@ registers:
   write_behavior: one_to_clear
   read_behavior: ordinary
 - name: BSRR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.21, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 92
   access: rw
   description: 'CW32F030 GPIO.BSRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing one in bits 15:0 sets the corresponding ODR pin; writing one in bits 31:16 clears it. Set takes priority when both are selected. Reads return zero. Source: CW32x030 RM Rev 2.5 9.6.21'
@@ -2169,6 +2222,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: TOG
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 9.6.22, printed p158 (PDF p159); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 96
   access: rw
   description: 'CW32F030 GPIO.TOG; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writing a one toggles the corresponding ODR pin; zero has no effect and reads return zero. Source: CW32x030 RM Rev 2.5 9.6.22'

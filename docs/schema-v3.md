@@ -1,3 +1,5 @@
+当前schema已升级为[v4](schema-v4.md)，加入审定reset defaults与实例覆盖；本文保留v3的其余模型说明。
+
 # Normalized schema v3 and generated register contracts
 
 The maintained input remains YAML. In v0.6.0, the single `cw32-gen` crate contains

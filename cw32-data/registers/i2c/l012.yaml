@@ -2,6 +2,8 @@ name: i2c
 version: l012
 registers:
 - name: INSEL
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.1, printed p546 (PDF p572); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: Register INSEL; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -19,6 +21,8 @@ registers:
     kind: raw
     description: Field SCLINSEL; raw encoding retained unless explicitly audited.
 - name: MCR0
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.2, printed p547 (PDF p573); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: rw
   description: 'Register MCR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. TXFIFORST/RXFIFORST are R0W1 FIFO reset strobes. RESET is a retained reset-mode control, not the same strobe. Other fields are configuration. Source: RM1.4 23.8.2; 23.8.17; SDK I2C_MasterTxFIFOReset/I2C_SlaveRxFIFOReset'
@@ -68,6 +72,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: MCR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.3, printed p548 (PDF p574); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 32
   access: rw
   description: 'Register MCR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. RDMO has an unresolved access conflict. The table labels it R0W1, but its own prose and SDK require both enable and disable operations; CIRFIFO is normal configuration. Do not infer a safe generic RMW or a write-one-only action from the label alone. Source: RM1.4 23.8.3 and 23.4.1.5; SDK I2C_MasterRxDataMatch'
@@ -87,6 +93,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: MCR2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.4, printed p549 (PDF p575); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 36
   access: rw
   description: Register MCR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -134,6 +142,8 @@ registers:
     kind: raw
     description: Field PRESCALE; raw encoding retained unless explicitly audited.
 - name: MCR3
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.5, printed p550 (PDF p576); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 40
   access: rw
   description: Register MCR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -157,6 +167,8 @@ registers:
     kind: raw
     description: Field BUSIDLE; raw encoding retained unless explicitly audited.
 - name: MCR4
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.6, printed p550 (PDF p576); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 44
   access: rw
   description: Register MCR4; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -168,6 +180,8 @@ registers:
     kind: raw
     description: Field PINLOW; raw encoding retained unless explicitly audited.
 - name: MCCR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.7, printed p551 (PDF p577); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 72
   access: rw
   description: Register MCCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -197,6 +211,8 @@ registers:
     kind: raw
     description: Field CLKLO; raw encoding retained unless explicitly audited.
 - name: MMATCH
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.8, printed p551 (PDF p577); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 64
   access: rw
   description: Register MMATCH; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -214,6 +230,8 @@ registers:
     kind: raw
     description: Field MATCH0; raw encoding retained unless explicitly audited.
 - name: MFIFOCR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.9, printed p552 (PDF p578); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 88
   access: rw
   description: Register MFIFOCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -231,6 +249,8 @@ registers:
     kind: raw
     description: Field TXWATER; raw encoding retained unless explicitly audited.
 - name: MFIFOSR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.10, printed p552 (PDF p578); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 92
   access: ro
   description: Register MFIFOSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -248,6 +268,8 @@ registers:
     kind: raw
     description: Field TXCNT; raw encoding retained unless explicitly audited.
 - name: MTDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.11, printed p552 (PDF p578); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 96
   access: wo
   description: 'Register MTDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE allows it. Writes have FIFO/bus side effects. Source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSendData/I2C_SlaveSendData Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE allows it. Writes have FIFO/bus side effects. Source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSend/I2C_SlaveSend'
@@ -267,6 +289,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: MRDR
+  reset_value: 0x00004000
+  reset_source: "CW32L012 RM1.4 section 23.8.12, printed p553 (PDF p579); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 112
   access: ro
   description: 'Register MRDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do not perform generic register dumps or repeated field-by-field reads. Source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceiveData/I2C_SlaveReceiveData Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do not perform generic register dumps or repeated field-by-field reads. Source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceive/I2C_SlaveReceive'
@@ -286,6 +310,8 @@ registers:
   write_behavior: ordinary
   read_behavior: fifo
 - name: MDER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.13, printed p553 (PDF p579); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 28
   access: rw
   description: Register MDER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -303,6 +329,8 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: MIER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.14, printed p554 (PDF p580); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: rw
   description: Register MIER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -362,6 +390,8 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: MISR
+  reset_value: 0x00000001
+  reset_source: "CW32L012 RM1.4 section 23.8.15, printed p555 (PDF p581); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: ro
   description: Register MISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -433,6 +463,9 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: MICR
+  reset_value: 0x00007f04
+  reset_source: "CW32L012 RM1.4 section 23.8.16, printed p556 (PDF p582); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x00000004; retain them, do not mask to modeled fields."
   offset: 12
   access: rw
   description: 'Register MICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. R1W0 interrupt-clear fields. FIFO level/status conditions are not all software-clearable and must be serviced through their data ports. Source: RM1.4 23.8.16; SDK I2C_MasterClearFlag/I2C_SlaveClearFlag'
@@ -482,6 +515,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: SCR0
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.17, printed p557 (PDF p583); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 272
   access: rw
   description: 'Register SCR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. TXFIFORST/RXFIFORST are R0W1 FIFO reset strobes. RESET is a retained reset-mode control, not the same strobe. Other fields are configuration. Source: RM1.4 23.8.2; 23.8.17; SDK I2C_MasterTxFIFOReset/I2C_SlaveRxFIFOReset'
@@ -525,6 +560,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: SCR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.18, printed p558 (PDF p584); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 292
   access: rw
   description: Register SCR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -596,6 +633,8 @@ registers:
     kind: bool
     description: Field ADRSTALL; raw encoding retained unless explicitly audited.
 - name: SCR2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.19, printed p559 (PDF p585); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 36
   access: rw
   description: Register SCR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -608,6 +647,8 @@ registers:
     description: Field PINCFG; raw encoding retained unless explicitly audited.
   alias_of: MCR2
 - name: SCR3
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.20, printed p560 (PDF p586); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 296
   access: rw
   description: Register SCR3; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -637,6 +678,8 @@ registers:
     kind: raw
     description: Field CLKHOLD; raw encoding retained unless explicitly audited.
 - name: SAMR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.21, printed p560 (PDF p586); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 320
   access: rw
   description: Register SAMR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -654,6 +697,8 @@ registers:
     kind: raw
     description: Field ADDR0; raw encoding retained unless explicitly audited.
 - name: STAR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.22, printed p561 (PDF p587); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 340
   access: rw
   description: Register STAR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -665,6 +710,8 @@ registers:
     kind: bool
     description: Field TXNACK; raw encoding retained unless explicitly audited.
 - name: STDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.23, printed p561 (PDF p587); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 352
   access: wo
   description: 'Register STDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE allows it. Writes have FIFO/bus side effects. Source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSendData/I2C_SlaveSendData Write-only transmit port. MTDR combines queued command and data; STDR supplies slave data when TXE allows it. Writes have FIFO/bus side effects. Source: RM1.4 23.4.1.4; 23.8.11; 23.8.23; SDK I2C_MasterSend/I2C_SlaveSend'
@@ -678,6 +725,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: SRDR
+  reset_value: 0x00004000
+  reset_source: "CW32L012 RM1.4 section 23.8.24, printed p561 (PDF p587); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 368
   access: ro
   description: 'Register SRDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do not perform generic register dumps or repeated field-by-field reads. Source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceiveData/I2C_SlaveReceiveData Receive-data read consumes buffered data; obtain data and EMPTY/RXEMPTY/SOF from the same read. Do not perform generic register dumps or repeated field-by-field reads. Source: RM1.4 23.4.1.5-6; 23.8.12; 23.8.24; SDK I2C_MasterReceive/I2C_SlaveReceive'
@@ -703,6 +752,8 @@ registers:
   write_behavior: ordinary
   read_behavior: fifo
 - name: SASR
+  reset_value: 0x00004000
+  reset_source: "CW32L012 RM1.4 section 23.8.25, printed p562 (PDF p588); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 336
   access: ro
   description: 'Register SASR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Reading address status acknowledges/clears slave address-valid and associated address-match state; read only when ADDR is set. The read permits the documented slave transfer to proceed. Source: RM1.4 23.4.4 slave operation; 23.6 slave examples; 23.8.25'
@@ -722,6 +773,8 @@ registers:
   write_behavior: ordinary
   read_behavior: clear
 - name: SDER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.26, printed p562 (PDF p588); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 284
   access: rw
   description: Register SDER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -745,6 +798,8 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: SIER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.27, printed p562 (PDF p588); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 280
   access: rw
   description: Register SIER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -822,6 +877,8 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: SISR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 23.8.28, printed p564 (PDF p590); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 276
   access: ro
   description: Register SISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -911,6 +968,8 @@ registers:
     kind: bool
     description: Field TXE; raw encoding retained unless explicitly audited.
 - name: SICR
+  reset_value: 0x00000f00
+  reset_source: "CW32L012 RM1.4 section 23.8.29, printed p565 (PDF p591); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 268
   access: rw
   description: 'Register SICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. R1W0 interrupt-clear fields. FIFO level/status conditions are not all software-clearable and must be serviced through their data ports. Source: RM1.4 23.8.29; SDK I2C_MasterClearFlag/I2C_SlaveClearFlag'

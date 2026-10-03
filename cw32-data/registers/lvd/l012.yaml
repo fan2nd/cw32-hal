@@ -2,6 +2,8 @@ name: lvd
 version: l012
 registers:
 - name: CR0
+  reset_value: 0x00000100
+  reset_source: "CW32L012 RM1.4 section 28.7.1, printed p641 (PDF p667); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CR0; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -37,6 +39,8 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 28.7.2, printed p642 (PDF p668); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -72,6 +76,8 @@ registers:
     kind: bool
     description: Field IE; raw encoding retained unless explicitly audited.
 - name: SR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 28.7.3, printed p643 (PDF p669); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'Register SR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately assert it again. Source: RM1.4 28.7.3; SDK LVD_ClearITPendingBit INTF bit 0 is RW0; FLTV bit 1 is RO. Zero acknowledges the interrupt; a level condition may immediately assert it again. Source: RM1.4 28.7.3; SDK LVD_ClearIrq'

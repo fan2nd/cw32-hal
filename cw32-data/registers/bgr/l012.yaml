@@ -2,6 +2,8 @@ name: bgr
 version: l012
 registers:
 - name: CR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 25.12.19, printed p599 (PDF p625); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

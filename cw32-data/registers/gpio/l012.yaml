@@ -2,6 +2,9 @@ name: gpio
 version: l012
 registers:
 - name: DIR
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x0000FFFF, GPIOB=0x0000FFFF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value."
   offset: 0
   access: rw
   description: 'Direction: 0 = output, 1 = input.'
@@ -103,6 +106,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: OPENDRAIN
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.2, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: 'Output type: 0 = push-pull, 1 = open-drain.'
@@ -204,6 +209,9 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: PDR
+  reset_value: 0x00000008
+  reset_source: "CW32L012 RM1.4 section 9.6.3, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "RM9.6.3 explicitly gives GPIOx_PDR=0x00000008 for x=A/B/C/F; only PF03 has a physical pull-down. Do not infer additional implemented pull-down fields or change the documented reset word from the pin capability."
   offset: 12
   access: rw
   description: Pull-down enable; only PF03 implements an internal pull-down.
@@ -215,6 +223,8 @@ registers:
     kind: bool
     description: Field PIN3; raw encoding retained unless explicitly audited.
 - name: PUR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.4, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: rw
   description: Per-pin internal pull-up enable.
@@ -316,6 +326,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: AFRH
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.5, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: rw
   description: Alternate function for pins 8 through 15, four bits per pin; GPIO encoding is zero.
@@ -369,6 +381,8 @@ registers:
     kind: raw
     description: Field PIN8; raw encoding retained unless explicitly audited.
 - name: AFRL
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.6, printed p134 (PDF p160); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: rw
   description: Alternate function for pins 0 through 7, four bits per pin; GPIO encoding is zero.
@@ -422,6 +436,9 @@ registers:
     kind: raw
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: ANALOG
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 9.6.7, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)"
+  reset_note: "Reset is instance-dependent: GPIOA=0x000001FF, GPIOB=0x0000007F, GPIOC=0x0000E000, GPIOF=0x000000C3. Shared block has no single full reset value. Additional source conflict: GPIOA/B nominal headings conflict with RM9.3.7 reset-state prose: all pins except PA13/PA14/PF03 should start analog high-impedance, yet ANALOG A=0x01FF/B=0x007F leaves other implemented pins digital."
   offset: 28
   access: rw
   description: 'Pin mode: 0 = digital, 1 = analog.'
@@ -523,6 +540,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: RISEIE
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.8, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 36
   access: rw
   description: Per-pin rising-edge interrupt enable.
@@ -624,6 +643,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: FALLIE
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.9, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 40
   access: rw
   description: Per-pin falling-edge interrupt enable.
@@ -725,6 +746,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.10, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 52
   access: ro
   description: Read-only GPIO interrupt status.
@@ -826,6 +849,9 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 9.6.11, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; RM1.4 section9.3.7 printed p130 (PDF p156); revision history printed p672 (PDF p698)"
+  reset_note: "Reset is instance-dependent: GPIOA=0x000001FF, GPIOB=0x000000FF, GPIOC=0x0000E000, GPIOF=0x000000CB. Shared block has no single full reset value. Additional source conflict: GPIOA/B nominal headings omit implemented pins (A9..15/B8..15), despite the same register describing PINy bits15:0 as read-one/write-zero. DIR was corrected to full A/B masks in Rev1.3; no equivalent ANALOG/ICR correction is recorded."
   offset: 56
   access: rw
   description: 'Interrupt flags are cleared by writing ZERO to the relevant bit; not W1C. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 9.6.11; RM1.4 1.2'
@@ -929,6 +955,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: FILTER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.12, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 64
   access: rw
   description: GPIO interrupt filter configuration.
@@ -1036,6 +1064,9 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: IDR
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Reset is instance-dependent: GPIOA=0x00000180, GPIOB=0x00000080, GPIOC=0x00000000, GPIOF=0x00000008. Shared block has no single full reset value. IDR reflects live pin input; listed reset is not a guarantee of the later sampled voltage."
   offset: 80
   access: ro
   description: Read-only pin input data.
@@ -1137,6 +1168,9 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: ODR
+  reset_value: null
+  reset_source: "CW32L012 RM1.4 section 9.6.14, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Manual specifies 0x---- ----; full-register reset is unknown. Do not infer zero from device-level SVD inheritance."
   offset: 84
   access: rw
   description: Output latch data.
@@ -1238,6 +1272,8 @@ registers:
     kind: bool
     description: Field PIN0; raw encoding retained unless explicitly audited.
 - name: BRR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.15, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 88
   access: rw
   description: 'Write 1 to a low-halfword bit to reset its output latch; vendor access is read-write. R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_ResetBits R0W1 output action: selected ones reset ODR output latches; zeros do nothing. This clears output bits, not interrupt flags. Source: RM1.4 9.6.15; SDK GPIO_WritePin'
@@ -1341,6 +1377,8 @@ registers:
   write_behavior: one_to_clear
   read_behavior: ordinary
 - name: BSRR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.16, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 92
   access: rw
   description: 'Low halfword sets output latch bits; upper halfword resets them; vendor access is read-write. R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK GPIO_SetBits/GPIO_ResetBits R0W1 output action: low halfword sets ODR; high halfword resets ODR. Use one direct write, not RMW. Source: RM1.4 9.6.16; SDK GPIO_WritePin'
@@ -1540,6 +1578,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: TOG
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 9.6.17, printed p138 (PDF p164); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 96
   access: rw
   description: 'Write 1 to toggle the corresponding output latch bit; vendor access is read-write. R0W1 output action: each written one toggles the corresponding ODR latch; zero does nothing. Source: RM1.4 9.6.17; SDK GPIO_TogglePin'

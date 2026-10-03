@@ -2,6 +2,8 @@ name: i2c
 version: f030
 registers:
 - name: BRREN
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.1, printed p423 (PDF p424); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 0
   access: rw
   description: CW32F030 I2C.BRREN; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -13,6 +15,8 @@ registers:
     kind: bool
     description: CW32F030 I2C.BRREN.EN; raw encoding.
 - name: BRR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.2, printed p423 (PDF p424); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: CW32F030 I2C.BRR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -24,6 +28,8 @@ registers:
     kind: raw
     description: CW32F030 I2C.BRR.BRR; raw encoding.
 - name: CR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.3, printed p424 (PDF p425); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: 'CW32F030 I2C.CR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. STA requests START and must be cleared by software. STO requests STOP and self-clears. SI is zero-to-clear and clearing it advances the bus state machine. Preserve configuration and status intentionally. Source: CW32x030 RM Rev 2.5 20.7.3'
@@ -67,6 +73,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: DR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.4, printed p425 (PDF p426); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 12
   access: rw
   description: 'CW32F030 I2C.DR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Writes prepare the next transmit byte and reads obtain the received byte. SI clearing separately advances the transfer; this is not the L012 FIFO controller. Source: CW32x030 RM Rev 2.5 20.7.4'
@@ -80,6 +88,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: ADDR0
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.6, printed p426 (PDF p427); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 16
   access: rw
   description: CW32F030 I2C.ADDR0; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -97,6 +107,8 @@ registers:
     kind: bool
     description: CW32F030 I2C.ADDR0.GC; raw encoding.
 - name: STAT
+  reset_value: 0x000000f8
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.5, printed p425 (PDF p426); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 20
   access: ro
   description: CW32F030 I2C.STAT; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -108,6 +120,8 @@ registers:
     kind: raw
     description: CW32F030 I2C.STAT.STAT; raw encoding.
 - name: ADDR1
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.7, printed p426 (PDF p427); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 32
   access: rw
   description: CW32F030 I2C.ADDR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -119,6 +133,8 @@ registers:
     kind: raw
     description: CW32F030 I2C.ADDR1.ADDR1; raw encoding.
 - name: ADDR2
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.8, printed p426 (PDF p427); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 36
   access: rw
   description: CW32F030 I2C.ADDR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -130,6 +146,8 @@ registers:
     kind: raw
     description: CW32F030 I2C.ADDR2.ADDR2; raw encoding.
 - name: MATCH
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 20.7.9, printed p427 (PDF p428); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 40
   access: ro
   description: CW32F030 I2C.MATCH; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.

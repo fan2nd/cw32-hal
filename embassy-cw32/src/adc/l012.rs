@@ -155,15 +155,15 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         }
         // SAFETY: exclusive instance, shared gate remains enabled. Initialize only this ADC.
         unsafe {
-            r.trigger().write(0);
-            r.start().write(0);
-            r.cr().write(reserved);
-            r.ier().write(0);
-            r.awdcr().write(0);
-            r.sqrcfr().write(channels);
-            r.sample().write(times);
-            r.icr().write(!flags());
-            r.cr().write(cr);
+            r.trigger().write_value(0);
+            r.start().write_value(0);
+            r.cr().write_value(reserved);
+            r.ier().write_value(0);
+            r.awdcr().write_value(0);
+            r.sqrcfr().write_value(channels);
+            r.sample().write_value(times);
+            r.icr().write_value(!flags());
+            r.cr().write_value(cr);
         }
         delay.delay_us(32); // EN needs ~1 us; auto-started BGR needs ~30 us (RM 25.12.19).
         Ok(Self {
@@ -200,7 +200,9 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
     pub fn sample(&mut self, poll_limit: u32) -> Result<[u16; N], Error> {
         self.prepare()?;
         unsafe {
-            I::regs().start().write(f::start::START.write(0, true));
+            I::regs()
+                .start()
+                .write_value(f::start::START.write(0, true));
         }
         self.wait_complete(poll_limit)
     }
@@ -216,17 +218,20 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
     }
     fn results(&self) -> [u16; N] {
         let r = I::regs();
-        let regs = [
-            r.result0(),
-            r.result1(),
-            r.result2(),
-            r.result3(),
-            r.result4(),
-            r.result5(),
-            r.result6(),
-            r.result7(),
-        ];
-        core::array::from_fn(|n| unsafe { (regs[n].read() & 0x0fff) as u16 })
+        core::array::from_fn(|n| unsafe {
+            let value = match n {
+                0 => r.result0().read(),
+                1 => r.result1().read(),
+                2 => r.result2().read(),
+                3 => r.result3().read(),
+                4 => r.result4().read(),
+                5 => r.result5().read(),
+                6 => r.result6().read(),
+                7 => r.result7().read(),
+                _ => unreachable!(),
+            };
+            (value & 0x0fff) as u16
+        })
     }
     /// Arm ATIM update TRGO. This only programs the ADC input route, and does not start or change ATIM.
     /// Call capture_triggered to freeze the route and obtain a coherent completed sequence.
@@ -235,7 +240,7 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         unsafe {
             I::regs()
                 .trigger()
-                .write(f::trigger::ATIMTRGO.write(0, true));
+                .write_value(f::trigger::ATIMTRGO.write(0, true));
         }
         Ok(())
     }
@@ -248,7 +253,7 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
             left -= 1;
             if unsafe { f::isr::EOS.read(I::regs().isr().read()) } {
                 unsafe {
-                    I::regs().trigger().write(0);
+                    I::regs().trigger().write_value(0);
                 }
                 return self.wait_complete(left.saturating_add(1));
             }
@@ -259,8 +264,8 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
     }
     pub fn stop(&mut self) {
         unsafe {
-            I::regs().trigger().write(0);
-            I::regs().start().write(0);
+            I::regs().trigger().write_value(0);
+            I::regs().start().write_value(0);
         }
     }
     /// Configure a polling analog watchdog over this sequence's external channels.
@@ -274,8 +279,8 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         unsafe {
             I::regs()
                 .awdtr()
-                .write(f::awdtr::VTH.write(f::awdtr::VTL.write(0, low.into()), high.into()));
-            I::regs().awdcr().write(mask);
+                .write_value(f::awdtr::VTH.write(f::awdtr::VTL.write(0, low.into()), high.into()));
+            I::regs().awdcr().write_value(mask);
         }
         Ok(())
     }
@@ -286,7 +291,7 @@ impl<'d, I: Instance, const N: usize> Adc<'d, I, N> {
         unsafe {
             I::regs()
                 .icr()
-                .write(!(f::icr::AWDL.mask() | f::icr::AWDH.mask()));
+                .write_value(!(f::icr::AWDL.mask() | f::icr::AWDH.mask()));
         }
     }
 }
@@ -417,18 +422,23 @@ impl<I: Instance> AsyncSequenceIo for Hardware<I> {
     fn eos_interrupt(&mut self, enabled: bool) {
         unsafe {
             let r = I::regs();
-            r.ier().write(f::ier::EOS.write(r.ier().read(), enabled));
+            r.ier()
+                .write_value(f::ier::EOS.write(r.ier().read(), enabled));
         }
     }
     fn clear_eos(&mut self) {
         // ADC ICR is R1W0, not W1C (RM 25.12.10). Preserve EOC and AWD flags.
-        unsafe { I::regs().icr().write(!f::icr::EOS.mask()) };
+        unsafe { I::regs().icr().write_value(!f::icr::EOS.mask()) };
     }
     fn start(&mut self, enabled: bool) {
-        unsafe { I::regs().start().write(f::start::START.write(0, enabled)) };
+        unsafe {
+            I::regs()
+                .start()
+                .write_value(f::start::START.write(0, enabled))
+        };
     }
     fn trigger(&mut self, mask: u32) {
-        unsafe { I::regs().trigger().write(mask) };
+        unsafe { I::regs().trigger().write_value(mask) };
     }
 }
 
@@ -526,7 +536,7 @@ struct Hardware<I: Instance>(PhantomData<I>);
 impl<I: Instance> SequenceIo for Hardware<I> {
     fn disarm(&mut self) {
         unsafe {
-            I::regs().trigger().write(0);
+            I::regs().trigger().write_value(0);
         }
     }
     fn busy(&mut self) -> bool {
@@ -534,12 +544,12 @@ impl<I: Instance> SequenceIo for Hardware<I> {
     }
     fn control(&mut self, word: u32) {
         unsafe {
-            I::regs().cr().write(word);
+            I::regs().cr().write_value(word);
         }
     }
     fn clear(&mut self) {
         unsafe {
-            I::regs().icr().write(!flags());
+            I::regs().icr().write_value(!flags());
         }
     }
 }
@@ -563,12 +573,12 @@ impl<'d, I: Instance, const N: usize> Drop for Adc<'d, I, N> {
         critical_section::with(|_| {
             // Also clean up a previously forgotten async future when its owner
             // is eventually dropped. Only this ADC is disabled, never its NVIC.
-            unsafe { I::regs().ier().write(0) };
+            unsafe { I::regs().ier().write_value(0) };
             cancel_async_sequence(&mut Hardware::<I>(PhantomData), I::state());
             unsafe {
                 I::regs()
                     .cr()
-                    .write(I::regs().cr().read() & !control_mask());
+                    .write_value(I::regs().cr().read() & !control_mask());
             }
         });
     }
@@ -585,8 +595,12 @@ pub fn sample_pair<const A: usize, const B: usize>(
         master.prepare()?;
         slave.prepare()?;
         unsafe {
-            pac::ADC2.cr().write(f::cr::SLAVE.write(slave.cr, true));
-            pac::ADC1.start().write(f::start::START.write(0, true));
+            pac::ADC2
+                .cr()
+                .write_value(f::cr::SLAVE.write(slave.cr, true));
+            pac::ADC1
+                .start()
+                .write_value(f::start::START.write(0, true));
         }
         let a = master.wait_complete(poll_limit)?;
         let b = slave.wait_complete(poll_limit)?;
@@ -595,7 +609,7 @@ pub fn sample_pair<const A: usize, const B: usize>(
     master.stop();
     slave.stop();
     unsafe {
-        pac::ADC2.cr().write(slave.cr);
+        pac::ADC2.cr().write_value(slave.cr);
     }
     result
 }

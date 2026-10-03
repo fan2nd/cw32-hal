@@ -2,6 +2,8 @@ name: dmachannel
 version: l012
 registers:
 - name: CSR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.3, printed p119 (PDF p145); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CSR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -85,6 +87,8 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.5, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -102,6 +106,8 @@ registers:
     kind: raw
     description: Field CNT; raw encoding retained unless explicitly audited.
 - name: SRCADDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.6, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: Register SRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -113,6 +119,8 @@ registers:
     kind: raw
     description: Field SRCADDR; raw encoding retained unless explicitly audited.
 - name: DSTADDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.7, printed p122 (PDF p148); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: Register DSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -124,6 +132,8 @@ registers:
     kind: raw
     description: Field DSTADDR; raw encoding retained unless explicitly audited.
 - name: TRIG
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.4, printed p121 (PDF p147); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: rw
   description: 'Register TRIG; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Alias view of DMA.TRIG1..4. SOFTSRC write one triggers; zero does nothing; TYPE/HARDSRC are configuration. Must share ownership with parent DMA channel registers. Source: RM1.4 8.8.4; SDK DMA_StartTransfer'
@@ -149,6 +159,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: CCNT
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.8, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: ro
   description: Register CCNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -166,6 +178,8 @@ registers:
     kind: raw
     description: Field CCNT; raw encoding retained unless explicitly audited.
 - name: CSRCADDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.9, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: ro
   description: Register CSRCADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -177,6 +191,8 @@ registers:
     kind: raw
     description: Field CSRCADDR; raw encoding retained unless explicitly audited.
 - name: CDSTADDR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 8.8.10, printed p123 (PDF p149); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 28
   access: ro
   description: Register CDSTADDR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

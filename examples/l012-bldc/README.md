@@ -17,11 +17,11 @@
 
 ## 构建
 
-从干净源码先在workspace根执行 `cargo run -p xtask -- regenerate`。各级 `.cargo/config.toml` 指定MCU目标，可进入目录构建：
+从干净源码先在workspace根执行 `cargo run -p xtask -- regenerate`。例程不额外添加目标配置文件，构建时显式指定MCU目标：
 
 ```sh
 cd examples/l012-bldc/01-gpio
-cargo build --offline --release
+cargo build --offline --release --target thumbv6m-none-eabi
 ```
 
 也可从workspace根选择包：

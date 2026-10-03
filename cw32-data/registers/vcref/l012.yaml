@@ -2,6 +2,8 @@ name: vcref
 version: l012
 registers:
 - name: REF
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 27.7.1, printed p627 (PDF p653); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; VC34_REF independently agrees in section 27.7.2 on the same page."
   offset: 0
   access: rw
   description: Register REF; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

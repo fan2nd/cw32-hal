@@ -2,6 +2,8 @@ name: btim
 version: l012
 registers:
 - name: CR1
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.1, printed p204 (PDF p230); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: Register CR1; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -43,6 +45,8 @@ registers:
     kind: bool
     description: Field EN; raw encoding retained unless explicitly audited.
 - name: CR2
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.2, printed p205 (PDF p231); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: Register CR2; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -54,6 +58,8 @@ registers:
     kind: raw
     description: Field MMS; raw encoding retained unless explicitly audited.
 - name: SMCR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.3, printed p205 (PDF p231); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: Register SMCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -101,6 +107,8 @@ registers:
     kind: raw
     description: Field SMS; raw encoding retained unless explicitly audited.
 - name: DIER
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.4, printed p207 (PDF p233); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: Register DIER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -130,6 +138,8 @@ registers:
     kind: bool
     description: Field UIE; raw encoding retained unless explicitly audited.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.5, printed p207 (PDF p233); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: ro
   description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -147,6 +157,8 @@ registers:
     kind: bool
     description: Field UIF; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: 0x00000041
+  reset_source: "CW32L012 RM1.4 section 14.10.6, printed p208 (PDF p234); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 24
   access: rw
   description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 14.10.6; RM1.4 1.2'
@@ -166,6 +178,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: EGR
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.7, printed p208 (PDF p234); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: wo
   description: 'Register EGR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Writing selected event bits generates update/trigger/capture or brake events; hardware clears event bits. Events can reset counters/load preloads, set flags, trigger DMA, and for ATIM brake events clear MOE. Do not use generic RMW. Source: RM1.4 14.10.7'
@@ -185,6 +199,8 @@ registers:
   write_behavior: command
   read_behavior: ordinary
 - name: CNT
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.8, printed p208 (PDF p234); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 36
   access: rw
   description: Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -202,6 +218,8 @@ registers:
     kind: raw
     description: Field CNT; raw encoding retained unless explicitly audited.
 - name: PSC
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 14.10.9, printed p209 (PDF p235); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 40
   access: rw
   description: Register PSC; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -213,6 +231,8 @@ registers:
     kind: raw
     description: Field PSC; raw encoding retained unless explicitly audited.
 - name: ARR
+  reset_value: 0x0000ffff
+  reset_source: "CW32L012 RM1.4 section 14.10.10, printed p209 (PDF p235); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 44
   access: rw
   description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

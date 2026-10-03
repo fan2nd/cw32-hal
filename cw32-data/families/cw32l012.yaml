@@ -289,6 +289,14 @@ peripherals:
   - signal: GLOBAL
     interrupt: FLASHRAM
 - name: GPIOA
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000ffff
+    reset_source: "CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: IDR
+    reset_value: 0x00000180
+    reset_source: "CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: l012
   address: 0x48000000
@@ -309,6 +317,14 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOA
 - name: GPIOB
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000ffff
+    reset_source: "CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: IDR
+    reset_value: 0x00000080
+    reset_source: "CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: l012
   address: 0x48000100
@@ -329,6 +345,20 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOB
 - name: GPIOC
+  register_resets:
+  - register: DIR
+    reset_value: 0x0000e000
+    reset_source: "CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: ANALOG
+    reset_value: 0x0000e000
+    reset_source: "CW32L012 RM1.4 section 9.6.7, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: ICR
+    reset_value: 0x0000e000
+    reset_source: "CW32L012 RM1.4 section 9.6.11, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: IDR
+    reset_value: 0x00000000
+    reset_source: "CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: l012
   address: 0x48000200
@@ -349,6 +379,20 @@ peripherals:
   - signal: GLOBAL
     interrupt: GPIOC
 - name: GPIOF
+  register_resets:
+  - register: DIR
+    reset_value: 0x000000cb
+    reset_source: "CW32L012 RM1.4 section 9.6.1, printed p133 (PDF p159); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: ANALOG
+    reset_value: 0x000000c3
+    reset_source: "CW32L012 RM1.4 section 9.6.7, printed p135 (PDF p161); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: ICR
+    reset_value: 0x000000cb
+    reset_source: "CW32L012 RM1.4 section 9.6.11, printed p136 (PDF p162); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  - register: IDR
+    reset_value: 0x00000008
+    reset_source: "CW32L012 RM1.4 section 9.6.13, printed p137 (PDF p163); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+    reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
   version: l012
   address: 0x48000300

@@ -143,36 +143,38 @@ impl<'d> ThreePhasePwm<'d> {
         <peripherals::ATIM as PeripheralClock>::enable_and_reset();
         // SAFETY: singleton ownership and enabled clock; reset removes stale lock/mode state.
         unsafe {
-            pac::ATIM.bdtr().write(0);
-            pac::ATIM.cr1().write(0);
-            pac::ATIM.dier().write(0);
-            pac::ATIM.ccer().write(0);
-            pac::ATIM.cr1().write(cr1);
-            pac::ATIM.psc().write(config.prescaler.into());
-            pac::ATIM.arr().write(config.period.into());
-            pac::ATIM.rcr().write(0);
-            pac::ATIM.cnt().write(0);
+            pac::ATIM.bdtr().write_value(0);
+            pac::ATIM.cr1().write_value(0);
+            pac::ATIM.dier().write_value(0);
+            pac::ATIM.ccer().write_value(0);
+            pac::ATIM.cr1().write_value(cr1);
+            pac::ATIM.psc().write_value(config.prescaler.into());
+            pac::ATIM.arr().write_value(config.period.into());
+            pac::ATIM.rcr().write_value(0);
+            pac::ATIM.cnt().write_value(0);
             let mode1 = f::ccmr1cmp::OC1M.write(f::ccmr1cmp::OC2M.write(0, 6), 6);
             pac::ATIM
                 .ccmr1cmp()
-                .write(f::ccmr1cmp::OC1PE.write(f::ccmr1cmp::OC2PE.write(mode1, true), true));
+                .write_value(f::ccmr1cmp::OC1PE.write(f::ccmr1cmp::OC2PE.write(mode1, true), true));
             pac::ATIM
                 .ccmr2cmp()
-                .write(f::ccmr2cmp::OC3PE.write(f::ccmr2cmp::OC3M.write(0, 6), true));
-            pac::ATIM.ccr1().write(0);
-            pac::ATIM.ccr2().write(0);
-            pac::ATIM.ccr3().write(0);
-            pac::ATIM.dtr2().write(dt);
+                .write_value(f::ccmr2cmp::OC3PE.write(f::ccmr2cmp::OC3M.write(0, 6), true));
+            pac::ATIM.ccr1().write_value(0);
+            pac::ATIM.ccr2().write_value(0);
+            pac::ATIM.ccr3().write_value(0);
+            pac::ATIM.dtr2().write_value(dt);
             // LOCK=0; AOE=0 deliberately. OIS defaults low. CCER=0 leaves
             // pins high-Z until explicitly armed (RM table 17-13); external
             // gate-driver disable/pull resistors must establish a safe level.
-            pac::ATIM.bdtr().write(bdtr);
-            pac::ATIM.af1().write(f::af1::BKINE.write(0, true));
-            pac::ATIM.af2().write(0);
+            pac::ATIM.bdtr().write_value(bdtr);
+            pac::ATIM.af1().write_value(f::af1::BKINE.write(0, true));
+            pac::ATIM.af2().write_value(0);
             // TRGO=update, usable by ADC even while phase outputs remain disabled.
-            pac::ATIM.cr2().write(f::cr2::MMS.write(0, 2));
-            pac::ATIM.egr().write(f::egr::UG.write(0, true));
-            pac::ATIM.icr().write(ATIM_ICR_MASK & !f::icr::UIF.mask());
+            pac::ATIM.cr2().write_value(f::cr2::MMS.write(0, 2));
+            pac::ATIM.egr().write_value(f::egr::UG.write(0, true));
+            pac::ATIM
+                .icr()
+                .write_value(ATIM_ICR_MASK & !f::icr::UIF.mask());
         }
         let pins = [
             a.into(),
@@ -205,11 +207,11 @@ impl<'d> ThreePhasePwm<'d> {
         }
         critical_section::with(|_| unsafe {
             let old = pac::ATIM.cr1().read();
-            pac::ATIM.cr1().write(f::cr1::UDIS.write(old, true));
-            pac::ATIM.ccr1().write(duty[0].into());
-            pac::ATIM.ccr2().write(duty[1].into());
-            pac::ATIM.ccr3().write(duty[2].into());
-            pac::ATIM.cr1().write(old);
+            pac::ATIM.cr1().write_value(f::cr1::UDIS.write(old, true));
+            pac::ATIM.ccr1().write_value(duty[0].into());
+            pac::ATIM.ccr2().write_value(duty[1].into());
+            pac::ATIM.ccr3().write_value(duty[2].into());
+            pac::ATIM.cr1().write_value(old);
         });
         Ok(())
     }
@@ -218,7 +220,7 @@ impl<'d> ThreePhasePwm<'d> {
         unsafe {
             pac::ATIM
                 .cr1()
-                .write(f::cr1::CEN.write(pac::ATIM.cr1().read(), true));
+                .write_value(f::cr1::CEN.write(pac::ATIM.cr1().read(), true));
         }
     }
     pub fn fault_pending(&self) -> bool {
@@ -236,14 +238,14 @@ impl<'d> ThreePhasePwm<'d> {
         unsafe {
             pac::ATIM
                 .bdtr()
-                .write(f::bdtr::MOE.write(pac::ATIM.bdtr().read(), false));
+                .write_value(f::bdtr::MOE.write(pac::ATIM.bdtr().read(), false));
         }
     }
     /// Clear latched break flags with R1W0 semantics. Leaves outputs disabled; never auto-rearms.
     pub fn acknowledge_fault(&mut self) -> Result<(), Error> {
         self.disable_outputs();
         unsafe {
-            pac::ATIM.icr().write(ATIM_ICR_MASK & !fault_mask());
+            pac::ATIM.icr().write_value(ATIM_ICR_MASK & !fault_mask());
         }
         if self.fault_pending() {
             Err(Error::FaultActive)
@@ -315,10 +317,14 @@ impl EventIo for HardwareEvents {
         unsafe { pac::ATIM.isr().read() }
     }
     fn set_enables(&mut self, value: u32) {
-        unsafe { pac::ATIM.dier().write(value) }
+        unsafe { pac::ATIM.dier().write_value(value) }
     }
     fn clear_update(&mut self) {
-        unsafe { pac::ATIM.icr().write(ATIM_ICR_MASK & !f::icr::UIF.mask()) }
+        unsafe {
+            pac::ATIM
+                .icr()
+                .write_value(ATIM_ICR_MASK & !f::icr::UIF.mask())
+        }
     }
 }
 // Callers serialize all DIER RMW with a critical section. These helpers cannot
@@ -503,7 +509,7 @@ impl ArmIo for HardwareArm {
         unsafe {
             pac::ATIM
                 .bdtr()
-                .write(f::bdtr::MOE.write(pac::ATIM.bdtr().read(), on));
+                .write_value(f::bdtr::MOE.write(pac::ATIM.bdtr().read(), on));
         }
     }
     fn fault(&mut self) -> bool {
@@ -521,7 +527,7 @@ impl ArmIo for HardwareArm {
             cc = f::ccer::CC2NE.write(cc, on);
             cc = f::ccer::CC3E.write(cc, on);
             cc = f::ccer::CC3NE.write(cc, on);
-            pac::ATIM.ccer().write(cc);
+            pac::ATIM.ccer().write_value(cc);
         }
     }
 }
@@ -554,8 +560,8 @@ impl Drop for ThreePhasePwm<'_> {
         unsafe {
             pac::ATIM
                 .cr1()
-                .write(f::cr1::CEN.write(pac::ATIM.cr1().read(), false));
-            pac::ATIM.ccer().write(0);
+                .write_value(f::cr1::CEN.write(pac::ATIM.cr1().read(), false));
+            pac::ATIM.ccer().write_value(0);
         }
         for pin in &self.pins {
             pin.disconnect();

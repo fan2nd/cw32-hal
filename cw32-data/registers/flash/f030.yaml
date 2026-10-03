@@ -2,6 +2,9 @@ name: flash
 version: f030
 registers:
 - name: CR1
+  reset_value: null
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.1, printed p120 (PDF p121); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; RM Rev2.5 section 7.6.3, printed p116 (PDF p117)"
+  reset_note: "Nominal reset heading is 0x00000010 for an unprotected device. Read-only SECURITY[7:6] reports persistent protection level set through ISP; a universal full reset word is not established across protection states. STANDBY reset is 1 and writable MODE reset remains 0."
   offset: 0
   access: rw
   description: 'CW32F030 FLASH.CR1; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.1'
@@ -39,6 +42,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: CR2
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.2, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 4
   access: rw
   description: 'CW32F030 FLASH.CR2; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.2'
@@ -70,6 +75,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: PAGELOCK
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.3, printed p121 (PDF p122); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 8
   access: rw
   description: 'CW32F030 FLASH.PAGELOCK; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Every write requires KEY[31:16]=0x5A5A. KEY is write-only; do not use an unkeyed read-modify-write. This does not impose a key on other registers. Source: CW32x030 RM Rev 2.5 7.9.3'
@@ -179,6 +186,8 @@ registers:
   write_behavior: keyed
   read_behavior: ordinary
 - name: IER
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.4, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 32
   access: rw
   description: CW32F030 FLASH.IER; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -202,6 +211,8 @@ registers:
     kind: bool
     description: CW32F030 FLASH.IER.PC; raw encoding.
 - name: ISR
+  reset_value: 0x00000000
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.5, printed p122 (PDF p123); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
   offset: 36
   access: ro
   description: CW32F030 FLASH.ISR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings.
@@ -225,6 +236,9 @@ registers:
     kind: bool
     description: CW32F030 FLASH.ISR.PC; raw encoding.
 - name: ICR
+  reset_value: 0x0000000f
+  reset_source: "CW32x030 RM Rev2.5 section 7.9.6, printed p123 (PDF p124); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x0000000C; retain them, do not mask to modeled fields."
   offset: 40
   access: rw
   description: 'CW32F030 FLASH.ICR; layout matched against SDK V2.2 CMSIS header and SVD. See CW32x030 User Manual Rev 2.5 for value encodings. Implemented R1W0 fields read as one; writing zero clears the associated flag and writing one preserves it. Keep unselected implemented bits at one; reserved-bit policy remains register-specific. Source: CW32x030 RM Rev 2.5 7.9.6; 1.2'

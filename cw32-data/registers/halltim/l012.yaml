@@ -2,6 +2,8 @@ name: halltim
 version: l012
 registers:
 - name: CR
+  reset_value: 0x00000004
+  reset_source: "CW32L012 RM1.4 section 18.8.1, printed p421 (PDF p447); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 0
   access: rw
   description: 'Register CR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. SOFTCAP bit 23 is R0W1 software capture/trigger action; remaining implemented fields are configuration. Source: RM1.4 18.8.1; SDK HALLTIM_GenerateSoftTrigger'
@@ -45,6 +47,8 @@ registers:
   write_behavior: mixed
   read_behavior: ordinary
 - name: DIER
+  reset_value: 0x00000004
+  reset_source: "CW32L012 RM1.4 section 18.8.2, printed p422 (PDF p448); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 4
   access: rw
   description: Register DIER; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -92,6 +96,8 @@ registers:
     kind: bool
     description: Field CAPIE; raw encoding retained unless explicitly audited.
 - name: CNT
+  reset_value: 0x0000ffff
+  reset_source: "CW32L012 RM1.4 section 18.8.3, printed p422 (PDF p448); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 8
   access: rw
   description: 'Register CNT; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Manual classifies 24-bit DATA as RW0 although header/SVD say RW. Treat as readable counter with zero-clearing semantics; arbitrary counter preload writes are not established by the sources. Source: RM1.4 18.8.3; SDK HALLTIM_GetCounterValue'
@@ -105,6 +111,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: ARR
+  reset_value: 0x00ffffff
+  reset_source: "CW32L012 RM1.4 section 18.8.4, printed p423 (PDF p449); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 12
   access: rw
   description: Register ARR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -116,6 +124,8 @@ registers:
     kind: raw
     description: Field DATA; raw encoding retained unless explicitly audited.
 - name: WIDTH
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 18.8.5, printed p423 (PDF p449); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 16
   access: ro
   description: Register WIDTH; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -127,6 +137,8 @@ registers:
     kind: raw
     description: Field DATA; raw encoding retained unless explicitly audited.
 - name: CCR
+  reset_value: 0x0000ffff
+  reset_source: "CW32L012 RM1.4 section 18.8.6, printed p423 (PDF p449); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 20
   access: rw
   description: Register CCR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -138,6 +150,9 @@ registers:
     kind: raw
     description: Field DATA; raw encoding retained unless explicitly audited.
 - name: ISR
+  reset_value: 0x0000ffff
+  reset_source: "CW32L012 RM1.4 section 18.8.7, printed p423 (PDF p449); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x0000FFF8; retain them, do not mask to modeled fields."
   offset: 24
   access: ro
   description: Register ISR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.
@@ -161,6 +176,9 @@ registers:
     kind: bool
     description: Field CAPF; raw encoding retained unless explicitly audited.
 - name: ICR
+  reset_value: 0x0000ffff
+  reset_source: "CW32L012 RM1.4 section 18.8.8, printed p424 (PDF p450); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
+  reset_note: "Full reset word includes unmodeled/reserved set bits 0x0000FFF8; retain them, do not mask to modeled fields."
   offset: 28
   access: rw
   description: 'Register ICR; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics. Implemented interrupt-clear fields are R1W0: read as one; write zero clears the corresponding ISR flag, write one has no effect. Write ones to unselected implemented clear bits. This is not an ordinary RW latch or W1C register; reserved-bit policy remains register-specific. Source: RM1.4 18.8.8; RM1.4 1.2'
@@ -186,6 +204,8 @@ registers:
   write_behavior: zero_to_clear
   read_behavior: ordinary
 - name: STATE
+  reset_value: 0x00000000
+  reset_source: "CW32L012 RM1.4 section 18.8.9, printed p424 (PDF p450); https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf"
   offset: 32
   access: ro
   description: Register STATE; layout independently matched to pinned CMSIS header and SVD; consult reference manual for value semantics.

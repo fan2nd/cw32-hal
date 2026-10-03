@@ -86,6 +86,10 @@ evidence:
   sources:
   - datasheet
   detail: Figures 5-1 and 5-2 on printed page 32 (PDF page 36) visually establish identical 48-position layouts for LQFP48/C8T6 and QFN48/C8U6; all 40 GPIO bonds are modeled. See docs/pin-route-evidence.md for complete numbered mapping and the 82 FOC-route audit.
+- applies_to: registers/*/l012.yaml reset_value/reset_source/reset_note; families/cw32l012.yaml register_resets
+  sources:
+  - reference-manual
+  detail: 'RM1.4 full register reset headings, cross-checked against bit semantics, protection state and reset-domain notes. Full words include reserved bits (ADC.CR=0x100); unknowns and conflicting L012 GPIOA/B ANALOG/ICR remain explicit. See docs/register-reset-defaults.md. F030 entries cite their independently pinned RM2.5 evidence directly; shared watchdog values agree.'
 cautions:
 - pins:
   - PA13
