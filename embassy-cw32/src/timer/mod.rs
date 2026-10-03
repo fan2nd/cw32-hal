@@ -1,22 +1,71 @@
 //! Owned PCLK timers and single-ended PWM on audited timer IPs.
 //!
 //! Only edge-aligned upcounting is exposed. Constructors stop the timer; DMA,
-//! interrupts, external/slave clocks and ADC triggering are not enabled. The
-//! separate [`crate::atim`] driver owns complementary/break-protected PWM.
+//! interrupts, external/slave clocks and ADC triggering are not enabled.
+#![cfg_attr(
+    atim,
+    doc = "The separate [`crate::atim`] driver owns complementary/break-protected PWM."
+)]
 
 use crate::{gpio::Pin, pac, peripherals, rcc::PeripheralClock, PeripheralType};
 
-#[cfg(all(atim_f030, gtim_f030))]
-mod f030;
-#[cfg(all(atim_l012, gtim_l012))]
+// Share only the operations audited on both L012 register blocks. Each IP's
+// adapter is selected independently, including when the other IP is absent.
+#[cfg(any(atim_l012, gtim_l012))]
+#[macro_use]
 mod l012;
+#[cfg(atim_f030)]
+mod atim_f030;
+#[cfg(atim_l012)]
+mod atim_l012;
+#[cfg(gtim_f030)]
+mod gtim_f030;
+#[cfg(gtim_l012)]
+mod gtim_l012;
 pub mod low_level;
 pub mod simple_pwm;
 
 #[derive(Clone, Copy)]
 pub(crate) enum Registers {
+    #[cfg(atim)]
     Atim(pac::atim::Atim),
+    #[cfg(gtim)]
     Gtim(pac::gtim::Gtim),
+}
+
+// The common driver dispatches to typed PAC adapters, never a cast register
+// layout or a chip-family bundle. Keeping the signatures together also makes
+// every independently selected adapter implement the same driver operations.
+macro_rules! register_methods {
+    ($(fn $name:ident($($arg:ident: $ty:ty),*) $(-> $result:ty)?;)+) => {
+        trait TimerRegisters: Copy {
+            $(fn $name(self, $($arg: $ty),*) $(-> $result)?;)+
+        }
+        impl Registers {
+            $(pub(crate) fn $name(self, $($arg: $ty),*) $(-> $result)? {
+                match self {
+                    #[cfg(atim)]
+                    Self::Atim(r) => r.$name($($arg),*),
+                    #[cfg(gtim)]
+                    Self::Gtim(r) => r.$name($($arg),*),
+                }
+            })+
+        }
+    };
+}
+register_methods! {
+    fn prescalers() -> Prescalers;
+    fn initialize();
+    fn set_running(enabled: bool);
+    fn is_running() -> bool;
+    fn counter() -> u16;
+    fn set_counter(value: u16);
+    fn write_timing(config: low_level::Config);
+    fn load();
+    fn configure_pwm();
+    fn write_compare(channel: usize, duty: u32);
+    fn output(channel: usize, enabled: bool, duty: u32);
+    fn master_output(enabled: bool);
 }
 
 pub(crate) mod sealed {
@@ -117,7 +166,7 @@ impl Frequency {
 
 #[derive(Clone, Copy)]
 pub(crate) enum Prescalers {
-    #[cfg(atim_l012)]
+    #[cfg(any(atim_l012, gtim_l012))]
     Linear,
     #[cfg(atim_f030)]
     AtimF030,
@@ -127,7 +176,7 @@ pub(crate) enum Prescalers {
 impl Prescalers {
     fn validate(self, divisor: u32) -> bool {
         match self {
-            #[cfg(atim_l012)]
+            #[cfg(any(atim_l012, gtim_l012))]
             Self::Linear => (1..=65536).contains(&divisor),
             #[cfg(atim_f030)]
             Self::AtimF030 => matches!(divisor, 1 | 2 | 4 | 8 | 16 | 32 | 64 | 256),
@@ -137,7 +186,7 @@ impl Prescalers {
     }
     fn at_least(self, minimum: u32) -> Option<u32> {
         match self {
-            #[cfg(atim_l012)]
+            #[cfg(any(atim_l012, gtim_l012))]
             Self::Linear => (minimum <= 65536).then_some(minimum.max(1)),
             #[cfg(atim_f030)]
             Self::AtimF030 => [1, 2, 4, 8, 16, 32, 64, 256]

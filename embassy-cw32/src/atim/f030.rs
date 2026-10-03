@@ -21,14 +21,14 @@
 //! PWM phase, and disturb the trigger cadence. This backend therefore does not
 //! promise uninterrupted real-time closed-loop FOC modulation.
 use crate::{
-    async_support::EventState,
     gpio::{AnyPin, Pin},
-    interrupt::{self, InterruptExt},
     pac, peripherals,
     rcc::PeripheralClock,
     Peri,
 };
 use pac::atim::regs;
+
+use super::events::{EventIo, WaitEvent};
 
 mod sealed {
     pub trait Sealed {}
@@ -427,43 +427,24 @@ fn arm_sequence(io: &mut impl ArmIo) -> Result<(), Error> {
     Ok(())
 }
 
-static UPDATE_STATE: EventState = EventState::new();
-static BREAK_STATE: EventState = EventState::new();
 /// F030 exposes one combined BIF. The originating external/VC/safety source
 /// cannot be inferred from it, so no fabricated per-source flags are offered.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct BreakFlags(u32);
+pub struct BreakFlags(pub(super) u32);
 impl BreakFlags {
     pub fn brake(self) -> bool {
         self.0 & BIF != 0
     }
 }
-#[derive(Clone, Copy)]
-enum WaitEvent {
-    Update,
-    Break,
-}
 impl WaitEvent {
-    fn flags(self) -> u32 {
+    pub(super) fn flags(self) -> u32 {
         match self {
             Self::Update => UIF,
             Self::Break => BIF,
         }
     }
-    fn state(self) -> &'static EventState {
-        match self {
-            Self::Update => &UPDATE_STATE,
-            Self::Break => &BREAK_STATE,
-        }
-    }
 }
-trait EventIo {
-    fn enables(&mut self) -> u32;
-    fn status(&mut self) -> u32;
-    fn set_enables(&mut self, value: u32);
-    fn clear_update(&mut self);
-}
-struct HardwareEvents;
+pub(super) struct HardwareEvents;
 impl EventIo for HardwareEvents {
     fn enables(&mut self) -> u32 {
         control_without_commands(pac::ATIM.cr().read().0)
@@ -480,7 +461,7 @@ impl EventIo for HardwareEvents {
         pac::ATIM.icr().write(|v| v.set_uif(false));
     }
 }
-fn set_event_enabled(io: &mut impl EventIo, event: WaitEvent, enabled: bool) {
+pub(super) fn set_event_enabled(io: &mut impl EventIo, event: WaitEvent, enabled: bool) {
     let mut value = regs::Cr(control_without_commands(io.enables()));
     match event {
         WaitEvent::Update => value.set_uie(enabled),
@@ -488,14 +469,7 @@ fn set_event_enabled(io: &mut impl EventIo, event: WaitEvent, enabled: bool) {
     }
     io.set_enables(value.0);
 }
-fn prepare_event(io: &mut impl EventIo, event: WaitEvent) {
-    set_event_enabled(io, event, false);
-    if matches!(event, WaitEvent::Update) {
-        io.clear_update();
-    }
-    set_event_enabled(io, event, true);
-}
-fn service_events(io: &mut impl EventIo) -> (u32, u32) {
+pub(super) fn service_events(io: &mut impl EventIo) -> (u32, u32) {
     let mut enabled = regs::Cr(control_without_commands(io.enables()));
     let flags = io.status();
     let update = if enabled.uie() { flags & UIF } else { 0 };
@@ -514,112 +488,6 @@ fn service_events(io: &mut impl EventIo) -> (u32, u32) {
     }
     // Do not clear BIF: acknowledge_fault() is an explicit separate operation.
     (update, fault)
-}
-/// Bind to the actual ATIM IRQ with bind_interrupts!. No SysTick or software timer.
-pub struct InterruptHandler;
-impl interrupt::typelevel::Handler<interrupt::typelevel::ATIM> for InterruptHandler {
-    unsafe fn on_interrupt() {
-        let (update, fault) = critical_section::with(|_| {
-            let (u, b) = service_events(&mut HardwareEvents);
-            (
-                if u != 0 { UPDATE_STATE.latch(u) } else { None },
-                if b != 0 { BREAK_STATE.latch(b) } else { None },
-            )
-        });
-        if let Some(waker) = update {
-            waker.wake();
-        }
-        if let Some(waker) = fault {
-            waker.wake();
-        }
-    }
-}
-pub struct AsyncThreePhasePwm<'d> {
-    inner: ThreePhasePwm<'d>,
-}
-impl<'d> ThreePhasePwm<'d> {
-    /// Bind IRQ ownership without changing counter state, outputs or BIF.
-    pub fn into_async(
-        self,
-        _irq: impl interrupt::typelevel::Binding<interrupt::typelevel::ATIM, InterruptHandler>,
-    ) -> AsyncThreePhasePwm<'d> {
-        critical_section::with(|_| {
-            UPDATE_STATE.reset();
-            BREAK_STATE.reset();
-            set_event_enabled(&mut HardwareEvents, WaitEvent::Update, false);
-            set_event_enabled(&mut HardwareEvents, WaitEvent::Break, false);
-            unsafe {
-                interrupt::ATIM.enable();
-            }
-        });
-        AsyncThreePhasePwm { inner: self }
-    }
-}
-impl<'d> core::ops::Deref for AsyncThreePhasePwm<'d> {
-    type Target = ThreePhasePwm<'d>;
-    fn deref(&self) -> &Self::Target {
-        &self.inner
-    }
-}
-impl core::ops::DerefMut for AsyncThreePhasePwm<'_> {
-    fn deref_mut(&mut self) -> &mut Self::Target {
-        &mut self.inner
-    }
-}
-struct WaitGuard(WaitEvent);
-impl WaitGuard {
-    fn new(event: WaitEvent) -> Self {
-        critical_section::with(|_| {
-            event.state().reset();
-            prepare_event(&mut HardwareEvents, event);
-        });
-        Self(event)
-    }
-}
-impl Drop for WaitGuard {
-    fn drop(&mut self) {
-        critical_section::with(|_| {
-            set_event_enabled(&mut HardwareEvents, self.0, false);
-            self.0.state().reset();
-        });
-    }
-}
-impl AsyncThreePhasePwm<'_> {
-    async fn wait_event(&mut self, event: WaitEvent) -> u32 {
-        let _guard = WaitGuard::new(event);
-        core::future::poll_fn(|cx| {
-            event.state().register(cx.waker());
-            let latched = event.state().take();
-            let current = critical_section::with(|_| HardwareEvents.status()) & event.flags();
-            let result = latched | current;
-            if result != 0 {
-                core::task::Poll::Ready(result)
-            } else {
-                core::task::Poll::Pending
-            }
-        })
-        .await
-    }
-    /// Wait for an update after the first poll. Does not start the timer.
-    /// Events coalesce. Cancellation masks only UIE and never changes power outputs.
-    pub async fn wait_update(&mut self) {
-        self.wait_event(WaitEvent::Update).await;
-    }
-    /// Historical BIF returns immediately and remains latched. Cancellation
-    /// masks only BIE; external/VC brake protection is never disabled by a wait.
-    pub async fn wait_break(&mut self) -> BreakFlags {
-        BreakFlags(self.wait_event(WaitEvent::Break).await)
-    }
-}
-impl Drop for AsyncThreePhasePwm<'_> {
-    fn drop(&mut self) {
-        critical_section::with(|_| {
-            set_event_enabled(&mut HardwareEvents, WaitEvent::Update, false);
-            set_event_enabled(&mut HardwareEvents, WaitEvent::Break, false);
-            UPDATE_STATE.reset();
-            BREAK_STATE.reset();
-        });
-    }
 }
 impl Drop for ThreePhasePwm<'_> {
     fn drop(&mut self) {

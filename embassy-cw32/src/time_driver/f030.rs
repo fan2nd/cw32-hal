@@ -14,18 +14,14 @@
 //! if programming missed the match. Lateness still includes programming, IRQ
 //! and executor delay; at an 8 MHz CPU this can exceed one timer tick.
 //! This is a timestamp-resolution improvement, not a hard-real-time guarantee.
-use super::core::{prescaler, Counter, Hardware, ICR_FLAGS, ICR_MASK};
+use super::core::{prescaler, Hardware, ICR_FLAGS, ICR_MASK};
 use crate::{
     interrupt::{self, InterruptExt},
     pac::{self, gtim::regs},
     rcc::PeripheralClock,
-    time_driver::queue::Queue,
 };
-use core::{cell::RefCell, task::Waker};
-use critical_section::Mutex;
-use embassy_time_driver::Driver;
 
-struct Registers;
+pub(super) struct Registers;
 impl Hardware for Registers {
     fn flags(&mut self) -> u32 {
         pac::GTIM1.isr().read().0
@@ -49,43 +45,6 @@ impl Hardware for Registers {
         interrupt::GTIM1.pend();
     }
 }
-struct State {
-    counter: Counter,
-    started: bool,
-    queue: Queue,
-}
-struct TimerDriver {
-    state: Mutex<RefCell<State>>,
-}
-embassy_time_driver::time_driver_impl!(static DRIVER: TimerDriver = TimerDriver {
-    state: Mutex::new(RefCell::new(State { counter: Counter::new(), started: false, queue: Queue::new() }))
-});
-impl Driver for TimerDriver {
-    fn now(&self) -> u64 {
-        critical_section::with(|cs| {
-            let state = self.state.borrow(cs).borrow();
-            assert!(state.started, "time driver used before HAL init");
-            state.counter.now(&mut Registers)
-        })
-    }
-    fn schedule_wake(&self, at: u64, waker: &Waker) {
-        let immediate = critical_section::with(|cs| {
-            let mut state = self.state.borrow(cs).borrow_mut();
-            assert!(state.started, "time driver used before HAL init");
-            let now = state.counter.now(&mut Registers);
-            let immediate = state.queue.schedule(now, at, waker);
-            state
-                .counter
-                .arm(&mut Registers, state.queue.next_expiration());
-            immediate
-        });
-        // Never invoke arbitrary wake code while State/RefCell is borrowed.
-        if immediate {
-            waker.wake_by_ref();
-        }
-    }
-}
-
 /// Called once by HAL init after the clock tree has been verified. GTIM1 is
 /// excluded from the returned singleton set when this driver is enabled.
 /// # Safety
@@ -95,61 +54,34 @@ pub(crate) unsafe fn init(clocks: crate::rcc::Clocks, priority: interrupt::Prior
     assert_eq!(hz, 1_000_000, "F030 time driver requires 1 MHz ticks");
     assert!(clocks.pclk >= hz && clocks.pclk % hz == 0);
     let prs = prescaler(clocks.pclk / hz).expect("unsupported F030 GTIM power-of-two divider");
-    critical_section::with(|cs| {
-        let mut state = DRIVER.state.borrow(cs).borrow_mut();
-        assert!(!state.started);
-        interrupt::GTIM1.disable();
-        <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
-        pac::GTIM1.cr0().write_value(regs::Cr0(0)); // stopped, PCLK source, no encoder/trigger
-        pac::GTIM1.ier().write_value(regs::Ier(0));
-        pac::GTIM1.dma().write_value(regs::Dma(0));
-        pac::GTIM1.cr1().write_value(regs::Cr1(0));
-        pac::GTIM1.etr().write_value(regs::Etr(0));
-        pac::GTIM1.cmmr().write_value(regs::Cmmr(0));
-        pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
-        pac::GTIM1.cnt().write_value(regs::Cnt(0));
-        pac::GTIM1.ccr(0).write(|w| w.set_ccr(0xffff));
-        // RM 14.3.4.1: CC1M=0xA sets CC1 on CNT==CCR1. No GPIO AF is
-        // configured: only the internal comparator is used, not an output pin.
-        pac::GTIM1.cmmr().write(|w| w.set_cc1m(0x0a));
-        // W0 clears all implemented startup flags; preserve reserved reset bits.
-        pac::GTIM1
-            .icr()
-            .write_value(regs::Icr(ICR_MASK & !ICR_FLAGS));
-        pac::GTIM1.ier().write(|w| w.set_ov(true));
-        // F030 has CR0.PRS (2^n), not an L012 PSC register or UIFREMAP.
-        // EN's 0->1 transition loads PRS into PRSSTATUS (RM 14.8.1), so no
-        // software update event is required. Reset PCLK 8 MHz /8 = 1 MHz.
-        pac::GTIM1.cr0().write(|w| {
-            w.set_prs(prs as u8);
-            w.set_en(true);
-        });
-        state.started = true;
-        interrupt::GTIM1.unpend();
-        interrupt::GTIM1.set_priority(priority);
-        // SAFETY: our real GTIM1 handler below is installed by the PAC runtime.
-        unsafe {
-            interrupt::GTIM1.enable();
-        }
-    });
-}
-
-// Strong symbol overrides device.x's default handler at the actual GTIM1 vector.
-// No public manual handler binding or core.SYST acquisition is needed.
-#[allow(non_snake_case)]
-#[unsafe(no_mangle)]
-unsafe extern "C" fn GTIM1() {
-    let ready = critical_section::with(|cs| {
-        let mut state = DRIVER.state.borrow(cs).borrow_mut();
-        state.counter.service_overflow(&mut Registers);
-        let now = state.counter.now(&mut Registers);
-        let ready = state.queue.take_due(now);
-        state
-            .counter
-            .arm(&mut Registers, state.queue.next_expiration());
-        ready
-    });
-    for waker in ready.into_iter().flatten() {
-        waker.wake();
-    }
+    // SAFETY: HAL init owns GTIM1 and the checks above establish its tick rate.
+    unsafe {
+        super::driver::init(priority, || {
+            <crate::peripherals::GTIM1 as PeripheralClock>::enable_and_reset();
+            pac::GTIM1.cr0().write_value(regs::Cr0(0)); // stopped, PCLK source, no encoder/trigger
+            pac::GTIM1.ier().write_value(regs::Ier(0));
+            pac::GTIM1.dma().write_value(regs::Dma(0));
+            pac::GTIM1.cr1().write_value(regs::Cr1(0));
+            pac::GTIM1.etr().write_value(regs::Etr(0));
+            pac::GTIM1.cmmr().write_value(regs::Cmmr(0));
+            pac::GTIM1.arr().write(|w| w.set_arr(0xffff));
+            pac::GTIM1.cnt().write_value(regs::Cnt(0));
+            pac::GTIM1.ccr(0).write(|w| w.set_ccr(0xffff));
+            // RM 14.3.4.1: CC1M=0xA sets CC1 on CNT==CCR1. No GPIO AF is
+            // configured: only the internal comparator is used, not an output pin.
+            pac::GTIM1.cmmr().write(|w| w.set_cc1m(0x0a));
+            // W0 clears all implemented startup flags; preserve reserved reset bits.
+            pac::GTIM1
+                .icr()
+                .write_value(regs::Icr(ICR_MASK & !ICR_FLAGS));
+            pac::GTIM1.ier().write(|w| w.set_ov(true));
+            // F030 has CR0.PRS (2^n), not an L012 PSC register or UIFREMAP.
+            // EN's 0->1 transition loads PRS into PRSSTATUS (RM 14.8.1), so no
+            // software update event is required. Reset PCLK 8 MHz /8 = 1 MHz.
+            pac::GTIM1.cr0().write(|w| {
+                w.set_prs(prs as u8);
+                w.set_en(true);
+            });
+        })
+    };
 }

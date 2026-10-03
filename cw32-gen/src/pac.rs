@@ -656,7 +656,9 @@ const METADATA_TYPES: &str = r#"
 #[derive(Clone, Copy, Debug)]
 pub struct Metadata { pub schema_version:u32, pub name: &'static str, pub family: &'static str, pub core: &'static str, pub target: &'static str, pub peripherals: &'static [Peripheral], pub interrupts: &'static [Interrupt], pub pins: &'static [Pin], pub memory: &'static [Memory], pub interrupt_bindings:&'static [InterruptBinding], pub pin_routes:&'static [PinRoute], pub remaps:&'static [Remap], pub quirks:&'static [Quirk] }
 #[derive(Clone, Copy, Debug)]
-pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub ownership_parent:Option<&'static str>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
+pub struct Peripheral { pub name: &'static str, pub block: &'static str, pub version: &'static str, pub address: usize, pub register_resets:&'static [RegisterReset], pub clock_bit: Option<u8>, pub clock_gate:Option<RegisterBit>, pub reset:Option<RegisterBit>, pub reset_effects:&'static [ResetEffect], pub ownership_parent:Option<&'static str>, pub registers:&'static [Register], pub blocks:&'static [BlockItem], pub implemented_mask: u16, pub pulldown_mask: u16 }
+#[derive(Clone, Copy, Debug)]
+pub struct ResetEffect {pub peripheral:&'static str,pub description:&'static str,pub source:&'static str}
 #[derive(Clone, Copy, Debug)]
 pub struct RegisterReset {pub register:&'static str,pub reset_value:u32,pub reset_source:&'static str,pub reset_note:Option<&'static str>}
 #[derive(Clone, Copy, Debug)]
@@ -731,8 +733,19 @@ pub fn render_metadata(ir: &Ir) -> Result<String> {
     }
     out.push_str(&format!("pub static METADATA: Metadata = Metadata {{ schema_version:{}, name: {:?}, family: {:?}, core: {:?}, target: {:?},\nperipherals: &[\n",ir.schema_version,ir.chip.name,ir.family.name,ir.family.core,ir.family.target));
     for p in &ir.family.peripherals {
+        let effects = p
+            .reset_effects
+            .iter()
+            .map(|e| {
+                format!(
+                    "ResetEffect {{peripheral:{:?},description:{:?},source:{:?}}}",
+                    e.peripheral, e.description, e.source
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",");
         let resets = p.register_resets.iter().map(|r| format!("RegisterReset {{register:{:?},reset_value:{},reset_source:{:?},reset_note:{:?}}}",r.register,r.reset_value,r.reset_source,r.reset_note)).collect::<Vec<_>>().join(",");
-        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, ownership_parent:{:?}, registers:REGISTERS_{}, blocks:BLOCKS_{}, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block.to_ascii_uppercase(),p.block.to_ascii_uppercase(),p.implemented_mask,p.pulldown_mask));
+        out.push_str(&format!("Peripheral {{ name: {:?}, block: {:?}, version: {:?}, address: {:#x}, register_resets:&[{resets}], clock_bit: {:?}, clock_gate:{}, reset:{}, reset_effects:&[{effects}], ownership_parent:{:?}, registers:REGISTERS_{}, blocks:BLOCKS_{}, implemented_mask: {}, pulldown_mask: {} }},\n",p.name,p.block,p.version,p.address,p.clock_bit,render_register_bit(ir,p.clock_gate.as_ref()),render_register_bit(ir,p.reset.as_ref()),p.ownership_parent,p.block.to_ascii_uppercase(),p.block.to_ascii_uppercase(),p.implemented_mask,p.pulldown_mask));
     }
     out.push_str("], interrupts: &[\n");
     for i in &ir.family.interrupts {

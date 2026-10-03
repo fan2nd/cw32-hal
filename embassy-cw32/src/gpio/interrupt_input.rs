@@ -221,7 +221,7 @@ impl GpioIo for GpioHardware {
         let n = usize::from(self.number);
         r.riseie().modify(|w| w.set_pin(n, false));
         r.fallie().modify(|w| w.set_pin(n, false));
-        #[cfg(gpio_f030)]
+        #[cfg(gpio_has_level_interrupts)]
         {
             r.highie().modify(|w| w.set_pin(n, false));
             r.lowie().modify(|w| w.set_pin(n, false));
@@ -247,15 +247,15 @@ impl GpioIo for GpioHardware {
                 r.fallie().modify(|w| w.set_pin(n, true));
             }
             WaitKind::High => {
-                #[cfg(gpio_f030)]
+                #[cfg(gpio_has_level_interrupts)]
                 r.highie().modify(|w| w.set_pin(n, true));
-                #[cfg(gpio_l012)]
+                #[cfg(not(gpio_has_level_interrupts))]
                 r.riseie().modify(|w| w.set_pin(n, true));
             }
             WaitKind::Low => {
-                #[cfg(gpio_f030)]
+                #[cfg(gpio_has_level_interrupts)]
                 r.lowie().modify(|w| w.set_pin(n, true));
-                #[cfg(gpio_l012)]
+                #[cfg(not(gpio_has_level_interrupts))]
                 r.fallie().modify(|w| w.set_pin(n, true));
             }
         }
@@ -264,7 +264,7 @@ impl GpioIo for GpioHardware {
         let r = self.regs();
         let n = usize::from(self.number);
         let enabled = r.riseie().read().pin(n) || r.fallie().read().pin(n);
-        #[cfg(gpio_f030)]
+        #[cfg(gpio_has_level_interrupts)]
         let enabled = enabled || r.highie().read().pin(n) || r.lowie().read().pin(n);
         enabled && r.isr().read().pin(n)
     }

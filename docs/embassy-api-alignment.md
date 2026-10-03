@@ -19,7 +19,7 @@ The HAL comparison is pinned to Embassy commit [`b12a6d9efcd2711037abca1b63a661a
 | Interrupt/runtime | Official typelevel interrupt/Binding conventions, concrete vector table and handler dispatch, shared-vector ownership | Per-port CW GPIO interrupt handling is not STM32 EXTI-line ownership; the implemented backend has pin-specific mask/pending/waker/cancel rules |
 | Time driver | GTIM1 reserved from returned peripherals; actual monotonic/alarm/IRQ implementation and indexed comparator registers | CW-specific timer math, fixed running PCLK and overflow-service limits; no STOP/dynamic-clock support |
 | General bus/DMA drivers | Register data and typed PAC available | Generic UART/SPI/I2C/DMA HAL drivers are still absent; metadata completeness is not driver completeness |
-| Build organization | One generator crate, actual persisted JSON boundary, metadata-driven chip/IP cfg, HAL variant folders/mod.rs | Audited analog reference-pair mapping and some trait emission still live in build.rs; there is no claim of full upstream code-generation framework parity |
+| Build organization | One generator crate, actual persisted JSON boundary, metadata-selected presence/IP/capability cfg, independently selected analog/timer IPs, shared ADC/VC/ATIM/time state machines | Audited analog reference-pair mapping and some trait emission still live in build.rs; there is no claim of full upstream code-generation framework parity |
 
 ## GPIO behavior that is deliberately preserved
 
@@ -29,4 +29,4 @@ Safe drivers own Peri tokens; identity values are not exclusive ownership. `Peri
 
 The identified PAC/array, GPIO, ADC/comparator ownership and generic timer/PWM architecture changes are implemented and reviewed. This does not establish complete embassy-stm32 feature parity. General UART/SPI/I2C/DMA HAL drivers, timer capture/encoder/DMA and a generic complementary-PWM API, ADC calibration/internal-source ownership, and unsupported low-power/clock modes remain outside the implemented scope. The existing ThreePhasePwm retains the actual CW motor-specific constraints. See [timer API and hardware differences](timer-pwm.md).
 
-These are API/ownership tasks, not claims justified by compiling names. Source review and external probes accompany actual builds; no chip has been flashed and no timing/electrical behavior was measured. See [async ownership/contracts](async-api.md) and [validation](validation-v0.13.0.md).
+These are API/ownership tasks, not claims justified by compiling names. Source review and external probes accompany actual builds; no chip has been flashed and no timing/electrical behavior was measured. See [async ownership/contracts](async-api.md), [HAL cfg layering](hal-cfg-layering.md), [v0.13.1 validation](validation-v0.13.1.md), and the prior [v0.13.0 API verification](validation-v0.13.0.md).

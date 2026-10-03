@@ -18,6 +18,13 @@ peripherals:
     register: APBRST2
     field: ADC
     bit: 2
+  reset_effects:
+  - peripheral: VC1
+    description: Resetting ADC clears ADC_CR0.BGREN, which supplies the comparator internal reference; local ADC initialization must preserve shared analog state.
+    source: CW32x030 RM Rev2.5 sections 4.7.17 (APBRST2), 22.13.1 (ADC_CR0), 23.3.1 (VC reference inputs); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
+  - peripheral: VC2
+    description: Resetting ADC clears ADC_CR0.BGREN, which supplies the comparator internal reference; local ADC initialization must preserve shared analog state.
+    source: CW32x030 RM Rev2.5 sections 4.7.17 (APBRST2), 22.13.1 (ADC_CR0), 23.3.1 (VC reference inputs); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   interrupts:
   - signal: GLOBAL
     interrupt: ADC

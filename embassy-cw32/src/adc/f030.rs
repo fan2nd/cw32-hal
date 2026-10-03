@@ -9,16 +9,18 @@
 //! by its constructor. Channels are borrowed per read; [`Sequence`] retains the
 //! owner and channel borrows for fixed-length, watchdog and ATIM capture work.
 //! Async capture is cancellation-safe, one-shot, and neither DMA nor lossless streaming.
-use super::{BorrowedAdcChannel, BorrowedChannel};
+use super::{
+    common::{
+        cancel_async_sequence, disarm_idle, on_interrupt, poll_sequence, prepare_sequence,
+        AsyncSequenceIo, ConversionGuard, SequenceIo,
+    },
+    BorrowedAdcChannel, BorrowedChannel,
+};
 use crate::{
-    async_support::EventState, gpio::Pin, interrupt, pac, peripherals, rcc::PeripheralClock, Async,
-    Blocking, Mode, Peri, PeripheralType,
+    gpio::Pin, interrupt, pac, peripherals, rcc::PeripheralClock, Async, Blocking, Mode, Peri,
+    PeripheralType,
 };
-use core::{
-    future::poll_fn,
-    marker::PhantomData,
-    task::{Context, Poll},
-};
+use core::{future::poll_fn, marker::PhantomData};
 use embedded_hal::delay::DelayNs;
 use interrupt::typelevel::Interrupt as _;
 use pac::adc::regs;
@@ -349,6 +351,7 @@ impl<I: Instance, M: Mode, const N: usize> Sequence<'_, '_, '_, I, M, N> {
     }
     /// Arm ATIM update input without starting or reconfiguring ATIM. Use
     /// `capture_triggered` to freeze the route and obtain a coherent complete scan.
+    #[cfg(atim_f030)]
     pub fn arm_atim_update(
         &mut self,
         _timer: &crate::atim::ThreePhasePwm<'_>,
@@ -406,6 +409,7 @@ impl<I: Instance, const N: usize> Sequence<'_, '_, '_, I, Async, N> {
 
     /// Arm ATIM on first poll and await the latest coherent complete scan.
     /// Does not start ATIM. Cancellation also works if no trigger arrives.
+    #[cfg(atim_f030)]
     pub async fn sample_atim_update(
         &mut self,
         _timer: &crate::atim::ThreePhasePwm<'_>,
@@ -440,41 +444,8 @@ pub struct InterruptHandler<I: Instance> {
 
 impl<I: Instance> interrupt::typelevel::Handler<I::Interrupt> for InterruptHandler<I> {
     unsafe fn on_interrupt() {
-        let waker = critical_section::with(|_| {
-            if service_completion(&mut Hardware::<I>(PhantomData)) {
-                // Keep completion publication indivisible with hardware cleanup
-                // even if an enclosing executor can run in another interrupt.
-                I::state().latch(SEQUENCE_COMPLETE)
-            } else {
-                None
-            }
-        });
-        if let Some(waker) = waker {
-            waker.wake();
-        }
+        on_interrupt(&mut Hardware::<I>(PhantomData), I::state());
     }
-}
-
-const SEQUENCE_COMPLETE: u32 = 1;
-
-fn poll_sequence(state: &EventState, cx: &mut Context<'_>) -> Poll<()> {
-    // Register first, then consume the latch: completion before registration,
-    // during registration, or after the check cannot be lost.
-    state.register(cx.waker());
-    if state.take() & SEQUENCE_COMPLETE != 0 {
-        Poll::Ready(())
-    } else {
-        Poll::Pending
-    }
-}
-
-trait AsyncSequenceIo: SequenceIo {
-    fn completion_interrupt_enabled(&mut self) -> bool;
-    fn completion_pending(&mut self) -> bool;
-    fn completion_interrupt(&mut self, enabled: bool);
-    fn clear_completion(&mut self);
-    fn start(&mut self, enabled: bool);
-    fn trigger(&mut self, mask: u32);
 }
 
 impl<I: Instance> AsyncSequenceIo for Hardware<I> {
@@ -515,75 +486,11 @@ impl<I: Instance> AsyncSequenceIo for Hardware<I> {
         I::regs().icr().write_value(clear);
     }
     fn start(&mut self, enabled: bool) {
+        // RM 22.13.8: START=0 stops conversion; the next MODE=4 scan starts at SQR0.
         I::regs().start().write(|w| w.set_start(enabled));
     }
     fn trigger(&mut self, mask: u32) {
         I::regs().trigger().write_value(regs::Trigger(mask));
-    }
-}
-
-fn start_async_sequence(
-    io: &mut impl AsyncSequenceIo,
-    state: &EventState,
-    cr: u32,
-    trigger: u32,
-) -> Result<(), Error> {
-    disarm_idle(io)?;
-    io.completion_interrupt(false);
-    state.reset();
-    io.control(cr);
-    io.clear_completion();
-    io.completion_interrupt(true);
-    if trigger == 0 {
-        io.start(true);
-    } else {
-        io.trigger(trigger);
-    }
-    Ok(())
-}
-
-fn service_completion(io: &mut impl AsyncSequenceIo) -> bool {
-    if !io.completion_interrupt_enabled() || !io.completion_pending() {
-        return false;
-    }
-    io.disarm();
-    // Clear BEFORE checking START. A late sequence can finish while the CPU
-    // runs even inside a critical section. Clearing after reading busy could
-    // erase its final completion and leave a sleeping future with no remaining IRQ.
-    io.clear_completion();
-    // RM 22.5.1 (MODE=0/EOC) and 22.5.5 (MODE=4/EOS) guarantee automatic
-    // START clear at completion. With the route disarmed, at most one operation remains.
-    if io.busy() {
-        return false;
-    }
-    io.completion_interrupt(false);
-    true
-}
-
-fn cancel_async_sequence(io: &mut impl AsyncSequenceIo, state: &EventState) {
-    io.completion_interrupt(false);
-    io.disarm();
-    // RM 22.13.8: START=0 stops conversion; the next MODE=4 scan starts at SQR0.
-    io.start(false);
-    io.clear_completion();
-    state.reset();
-}
-
-struct ConversionGuard<'a, IO: AsyncSequenceIo> {
-    io: IO,
-    state: &'a EventState,
-}
-
-impl<'a, IO: AsyncSequenceIo> ConversionGuard<'a, IO> {
-    fn start(mut io: IO, state: &'a EventState, cr: u32, trigger: u32) -> Result<Self, Error> {
-        critical_section::with(|_| start_async_sequence(&mut io, state, cr, trigger))?;
-        Ok(Self { io, state })
-    }
-}
-
-impl<IO: AsyncSequenceIo> Drop for ConversionGuard<'_, IO> {
-    fn drop(&mut self) {
-        critical_section::with(|_| cancel_async_sequence(&mut self.io, self.state));
     }
 }
 
@@ -620,18 +527,13 @@ fn control_word(old: u32, divider: ClockDivider, sample: SampleTime, count: usiz
     word.0
 }
 
-trait SequenceIo {
-    fn disarm(&mut self);
-    fn busy(&mut self) -> bool;
-    fn control(&mut self, word: u32);
-    fn clear(&mut self);
-}
 struct Hardware<I: Instance>(PhantomData<I>);
 impl<I: Instance> SequenceIo for Hardware<I> {
     fn disarm(&mut self) {
         I::regs().trigger().write_value(regs::Trigger(0));
     }
     fn busy(&mut self) -> bool {
+        // RM 22.5.1 (MODE=0/EOC) and 22.5.5 (MODE=4/EOS): START clears at completion.
         I::regs().start().read().start()
     }
     fn control(&mut self, word: u32) {
@@ -645,21 +547,6 @@ impl<I: Instance> SequenceIo for Hardware<I> {
     fn clear(&mut self) {
         I::regs().icr().write_value(regs::Icr(0x7f & !flags()));
     }
-}
-fn disarm_idle(io: &mut impl SequenceIo) -> Result<(), Error> {
-    // Hardware may start a sequence up to the disarm write. Inspect START afterwards.
-    io.disarm();
-    if io.busy() {
-        Err(Error::Busy)
-    } else {
-        Ok(())
-    }
-}
-fn prepare_sequence(io: &mut impl SequenceIo, cr: u32) -> Result<(), Error> {
-    disarm_idle(io)?;
-    io.control(cr);
-    io.clear();
-    Ok(())
 }
 impl<'d, I: Instance, M: Mode> Drop for Adc<'d, I, M> {
     fn drop(&mut self) {

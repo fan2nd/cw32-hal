@@ -1,4 +1,4 @@
-# CW32F030C8 support (v0.13.0)
+# CW32F030C8 support (v0.13.1)
 
 ## Chip identity and build
 
@@ -15,7 +15,7 @@ cargo check -p embassy-cw32 --features cw32f030c8
 ```
 
 Generation is still one Rust `cw32-gen` crate, two real file stages:
-YAML -> schema-5 normalized JSON -> read/validate JSON -> PAC/metadata.
+YAML -> schema-6 normalized JSON -> read/validate JSON -> PAC/metadata.
 Normal PAC builds consume those pre-generated artifacts and do not parse
 YAML or JSON. Generated trees and Cargo.lock are ignored and not shipped.
 

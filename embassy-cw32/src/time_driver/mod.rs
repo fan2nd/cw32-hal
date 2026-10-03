@@ -6,6 +6,8 @@ mod core;
 #[cfg(gtim_f030)]
 #[path = "f030_core.rs"]
 mod core;
+#[cfg(feature = "time-driver-gtim1")]
+mod driver;
 mod queue;
 
 #[cfg(all(feature = "time-driver-gtim1", gtim_l012))]

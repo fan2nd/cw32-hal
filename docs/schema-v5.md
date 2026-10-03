@@ -1,3 +1,5 @@
+> Indexed-model history: schema 6 preserves this model and adds explicit reset cross-effects. See [schema-v6.md](schema-v6.md).
+
 # Normalized schema v5 and PAC structure
 
 One `cw32-gen` crate still owns schema/data/pac modules. Stage1 writes chip and shared register JSON to disk; stage2 rereads only that versioned JSON. Old schemas are rejected. The source-only distribution contains neither generated JSON/PAC nor host validation probes.

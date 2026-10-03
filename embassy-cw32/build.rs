@@ -43,37 +43,9 @@ fn main() {
         md.name.to_ascii_lowercase(),
         "HAL/PAC chip feature mismatch"
     );
-    // Declare every driver cfg even when the selected chip lacks that IP.
-    // Hand-written drivers currently implement the audited L012 and F030 contracts.
-    let implemented = [
-        "gpio", "sysctrl", "gtim", "adc", "atim", "cordic", "eau", "opa", "vc", "vcref", "dac",
-        "bgr",
-    ];
-    for kind in implemented {
-        println!("cargo:rustc-check-cfg=cfg({kind})");
-        println!("cargo:rustc-check-cfg=cfg({kind}_l012)");
-        println!("cargo:rustc-check-cfg=cfg({kind}_f030)");
-    }
-    let mut capabilities = BTreeSet::new();
-    for p in md.peripherals {
-        if implemented.contains(&p.block) {
-            assert!(
-                matches!(p.version, "l012" | "f030"),
-                "unsupported HAL register version for {}",
-                p.block
-            );
-        }
-        capabilities.insert(ident(p.block).to_owned());
-        capabilities.insert(format!("{}_{}", ident(p.block), ident(p.version)));
-    }
-    for cfg in capabilities {
-        println!("cargo:rustc-check-cfg=cfg({cfg})");
-        println!("cargo:rustc-cfg={cfg}");
-    }
-    for cfg in [md.family, md.name] {
-        println!("cargo:rustc-check-cfg=cfg({})", ident(cfg));
-        println!("cargo:rustc-cfg={cfg}");
-    }
+    // Chip features choose metadata only. Drivers use peripheral presence,
+    // independently selected IP versions and capabilities of those registers.
+    build_support::emit_driver_cfgs(md);
     fs::write(
         out.join("_generated_associations.rs"),
         build_support::associations(md),
@@ -321,12 +293,12 @@ fn main() {
             } else {
                 panic!("unaudited clock gate semantics");
             }
-            // F030 ADC also owns BGR used by analog comparators: never reset it
-            // merely to initialize an ADC driver, even though its IRQ is private.
+            // A private reset bit may still affect another peripheral resource.
+            // Both shared-bit ownership and explicit cross-effects forbid a local reset.
             if let Some(reset) = p
                 .reset
                 .as_ref()
-                .filter(|r| !r.shared && !(md.family == "cw32f030" && p.block == "adc"))
+                .filter(|r| !r.shared && p.reset_effects.is_empty())
             {
                 assert_eq!(reset.peripheral, "SYSCTRL");
                 assert!(matches!(reset.register, "AHBRST" | "APBRST1" | "APBRST2"));
@@ -496,7 +468,7 @@ fn main() {
                 };
                 writeln!(
                     analog,
-                    "type Reference=peripherals::{reference}; const NUMBER:u8={number};"
+                    "#[cfg(vcref_l012)] type Reference=peripherals::{reference}; const NUMBER:u8={number};"
                 )
                 .unwrap();
             }
@@ -527,7 +499,23 @@ fn main() {
                 .strip_prefix("CH")
                 .and_then(|s| s.parse::<u8>().ok())
             {
-                Some(s) if s < if md.family == "cw32f030" { 8 } else { 4 } => s,
+                Some(s) => {
+                    let p = md
+                        .peripherals
+                        .iter()
+                        .find(|p| p.name == r.peripheral)
+                        .unwrap();
+                    // The explicitly audited route determines external-input validity.
+                    // Register metadata checks representability, not a chip-family guess.
+                    for selector in ["INP", "INN"] {
+                        let field = build_support::field(p, "CR0", selector);
+                        assert!(
+                            u32::from(s) < (1u32 << field.bit_size),
+                            "VC route exceeds input selector"
+                        );
+                    }
+                    s
+                }
                 _ => continue,
             }
         } else if r.peripheral == "DAC" {

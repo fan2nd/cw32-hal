@@ -49,7 +49,7 @@ pub enum Pull {
 /// Only the two hardware encodings are exposed. The achievable frequency
 /// depends on load and supply voltage; see the chip's electrical specifications.
 /// Encodings: CW32x030 reference manual Rev 2.5, section 9.6.3.
-#[cfg(gpio_f030)]
+#[cfg(gpio_has_speed)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum Speed {
@@ -64,7 +64,7 @@ pub enum Speed {
 /// Mode changes preserve this setting. Only an explicit call to
 /// `set_drive_strength` changes it.
 /// Encodings: CW32x030 reference manual Rev 2.5, section 9.6.9.
-#[cfg(gpio_f030)]
+#[cfg(gpio_has_drive_strength)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum DriveStrength {
@@ -88,7 +88,7 @@ pub struct AfType {
     output: bool,
     output_type: OutputType,
     pull: Pull,
-    #[cfg(gpio_f030)]
+    #[cfg(gpio_has_speed)]
     speed: Speed,
 }
 impl AfType {
@@ -97,28 +97,28 @@ impl AfType {
             output: false,
             output_type: OutputType::PushPull,
             pull,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed: Speed::Low,
         }
     }
-    pub const fn output(output_type: OutputType, #[cfg(gpio_f030)] speed: Speed) -> Self {
+    pub const fn output(output_type: OutputType, #[cfg(gpio_has_speed)] speed: Speed) -> Self {
         Self::output_pull(
             output_type,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             Pull::None,
         )
     }
     pub const fn output_pull(
         output_type: OutputType,
-        #[cfg(gpio_f030)] speed: Speed,
+        #[cfg(gpio_has_speed)] speed: Speed,
         pull: Pull,
     ) -> Self {
         Self {
             output: true,
             output_type,
             pull,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
         }
     }
@@ -186,7 +186,7 @@ impl AnyPin {
         gpio.afr(n / 8).modify(|w| w.set_afr(n % 8, 0));
         gpio.riseie().modify(|w| w.set_pin(n, false));
         gpio.fallie().modify(|w| w.set_pin(n, false));
-        #[cfg(gpio_f030)]
+        #[cfg(gpio_has_level_interrupts)]
         {
             gpio.highie().modify(|w| w.set_pin(n, false));
             gpio.lowie().modify(|w| w.set_pin(n, false));
@@ -203,23 +203,23 @@ impl AnyPin {
         // both resistors. Do not access unimplemented L012 pull-down bits.
         gpio.pur().modify(|w| w.set_pin(n, false));
         if self.port.pulldown_mask() & (1u16 << self.number) != 0 {
-            #[cfg(gpio_l012)]
+            #[cfg(not(gpio_pulldown_indexed))]
             gpio.pdr().modify(|w| w.set_pin3(false));
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_pulldown_indexed)]
             gpio.pdr().modify(|w| w.set_pin(n, false));
         }
         match pull {
             Pull::None => {}
             Pull::Up => gpio.pur().modify(|w| w.set_pin(n, true)),
             Pull::Down => {
-                #[cfg(gpio_l012)]
+                #[cfg(not(gpio_pulldown_indexed))]
                 gpio.pdr().modify(|w| w.set_pin3(true));
-                #[cfg(gpio_f030)]
+                #[cfg(gpio_pulldown_indexed)]
                 gpio.pdr().modify(|w| w.set_pin(n, true));
             }
         }
     }
-    #[cfg(gpio_f030)]
+    #[cfg(gpio_has_speed)]
     fn set_speed(&self, speed: Speed) {
         // CW32F030 RM 9.6.3: SPEED 0 = low, 1 = high. DRIVER is independent.
         self.regs()
@@ -244,7 +244,7 @@ impl AnyPin {
             self.set_pull(af_type.pull);
             gpio.opendrain()
                 .modify(|w| w.set_pin(n, af_type.output_type == OutputType::OpenDrain));
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             self.set_speed(af_type.speed);
             gpio.afr(n / 8).modify(|w| w.set_afr(n % 8, af));
             if af_type.output {
@@ -340,19 +340,19 @@ impl<'d> Flex<'d> {
     }
     /// Configure push-pull output using the existing output latch.
     /// Set its level first if a particular initial value is required.
-    pub fn set_as_output(&mut self, #[cfg(gpio_f030)] speed: Speed) {
+    pub fn set_as_output(&mut self, #[cfg(gpio_has_speed)] speed: Speed) {
         self.configure_output(
             OutputType::PushPull,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             Pull::None,
         );
     }
     /// Configure open-drain output and digital input, without weak pulls.
     /// A high output latch releases the line; a low latch drives it low.
-    pub fn set_as_input_output(&mut self, #[cfg(gpio_f030)] speed: Speed) {
+    pub fn set_as_input_output(&mut self, #[cfg(gpio_has_speed)] speed: Speed) {
         self.set_as_input_output_pull(
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             Pull::None,
         );
@@ -361,10 +361,10 @@ impl<'d> Flex<'d> {
     ///
     /// # Panics
     /// Panics before register access if this pin has no requested pull-down.
-    pub fn set_as_input_output_pull(&mut self, #[cfg(gpio_f030)] speed: Speed, pull: Pull) {
+    pub fn set_as_input_output_pull(&mut self, #[cfg(gpio_has_speed)] speed: Speed, pull: Pull) {
         self.configure_output(
             OutputType::OpenDrain,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             pull,
         );
@@ -372,7 +372,7 @@ impl<'d> Flex<'d> {
     fn configure_output(
         &mut self,
         output_type: OutputType,
-        #[cfg(gpio_f030)] speed: Speed,
+        #[cfg(gpio_has_speed)] speed: Speed,
         pull: Pull,
     ) {
         self.pin.validate_pull(pull);
@@ -383,7 +383,7 @@ impl<'d> Flex<'d> {
             let n = usize::from(self.pin.number);
             gpio.opendrain()
                 .modify(|w| w.set_pin(n, output_type == OutputType::OpenDrain));
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             self.pin.set_speed(speed);
             // All configuration is complete and the caller's latch is intact.
             gpio.dir().modify(|w| w.set_pin(n, false));
@@ -404,7 +404,7 @@ impl<'d> Flex<'d> {
         self.pin.set_as_af(af_num, af_type);
     }
     /// Set CW32F030's independent output drive-strength bit.
-    #[cfg(gpio_f030)]
+    #[cfg(gpio_has_drive_strength)]
     pub fn set_drive_strength(&mut self, strength: DriveStrength) {
         critical_section::with(|_| {
             self.pin.regs().driver().modify(|w| {
@@ -510,13 +510,13 @@ impl<'d> Output<'d> {
     pub fn new(
         pin: Peri<'d, impl Pin>,
         initial_output: Level,
-        #[cfg(gpio_f030)] speed: Speed,
+        #[cfg(gpio_has_speed)] speed: Speed,
     ) -> Self {
         let mut pin = Flex::new(pin);
         // Flex starts as input, so the latch is loaded before output is enabled.
         pin.set_level(initial_output);
         pin.set_as_output(
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
         );
         Self { pin }
@@ -542,7 +542,7 @@ impl<'d> Output<'d> {
     pub fn toggle(&mut self) {
         self.pin.toggle();
     }
-    #[cfg(gpio_f030)]
+    #[cfg(gpio_has_drive_strength)]
     pub fn set_drive_strength(&mut self, strength: DriveStrength) {
         self.pin.set_drive_strength(strength);
     }
@@ -561,12 +561,12 @@ impl<'d> OutputOpenDrain<'d> {
     pub fn new(
         pin: Peri<'d, impl Pin>,
         initial_output: Level,
-        #[cfg(gpio_f030)] speed: Speed,
+        #[cfg(gpio_has_speed)] speed: Speed,
     ) -> Self {
         Self::new_pull(
             pin,
             initial_output,
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             Pull::None,
         )
@@ -575,7 +575,7 @@ impl<'d> OutputOpenDrain<'d> {
     pub fn new_pull(
         pin: Peri<'d, impl Pin>,
         initial_output: Level,
-        #[cfg(gpio_f030)] speed: Speed,
+        #[cfg(gpio_has_speed)] speed: Speed,
         pull: Pull,
     ) -> Self {
         let pin: Peri<'d, AnyPin> = pin.into();
@@ -583,7 +583,7 @@ impl<'d> OutputOpenDrain<'d> {
         let mut pin = Flex::new(pin);
         pin.set_level(initial_output);
         pin.set_as_input_output_pull(
-            #[cfg(gpio_f030)]
+            #[cfg(gpio_has_speed)]
             speed,
             pull,
         );
@@ -619,7 +619,7 @@ impl<'d> OutputOpenDrain<'d> {
     pub fn toggle(&mut self) {
         self.pin.toggle();
     }
-    #[cfg(gpio_f030)]
+    #[cfg(gpio_has_drive_strength)]
     pub fn set_drive_strength(&mut self, strength: DriveStrength) {
         self.pin.set_drive_strength(strength);
     }

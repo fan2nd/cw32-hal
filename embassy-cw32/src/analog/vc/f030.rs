@@ -1,38 +1,13 @@
-//! CW32F030 VC1/VC2 external-input comparators (RM Rev2.5 chapter 23).
+//! Comparator hardware and external-input ownership for the f030 VC IP.
 //!
-//! Each comparator owns both external input pins. Internal BGR/ADC references,
-//! the physically shared DIV circuit, window mode and output pins are deliberately
-//! not exposed by this driver until their shared-resource ownership is modeled.
-use crate::{
-    gpio::{AnyPin, Pin},
-    pac, peripherals,
-    rcc::PeripheralClock,
-    Async, Blocking, Mode, Peri, PeripheralType,
-};
-mod sealed {
-    pub trait Pin<I, const SIGNAL: u8> {}
-    pub(crate) trait VcInstance {
-        fn regs() -> crate::pac::vc::Vc;
-        fn state() -> &'static crate::async_support::EventState;
-    }
-}
-#[allow(private_bounds)]
-pub trait VcInstance: sealed::VcInstance + PeripheralType + PeripheralClock {
-    type Interrupt: crate::interrupt::typelevel::Interrupt;
-    const NUMBER: u8;
-}
-pub trait SignalPin<I: VcInstance, const SIGNAL: u8>: sealed::Pin<I, SIGNAL> + Pin {}
-include!(concat!(env!("OUT_DIR"), "/_generated_analog.rs"));
+//! Internal BGR/ADC references, the shared DIV circuit, window mode and output
+//! pins remain unavailable until their shared-resource ownership is modeled.
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Error {
-    InvalidSignal,
-    Disabled,
-    InvalidConfig,
-    NotReady,
-    OutputsEnabled,
-    RouteInUse,
-}
+use super::super::{Error, SignalPin, VcInstance};
+use super::r#async::{VcIo, WaitKind};
+use super::InterruptHandler;
+use crate::{gpio::AnyPin, pac, Async, Blocking, Mode, Peri};
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[repr(u8)]
 pub enum Response {
@@ -231,6 +206,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
     /// Route this ready comparator to ATIM hardware brake while borrowing both
     /// resources. Outputs must already be disabled. This is a wiring mechanism,
     /// not a certified motor-protection function; validate polarity and latency.
+    #[cfg(atim_f030)]
     pub fn atim_break<'a, 'p>(
         &'a self,
         pwm: &'a mut crate::atim::ThreePhasePwm<'p>,
@@ -250,6 +226,7 @@ impl<'d, I: VcInstance, M: Mode> Comp<'d, I, M> {
         Ok(ComparatorBrake { pwm, _source: self })
     }
 }
+#[cfg(atim_f030)]
 fn validate_brake_route(
     outputs: bool,
     brake_in_use: bool,
@@ -268,15 +245,18 @@ fn validate_brake_route(
 ///
 /// The protection source cannot be dropped while its route is in use.
 /// Direct access to the PWM owner cannot overlap its route guard.
+#[cfg(atim_f030)]
 pub struct ComparatorBrake<'a, 'd, 'p, I: VcInstance, M: Mode> {
     pwm: &'a mut crate::atim::ThreePhasePwm<'p>,
     _source: &'a Comp<'d, I, M>,
 }
+#[cfg(atim_f030)]
 impl<'a, 'd, 'p, I: VcInstance, M: Mode> ComparatorBrake<'a, 'd, 'p, I, M> {
     pub fn pwm(&mut self) -> &mut crate::atim::ThreePhasePwm<'p> {
         self.pwm
     }
 }
+#[cfg(atim_f030)]
 impl<I: VcInstance, M: Mode> Drop for ComparatorBrake<'_, '_, '_, I, M> {
     fn drop(&mut self) {
         critical_section::with(|_| {
@@ -311,11 +291,19 @@ fn shutdown_comparator(io: &mut impl ShutdownIo) {
 struct ShutdownHardware<I: VcInstance>(core::marker::PhantomData<I>);
 impl<I: VcInstance> ShutdownIo for ShutdownHardware<I> {
     fn routed(&mut self) -> bool {
-        I::regs().cr1().read().atimbk()
+        #[cfg(atim_f030)]
+        {
+            I::regs().cr1().read().atimbk()
+        }
+        #[cfg(not(atim_f030))]
+        {
+            false
+        }
     }
     fn disable_power(&mut self) {
         // Only one safe route can be installed. Release the leaked route
         // together with its power state so a surviving PWM can be reused.
+        #[cfg(atim_f030)]
         pac::ATIM.dtr().modify(|w| {
             w.set_moe(false);
             w.set_aoe(false);
@@ -329,64 +317,6 @@ impl<I: VcInstance> ShutdownIo for ShutdownHardware<I> {
     }
 }
 
-pub struct InterruptHandler<I: VcInstance>(core::marker::PhantomData<I>);
-impl<I: VcInstance> crate::interrupt::typelevel::Handler<I::Interrupt> for InterruptHandler<I> {
-    unsafe fn on_interrupt() {
-        let waker = critical_section::with(|_| {
-            service_vc_interrupt(&mut VcHardware::<I>(core::marker::PhantomData), I::state())
-        });
-        if let Some(waker) = waker {
-            waker.wake();
-        }
-    }
-}
-
-/// IRQ-backed, cancel-safe one-shot waits. Edges are relative to the first poll,
-/// after stale flags are cleared and interrupt selection is enabled. Hardware
-/// coalesces edges; these methods are notifications, not an edge counter.
-///
-/// Enable the comparator first. A disabled comparator returns `Error::Disabled`
-/// rather than enabling analog circuitry without its required startup checks.
-/// Cancellation clears only this VC's event source; it leaves the comparator
-/// enabled and never disables or unpends a shared NVIC vector.
-impl<I: VcInstance> Comp<'_, I, Async> {
-    /// Wait for a new rising edge of the filtered, configured-polarity output.
-    pub async fn wait_for_rising_edge(&mut self) -> Result<(), Error> {
-        self.wait(WaitKind::Rising).await
-    }
-    /// Wait for a new falling edge. Multiple edges may coalesce in hardware.
-    pub async fn wait_for_falling_edge(&mut self) -> Result<(), Error> {
-        self.wait(WaitKind::Falling).await
-    }
-    /// Wait for either edge; INTF does not retain which edge occurred.
-    pub async fn wait_for_any_edge(&mut self) -> Result<(), Error> {
-        self.wait(WaitKind::AnyEdge).await
-    }
-    /// Complete immediately if already high, otherwise await a high event.
-    /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_high(&mut self) -> Result<(), Error> {
-        self.wait(WaitKind::High).await
-    }
-    /// Complete immediately if already low, otherwise await a falling event.
-    /// The level can change again before the awaiting task resumes.
-    pub async fn wait_for_low(&mut self) -> Result<(), Error> {
-        self.wait(WaitKind::Low).await
-    }
-    async fn wait(&mut self, kind: WaitKind) -> Result<(), Error> {
-        self.output_level()?;
-        VcWait::new(self, kind).await;
-        Ok(())
-    }
-}
-
-#[derive(Clone, Copy)]
-enum WaitKind {
-    Rising,
-    Falling,
-    AnyEdge,
-    High,
-    Low,
-}
 impl WaitKind {
     fn bits(self) -> u32 {
         let mut selection = pac::vc::regs::Cr1(0);
@@ -401,19 +331,8 @@ impl WaitKind {
         }
         selection.0
     }
-    fn satisfied(self, high: bool) -> bool {
-        matches!((self, high), (Self::High, true) | (Self::Low, false))
-    }
 }
-const VC_EVENT: u32 = 1;
-trait VcIo {
-    fn disable(&mut self);
-    fn clear(&mut self);
-    fn arm(&mut self, selection: u32);
-    fn pending(&mut self) -> bool;
-    fn high(&mut self) -> bool;
-}
-struct VcHardware<I: VcInstance>(core::marker::PhantomData<I>);
+pub(super) struct VcHardware<I: VcInstance>(pub(super) core::marker::PhantomData<I>);
 impl<I: VcInstance> VcIo for VcHardware<I> {
     fn disable(&mut self) {
         let r = I::regs();
@@ -428,9 +347,9 @@ impl<I: VcInstance> VcIo for VcHardware<I> {
         // INTF is RW0; FLTV is RO. Write zero, never RMW this mixed register.
         I::regs().sr().write_value(pac::vc::regs::Sr(0));
     }
-    fn arm(&mut self, selection: u32) {
+    fn arm(&mut self, kind: WaitKind) {
         let r = I::regs();
-        let selection = pac::vc::regs::Cr1(selection);
+        let selection = pac::vc::regs::Cr1(kind.bits());
         r.cr1().modify(|w| {
             w.set_highie(selection.highie());
             w.set_riseie(selection.riseie());
@@ -443,109 +362,5 @@ impl<I: VcInstance> VcIo for VcHardware<I> {
     }
     fn high(&mut self) -> bool {
         I::regs().sr().read().fltv()
-    }
-}
-fn service_vc_interrupt(
-    io: &mut impl VcIo,
-    state: &crate::async_support::EventState,
-) -> Option<core::task::Waker> {
-    if io.pending() {
-        // Disable only this source before RW0 acknowledgment, especially for
-        // HIGHIE whose level could otherwise immediately reassert INTF.
-        io.disable();
-        io.clear();
-        state.latch(VC_EVENT)
-    } else {
-        None
-    }
-}
-struct VcWaitCore {
-    armed: bool,
-    done: bool,
-    kind: WaitKind,
-}
-impl VcWaitCore {
-    fn new(kind: WaitKind) -> Self {
-        Self {
-            armed: false,
-            done: false,
-            kind,
-        }
-    }
-    fn poll(
-        &mut self,
-        io: &mut impl VcIo,
-        state: &crate::async_support::EventState,
-        cx: &mut core::task::Context<'_>,
-    ) -> core::task::Poll<()> {
-        use core::task::Poll;
-        assert!(!self.done, "completed comparator future polled again");
-        critical_section::with(|_| {
-            if !self.armed {
-                io.disable();
-                io.clear();
-                state.reset();
-                state.register(cx.waker());
-                // Current-level waits also perform a post-enable check below.
-                io.arm(self.kind.bits());
-                self.armed = true;
-            } else {
-                state.register(cx.waker());
-            }
-            // Registration precedes every latch read. A hardware event between
-            // arm and this check is either observed here or remains IRQ-pending.
-            let signaled = state.take() & VC_EVENT != 0;
-            if signaled || io.pending() || self.kind.satisfied(io.high()) {
-                io.disable();
-                io.clear();
-                state.reset();
-                self.armed = false;
-                self.done = true;
-                Poll::Ready(())
-            } else {
-                Poll::Pending
-            }
-        })
-    }
-    fn cancel(&mut self, io: &mut impl VcIo, state: &crate::async_support::EventState) {
-        if self.armed {
-            critical_section::with(|_| {
-                io.disable();
-                io.clear();
-                state.reset();
-                self.armed = false;
-            });
-        }
-    }
-}
-struct VcWait<'a, 'd, I: VcInstance> {
-    _driver: &'a mut Comp<'d, I, Async>,
-    core: VcWaitCore,
-}
-impl<'a, 'd, I: VcInstance> VcWait<'a, 'd, I> {
-    fn new(driver: &'a mut Comp<'d, I, Async>, kind: WaitKind) -> Self {
-        Self {
-            _driver: driver,
-            core: VcWaitCore::new(kind),
-        }
-    }
-}
-impl<I: VcInstance> core::future::Future for VcWait<'_, '_, I> {
-    type Output = ();
-    fn poll(
-        self: core::pin::Pin<&mut Self>,
-        cx: &mut core::task::Context<'_>,
-    ) -> core::task::Poll<()> {
-        self.get_mut().core.poll(
-            &mut VcHardware::<I>(core::marker::PhantomData),
-            I::state(),
-            cx,
-        )
-    }
-}
-impl<I: VcInstance> Drop for VcWait<'_, '_, I> {
-    fn drop(&mut self) {
-        self.core
-            .cancel(&mut VcHardware::<I>(core::marker::PhantomData), I::state());
     }
 }

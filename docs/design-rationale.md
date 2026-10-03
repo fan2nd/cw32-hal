@@ -1,3 +1,5 @@
+> v0.13.1 adds independently selected IP/capability layers and shared workflows; see [HAL cfg layering](hal-cfg-layering.md). Earlier version-specific discussion below remains historical where labeled.
+
 # 设计审查：理解 Embassy 的链路，而不只模仿目录
 
 当前v0.9.1采用封装无关的芯片模型：chip/feature为cw32l012c8和cw32f030c8，schema v3直接定义pins，不存在Package/package_pin或封装交集。以下上游历史设计描述不构成本项目保存封装层的要求。见[schema v3](schema-v3.md)。

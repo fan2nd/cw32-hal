@@ -11,4 +11,5 @@ mod f030;
 pub use f030::*;
 
 mod channel;
+mod common;
 pub use channel::{AdcChannel, BorrowedAdcChannel, BorrowedChannel};

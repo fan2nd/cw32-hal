@@ -5,18 +5,18 @@
 #![no_std]
 #![deny(unsafe_op_in_unsafe_fn)]
 
-#[cfg(any(adc_l012, adc_f030))]
+#[cfg(adc)]
 pub mod adc;
-#[cfg(any(all(opa_l012, vc_l012, vcref_l012, dac_l012, bgr_l012), vc_f030))]
+#[cfg(any(bgr, dac, vcref, opa, vc))]
 pub mod analog;
 mod async_support;
-#[cfg(any(atim_l012, atim_f030))]
+#[cfg(atim)]
 pub mod atim;
-#[cfg(cordic_l012)]
+#[cfg(cordic)]
 pub mod cordic;
-#[cfg(eau_l012)]
+#[cfg(eau)]
 pub mod eau;
-#[cfg(any(gpio_l012, gpio_f030))]
+#[cfg(gpio)]
 pub mod gpio;
 pub mod interrupt;
 #[cfg(feature = "rt")]
@@ -45,11 +45,11 @@ pub mod mode {
     impl Mode for Async {}
 }
 pub use mode::{Async, Blocking, Mode};
-#[cfg(any(sysctrl_l012, sysctrl_f030))]
+#[cfg(sysctrl)]
 pub mod rcc;
 #[cfg(feature = "time-driver-gtim1")]
 mod time_driver;
-#[cfg(any(all(atim_l012, gtim_l012), all(atim_f030, gtim_f030)))]
+#[cfg(any(atim, gtim))]
 pub mod timer;
 
 use core::cell::Cell;

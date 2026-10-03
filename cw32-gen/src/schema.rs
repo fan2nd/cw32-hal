@@ -2,11 +2,12 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
-/// Version 5 adds explicit indexed fields, registers and subblocks; reset evidence remains. Older
+/// Version 6 records reset cross-effects on other peripheral resources. Version 5 added
+/// indexed fields, registers and subblocks; reset evidence remains. Older
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 5;
+pub const SCHEMA_VERSION: u32 = 6;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -214,6 +215,11 @@ pub struct Block {
     pub blocks: Vec<BlockItem>,
     pub constants: Vec<Constant>,
 }
+model!(ResetEffect {
+    peripheral: String,
+    description: String,
+    source: String
+});
 model!(RegisterBit {
     peripheral: String,
     register: String,
@@ -244,6 +250,9 @@ pub struct Peripheral {
     pub clock_gate: Option<RegisterBit>,
     #[serde(default)]
     pub reset: Option<RegisterBit>,
+    /// Other resources disturbed by this reset, beyond owners of the same reset bit.
+    #[serde(default)]
+    pub reset_effects: Vec<ResetEffect>,
     /// This view shares ownership with its parent and must not receive an independent HAL token.
     #[serde(default)]
     pub ownership_parent: Option<String>,
@@ -889,6 +898,22 @@ fn validate_peripheral_relationships(
         .map(|p| (p.name.as_str(), p))
         .collect();
     for p in &ir.family.peripherals {
+        unique(
+            p.reset_effects.iter().map(|e| e.peripheral.as_str()),
+            "reset effect",
+        )?;
+        if !p.reset_effects.is_empty() && p.reset.is_none() {
+            return Err(err("reset effects require a reset control"));
+        }
+        for effect in &p.reset_effects {
+            if effect.peripheral == p.name || !peripherals.contains_key(effect.peripheral.as_str())
+            {
+                return Err(err("reset effect requires another existing peripheral"));
+            }
+            if effect.description.trim().is_empty() || effect.source.trim().is_empty() {
+                return Err(err("reset effects require description and source"));
+            }
+        }
         let mut visited = BTreeSet::from([p.name.as_str()]);
         let mut next = p.ownership_parent.as_deref();
         while let Some(name) = next {

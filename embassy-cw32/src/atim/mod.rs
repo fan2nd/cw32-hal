@@ -1,11 +1,9 @@
-//! atim API, selected by the generated atim IP variant.
+//! ATIM API with shared async ownership and IP-specific register control.
 
-#[cfg(atim_l012)]
-mod l012;
-#[cfg(atim_l012)]
-pub use l012::*;
+#[cfg_attr(atim_l012, path = "l012.rs")]
+#[cfg_attr(atim_f030, path = "f030.rs")]
+mod backend;
+mod events;
 
-#[cfg(atim_f030)]
-mod f030;
-#[cfg(atim_f030)]
-pub use f030::*;
+pub use backend::*;
+pub use events::{AsyncThreePhasePwm, InterruptHandler};
