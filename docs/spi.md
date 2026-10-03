@@ -60,3 +60,7 @@ The API/ownership shape was compared with the actual [Embassy STM32 SPI source a
 The backend register sequences, clock formulas, GPIO direction, completion and flag semantics follow the official [CW32L012 manual v1.4](https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf), sections 22.3.1–22.3.4, 22.3.8–22.3.9, 22.6.1 and 22.7 (printed pp.493–498, 506–508, 510–512, 516–522), and [CW32x030 manual Rev 2.5](https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf), sections 19.3.1–19.3.4, 19.3.8–19.3.9, 19.6.1 and 19.8 (printed pp.362–369, 375–376, 379–382, 388–393), with the pinned vendor CMSIS headers for per-IP offsets. In particular, ICR writes zero to clear and bit 0 clears the shift register; ordinary flag clearing must never accidentally issue that command.
 
 Compile checks and external register/interrupt probes can establish software contracts, but do not establish board-level signal integrity, maximum reliable SCK, or physical wire timing. Those require a connected board and logic-analyzer verification.
+
+The additional [finite typed DMA API](bus-dma.md) consumes complete static owners
+and buffers. It has distinct completion and permanent-quarantine rules; these
+CPU-driven operations retain their existing borrowed-buffer behavior.

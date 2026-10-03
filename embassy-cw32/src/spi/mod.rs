@@ -2,7 +2,8 @@
 //!
 //! The generated pin traits check each SCK/MOSI/MISO route. Chip select belongs
 //! to an external GPIO and an `embedded-hal` / `embedded-hal-async` `SpiDevice`
-//! adapter. There is no hardware-CS, target, half-duplex or DMA API here.
+//! adapter. Finite static-owned DMA is available through [`dma`]. There is no
+//! hardware-CS, target or half-duplex API here.
 //!
 //! Both modes send one frame at a time and consume its receive word before
 //! sending another. Successful operations wait for TXE and !BUSY. Async frame
@@ -27,6 +28,8 @@ mod backend;
 #[path = "f030.rs"]
 mod backend;
 mod common;
+#[cfg(any(dma_l012, dma_f030))]
+pub mod dma;
 
 mod sealed {
     pub(crate) trait Instance {

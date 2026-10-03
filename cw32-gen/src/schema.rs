@@ -2,6 +2,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+/// Version 11 records instance-level external timer capture selectors.
 /// Version 10 records semantic enum evidence, explicit field arrays and peripheral clocks.
 /// Version 9 records evidenced OPA internal DAC connections.
 /// Version 8 records explicit DMA channels and uniform request-selector routes.
@@ -11,7 +12,7 @@ pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 10;
+pub const SCHEMA_VERSION: u32 = 11;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -297,6 +298,17 @@ model!(DmaController {
     requests: Vec<DmaRequest>,
     source: String
 });
+// An external capture mux outside the timer's own reusable register block.
+// The field array follows the timer's physical channel order; the selected
+// register element belongs to this timer instance, not a name-derived index.
+model!(TimerCaptureMux {
+    peripheral: String,
+    register: String,
+    index: usize,
+    field: String,
+    external_value: u32,
+    source: String
+});
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RegisterReset {
@@ -332,6 +344,8 @@ pub struct Peripheral {
     pub opa: Option<OpaConnections>,
     #[serde(default)]
     pub dma: Option<DmaController>,
+    #[serde(default)]
+    pub timer_capture_mux: Option<TimerCaptureMux>,
     /// This view shares ownership with its parent and must not receive an independent HAL token.
     #[serde(default)]
     pub ownership_parent: Option<String>,
@@ -1125,6 +1139,65 @@ fn validate_peripheral_relationships(
         .map(|p| (p.name.as_str(), p))
         .collect();
     for p in &ir.family.peripherals {
+        if let Some(mux) = &p.timer_capture_mux {
+            if !matches!(p.block.as_str(), "atim" | "gtim") || mux.source.trim().is_empty() {
+                return Err(err("timer capture mux requires a timer and evidence"));
+            }
+            let controller = peripherals
+                .get(mux.peripheral.as_str())
+                .ok_or_else(|| err("unknown timer capture mux controller"))?;
+            if controller.name == p.name {
+                return Err(err(
+                    "external timer capture mux must reference another peripheral",
+                ));
+            }
+            let register = ir.blocks[&controller.block]
+                .registers
+                .iter()
+                .find(|r| r.name == mux.register)
+                .ok_or_else(|| err("unknown timer capture mux register"))?;
+            let offsets = register
+                .array
+                .as_ref()
+                .ok_or_else(|| err("timer capture mux requires an indexed register"))?
+                .offsets()?;
+            if mux.index >= offsets.len()
+                || register.access != "rw"
+                || register.read_behavior != ReadBehavior::Ordinary
+                || register.write_behavior != WriteBehavior::Ordinary
+            {
+                return Err(err("invalid timer capture mux register index or access"));
+            }
+            let field = register
+                .fields
+                .iter()
+                .find(|f| f.name == mux.field)
+                .ok_or_else(|| err("unknown timer capture mux field"))?;
+            if field.access != "rw"
+                || field
+                    .array
+                    .as_ref()
+                    .ok_or_else(|| err("timer capture mux requires indexed channel fields"))?
+                    .offsets()?
+                    .is_empty()
+                || (field.bit_size < 32 && mux.external_value >= (1u32 << field.bit_size))
+            {
+                return Err(err("invalid timer capture mux field access or value"));
+            }
+            if ir.family.peripherals.iter().any(|other| {
+                other.name != p.name
+                    && other.timer_capture_mux.as_ref().is_some_and(|m| {
+                        m.peripheral == mux.peripheral
+                            && m.register == mux.register
+                            && m.index == mux.index
+                            && m.field == mux.field
+                    })
+            }) {
+                return Err(err(
+                    "timer instances cannot share an external capture selector",
+                ));
+            }
+        }
         if let Some(dma) = &p.dma {
             if p.block != "dma"
                 || p.ownership_parent.is_some()

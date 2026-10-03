@@ -104,3 +104,14 @@ audit enumerates actual requester instances and gate addresses from metadata,
 while source-selector meaning is checked against each supported hardware
 contract. Flash capacity comes from the chip memory region and is rejected if
 it exceeds the geometry audited by the driver.
+
+## v0.21 timer and DMA extensions
+
+Capture/QEI adapters select each ATIM or GTIM IP independently. Concrete timer,
+physical capture channel, pin AF and actual IRQ associations are generated from
+metadata; F030 GTIM's external mux register/index is an explicit schema11
+instance relationship. Complementary capability is generated only for audited
+ATIM main/N or A/B pairs and BK routes. UART/SPI DMA capabilities pair each
+actual instance and TX/RX request with channels from the controller topology.
+There is no new chip-name cfg, runtime registration layer or fabricated common
+STM32 register layout.

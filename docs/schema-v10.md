@@ -1,3 +1,5 @@
+> Historical field/enum/clock schema. Current instance-level capture routing is in [schema 11](schema-v11.md).
+
 # Normalized schema 10
 
 Schema 10 persists semantic enum evidence, regular/explicit field arrays and evidenced peripheral clock domains. Stage 1 writes normalized JSON; stage 2 reads and validates it independently. Schema 9 and unknown keys are rejected. See the [46-IP field audit](pac-fields-v0.18.0.md) for the implemented hardware coverage.

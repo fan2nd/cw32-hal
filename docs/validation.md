@@ -1,4 +1,6 @@
-> Current internal/RTC/Flash/WWDT stage: [v0.20.0 validation](validation-v0.20.0.md), [scope and eight-gap progress](analog-rtc-flash-v0.20.0.md).
+> Current timer/bus-DMA stage: [v0.21.0 validation](validation-v0.21.0.md), [scope and eight-gap progress](timer-dma-v0.21.0.md).
+
+> Prior internal/RTC/Flash/WWDT stage: [v0.20.0 validation](validation-v0.20.0.md), [scope and eight-gap progress](analog-rtc-flash-v0.20.0.md).
 
 > Prior bus/CRC/IWDT stage: [v0.19.0 validation](validation-v0.19.0.md), [scope and remaining work](buses-v0.19.0.md).
 

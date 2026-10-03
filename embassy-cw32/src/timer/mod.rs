@@ -1,10 +1,12 @@
-//! Owned PCLK timers and single-ended PWM on audited timer IPs.
+//! Owned timers, PWM, input capture and quadrature decoding on audited timer IPs.
 //!
-//! Only edge-aligned upcounting is exposed. Constructors stop the timer; DMA,
-//! interrupts, external/slave clocks and ADC triggering are not enabled.
+//! The low-level and PWM owners use edge-aligned PCLK upcounting. Capture owns
+//! one physical input with optional checked IRQ waits; QEI owns its actual
+//! two-input decoder pair. Each module documents its start and cleanup behavior.
+//! Timer DMA, arbitrary slave clocks and ADC triggering are not exposed here.
 #![cfg_attr(
     atim,
-    doc = "The separate [`crate::atim`] driver owns complementary/break-protected PWM."
+    doc = "[`complementary_pwm`] provides optional complementary pairs and an external brake. The separate [`crate::atim`] driver retains the motor-specific three-phase contract."
 )]
 
 use crate::{gpio::Pin, pac, peripherals, rcc::KernelClock, PeripheralType};
@@ -18,11 +20,16 @@ mod l012;
 mod atim_f030;
 #[cfg(atim_l012)]
 mod atim_l012;
+mod capture;
+#[cfg(atim)]
+pub mod complementary_pwm;
 #[cfg(gtim_f030)]
 mod gtim_f030;
 #[cfg(gtim_l012)]
 mod gtim_l012;
+pub mod input_capture;
 pub mod low_level;
+pub mod qei;
 pub mod simple_pwm;
 
 #[derive(Clone, Copy)]

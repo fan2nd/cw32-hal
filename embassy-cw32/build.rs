@@ -393,7 +393,13 @@ fn main() {
         let peripheral = ident(route.peripheral);
         writeln!(timer,"impl sealed::Pin<peripherals::{peripheral},Ch{channel}> for peripherals::{pin} {{}} impl TimerPin<peripherals::{peripheral},Ch{channel}> for peripherals::{pin} {{const AF:u8={af};}}").unwrap();
     }
+    timer.push_str(&capture_bindings(md));
     fs::write(out.join("_generated_timer.rs"), timer).unwrap();
+    fs::write(
+        out.join("_generated_complementary_pwm.rs"),
+        complementary_bindings(md),
+    )
+    .unwrap();
     let mut adc = String::new();
     for p in md
         .peripherals
@@ -1083,6 +1089,165 @@ fn dma_bindings(md: &Metadata) -> String {
 /// Digital bus identities come from the selected peripheral and physical AF
 /// routes. Sharing a vector generates the same Interrupt type for each source;
 /// the application's bind_interrupts! invocation dispatches all source handlers.
+fn capture_bindings(md: &Metadata) -> String {
+    let mut out = String::new();
+    for p in md
+        .peripherals
+        .iter()
+        .filter(|p| matches!(p.block, "atim" | "gtim") && p.ownership_parent.is_none())
+    {
+        assert!(matches!(p.version, "l012" | "f030"), "unaudited capture IP");
+        let name = ident(p.name);
+        let irqs: Vec<_> = md
+            .interrupt_bindings
+            .iter()
+            .filter(|i| i.peripheral == p.name && i.signal == "GLOBAL")
+            .collect();
+        assert_eq!(
+            irqs.len(),
+            1,
+            "timer capture requires one physical global IRQ"
+        );
+        let irq = ident(irqs[0].interrupt);
+        let selector = if p.block == "gtim" && p.version == "f030" {
+            let mux = p
+                .timer_capture_mux
+                .expect("F030 GTIM requires its external capture selector");
+            let controller = md
+                .peripherals
+                .iter()
+                .find(|c| c.name == mux.peripheral)
+                .expect("capture mux controller");
+            assert_eq!(
+                (controller.block, controller.version),
+                ("sysctrl", "f030"),
+                "unaudited capture mux controller"
+            );
+            let register = controller
+                .registers
+                .iter()
+                .find(|r| r.name == mux.register)
+                .expect("capture mux register");
+            assert_eq!(
+                register.elements.len(),
+                4,
+                "audited four-timer mux register array"
+            );
+            let field = register
+                .fields
+                .iter()
+                .find(|f| f.name == mux.field)
+                .expect("capture mux channel field");
+            assert_eq!(
+                (field.elements.len(), field.bit_size),
+                (4, 3),
+                "audited four-channel capture mux"
+            );
+            assert_eq!(mux.external_value, 0, "audited external pin selection");
+            format!(
+                "crate::pac::{}.{}({}).modify(|r|r.set_{}(channel,{}));",
+                ident(mux.peripheral),
+                ident(mux.register).to_ascii_lowercase(),
+                mux.index,
+                ident(mux.field).to_ascii_lowercase(),
+                mux.external_value
+            )
+        } else {
+            assert!(
+                p.timer_capture_mux.is_none(),
+                "unhandled external capture mux"
+            );
+            "let _=channel;".into()
+        };
+        writeln!(out,"impl input_capture::sealed::Instance for peripherals::{name} {{fn state()->&'static crate::interrupt::EventState {{static STATE:crate::interrupt::EventState=crate::interrupt::EventState::new(); &STATE}} fn select_external_input(channel:usize) {{{selector}}}}} impl input_capture::Instance for peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}}").unwrap();
+        let (first, second) = if p.block == "atim" && p.version == "f030" {
+            ("Ch1A", "Ch1B")
+        } else {
+            ("Ch1", "Ch2")
+        };
+        writeln!(out,"impl qei::sealed::Instance for peripherals::{name} {{}} impl qei::Instance for peripherals::{name} {{type First=input_capture::{first};type Second=input_capture::{second};}}").unwrap();
+        let mut pins = BTreeMap::new();
+        for route in md
+            .pin_routes
+            .iter()
+            .filter(|r| r.peripheral == p.name && r.remap.is_none())
+        {
+            if matches!(route.pin, "PA13" | "PA14") {
+                continue;
+            }
+            let marker = match (p.block, p.version, route.signal) {
+                ("atim", "f030", "CH1A") => "Ch1A",
+                ("atim", "f030", "CH1B") => "Ch1B",
+                ("atim", "f030", "CH2A") => "Ch2A",
+                ("atim", "f030", "CH2B") => "Ch2B",
+                ("atim", "f030", "CH3A") => "Ch3A",
+                ("atim", "f030", "CH3B") => "Ch3B",
+                ("atim", "f030", _) => continue,
+                (_, _, "CH1") => "Ch1",
+                (_, _, "CH2") => "Ch2",
+                (_, _, "CH3") => "Ch3",
+                (_, _, "CH4") => "Ch4",
+                _ => continue,
+            };
+            let af = route.af.expect("capture pin requires an AF route");
+            assert!(af < 16 && md.pins.iter().any(|pin| pin.name == route.pin));
+            if let Some(old) = pins.insert((route.pin, marker), af) {
+                assert_eq!(old, af, "ambiguous capture pin AF");
+                continue;
+            }
+            let pin = ident(route.pin);
+            writeln!(out,"impl input_capture::sealed::Pin<peripherals::{name},input_capture::{marker}> for peripherals::{pin} {{}} impl input_capture::CapturePin<peripherals::{name},input_capture::{marker}> for peripherals::{pin} {{const AF:u8={af};}}").unwrap();
+        }
+    }
+    out
+}
+
+fn complementary_bindings(md: &Metadata) -> String {
+    let mut out = String::new();
+    for p in md
+        .peripherals
+        .iter()
+        .filter(|p| p.block == "atim" && p.ownership_parent.is_none())
+    {
+        assert!(
+            matches!(p.version, "l012" | "f030"),
+            "unaudited complementary PWM IP"
+        );
+        let name = ident(p.name);
+        writeln!(out,"impl sealed::Instance for peripherals::{name} {{fn registers()->pac::atim::Atim {{pac::{name}}}}} impl Instance for peripherals::{name} {{}}").unwrap();
+        let mut pins = BTreeMap::new();
+        for route in md
+            .pin_routes
+            .iter()
+            .filter(|r| r.peripheral == p.name && r.remap.is_none())
+        {
+            if matches!(route.pin, "PA13" | "PA14") {
+                continue;
+            }
+            let marker = match (p.version, route.signal) {
+                ("l012", "CH1N") | ("f030", "CH1B") => "Ch1",
+                ("l012", "CH2N") | ("f030", "CH2B") => "Ch2",
+                ("l012", "CH3N") | ("f030", "CH3B") => "Ch3",
+                (_, "BK") => "Brake",
+                _ => continue,
+            };
+            let af = route.af.expect("complementary pin requires AF");
+            assert!(af < 16 && md.pins.iter().any(|pin| pin.name == route.pin));
+            if let Some(old) = pins.insert((route.pin, marker), af) {
+                assert_eq!(old, af, "ambiguous complementary AF");
+                continue;
+            }
+            let pin = ident(route.pin);
+            if marker == "Brake" {
+                writeln!(out,"impl sealed::BrakePin<peripherals::{name}> for peripherals::{pin} {{}} impl TimerBrakePin<peripherals::{name}> for peripherals::{pin} {{const AF:u8={af};}}").unwrap();
+            } else {
+                writeln!(out,"impl sealed::Pin<peripherals::{name},{marker}> for peripherals::{pin} {{}} impl ComplementaryPin<peripherals::{name},{marker}> for peripherals::{pin} {{const AF:u8={af};}}").unwrap();
+            }
+        }
+    }
+    out
+}
+
 fn bus_bindings(md: &Metadata, kind: &str) -> String {
     let (register_type, sealed, signals): (&str, &str, &[(&str, &str)]) = match kind {
         "uart" => ("Uart", "Instance", &[("TX", "TxPin"), ("RX", "RxPin")]),
@@ -1127,6 +1292,35 @@ fn bus_bindings(md: &Metadata, kind: &str) -> String {
             "crate::interrupt::EventState".to_owned()
         };
         writeln!(out, "impl sealed::{sealed} for crate::peripherals::{name} {{fn regs()->crate::pac::{kind}::{register_type} {{crate::pac::{name}}} fn state()->&'static {state_type} {{static STATE:{state_type}={state_type}::new(); &STATE}}}} impl Instance for crate::peripherals::{name} {{type Interrupt=crate::interrupt::typelevel::{irq};}}").unwrap();
+        if matches!(kind, "uart" | "spi") {
+            assert!(matches!(p.version, "l012" | "f030"), "unaudited bus DMA IP");
+            for controller in md.peripherals.iter().filter(|p| p.block == "dma") {
+                let dma = controller
+                    .dma
+                    .expect("bus DMA requires controller topology");
+                for (signal, direction) in [("TX", "Tx"), ("RX", "Rx")] {
+                    let requests: Vec<_> = dma
+                        .requests
+                        .iter()
+                        .filter(|r| r.peripheral == name && r.signal == signal)
+                        .collect();
+                    assert_eq!(
+                        requests.len(),
+                        1,
+                        "bus direction needs exactly one audited DMA request"
+                    );
+                    let request = format!(
+                        "{}_{}",
+                        ident(requests[0].peripheral),
+                        ident(requests[0].signal)
+                    );
+                    for channel in dma.channels {
+                        let channel = ident(channel.peripheral);
+                        writeln!(out, "#[cfg(dma)] impl crate::{kind}::dma::sealed::{direction}Dma<crate::peripherals::{name}> for crate::peripherals::{channel} {{}} #[cfg(dma)] impl crate::{kind}::dma::{direction}Dma<crate::peripherals::{name}> for crate::peripherals::{channel} {{const REQUEST:crate::dma::Request=crate::dma::Request::{request};}}").unwrap();
+                    }
+                }
+            }
+        }
         let mut routes = BTreeMap::new();
         for route in md.pin_routes.iter().filter(|r| r.peripheral == name) {
             if route.remap.is_some() || matches!(route.pin, "PA13" | "PA14") {

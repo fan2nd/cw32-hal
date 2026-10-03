@@ -154,3 +154,7 @@ Initial support is asynchronous serial full duplex with polling or UART IRQ
 transport. DMA, LIN, hardware flow control, half duplex, synchronous clocking,
 low-frequency clock operation and runtime reconfiguration require further
 hardware-specific API and ownership work.
+
+The additional [finite typed DMA API](bus-dma.md) consumes complete static owners
+and buffers. It has distinct completion and permanent-quarantine rules; these
+CPU-driven operations retain their existing borrowed-buffer behavior.

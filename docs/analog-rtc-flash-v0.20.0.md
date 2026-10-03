@@ -1,3 +1,5 @@
+> Historical fourth stage. Current follow-on work: [v0.21 timer/DMA](timer-dma-v0.21.0.md).
+
 # Internal ADC sources, retained RTC, Flash and window watchdog
 
 This fourth stage adds drivers with explicit capability limits for hardware already described by the

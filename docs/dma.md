@@ -214,8 +214,9 @@ it. A caller-audited, target-specific protocol may allow aligned native-width
 raw volatile CPU observations without CPU writes or other DMA writers. A volatile
 load alone does not establish that protocol, an atomic multiword snapshot or an
 automatic waiver of Rust aliasing rules.
-UART/SPI and other unaudited endpoints remain unsafe. The finite ADC endpoint
-above is safe because its driver establishes the additional contracts.
+Unaudited endpoints remain unsafe. The finite ADC endpoint above and the
+[typed UART/SPI endpoints](bus-dma.md) establish their additional contracts
+inside their drivers; their stated width/length and quarantine bounds still apply.
 
 `Request` is generated from the selected controller's audited selector bank,
 for example L012 `ADC2_SINGLE` and F030 `ADC_CONVERSION`. It is a hardware event
@@ -279,3 +280,10 @@ Primary evidence:
 ARM builds and external register/lifetime probes validate implementation and
 compile-time boundaries; they do not establish silicon timing, bus arbitration,
 actual abort draining or board-level DMA operation.
+
+## Additional finite bus endpoints
+
+From v0.21, [typed UART/SPI endpoints](bus-dma.md) consume full static bus
+owners, channels and buffers. They use generated request/direction traits and
+return resources only after clean DMA and peripheral completion. Abort/error
+quarantine remains mandatory; UART RX is conservatively one frame.

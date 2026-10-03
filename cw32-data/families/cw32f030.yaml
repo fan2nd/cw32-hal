@@ -667,6 +667,13 @@ peripherals:
     description: Raw GPIOF registers describe PF3, but datasheet Rev 1.9 classifies PF03/BOOT as dedicated BOOT. The family mask is register capability only; CW32F030C8 die pins exclude PF3 and safe HAL must not expose it as GPIO.
     source: CW32F030 DS Rev 1.9 Table 3-1 versus RM Rev 2.5 GPIO AF table and SDK GPIOF struct
 - name: GTIM1
+  timer_capture_mux:
+    peripheral: SYSCTRL
+    register: GTIMCAP
+    index: 0
+    field: CH
+    external_value: 0
+    source: CW32x030 RM2.5 sections 4.7.20-23, printed pp89-90 and section 14.3.3.2 Table14-5 p228; GTIM1CAP.CH1-4 value 0 selects the corresponding GTIM1_CH1-4 external input, independently of PWM AF routing.
   clock_tree:
     bus_clock: pclk
     kernel_clock: pclk
@@ -690,6 +697,13 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM1
 - name: GTIM2
+  timer_capture_mux:
+    peripheral: SYSCTRL
+    register: GTIMCAP
+    index: 1
+    field: CH
+    external_value: 0
+    source: CW32x030 RM2.5 sections 4.7.20-23, printed pp89-90 and section 14.3.3.2 Table14-5 p228; GTIM2CAP.CH1-4 value 0 selects the corresponding GTIM2_CH1-4 external input, independently of PWM AF routing.
   clock_tree:
     bus_clock: pclk
     kernel_clock: pclk
@@ -713,6 +727,13 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM2
 - name: GTIM3
+  timer_capture_mux:
+    peripheral: SYSCTRL
+    register: GTIMCAP
+    index: 2
+    field: CH
+    external_value: 0
+    source: CW32x030 RM2.5 sections 4.7.20-23, printed pp89-90 and section 14.3.3.2 Table14-5 p228; GTIM3CAP.CH1-4 value 0 selects the corresponding GTIM3_CH1-4 external input, independently of PWM AF routing.
   clock_tree:
     bus_clock: pclk
     kernel_clock: pclk
@@ -736,6 +757,13 @@ peripherals:
   - signal: GLOBAL
     interrupt: GTIM3
 - name: GTIM4
+  timer_capture_mux:
+    peripheral: SYSCTRL
+    register: GTIMCAP
+    index: 3
+    field: CH
+    external_value: 0
+    source: CW32x030 RM2.5 sections 4.7.20-23, printed pp89-90 and section 14.3.3.2 Table14-5 p228; GTIM4CAP.CH1-4 value 0 selects the corresponding GTIM4_CH1-4 external input, independently of PWM AF routing.
   clock_tree:
     bus_clock: pclk
     kernel_clock: pclk

@@ -29,6 +29,10 @@ mod engine;
 mod hardware;
 use hardware::Hardware;
 
+/// A validated driver-private endpoint configuration. This is not a buffer
+/// lease: the bus driver must retain its complete static resources separately.
+pub(crate) struct PreparedEndpoint(engine::Config);
+
 pub(crate) mod sealed {
     pub(crate) trait Instance {
         const INDEX: usize;
@@ -242,6 +246,33 @@ impl<'d, C: Instance> Channel<'d, C, Async> {
 }
 
 impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
+    /// Validate without starting, so a two-channel peripheral can reject both
+    /// endpoints before either channel can access memory.
+    pub(crate) fn prepare_endpoint<W: Word>(
+        &self,
+        source: *const W,
+        destination: *mut W,
+        count: usize,
+        config: RawConfig,
+    ) -> Result<PreparedEndpoint, Error> {
+        match C::state().phase() {
+            Phase::Running | Phase::Repeating => return Err(Error::ChannelBusy),
+            Phase::Failed(_) | Phase::Poisoned => return Err(Error::ChannelPoisoned),
+            Phase::Idle | Phase::Complete => {}
+        }
+        validate(source, destination, count, config).map(PreparedEndpoint)
+    }
+
+    /// # Safety
+    /// The caller owns the peripheral, request and static endpoint buffers and
+    /// retains all of them until clean completion, or forever on any other exit.
+    /// Retain exclusive channel ownership from validation through this call.
+    /// Start inside a critical section, before peripheral request enable.
+    pub(crate) unsafe fn start_endpoint(&mut self, config: PreparedEndpoint, endpoint: fn(bool)) {
+        self.begin(config.0, false, Some(endpoint))
+            .expect("prepared endpoint channel changed before start");
+    }
+
     /// A completion already observed by polling or IRQ service permits reuse;
     /// a forgotten transfer with unobserved completion remains busy. Dropping
     /// the owner performs a final completion check. Abort and error poison
@@ -497,7 +528,7 @@ fn service<C: Instance>(from_irq: bool) -> Option<core::task::Waker> {
     state.event.latch(1)
 }
 
-fn completion<C: Instance>() -> Option<Result<(), Error>> {
+pub(crate) fn completion<C: Instance>() -> Option<Result<(), Error>> {
     let (result, waker) = critical_section::with(|_| {
         let waker = service::<C>(false);
         let result = match C::state().phase() {
@@ -512,6 +543,23 @@ fn completion<C: Instance>() -> Option<Result<(), Error>> {
         waker.wake();
     }
     result
+}
+
+/// Register before inspecting hardware, using the same state as DMA IRQ service.
+pub(crate) fn register_endpoint<C: Instance>(waker: &core::task::Waker) {
+    C::state().event.register(waker);
+}
+
+/// A peripheral error or undrained wire poisons the complete operation, even
+/// if one channel independently reached TC. Never turn partial success into a
+/// reusable channel or release one side of a two-channel bus transaction.
+pub(crate) fn poison_endpoint<C: Instance>() {
+    critical_section::with(|_| {
+        engine::disable(&mut Hardware(C::INDEX));
+        C::state().finish_endpoint(false);
+        C::state().set_phase(Phase::Poisoned);
+        C::state().event.reset();
+    });
 }
 
 pub(crate) fn cancel_channel<C: Instance>() {

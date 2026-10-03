@@ -142,10 +142,13 @@ Both chips have GTIM CH1–4; L012 ATIM exposes four audited main channels.
 F030 ATIM.CH4 is internal-only and cannot construct a PwmPin. Pin identities
 and routes describe chip capability, not a package's bonding or PCB connection.
 
-Capture/encoder/slave/external-clock modes, timer DMA/async events and a generic
-complementary-PWM API are not implemented here. Existing `atim::ThreePhasePwm`
-retains its specialized complementary/break and three-phase update contracts.
-Its safety constraints are not relaxed by the simpler single-ended driver.
+From v0.21, separate [input capture/QEI](timer-capture-encoder.md) modules
+provide actual input ownership and checked capture IRQ waits, and
+[generic complementary PWM](complementary-pwm.md) supports optional ATIM pairs
+and an external brake. Arbitrary slave/external-clock modes, timer DMA and
+broader timer IRQ operations remain outside the implemented scope. Existing
+`atim::ThreePhasePwm` retains its specialized complementary/break and three-phase
+update contracts. Its constraints are not relaxed by these separate owners.
 
 For both-chip builds, negative ownership/route checks and real-source synthetic
 MMIO sequencing coverage, see [validation](validation-v0.18.0.md).

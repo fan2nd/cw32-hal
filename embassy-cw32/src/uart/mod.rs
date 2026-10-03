@@ -12,6 +12,8 @@ use crate::interrupt::typelevel::Interrupt as _;
 use crate::{Async, Blocking, Mode, Peri, PeripheralType};
 
 mod r#async;
+#[cfg(any(dma_l012, dma_f030))]
+pub mod dma;
 #[cfg(uart_f030)]
 mod f030;
 #[cfg(uart_l012)]
