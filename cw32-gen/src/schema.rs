@@ -2,13 +2,14 @@
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, BTreeSet};
 pub type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
+/// Version 8 records explicit DMA channels and uniform request-selector routes.
 /// Version 7 records evidenced comparator source connections. Version 6 records
 /// reset cross-effects on other peripheral resources. Version 5 added
 /// indexed fields, registers and subblocks; reset evidence remains. Older
 /// normalized JSON must be regenerated; unknown legacy fields are rejected.
 /// An omitted reset value is unknown, never an implicit zero. An omitted source
 /// YAML `bit_size` still means a 32-bit bus transaction.
-pub const SCHEMA_VERSION: u32 = 7;
+pub const SCHEMA_VERSION: u32 = 8;
 
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -240,6 +241,26 @@ model!(ComparatorConnections {
     dac: Option<DacConnection>,
     source: String
 });
+// One channel view partitioned from its controller. `number` is the hardware
+// channel number; `index` selects the controller's CH array element.
+model!(DmaChannel {
+    peripheral: String,
+    number: u8,
+    index: u8,
+    interrupt: String
+});
+// A controller-wide HARDSRC selector, available on every listed channel.
+// This identifies a request source, not a safe peripheral data-register API.
+model!(DmaRequest {
+    peripheral: String,
+    signal: String,
+    selector: u8
+});
+model!(DmaController {
+    channels: Vec<DmaChannel>,
+    requests: Vec<DmaRequest>,
+    source: String
+});
 #[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct RegisterReset {
@@ -269,6 +290,8 @@ pub struct Peripheral {
     pub reset_effects: Vec<ResetEffect>,
     #[serde(default)]
     pub comparator: Option<ComparatorConnections>,
+    #[serde(default)]
+    pub dma: Option<DmaController>,
     /// This view shares ownership with its parent and must not receive an independent HAL token.
     #[serde(default)]
     pub ownership_parent: Option<String>,
@@ -680,7 +703,10 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
             if (r.array.is_some() && r.elements.len() != offsets.len())
                 || (r.array.is_none() && !r.elements.is_empty())
             {
-                return Err(err(format!("{}.{}: indexed registers require one metadata element per offset; scalar elements must be empty", b.name, r.name)));
+                return Err(err(format!(
+                    "{}.{}: indexed registers require one metadata element per offset; scalar elements must be empty",
+                    b.name, r.name
+                )));
             }
             let width_mask = u32::MAX >> (32 - r.bit_size);
             validate_reset(
@@ -699,7 +725,9 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                     if element.description.trim().is_empty()
                         || !original_names.insert(element.name.as_str())
                     {
-                        return Err(err("register elements require unique original names and nonempty descriptions"));
+                        return Err(err(
+                            "register elements require unique original names and nonempty descriptions",
+                        ));
                     }
                     validate_reset(
                         element.reset_value,
@@ -714,7 +742,10 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                         .iter()
                         .any(|element| element.reset_value != Some(value))
                 }) {
-                    return Err(err(format!("{}.{}: shared array reset requires every element to have the same known reset", b.name, r.name)));
+                    return Err(err(format!(
+                        "{}.{}: shared array reset requires every element to have the same known reset",
+                        b.name, r.name
+                    )));
                 }
             } else if !original_names.insert(r.name.as_str()) {
                 return Err(err("duplicate original register name"));
@@ -811,7 +842,9 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                         && (r.array.is_none()
                             || target_offsets.as_ref().unwrap().len() != offsets.len()))
                 {
-                    return Err(err("register alias requires a distinct canonical register with the same access and matching array length"));
+                    return Err(err(
+                        "register alias requires a distinct canonical register with the same access and matching array length",
+                    ));
                 }
             }
             let bytes = usize::from(r.bit_size / 8);
@@ -840,13 +873,19 @@ fn validate_blocks(ir: &Ir) -> Result<BTreeMap<String, Vec<PhysicalRange>>> {
                         .checked_add(usize::from(target.bit_size / 8))
                         .ok_or_else(|| err("register alias target offset overflow"))?;
                     if start < target_start || end > target_end {
-                        return Err(err(format!("{}.{}[{index}]: register alias must be contained in its canonical element", b.name, r.name)));
+                        return Err(err(format!(
+                            "{}.{}[{index}]: register alias must be contained in its canonical element",
+                            b.name, r.name
+                        )));
                     }
                     let shift = (start - target_start) * 8;
                     let check_reset = |value: Option<u32>, canonical: Option<u32>| -> Result<()> {
                         if let (Some(value), Some(canonical)) = (value, canonical) {
                             if value != (canonical >> shift) & width_mask {
-                                return Err(err(format!("{}.{}[{index}]: reset value conflicts with its canonical alias", b.name, r.name)));
+                                return Err(err(format!(
+                                    "{}.{}[{index}]: reset value conflicts with its canonical alias",
+                                    b.name, r.name
+                                )));
                             }
                         }
                         Ok(())
@@ -966,7 +1005,10 @@ fn expand_block(
         for address in range.start..range.end {
             if let Some(previous) = bytes.insert(address, range.canonical.as_str()) {
                 if previous != range.canonical {
-                    return Err(err(format!("overlapping register offsets require explicit alias_of: {name}.{} overlaps {previous} at byte {address:#x}", range.canonical)));
+                    return Err(err(format!(
+                        "overlapping register offsets require explicit alias_of: {name}.{} overlaps {previous} at byte {address:#x}",
+                        range.canonical
+                    )));
                 }
             }
         }
@@ -998,6 +1040,126 @@ fn validate_peripheral_relationships(
         .map(|p| (p.name.as_str(), p))
         .collect();
     for p in &ir.family.peripherals {
+        if let Some(dma) = &p.dma {
+            if p.block != "dma"
+                || p.ownership_parent.is_some()
+                || dma.source.trim().is_empty()
+                || dma.channels.is_empty()
+                || dma.requests.is_empty()
+            {
+                return Err(err(
+                    "DMA topology requires a controller, channels, requests and evidence",
+                ));
+            }
+            let bank = ir.blocks[&p.block]
+                .blocks
+                .iter()
+                .find(|bank| bank.name == "CH")
+                .ok_or_else(|| err("DMA controller lacks its CH bank"))?;
+            let offsets = bank
+                .array
+                .as_ref()
+                .ok_or_else(|| err("DMA CH bank must be an array"))?
+                .offsets()?;
+            if offsets.len() != dma.channels.len() {
+                return Err(err("DMA channel metadata must cover every CH bank element"));
+            }
+            let channel_block = &ir.blocks[&bank.block];
+            let selector_field = channel_block
+                .registers
+                .iter()
+                .find(|register| register.name == "TRIG")
+                .and_then(|register| register.fields.iter().find(|field| field.name == "HARDSRC"))
+                .ok_or_else(|| err("DMA channel lacks its request selector"))?;
+            if selector_field.bit_size > 8
+                || selector_field.access == "ro"
+                || selector_field.array.is_some()
+            {
+                return Err(err(
+                    "DMA request selector must be a scalar writable field of at most 8 bits",
+                ));
+            }
+            let mut indices = BTreeSet::new();
+            let mut numbers = BTreeSet::new();
+            let mut aliases = BTreeSet::new();
+            for channel in &dma.channels {
+                let alias = peripherals
+                    .get(channel.peripheral.as_str())
+                    .ok_or_else(|| err("unknown DMA channel peripheral"))?;
+                let offset = offsets
+                    .get(usize::from(channel.index))
+                    .ok_or_else(|| err("DMA channel index outside CH bank"))?;
+                if channel.number == 0
+                    || u16::from(channel.number) != u16::from(channel.index) + 1
+                    || !indices.insert(channel.index)
+                    || !numbers.insert(channel.number)
+                    || !aliases.insert(channel.peripheral.as_str())
+                    || alias.ownership_parent.as_ref() != Some(&p.name)
+                    || alias.block != bank.block
+                    || alias.version != bank.version
+                    || p.address
+                        .checked_add(bank.offset)
+                        .and_then(|address| address.checked_add(*offset))
+                        != Some(alias.address)
+                    || !alias
+                        .interrupts
+                        .iter()
+                        .any(|irq| irq.interrupt == channel.interrupt)
+                    || !p
+                        .interrupts
+                        .iter()
+                        .any(|irq| irq.interrupt == channel.interrupt)
+                {
+                    return Err(err(
+                        "invalid/duplicate DMA channel index, number, alias, address or IRQ",
+                    ));
+                }
+                for register in ["ISR", "ICR"] {
+                    let flags = ir.blocks[&p.block]
+                        .registers
+                        .iter()
+                        .find(|r| r.name == register)
+                        .ok_or_else(|| err("DMA controller lacks interrupt flags"))?;
+                    for (prefix, extra) in [("TC", 0), ("TE", 1)] {
+                        let name = format!("{prefix}{}", channel.number);
+                        if !flags.fields.iter().any(|field| {
+                            field.name == name
+                                && u16::from(field.bit_offset)
+                                    == u16::from(channel.index) * 4 + extra
+                                && field.bit_size == 1
+                                && field.array.is_none()
+                        }) {
+                            return Err(err(
+                                "DMA channel number/index does not match its interrupt flags",
+                            ));
+                        }
+                    }
+                }
+            }
+            if peripherals.values().any(|alias| {
+                alias.ownership_parent.as_ref() == Some(&p.name)
+                    && alias.block == bank.block
+                    && !aliases.contains(alias.name.as_str())
+            }) {
+                return Err(err("DMA topology omits a channel alias"));
+            }
+            let mut selectors = BTreeSet::new();
+            let mut names = BTreeSet::new();
+            for request in &dma.requests {
+                check_id(&request.signal)?;
+                let name = format!("{}_{}", request.peripheral, request.signal);
+                check_id(&name)?;
+                if !peripherals.contains_key(request.peripheral.as_str())
+                    || u16::from(request.selector) >= (1_u16 << selector_field.bit_size)
+                    || !selectors.insert(request.selector)
+                    || !names.insert(name)
+                {
+                    return Err(err(
+                        "invalid/duplicate DMA request peripheral, name or selector",
+                    ));
+                }
+            }
+        }
         if let Some(connections) = &p.comparator {
             if p.block != "vc"
                 || connections.source.trim().is_empty()
@@ -1132,7 +1294,10 @@ fn validate_peripheral_relationships(
                         && !ancestor(p, &previous.name)
                         && !ancestor(previous, &p.name)
                     {
-                        return Err(err(format!("overlapping peripheral registers at {address:#x}: {} and {}; explicit ownership_parent required", previous.name, p.name)));
+                        return Err(err(format!(
+                            "overlapping peripheral registers at {address:#x}: {} and {}; explicit ownership_parent required",
+                            previous.name, p.name
+                        )));
                     }
                 }
                 addresses.get_mut(&address).unwrap().push(p);

@@ -1,4 +1,4 @@
-> Current whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
+> v0.14.0 whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
 
 > v0.13.2 consolidates build helpers into build.rs and the shared IRQ event latch into interrupt.rs without changing behavior; see [validation](validation-v0.13.2.md).
 > v0.13.1 adds independently selected IP/capability layers and shared workflows; see [HAL cfg layering](hal-cfg-layering.md). Earlier version-specific discussion below remains historical where labeled.

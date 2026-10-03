@@ -1,4 +1,6 @@
-> Current whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
+> Current DMA/motor release: [v0.15.0 validation](validation-v0.15.0.md), [DMA](dma.md), [motor API](motor-api.md), [schema8](schema-v8.md).
+
+> v0.14.0 whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
 
 > 当前结构整理检查见 [v0.13.2](validation-v0.13.2.md)。
 > 当前 HAL IP/cfg 分层检查见 [v0.13.1](validation-v0.13.1.md)。

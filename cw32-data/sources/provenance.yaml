@@ -37,6 +37,7 @@ sources:
   sections:
   - 2.2.2
   - '4.7'
+  - '8'
   - '9.4'
   - '9.5'
   - '9.6'
@@ -78,7 +79,21 @@ sources:
   version: '1.9'
   url: https://www.whxy.com/uploads/files/20251229/CW32F030_DataSheet_CN_V1.9.pdf
   sha256: 04ef91434320e5d05a3b6690fead0fedb31a7d9bad28c96b655a6e13a22e46b2
+- id: embassy-dma-design
+  kind: upstream-driver-design-reference
+  revision: b12a6d9efcd2711037abca1b63a661a9ef726444
+  url: https://github.com/embassy-rs/embassy/tree/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/dma
+  note: API, ownership and interrupt design reference only; not evidence for CW32 register or drain semantics.
 evidence:
+- applies_to: families/cw32l012.yaml DMA.dma; families/cw32f030.yaml DMA.dma; registers/dmachannel/* descriptions
+  sources:
+  - reference-manual
+  - f030-reference-manual
+  - cmsis-header
+  - f030-cmsis-header
+  - mdk-svd
+  - f030-svd
+  detail: 'Independently audited channel banks, physical IRQ grouping and all uniform HARDSRC request selectors: four channels/64 selectors on L012, five channels/43 selectors on F030. L012 RM1.4 sections 8.2-8.8.10; F030 RM2.5 sections 8.2-8.8.7 and 15.3.6. Schema v8 persists routes into JSON and PAC metadata. Manual EN=0 lacks any documented bus-drain guarantee; no STM32-style disable acknowledgement is assumed. See docs/dma-hardware-evidence.md.'
 - applies_to: registers/*/l012.yaml registers; families/cw32l012.yaml peripheral addresses
   sources:
   - cmsis-header
@@ -141,7 +156,9 @@ cautions:
     considered.
 limitations:
 - The chip-level model is package-independent. Its maintained GPIO identities have datasheet evidence, but users must verify their physical package and PCB bonding. Only the 126 L012 and 107 F030 listed routes are modeled; other alternate functions remain unmodeled.
-- No claimed UART/SPI/I2C/ADC/DMA/timer driver implementation follows from the IRQ metadata.
+- No claimed UART/SPI/I2C/ADC/timer integration follows from the IRQ or DMA request metadata.
+- Neither pinned manual specifies a DMA disable acknowledgement, outstanding-write drain, or BUSY bit. Terminal error status and EN=0 alone must not justify returning a borrowed memory buffer. DMA request selectors identify hardware sources, not complete safe peripheral handshakes.
+- F030 DMA CSR.STATUS is RW in RM2.5 but RO in the pinned SVD; the conservative RO field remains. L012 RM1.4 and SVD both say RW but do not define software-write semantics.
 - Hardware timing, oscillator accuracy and physical GPIO operation have not been tested.
 - RM1.4 HSI reset-value line 0x0001F772 conflicts with its reserved-upper-bits and TRIM-default text;
   use defined field semantics and factory trim, not a whole-register reset assumption.

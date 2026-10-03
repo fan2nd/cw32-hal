@@ -15,3 +15,5 @@ cargo build --release
 本例仅有 main.rs 二进制入口，无 lib.rs，直接构建为 MCU 程序，观察实际 ADC。没有 `motor-output-enable` feature。实验先物理断开母线或禁用 gate driver；外部拖动测 BEMF 也需要先确认电气条件。ADC/OPA 模拟特性和 IRQ 最坏延迟尚未实板验证。
 
 外设初始化直接写在 `main`，ADC 和毫秒节拍直接写在对应 ISR；仅 IRQ 使用的数组、计数器放在静态变量中。全部相关 IRQ 固定为同一 P1 优先级，不能互相抢占；主循环解屏蔽后只休眠，不访问这些变量。
+
+本级使用HAL独立 `motor` 操作API与真正的DMA通道驱动，不再直接操作PAC或启用 `unstable-pac`。板级参数、算法和ISR仍留在本crate；接口排他义务与顺序保证见[电机API](../../../docs/motor-api.md)。

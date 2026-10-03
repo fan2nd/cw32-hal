@@ -15,3 +15,5 @@ cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup
 原板VDDA=5 V，时钟恢复96 MHz HCLK/PCLK、20 kHz PWM（4800刻度）、8 MHz BTIM2/3；ADC1为48 MHz/70采样周期，ADC2为12 MHz/518周期、双触发和逐槽DMA。ADC2请求选择的确定性修复、ADC CR bit8的新版官方库依据及故障边界见[一致性审查](../../../docs/bldc-source-parity.md)。
 
 原始ADC、逻辑桥图、状态、错误和实际输出授权可在断电halt时查看DIAGNOSTICS。正常错误处理时机保持原C；不再添加ADC失联故障或同事件立即关桥。原源码存在的状态覆盖和保护暂停均明示，不能把源码一致性当作电气安全认证。完整引脚和上板约束见[板级说明](../README.md)。
+
+本级使用HAL独立 `motor` 操作API与真正的DMA通道驱动，不再直接操作PAC或启用 `unstable-pac`。板级参数、算法和ISR仍留在本crate；接口排他义务与顺序保证见[电机API](../../../docs/motor-api.md)。

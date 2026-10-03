@@ -1,20 +1,24 @@
-//! Direct PAC initialization, motor task, and immediate hardware interrupt work.
+//! Board wiring, motor task and immediate ISR work using explicit motor HAL leases.
 use crate::control::{Actions, Adc1Sample, Bridge, MotorController, TimerCommand, KEY_DEBOUNCE_MS};
 use crate::protection::Adc2Sample;
 use crate::protocol::telemetry_frame;
 use crate::ui::UiFeedback;
-use crate::{configure_pin, set_af, PinMode};
 use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_cw32::{
+    dma,
+    gpio::Port,
     interrupt::{self, InterruptExt},
-    pac,
+    motor::{
+        self, AdcScan, AdcUnit, BasicTimer, BridgeUpdate, ClockDivider, MotorPin, NegativeInput,
+        PhaseDrive, PinId, PinMode, PositiveInput, PwmBridge, PwmConfig, SampleTime, ScanConfig,
+        ScanSlot, TimerConfig, TimerUnit,
+    },
 };
 
 // Original clock profile, confirmed VDDA=5 V: HCLK/PCLK=96 MHz.
 // ADC1=48 MHz, 70-cycle sampling; ADC2=12 MHz, 518-cycle sampling.
 const CPU_HZ: u32 = 96_000_000;
 const PWM_PERIOD: u16 = 4800;
-const BTIM_ICR_MASK: u32 = 0x41;
 // DMA is the only writer after setup. CPU uses raw volatile reads, never Rust references.
 static mut ADC2_DMA: [u32; 5] = [0; 5];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
@@ -55,7 +59,6 @@ static mut TELEMETRY_MS: u16 = 0;
 const TELEMETRY_INTERVAL_MS: u16 = 500;
 
 pub type MotorPeripherals = (
-    embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMA>,
     embassy_cw32::Peri<'static, embassy_cw32::peripherals::ATIM>,
     embassy_cw32::Peri<'static, embassy_cw32::peripherals::ADC1>,
     embassy_cw32::Peri<'static, embassy_cw32::peripherals::ADC2>,
@@ -85,14 +88,17 @@ pub type MotorPeripherals = (
 static MOTOR_EXECUTOR: embassy_executor::InterruptExecutor =
     embassy_executor::InterruptExecutor::new();
 
-pub fn start(peripherals: MotorPeripherals) {
+pub fn start(
+    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMACHANNEL2>,
+    peripherals: MotorPeripherals,
+) {
     interrupt::UART2.disable();
     interrupt::UART2.unpend();
     interrupt::UART2.set_priority(interrupt::Priority::P1);
     // UART2 peripheral stays unused; its singleton is retained by the motor task.
     MOTOR_EXECUTOR
         .start(interrupt::UART2)
-        .spawn(run(peripherals).unwrap());
+        .spawn(run(dma_channel, peripherals).unwrap());
 }
 
 #[allow(non_snake_case)]
@@ -134,140 +140,78 @@ async fn next_motor_event() {
 }
 
 #[embassy_executor::task]
-async fn run(peripherals: MotorPeripherals) {
+async fn run(
+    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMACHANNEL2>,
+    peripherals: MotorPeripherals,
+) {
+    let mut adc2_channel = dma::Channel::new_blocking(dma_channel);
+    let adc2_stream;
     for irq in [interrupt::ADC1, interrupt::BTIM1, interrupt::BTIM3_HALLTIM] {
         irq.disable();
     }
-    // SAFETY: global HAL initialization transferred all singletons here;
-    // interrupts remain masked until the controller has been installed below.
+    // SAFETY: all motor resources are retained unused by other drivers. Each
+    // temporary motor lease ends before the next access or any await; setup
+    // runs with motor IRQs masked. Thereafter P1 serializes all motor access.
     unsafe {
         // All six gates get low latches before their output directions.
         for (port, pin) in [
-            (pac::GPIOA.as_ptr(), 15),
-            (pac::GPIOB.as_ptr(), 3),
-            (pac::GPIOB.as_ptr(), 4),
-            (pac::GPIOB.as_ptr(), 5),
-            (pac::GPIOB.as_ptr(), 6),
-            (pac::GPIOB.as_ptr(), 7),
+            (Port::A, 15),
+            (Port::B, 3),
+            (Port::B, 4),
+            (Port::B, 5),
+            (Port::B, 6),
+            (Port::B, 7),
         ] {
-            configure_pin(port, pin, PinMode::OutputLow, 0);
+            MotorPin::acquire(PinId::new(port, pin)).configure(PinMode::OutputLow, 0);
         }
         for (port, pin) in [
-            (pac::GPIOA.as_ptr(), 0),
-            (pac::GPIOA.as_ptr(), 1),
-            (pac::GPIOA.as_ptr(), 2),
-            (pac::GPIOA.as_ptr(), 6),
-            (pac::GPIOA.as_ptr(), 7),
-            (pac::GPIOB.as_ptr(), 0),
-            (pac::GPIOB.as_ptr(), 2),
-            (pac::GPIOA.as_ptr(), 8),
-            (pac::GPIOA.as_ptr(), 10),
-            (pac::GPIOA.as_ptr(), 11),
+            (Port::A, 0),
+            (Port::A, 1),
+            (Port::A, 2),
+            (Port::A, 6),
+            (Port::A, 7),
+            (Port::B, 0),
+            (Port::B, 2),
+            (Port::A, 8),
+            (Port::A, 10),
+            (Port::A, 11),
         ] {
-            configure_pin(port, pin, PinMode::Analog, 0);
+            MotorPin::acquire(PinId::new(port, pin)).configure(PinMode::Analog, 0);
         }
-        pac::ATIM.cr1().write(|r| r.set_arpe(true));
-        pac::ATIM.bdtr().write(|_| {});
-        pac::ATIM.dier().write(|_| {});
-        pac::ATIM.ccer().write(|_| {});
-        pac::ATIM.cr2().write(|_| {});
-        pac::ATIM.smcr().write(|_| {});
-        pac::ATIM.psc().write(|_| {});
-        pac::ATIM.arr().write(|r| r.set_arr(PWM_PERIOD - 1));
-        pac::ATIM.rcr().write(|_| {});
-        pac::ATIM.cnt().write(|_| {});
-        // Original PWM1 and preload on all four channels.
-        pac::ATIM.ccmr_cmp(0).write(|r| {
-            r.set_ocm(0, 6);
-            r.set_ocpe(0, true);
-            r.set_ocm(1, 6);
-            r.set_ocpe(1, true);
+        PwmBridge::acquire().configure(PwmConfig {
+            period: PWM_PERIOD,
+            sample_compare: 2400,
+            phase_outputs: true,
         });
-        pac::ATIM.ccmr_cmp(1).write(|r| {
-            r.set_ocm(0, 6);
-            r.set_ocpe(0, true);
-            r.set_ocm(1, 6);
-            r.set_ocpe(1, true);
-        });
-        pac::ATIM.ccr(0).write(|_| {});
-        pac::ATIM.ccr(1).write(|_| {});
-        pac::ATIM.ccr(2).write(|_| {});
-        pac::ATIM.ccr(3).write(|r| r.set_ccr(2400)); // Original PWM_PERIOD / 2.
-        pac::ATIM.dtr2().write(|_| {});
-        pac::ATIM.af1().write(|r| r.set_bkine(false));
-        pac::ATIM.af2().write(|r| r.set_bk2ine(false));
-        pac::ATIM.bdtr().write(|_| {});
-        pac::ATIM.ccer().write(|r| {
-            r.set_cc1e(true);
-            r.set_cc2e(true);
-            r.set_cc3e(true);
-            r.set_cc4e(true);
-        });
-        pac::ATIM.icr().write_value(pac::atim::regs::Icr(0));
         // OPA1: external feedback, PA6 INP2, PA7 INN2, PB0 output.
         // PB0 is read by ADC1 CH8 without creating a second pin owner.
-        pac::BGR.cr().modify(|r| r.set_bgren(true));
-        pac::OPA1.cr().write(|r| {
-            r.set_inn2en(true);
-            r.set_inp2en(true);
-            r.set_en(false);
+        motor::configure_current_sense(PositiveInput::Inp2, NegativeInput::Inn2);
+        // Board channels and acquisition times remain explicit here.
+        AdcScan::acquire(AdcUnit::Adc1).configure(ScanConfig {
+            slots: &[
+                ScanSlot::new(8, SampleTime::Cycles70),
+                ScanSlot::new(0, SampleTime::Cycles70),
+                ScanSlot::new(1, SampleTime::Cycles70),
+                ScanSlot::new(2, SampleTime::Cycles70),
+            ],
+            divider: ClockDivider::Div2,
         });
-        pac::OPA1.cal().write(|_| {});
-        pac::OPA1.cr().write(|r| {
-            r.set_inn2en(true);
-            r.set_inp2en(true);
-            r.set_en(true);
+        AdcScan::acquire(AdcUnit::Adc2).configure(ScanConfig {
+            slots: &[
+                ScanSlot::new(11, SampleTime::Cycles518),
+                ScanSlot::new(5, SampleTime::Cycles518),
+                ScanSlot::new(7, SampleTime::Cycles518),
+                ScanSlot::new(8, SampleTime::Cycles518),
+                ScanSlot::new(15, SampleTime::Cycles518),
+            ],
+            divider: ClockDivider::Div8,
         });
-        for (r, length, channels, sample, divider) in [
-            (pac::ADC1, 4, [8, 0, 1, 2, 0], [9, 9, 9, 9, 0], 1),
-            (pac::ADC2, 5, [11, 5, 7, 8, 15], [15; 5], 3),
+        for (unit, prescaler, reload) in [
+            (TimerUnit::Btim1, 95, 999),
+            (TimerUnit::Btim2, 11, 65530),
+            (TimerUnit::Btim3, 11, 65530),
         ] {
-            r.trigger().write(|_| {});
-            r.start().write(|r| r.set_start(false));
-            r.ier().write(|_| {});
-            // Read once, clear only the documented low byte, and retain all
-            // reserved bits from that same snapshot through both CR writes.
-            let mut control = r.cr().read();
-            control.set_slave(false);
-            control.set_ens(0);
-            control.set_clk(0);
-            control.set_cont(false);
-            control.set_en(false);
-            r.cr().write_value(control);
-            r.awdcr().write(|_| {});
-            r.sqrcfr().write(|r| {
-                r.set_sqrch(0, channels[0]);
-                r.set_sqrch(1, channels[1]);
-                r.set_sqrch(2, channels[2]);
-                r.set_sqrch(3, channels[3]);
-                r.set_sqrch(4, channels[4]);
-            });
-            r.sample().write(|r| {
-                r.set_sqrch(0, sample[0]);
-                r.set_sqrch(1, sample[1]);
-                r.set_sqrch(2, sample[2]);
-                r.set_sqrch(3, sample[3]);
-                r.set_sqrch(4, sample[4]);
-            });
-            r.icr().write_value(pac::adc::regs::Icr(0));
-            control.set_clk(divider);
-            control.set_ens(length - 1);
-            control.set_en(true);
-            r.cr().write_value(control);
-        }
-        for (r, prescaler, reload, oneshot) in [
-            (pac::BTIM1, 95, 999, false),
-            (pac::BTIM2, 11, 65530, false),
-            (pac::BTIM3, 11, 65530, false),
-        ] {
-            r.cr1().write(|r| r.set_oneshot(oneshot));
-            r.dier().write(|_| {});
-            r.cr2().write(|_| {});
-            r.smcr().write(|_| {});
-            r.psc().write(|r| r.set_psc(prescaler));
-            r.arr().write(|r| r.set_arr(reload));
-            r.cnt().write(|r| r.set_cnt(0));
-            r.icr().write_value(pac::btim::regs::Icr(0));
+            BasicTimer::acquire(unit).configure(TimerConfig { prescaler, reload });
         }
     }
     // >=1 ms nominal instruction delay: exceeds BGR (~30 us), OPA and ADC
@@ -276,7 +220,7 @@ async fn run(peripherals: MotorPeripherals) {
     // SAFETY: documented factory calibration halfword, RM25.10/SDK
     // ADC_BGR_VOL_ADDRESS. Keep the source calibration value; protection
     // handles undefined arithmetic explicitly rather than fabricating a voltage.
-    let calibration_mv = unsafe { core::ptr::read_volatile(0x0010_07d2 as *const u16) };
+    let calibration_mv = motor::factory_reference_mv();
     INITIALIZED.store(true, Ordering::Release);
 
     let mut controller = MotorController::new(calibration_mv);
@@ -290,74 +234,57 @@ async fn run(peripherals: MotorPeripherals) {
             // Configure the physical PWM connection once. Commutation below
             // changes CCR/low sides only, as in the C source.
             for pin in [5, 6, 7] {
-                set_af(pac::GPIOB.as_ptr(), pin, 7);
+                MotorPin::acquire(PinId::new(Port::B, pin)).alternate_function(7);
             }
-            let mut bdtr = pac::ATIM.bdtr().read();
-            bdtr.set_moe(true);
-            pac::ATIM.bdtr().write_value(bdtr);
+            PwmBridge::acquire()
+                .arm_outputs()
+                .expect("hardware break latched");
             // Source bootstrap toggles only the three low-side GPIOs.
-            pac::GPIOA.bsrr().write(|r| r.set_bss(15, true));
-            pac::GPIOB.bsrr().write(|r| r.set_bss(3, true));
-            pac::GPIOB.bsrr().write(|r| r.set_bss(4, true));
+            MotorPin::acquire(PinId::new(Port::A, 15)).set_high(true);
+            MotorPin::acquire(PinId::new(Port::B, 3)).set_high(true);
+            MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
         }
         core::ptr::addr_of_mut!(CONTROLLER).write(Some(controller));
         core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(armed);
         core::ptr::addr_of_mut!(BOOTSTRAP_MS).write(6);
         (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = output_opt_in;
-        pac::ADC1.icr().write_value(pac::adc::regs::Icr(0));
-        pac::ADC2.icr().write_value(pac::adc::regs::Icr(0));
-        pac::ADC1.ier().write(|r| r.set_eos(true));
+        AdcScan::acquire(AdcUnit::Adc1).clear_events();
+        AdcScan::acquire(AdcUnit::Adc2).clear_events();
+        AdcScan::acquire(AdcUnit::Adc1).enable_sequence_interrupt();
         // Original EOC + BLOCK intent: one 32-bit result per conversion.
         // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
         // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
-        pac::DMA.ch(1).csr().write(|_| {});
-        pac::DMA.ch(1).cnt().write(|r| {
-            r.set_repeat(1);
-            r.set_cnt(5);
-        });
-        pac::DMA
-            .ch(1)
-            .srcaddr()
-            .write(|r| r.set_srcaddr(pac::ADC2.result(0).as_ptr() as u32));
-        pac::DMA
-            .ch(1)
-            .dstaddr()
-            .write(|r| r.set_dstaddr(core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>() as u32));
-        pac::DMA.ch(1).trig().write(|r| {
-            r.set_type(true);
-            r.set_hardsrc(15);
-        });
-        pac::DMA.ch(1).csr().write(|r| {
-            r.set_restart(true);
-            r.set_size(2);
-            r.set_dstinc(true);
-            r.set_srcinc(true);
-            r.set_trans(true);
-            r.set_en(true);
-        });
-        pac::ADC2.ier().write(|r| r.set_dmaeoc(true));
-        pac::ADC2.trigger().write(|r| r.set_atimoc4refc(true));
+        // Static DMA-only storage outlives the stream even on cancellation.
+        // CPU reads remain volatile words: a scan can be partially refreshed.
+        adc2_stream = adc2_channel
+            .start_repeating_raw::<u32>(
+                AdcScan::acquire(AdcUnit::Adc2).result_address(),
+                core::ptr::addr_of_mut!(ADC2_DMA).cast::<u32>(),
+                5,
+                dma::RawConfig {
+                    trigger: dma::Trigger::Hardware(dma::Request::ADC2_SINGLE),
+                    mode: dma::TransferMode::Block,
+                    source_increment: true,
+                    destination_increment: true,
+                },
+            )
+            .expect("ADC2 DMA configuration");
+        AdcScan::acquire(AdcUnit::Adc2).enable_conversion_dma();
+        AdcScan::acquire(AdcUnit::Adc2).trigger_from_pwm();
 
-        pac::BTIM1
-            .icr()
-            .write_value(pac::btim::regs::Icr(BTIM_ICR_MASK & !1));
-        pac::BTIM3
-            .icr()
-            .write_value(pac::btim::regs::Icr(BTIM_ICR_MASK & !1));
-        pac::BTIM1.dier().write(|r| r.set_uie(true));
-        pac::BTIM3.dier().write(|r| r.set_uie(true));
+        BasicTimer::acquire(TimerUnit::Btim1).clear_update();
+        BasicTimer::acquire(TimerUnit::Btim3).clear_update();
+        BasicTimer::acquire(TimerUnit::Btim1).enable_update_interrupt();
+        BasicTimer::acquire(TimerUnit::Btim3).enable_update_interrupt();
         for irq in [interrupt::ADC1, interrupt::BTIM1, interrupt::BTIM3_HALLTIM] {
             irq.unpend();
             irq.set_priority(interrupt::Priority::P1);
         }
-        pac::ADC1.trigger().write(|r| r.set_atimoc4refc(true));
-        pac::BTIM1.cr1().write(|r| r.set_en(true)); // Original timer enable.
-        pac::BTIM2.cr1().write(|r| r.set_en(true));
-        pac::ATIM.cr1().write(|r| {
-            r.set_arpe(true);
-            r.set_cen(true);
-        });
-        pac::ADC2.start().write(|r| r.set_start(true));
+        AdcScan::acquire(AdcUnit::Adc1).trigger_from_pwm();
+        BasicTimer::acquire(TimerUnit::Btim1).start(); // Original timer enable.
+        BasicTimer::acquire(TimerUnit::Btim2).start();
+        PwmBridge::acquire().start();
+        AdcScan::acquire(AdcUnit::Adc2).start_software();
         // All shared values are ready and no reference survives unmask.
         // Motor task and all motor handlers execute at P1, never nested.
         core::sync::atomic::compiler_fence(Ordering::Release);
@@ -396,7 +323,8 @@ async fn run(peripherals: MotorPeripherals) {
                     temperature: raw[3],
                     reference: raw[4],
                 });
-                let actions = controller.foreground_step(pac::BTIM2.cnt().read().cnt());
+                let actions =
+                    controller.foreground_step(BasicTimer::acquire(TimerUnit::Btim2).counter());
                 apply_actions(controller, diagnostics, armed, actions, None);
                 core::hint::black_box(&*diagnostics);
                 if !controller.foreground_ready() {
@@ -404,7 +332,7 @@ async fn run(peripherals: MotorPeripherals) {
                 }
             }
         }
-        core::hint::black_box(&peripherals);
+        core::hint::black_box((&peripherals, &adc2_stream));
     }
 }
 
@@ -434,24 +362,22 @@ unsafe fn apply_actions(
     }
 
     if let Some(ticks) = actions.step_timer_preset {
-        pac::BTIM2.cnt().write(|r| r.set_cnt(ticks));
+        BasicTimer::acquire(TimerUnit::Btim2).preset(ticks);
     }
     match actions.sensorless_timer {
         TimerCommand::Unchanged => {}
-        TimerCommand::Stop => pac::BTIM3.cr1().write(|_| {}),
+        TimerCommand::Stop => BasicTimer::acquire(TimerUnit::Btim3).stop(),
         TimerCommand::Arm(reload) => {
-            pac::BTIM3.arr().write(|r| r.set_arr(reload));
-            pac::BTIM3.cnt().write(|_| {});
-            pac::BTIM3.cr1().write(|r| r.set_en(true)); // Original repetitive timer enable.
+            BasicTimer::acquire(TimerUnit::Btim3).arm(reload);
         }
     }
 
     // Source alignment turns C- on after Commutation(0) and its timer writes.
     if alignment && *armed {
-        pac::GPIOB.bsrr().write(|r| r.set_bss(4, true));
+        MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
     }
     if actions.start_adc2 {
-        pac::ADC2.start().write(|r| r.set_start(true));
+        AdcScan::acquire(AdcUnit::Adc2).start_software();
     }
     diagnostics.outputs_armed = *armed;
     diagnostics.logical_bridge = controller.bridge();
@@ -463,22 +389,14 @@ unsafe fn apply_actions(
 #[no_mangle]
 unsafe extern "C" fn ADC1() {
     unsafe {
-        let r = pac::ADC1;
-        if !r.isr().read().eos() {
+        let Some(raw) = AdcScan::acquire(AdcUnit::Adc1).take_sequence::<4>() else {
             return;
-        }
-        r.icr().write_value(pac::adc::regs::Icr(0));
+        };
         let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
             .as_mut()
             .unwrap();
         let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
         let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
-        let raw = [
-            r.result(0).read().result(),
-            r.result(1).read().result(),
-            r.result(2).read().result(),
-            r.result(3).read().result(),
-        ];
         diagnostics.adc1 = raw;
         diagnostics.adc1_sequences = diagnostics.adc1_sequences.wrapping_add(1);
         let dma = core::ptr::addr_of!(ADC2_DMA).cast::<u32>();
@@ -489,7 +407,10 @@ unsafe extern "C" fn ADC1() {
             temperature: core::ptr::read_volatile(dma.add(3)) as u16,
             reference: core::ptr::read_volatile(dma.add(4)) as u16,
         });
-        let actions = controller.on_adc1(Adc1Sample::from(raw), pac::BTIM2.cnt().read().cnt());
+        let actions = controller.on_adc1(
+            Adc1Sample::from(raw),
+            BasicTimer::acquire(TimerUnit::Btim2).counter(),
+        );
         apply_actions(controller, diagnostics, armed, actions, None);
         core::hint::black_box(&*diagnostics);
         // Samples stay in this ISR. Wake only when the sample created ready
@@ -505,12 +426,9 @@ unsafe extern "C" fn ADC1() {
 unsafe extern "C" fn BTIM1() {
     // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
     unsafe {
-        if !(pac::BTIM1.isr().read().uif() & pac::BTIM1.dier().read().uie()) {
+        if !BasicTimer::acquire(TimerUnit::Btim1).take_update() {
             return;
         }
-        pac::BTIM1
-            .icr()
-            .write_value(pac::btim::regs::Icr(BTIM_ICR_MASK & !1));
         let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
             .as_mut()
             .unwrap();
@@ -519,7 +437,7 @@ unsafe extern "C" fn BTIM1() {
         diagnostics.milliseconds = diagnostics.milliseconds.wrapping_add(1);
         crate::ui::publish_ui_tick();
         let key_pressed = crate::ui::key_sample();
-        let step_ticks = pac::BTIM2.cnt().read().cnt();
+        let step_ticks = BasicTimer::acquire(TimerUnit::Btim2).counter();
 
         let (motor, telemetry) = {
             KEY_HOLD_MS = if key_pressed {
@@ -570,9 +488,9 @@ unsafe extern "C" fn BTIM1() {
             BOOTSTRAP_MS -= 1;
             if BOOTSTRAP_MS == 0 {
                 if *armed {
-                    pac::GPIOA.brr().write(|r| r.set_brr(15, true));
-                    pac::GPIOB.brr().write(|r| r.set_brr(3, true));
-                    pac::GPIOB.brr().write(|r| r.set_brr(4, true));
+                    MotorPin::acquire(PinId::new(Port::A, 15)).set_high(false);
+                    MotorPin::acquire(PinId::new(Port::B, 3)).set_high(false);
+                    MotorPin::acquire(PinId::new(Port::B, 4)).set_high(false);
                 }
                 controller.finish_bootstrap();
             }
@@ -587,18 +505,16 @@ unsafe extern "C" fn BTIM1() {
 unsafe extern "C" fn BTIM3_HALLTIM() {
     // SAFETY: all motor handlers and the motor executor are P1 and cannot nest.
     unsafe {
-        if !(pac::BTIM3.isr().read().uif() & pac::BTIM3.dier().read().uie()) {
+        if !BasicTimer::acquire(TimerUnit::Btim3).take_update() {
             return;
         }
-        pac::BTIM3
-            .icr()
-            .write_value(pac::btim::regs::Icr(BTIM_ICR_MASK & !1));
         let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
             .as_mut()
             .unwrap();
         let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
         let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
-        let actions = controller.on_sensorless_timer(pac::BTIM2.cnt().read().cnt());
+        let actions =
+            controller.on_sensorless_timer(BasicTimer::acquire(TimerUnit::Btim2).counter());
         apply_actions(controller, diagnostics, armed, actions, None);
         core::hint::black_box(&*diagnostics);
         if controller.foreground_ready() {
@@ -613,78 +529,44 @@ unsafe fn apply_bridge(bridge: Bridge, armed: &mut bool, pwm_only: bool) {
     if !*armed {
         return;
     }
-    let lows = bridge.low_sides;
-    if !pwm_only && lows == [false; 3] {
-        pac::ATIM.ccr(0).write(|_| {});
-        pac::ATIM.ccr(1).write(|_| {});
-        pac::ATIM.ccr(2).write(|_| {});
-        pac::GPIOA.brr().write(|r| r.set_brr(15, true));
-        pac::GPIOB.brr().write(|r| r.set_brr(3, true));
-        pac::GPIOB.brr().write(|r| r.set_brr(4, true));
-        pac::ATIM.ccr(3).write(|r| r.set_ccr(bridge.sample_compare));
-        return;
+    unsafe {
+        let mut lows = [
+            MotorPin::acquire(PinId::new(Port::A, 15)),
+            MotorPin::acquire(PinId::new(Port::B, 3)),
+            MotorPin::acquire(PinId::new(Port::B, 4)),
+        ];
+        PwmBridge::acquire().apply(
+            &mut lows,
+            PhaseDrive {
+                pwm_counts: bridge.pwm_counts,
+                low_sides: bridge.low_sides,
+                sample_compare: bridge.sample_compare,
+            },
+            if pwm_only {
+                BridgeUpdate::PwmOnly
+            } else {
+                BridgeUpdate::Commutate
+            },
+        );
     }
-
-    if !pwm_only {
-        // Source Commutation: first switch off only the unselected low sides.
-        if !lows[0] {
-            pac::GPIOA.brr().write(|r| r.set_brr(15, true));
-        }
-        if !lows[1] {
-            pac::GPIOB.brr().write(|r| r.set_brr(3, true));
-        }
-        if !lows[2] {
-            pac::GPIOB.brr().write(|r| r.set_brr(4, true));
-        }
-    }
-    // Preserve the source order: zero inactive CCRs before writing active CCR.
-    for i in 0..3 {
-        if bridge.pwm_counts[i] == 0 {
-            pac::ATIM.ccr(i).write(|r| r.set_ccr(0));
-        }
-    }
-    for i in 0..3 {
-        if bridge.pwm_counts[i] != 0 {
-            // Preserve the complete source compare word, including its u32
-            // representation; this is an intentional whole-register write.
-            pac::ATIM
-                .ccr(i)
-                .write_value(pac::atim::regs::Ccr(bridge.pwm_counts[i]));
-        }
-    }
-    if !pwm_only {
-        if lows[0] {
-            pac::GPIOA.bsrr().write(|r| r.set_bss(15, true));
-        }
-        if lows[1] {
-            pac::GPIOB.bsrr().write(|r| r.set_bss(3, true));
-        }
-        if lows[2] {
-            pac::GPIOB.bsrr().write(|r| r.set_bss(4, true));
-        }
-    }
-    pac::ATIM.ccr(3).write(|r| r.set_ccr(bridge.sample_compare));
 }
 
 unsafe fn drive_off() {
+    // This fatal path never returns: any interrupted leases are abandoned.
     unsafe {
-        let mut bdtr = pac::ATIM.bdtr().read();
-        bdtr.set_moe(false);
-        pac::ATIM.bdtr().write_value(bdtr);
-        pac::ATIM.ccer().write(|r| r.set_cc4e(true));
-        pac::GPIOA.brr().write(|r| r.set_brr(15, true));
-        pac::GPIOB.brr().write(|r| {
-            for pin in [3, 4, 5, 6, 7] {
-                r.set_brr(pin, true);
-            }
-        });
-        for pin in [5, 6, 7] {
-            set_af(pac::GPIOB.as_ptr(), pin, 0);
-        }
-        pac::ATIM.ccr(0).write(|_| {});
-        pac::ATIM.ccr(1).write(|_| {});
-        pac::ATIM.ccr(2).write(|_| {});
-    }
+        motor::emergency_disconnect(
+            [
+                PinId::new(Port::A, 15),
+                PinId::new(Port::B, 3),
+                PinId::new(Port::B, 4),
+            ],
+            [
+                PinId::new(Port::B, 5),
+                PinId::new(Port::B, 6),
+                PinId::new(Port::B, 7),
+            ],
+        )
+    };
 }
 
 pub fn fatal() -> ! {

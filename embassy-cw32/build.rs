@@ -45,6 +45,7 @@ fn main() {
     // independently selected IP versions and capabilities of those registers.
     emit_driver_cfgs(md);
     fs::write(out.join("_generated_associations.rs"), associations(md)).unwrap();
+    fs::write(out.join("_generated_dma.rs"), dma_bindings(md)).unwrap();
     let target = env::var("TARGET").unwrap();
     if target.starts_with("thumb") {
         assert_eq!(
@@ -164,10 +165,17 @@ fn main() {
         .map(|p| ident(p.name))
         .collect();
     let mut names = BTreeSet::new();
+    let dma_channel_names: BTreeSet<_> = md
+        .peripherals
+        .iter()
+        .filter_map(|p| p.dma)
+        .flat_map(|d| d.channels.iter().map(|ch| ch.peripheral))
+        .collect();
     for name in peripheral_names
         .iter()
         .copied()
         .chain(md.pins.iter().map(|p| ident(p.name)))
+        .chain(dma_channel_names.iter().copied().map(ident))
     {
         assert!(names.insert(name), "duplicate singleton name: {name}");
     }
@@ -214,7 +222,7 @@ fn main() {
     let owned_names: Vec<_> = names
         .iter()
         .copied()
-        .filter(|name| !(reserved_timer && *name == "GTIM1"))
+        .filter(|name| !dma_channel_names.contains(name) && !(reserved_timer && *name == "GTIM1"))
         .collect();
     generated.push_str(");\n#[allow(non_snake_case)]\npub struct Peripherals {\n");
     for name in &owned_names {
@@ -574,6 +582,120 @@ fn main() {
     }
 }
 
+/// Split identities and request encodings are controller topology, not register-name guesses.
+fn dma_bindings(md: &Metadata) -> String {
+    let controllers: Vec<_> = md.peripherals.iter().filter(|p| p.block == "dma").collect();
+    if controllers.is_empty() {
+        return String::new();
+    }
+    assert_eq!(
+        controllers.len(),
+        1,
+        "multiple DMA controllers need independent driver domains"
+    );
+    let controller = controllers[0];
+    let name = ident(controller.name);
+    let dma = controller
+        .dma
+        .expect("DMA driver requires audited controller topology");
+    assert!(!dma.channels.is_empty(), "DMA has no audited channels");
+    let mut out = format!(
+        "/// The sole DMA controller selected by device metadata.\npub type Controller=crate::peripherals::{name};\n\
+         /// Channel tokens obtained only by consuming the complete controller.\npub struct Channels<'d> {{\n"
+    );
+    let mut numbers = BTreeSet::new();
+    let mut indices = BTreeSet::new();
+    let mut aliases = BTreeSet::new();
+    for channel in dma.channels {
+        assert!(numbers.insert(channel.number) && indices.insert(channel.index));
+        assert!(
+            aliases.insert(channel.peripheral),
+            "duplicate DMA channel alias"
+        );
+        let alias = ident(channel.peripheral);
+        let p = md
+            .peripherals
+            .iter()
+            .find(|p| p.name == alias)
+            .expect("DMA channel instance");
+        assert_eq!(p.block, "dmachannel");
+        assert_eq!(p.ownership_parent, Some(controller.name));
+        assert!(md.interrupt_bindings.iter().any(|b| b.peripheral == alias
+            && b.signal == "GLOBAL"
+            && b.interrupt == channel.interrupt));
+        writeln!(
+            out,
+            "pub ch{}:crate::Peri<'d,crate::peripherals::{alias}>,",
+            channel.number
+        )
+        .unwrap();
+    }
+    out.push_str("}\npub(crate) unsafe fn split_tokens<'d>()->Channels<'d>{Channels{\n");
+    for channel in dma.channels {
+        writeln!(
+            out,
+            "ch{}:unsafe{{crate::peripherals::{}::steal()}},",
+            channel.number,
+            ident(channel.peripheral)
+        )
+        .unwrap();
+    }
+    out.push_str("}}\n");
+    for channel in dma.channels {
+        let alias = ident(channel.peripheral);
+        let irq = ident(channel.interrupt);
+        writeln!(out, "impl sealed::Instance for crate::peripherals::{alias} {{const INDEX:usize={}; fn state()->&'static crate::dma::ChannelState {{static STATE:crate::dma::ChannelState=crate::dma::ChannelState::new(); &STATE}}}}\nimpl Instance for crate::peripherals::{alias}{{type Interrupt=crate::interrupt::typelevel::{irq};}}", channel.index).unwrap();
+    }
+    out.push_str("/// Audited hardware trigger selectors. The peripheral remains the caller's responsibility.\n#[allow(non_camel_case_types)]\n#[derive(Clone,Copy,Debug,PartialEq,Eq)]\n#[repr(u8)]\npub enum Request {\n");
+    let mut requests = BTreeSet::new();
+    let mut selectors = BTreeSet::new();
+    for request in dma.requests {
+        let variant = format!("{}_{}", ident(request.peripheral), ident(request.signal));
+        assert!(
+            requests.insert(variant.clone()),
+            "duplicate generated DMA request name"
+        );
+        assert!(
+            selectors.insert(request.selector),
+            "duplicate DMA selector discriminant"
+        );
+        writeln!(out, "{variant}={},", request.selector).unwrap();
+    }
+    out.push_str("}\n");
+    // The normal clock implementation deliberately omits a shared reset. Only
+    // this whole-controller acquisition may reset its descendant channel views.
+    let reset = controller.reset.expect("audited DMA controller reset");
+    assert!(
+        controller.reset_effects.is_empty(),
+        "DMA reset affects another domain"
+    );
+    for p in md.peripherals {
+        if p.reset.is_some_and(|r| {
+            r.peripheral == reset.peripheral
+                && r.register == reset.register
+                && r.field == reset.field
+        }) {
+            assert!(
+                p.name == controller.name || aliases.contains(p.name),
+                "DMA reset affects a separately owned peripheral"
+            );
+            assert!(
+                p.reset_effects.is_empty(),
+                "DMA descendant reset affects another domain"
+            );
+        }
+    }
+    let reset_owner = ident(reset.peripheral);
+    let register = ident(reset.register).to_ascii_lowercase();
+    let field = ident(reset.field).to_ascii_lowercase();
+    out.push_str("pub(crate) fn initialize_controller(){\n");
+    for channel in dma.channels {
+        writeln!(out, "crate::dma::quarantine_for_controller_reset(<crate::peripherals::{} as sealed::Instance>::state());", ident(channel.peripheral)).unwrap();
+    }
+    writeln!(out, "<Controller as crate::rcc::PeripheralClock>::enable_and_reset();critical_section::with(|_|{{crate::pac::{reset_owner}.{register}().modify(|w|w.set_{field}(false));crate::pac::{reset_owner}.{register}().modify(|w|w.set_{field}(true));}});}}").unwrap();
+    out
+}
+
 fn associations(md: &Metadata) -> String {
     let mut out = String::from(
         "// Generated from cw32-metapac metadata. No driver or ISR registration is implied.\n\
@@ -649,6 +771,9 @@ const DRIVER_IPS: &[(&str, &[&str])] = &[
     ("vcref", &["l012"]),
     ("dac", &["l012"]),
     ("bgr", &["l012"]),
+    ("dma", &["l012", "f030"]),
+    ("dmachannel", &["l012", "f030"]),
+    ("btim", &["l012", "f030"]),
 ];
 const GPIO_CAPABILITIES: &[&str] = &[
     "gpio_has_speed",

@@ -35,6 +35,10 @@ pub fn load(root: &Path, chip: &str) -> Result<Ir> {
     chip.remaps.sort_by(|a, b| a.name.cmp(&b.name));
     chip.quirks.sort_by(|a, b| a.name.cmp(&b.name));
     for p in &mut family.peripherals {
+        if let Some(dma) = &mut p.dma {
+            dma.channels.sort_by_key(|channel| channel.index);
+            dma.requests.sort_by_key(|request| request.selector);
+        }
         p.reset_effects
             .sort_by(|a, b| a.peripheral.cmp(&b.peripheral));
         p.register_resets
@@ -99,7 +103,9 @@ pub fn write_json(ir: &Ir, out: &Path) -> Result<std::path::PathBuf> {
             .join(format!("{}_{}.json", b.name, b.version));
         let content = format!("{}\n", serde_json::to_string_pretty(&register)?);
         if path.exists() && fs::read_to_string(&path)? != content {
-            return Err(err("refusing to overwrite a different kind/version definition; use a fresh output directory or split IP version"));
+            return Err(err(
+                "refusing to overwrite a different kind/version definition; use a fresh output directory or split IP version",
+            ));
         }
         fs::write(path, content)?;
     }

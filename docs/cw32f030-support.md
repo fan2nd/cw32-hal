@@ -31,7 +31,8 @@ YAML or JSON. Generated trees and Cargo.lock are ignored and not shipped.
 | VC | Two comparators, 0..7 external inputs on either mux, READY handshake, true VC1/VC2 IRQ waits, typed pin ownership; guarded comparator-to-ATIM brake route |
 | ATIM | True A/B complementary output pairs, F030 prescaler/deadtime/brake model, update/break IRQ futures; conservative strict three-phase duty update API as described below |
 | Generic timer/PWM | Owned ATIM/GTIM1–4 counter and single-ended optional-channel PWM, borrowed SetDutyCycle handles, validated physical divider/period; ATIM A1–A3 and GTIM CH1–4 have audited routes |
-| Unsupported HAL drivers | UART/SPI/I2C/DMA/RTC/watchdogs/CRC and other peripherals remain PAC/metadata only; register coverage is not driver coverage |
+| DMA | Five actual channels, DMACH1/DMACH23/DMACH45 bindings and 43 audited request selectors; see [DMA safety and limitations](dma.md) |
+| Unsupported HAL drivers | UART/SPI/I2C/RTC/watchdogs/CRC and other peripherals remain PAC/metadata only; register coverage is not driver coverage |
 | Absent hardware | No fabricated ADC2, OPA, DAC, CORDIC, EAU, or standalone VCREF/BGR singleton |
 
 IRQ waits use actual `Binding` proofs, instance-specific hardware flags and

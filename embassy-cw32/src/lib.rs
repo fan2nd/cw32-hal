@@ -13,11 +13,15 @@ pub mod analog;
 pub mod atim;
 #[cfg(cordic)]
 pub mod cordic;
+#[cfg(dma)]
+pub mod dma;
 #[cfg(eau)]
 pub mod eau;
 #[cfg(gpio)]
 pub mod gpio;
 pub mod interrupt;
+#[cfg(any(adc_l012, atim_l012, btim_l012, gpio_l012, all(opa_l012, bgr_l012)))]
+pub mod motor;
 #[cfg(feature = "rt")]
 pub use cortex_m_rt::interrupt;
 #[cfg(feature = "unstable-pac")]
@@ -33,15 +37,22 @@ pub mod mode {
     }
     /// Driver mode selected by its constructor.
     #[allow(private_bounds)]
-    pub trait Mode: sealed::Sealed {}
+    pub trait Mode: sealed::Sealed {
+        #[doc(hidden)]
+        const ASYNC: bool;
+    }
     /// Busy-waiting driver without a required interrupt binding.
     pub struct Blocking;
     /// Interrupt-driven driver with a checked interrupt binding.
     pub struct Async;
     impl sealed::Sealed for Blocking {}
     impl sealed::Sealed for Async {}
-    impl Mode for Blocking {}
-    impl Mode for Async {}
+    impl Mode for Blocking {
+        const ASYNC: bool = false;
+    }
+    impl Mode for Async {
+        const ASYNC: bool = true;
+    }
 }
 pub use mode::{Async, Blocking, Mode};
 #[cfg(sysctrl)]

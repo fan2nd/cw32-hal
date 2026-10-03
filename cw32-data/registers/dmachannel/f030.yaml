@@ -13,13 +13,13 @@ registers:
     bit_size: 3
     access: ro
     kind: raw
-    description: CW32F030 DMACHANNEL.CSR.STATUS; raw encoding.
+    description: "Terminal diagnostic: 0 initial, 1 address out of range, 2 transfer-stop request, 3 source access error, 4 destination access error, 5 complete. Not a BUSY flag; no documented drain guarantee. RM2.5 8.8.3 labels RW while the pinned SVD says RO; conservative RO retained."
   - name: SIZE
     bit_offset: 6
     bit_size: 2
     access: rw
     kind: raw
-    description: CW32F030 DMACHANNEL.CSR.SIZE; raw encoding.
+    description: "0 selects 8-bit data and increment 1; 1 selects 16-bit data and increment 2; 2 selects 32-bit data and increment 4; 3 is not documented. RM2.5 8.5.1 requires matching source and destination data widths."
   - name: DSTINC
     bit_offset: 5
     bit_size: 1
@@ -37,7 +37,7 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 DMACHANNEL.CSR.TRANS; raw encoding.
+    description: "0 selects BULK (no inter-block arbitration gaps), 1 selects BLOCK (arbitration after each block). Hardware BLOCK requires a request for each block; software BLOCK needs one start for the full count."
   - name: TEIE
     bit_offset: 2
     bit_size: 1
@@ -55,7 +55,7 @@ registers:
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 DMACHANNEL.CSR.EN; raw encoding.
+    description: "0 disables, 1 enables the channel. The manual does not specify disable acknowledgement, automatic clearing, or completion of outstanding bus writes."
 - name: CNT
   reset_value: 0x00000000
   reset_source: "CW32x030 RM Rev2.5 section 8.8.5, printed p141 (PDF p142); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
@@ -68,7 +68,7 @@ registers:
     bit_size: 4
     access: rw
     kind: raw
-    description: CW32F030 DMACHANNEL.CNT.REPEAT; raw encoding.
+    description: "Must be programmed to 1 per RM2.5 8.8.5; 8.5.2 states completion reduces it to zero, so reload before another transfer."
   - name: CNT
     bit_offset: 0
     bit_size: 16
@@ -113,19 +113,19 @@ registers:
     bit_size: 6
     access: rw
     kind: raw
-    description: CW32F030 DMACHANNEL.TRIG.HARDSRC; raw encoding.
+    description: "Six-bit controller-wide hardware request selector. Exact chip-specific routes are in the DMA instance metadata; not interchangeable between L012 and F030."
   - name: SOFTSRC
     bit_offset: 1
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 DMACHANNEL.TRIG.SOFTSRC; raw encoding.
+    description: "Reads zero after transfer completion and one while transfer is in progress. Writing one software-triggers the channel; writing zero has no effect. Not documented as an abort or hardware-trigger drain acknowledgement."
   - name: TYPE
     bit_offset: 0
     bit_size: 1
     access: rw
     kind: bool
-    description: CW32F030 DMACHANNEL.TRIG.TYPE; raw encoding.
+    description: "0 selects software triggering by SOFTSRC; 1 selects hardware triggering by the HARDSRC request source."
   write_behavior: mixed
   read_behavior: ordinary
 constants: []

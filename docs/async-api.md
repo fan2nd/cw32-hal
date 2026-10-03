@@ -70,6 +70,24 @@ Events before arming are discarded; multiple edges may coalesce, any-edge direct
 
 ## Other event drivers and boundaries
 
-`AsyncThreePhasePwm` still waits for actual ATIM update/break events while preserving the specialized six-output/break-protected owner. Cancelling a wait is not an emergency stop and does not disable the running counter or hardware break; fault recovery remains explicit. `AsyncCordic` waits for actual EOC and resets its dedicated accelerator on cancellation. These are real existing IRQ paths, not claimed generic timer or DMA support.
+`AsyncThreePhasePwm` still waits for actual ATIM update/break events while preserving the specialized six-output/break-protected owner. Cancelling a wait is not an emergency stop and does not disable the running counter or hardware break; fault recovery remains explicit. `AsyncCordic` waits for actual EOC and resets its dedicated accelerator on cancellation. These event waits do not stand in for generic timer or DMA transfers.
+
+## DMA transfer cancellation is a different memory contract
+
+The [DMA driver](dma.md) consumes the complete controller and partitions its actual
+channels. Each async channel requires its own checked handler binding, even when
+several channels share one physical IRQ. Its handler services only that channel.
+
+Safe asynchronous memory copies own static source/destination buffers. Successful
+normal transfer-complete returns them; cancellation, transfer error or a blocking
+poll-budget timeout quarantines the buffers and poisons the channel. Forgetting a
+transfer cannot make the DMA destination into dangling memory. Ordinary borrowed
+buffers and peripheral MMIO endpoints require explicit unsafe transfer contracts
+which remain in force after cancellation or forgetting the handle.
+
+This conservatism follows an important CW documentation limit: clearing channel
+EN is not documented as draining all outstanding AHB accesses. A CPU barrier is
+not a substitute for another bus master's completion. See the [hardware
+evidence](dma-hardware-evidence.md) before choosing an unsafe endpoint protocol.
 
 No continuous ADC DMA, calibration/internal-channel ownership API, lossless GPIO/comparator event queue, STOP-clock handling, hardware-in-loop testing or complete upstream-driver feature parity is implied.

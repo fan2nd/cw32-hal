@@ -53,7 +53,10 @@ impl UiCommand {
 use crate::frame_queue::FrameQueue;
 use core::cell::RefCell;
 use critical_section::Mutex;
-use embassy_cw32::pac;
+use embassy_cw32::{
+    gpio::{AfType, Flex, Input, Level, Output, OutputType, Pull},
+    pac,
+};
 
 pub async fn run(
     led: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PC13>,
@@ -62,14 +65,20 @@ pub async fn run(
     tx_pin: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PB12>,
     rx_pin: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PB11>,
 ) {
-    // UI owns these pins and UART exclusively; configuration finishes before
-    // yielding to the thread executor. The boot-only critical section prevents
-    // a motor-init GPIO register RMW from interleaving with UI pin setup.
-    critical_section::with(|_| unsafe {
-        crate::configure_pin(pac::GPIOC.as_ptr(), 13, crate::PinMode::OutputHigh, 0);
-        crate::configure_pin(pac::GPIOA.as_ptr(), 3, crate::PinMode::InputPullUp, 0);
-        crate::configure_pin(pac::GPIOB.as_ptr(), 12, crate::PinMode::OutputHigh, 1);
-        crate::configure_pin(pac::GPIOB.as_ptr(), 11, crate::PinMode::InputPullUp, 1);
+    let mut led = Output::new(led, Level::High);
+    let key = Input::new(key, Pull::Up);
+    let mut tx_pin = Flex::new(tx_pin);
+    tx_pin.set_high();
+    tx_pin.set_as_af_unchecked(1, AfType::output(OutputType::PushPull));
+    let mut rx_pin = Flex::new(rx_pin);
+    rx_pin.set_as_af_unchecked(1, AfType::input(Pull::Up));
+    // UART is the remaining manual peripheral: this task owns UART1 and its
+    // pin handles. Shared clock RMW is serialized with motor initialization.
+    critical_section::with(|_| {
+        let mut gate = pac::SYSCTRL.apben1().read();
+        gate.set_key(0x5a5a);
+        gate.set_uart1(true);
+        pac::SYSCTRL.apben1().write_value(gate);
         pac::UART1.ier().write(|_| {});
         pac::UART1.cr1().write(|r| {
             r.set_source(1);
@@ -84,15 +93,15 @@ pub async fn run(
     let mut tx = FrameQueue::new();
     loop {
         let feedback = next_ui_tick().await;
-        let pressed = !pac::GPIOA.idr().read().pin(3);
+        let pressed = key.is_low();
         critical_section::with(|cs| UI_LINK.borrow(cs).borrow_mut().command.update(pressed));
         if let Some(on) = feedback.led_on {
             // PC13 LED is active-low; SET/CLR does not race motor GPIO mux RMW.
 
             if on {
-                pac::GPIOC.brr().write(|r| r.set_brr(13, true));
+                led.set_low();
             } else {
-                pac::GPIOC.bsrr().write(|r| r.set_bss(13, true));
+                led.set_high();
             }
         }
         if let Some(frame) = feedback.telemetry {

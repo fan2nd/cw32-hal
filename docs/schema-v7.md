@@ -1,3 +1,5 @@
+> Historical schema. Current DMA topology is documented in [schema8](schema-v8.md).
+
 # Normalized schema v7: instance analog connections
 
 Schema 7 retains the [indexed register model](schema-v5.md) and

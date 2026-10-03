@@ -228,8 +228,16 @@ fn select_rules<'a>(
         {
             return Err(err(format!(
                 "{}: alias source mismatch for {}: requested block={:?}, version={:?}, vendor_ip={:?}, vendor_version={:?}; found {}/{}, vendor_ip={:?}, vendor_version={:?}",
-                located.origin, p.name, t.block, t.version, t.vendor_ip, t.vendor_version,
-                p.block, p.version, p.vendor_ip, p.vendor_version
+                located.origin,
+                p.name,
+                t.block,
+                t.version,
+                t.vendor_ip,
+                t.vendor_version,
+                p.block,
+                p.version,
+                p.vendor_ip,
+                p.vendor_version
             )));
         }
         if let Some(previous) = selected.insert(p.name.clone(), located) {
@@ -286,7 +294,9 @@ pub fn load_blocks(root: &Path, chip: &str, family: &Family) -> Result<BTreeMap<
         if block.name != *kind || block.version != *version {
             return Err(err(format!(
                 "{context}: register block reference/name/version mismatch in {}: expected {kind}/{version}, found {}/{}",
-                path.display(), block.name, block.version
+                path.display(),
+                block.name,
+                block.version
             )));
         }
         block.name.clone_from(&peripheral.block);
@@ -569,7 +579,10 @@ fn apply_aliases(
             for item in &mut block.blocks {
                 if let Some(targets) = identities.get(&(item.block.clone(), item.version.clone())) {
                     if targets.len() != 1 {
-                        return Err(err(format!("ambiguous normalized nested block {}.{}; reference an explicit canonical kind/version", block.name, item.name)));
+                        return Err(err(format!(
+                            "ambiguous normalized nested block {}.{}; reference an explicit canonical kind/version",
+                            block.name, item.name
+                        )));
                     }
                     let (kind, version) = targets.iter().next().unwrap();
                     item.block.clone_from(kind);
@@ -578,7 +591,10 @@ fn apply_aliases(
             }
             if let Some(previous) = normalized.get(&block.name) {
                 if serde_json::to_value(previous)? != serde_json::to_value(&block)? {
-                    return Err(err(format!("conflicting normalized register models for kind {}; multiple versions of one kind within a single chip are unsupported (distinct versions across chips are supported)", block.name)));
+                    return Err(err(format!(
+                        "conflicting normalized register models for kind {}; multiple versions of one kind within a single chip are unsupported (distinct versions across chips are supported)",
+                        block.name
+                    )));
                 }
             } else {
                 normalized.insert(block.name.clone(), block);
