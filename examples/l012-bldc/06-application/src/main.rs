@@ -24,11 +24,10 @@ async fn main(_spawner: embassy_executor::Spawner) {
     config.rcc.hsi_divider = embassy_cw32::rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
-    let dma_channels = embassy_cw32::dma::split(p.DMA);
 
     // Transfer the motor's singleton tokens out of the thread executor domain.
     motor::start(
-        dma_channels.ch2,
+        p.DMACHANNEL2,
         (
             p.ATIM, p.ADC1, p.ADC2, p.OPA1, p.BGR, p.BTIM1, p.BTIM2, p.BTIM3, p.PA15, p.PB3, p.PB4,
             p.PB5, p.PB6, p.PB7, p.PA0, p.PA1, p.PA2, p.PA6, p.PA7, p.PB0, p.PB2, p.PA8, p.PA10,

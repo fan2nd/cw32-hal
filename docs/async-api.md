@@ -76,8 +76,8 @@ Events before arming are discarded; multiple edges may coalesce, any-edge direct
 
 ## DMA transfer cancellation is a different memory contract
 
-The [DMA driver](dma.md) consumes the complete controller and partitions its actual
-channels. Each async channel requires its own checked handler binding, even when
+The [DMA driver](dma.md) consumes independent channel tokens directly from
+`Peripherals`. Each async channel requires its own checked handler binding, even when
 several channels share one physical IRQ. Its handler services only that channel.
 
 Safe asynchronous memory copies own static source/destination buffers. Successful

@@ -34,7 +34,7 @@ use hardware::Hardware;
 pub(crate) struct PreparedEndpoint(engine::Config);
 
 pub(crate) mod sealed {
-    pub(crate) trait Instance {
+    pub(crate) trait Instance: crate::rcc::PeripheralClock {
         const INDEX: usize;
         fn state() -> &'static super::ChannelState;
     }
@@ -185,34 +185,13 @@ impl ChannelState {
     }
 }
 
-/// Preserve quarantine even if a borrowed controller token is split again after
-/// channel handles were forgotten. A controller reset is not a bus-drain proof.
-pub(crate) fn quarantine_for_controller_reset(state: &ChannelState) {
-    critical_section::with(|_| {
-        match state.phase() {
-            Phase::Idle | Phase::Complete => state.set_phase(Phase::Idle),
-            _ => state.set_phase(Phase::Poisoned),
-        }
-        state.finish_endpoint(state.phase() == Phase::Idle);
-        state.event.reset();
-    });
-}
-
 include!(concat!(env!("OUT_DIR"), "/_generated_dma.rs"));
 
-/// Consume exclusive controller ownership and produce disjoint channel tokens.
-/// Each constructed channel retains the shared clock; unused channel tokens
-/// retain no gate. The final clean owner releases it, while quarantine pins it
-/// permanently. No channel may reset the controller or disable another channel's
-/// IRQ. Existing software poison is never cleared here.
-pub fn split<'d>(_controller: Peri<'d, Controller>) -> Channels<'d> {
-    initialize_controller();
-    // SAFETY: the sole controller token covers every generated descendant;
-    // returned channel lifetimes cannot outlive its exclusive borrow.
-    unsafe { split_tokens() }
-}
-
 /// Exclusive DMA channel owner, analogous to Embassy's Channel/Transfer model.
+/// Construct directly from a channel token returned by [`crate::init`]. Each
+/// owner retains the shared clock; unused tokens retain no gate. The final clean
+/// owner releases the gate, while quarantine pins it permanently. Construction
+/// never resets the shared controller or clears a channel's existing poison.
 /// Blocking mode does not require or enable NVIC. Async mode requires the exact
 /// generated channel/IRQ binding, including every used channel on shared vectors.
 pub struct Channel<'d, C: Instance, M: Mode = Blocking> {
@@ -223,7 +202,7 @@ pub struct Channel<'d, C: Instance, M: Mode = Blocking> {
 impl<'d, C: Instance> Channel<'d, C, Blocking> {
     pub fn new_blocking(channel: Peri<'d, C>) -> Self {
         Self {
-            _clock: <Controller as crate::rcc::PeripheralClock>::acquire_no_reset(),
+            _clock: <C as crate::rcc::PeripheralClock>::acquire_no_reset(),
             _token: channel,
             _mode: PhantomData,
         }
@@ -238,7 +217,7 @@ impl<'d, C: Instance> Channel<'d, C, Async> {
         // SAFETY: Binding proves dispatch to the channel-specific handler.
         unsafe { C::Interrupt::enable() };
         Self {
-            _clock: <Controller as crate::rcc::PeripheralClock>::acquire_no_reset(),
+            _clock: <C as crate::rcc::PeripheralClock>::acquire_no_reset(),
             _token: channel,
             _mode: PhantomData,
         }
@@ -276,7 +255,7 @@ impl<'d, C: Instance, M: Mode> Channel<'d, C, M> {
     /// A completion already observed by polling or IRQ service permits reuse;
     /// a forgotten transfer with unobserved completion remains busy. Dropping
     /// the owner performs a final completion check. Abort and error poison
-    /// survives all owner reconstruction and controller splits.
+    /// survives all owner reconstruction.
     pub fn is_poisoned(&self) -> bool {
         matches!(C::state().phase(), Phase::Poisoned | Phase::Failed(_))
     }

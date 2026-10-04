@@ -138,14 +138,15 @@ fn main() {
     ports.push_str("}}\n}\n");
     fs::write(out.join("_generated_gpio.rs"), ports).unwrap();
 
-    // GPIO port registers and SYSCTRL are HAL-managed shared resources. Only
-    // pin tokens and standalone peripherals are exposed as exclusive tokens.
+    // GPIO ports, SYSCTRL and DMA controllers are HAL-managed shared resources.
+    // DMA ownership is represented by its audited, disjoint channel tokens.
     let peripheral_names: Vec<_> = md
         .peripherals
         .iter()
         .filter(|p| {
             !p.block.eq_ignore_ascii_case("gpio")
                 && !p.block.eq_ignore_ascii_case("sysctrl")
+                && !p.block.eq_ignore_ascii_case("dma")
                 && p.ownership_parent.is_none()
         })
         .map(|p| ident(p.name))
@@ -208,7 +209,7 @@ fn main() {
     let owned_names: Vec<_> = names
         .iter()
         .copied()
-        .filter(|name| !dma_channel_names.contains(name) && !(reserved_timer && *name == "GTIM1"))
+        .filter(|name| !(reserved_timer && *name == "GTIM1"))
         .collect();
     let hse_pins = hse_pin_roles(md);
     generated.push_str(");\n#[allow(non_snake_case)]\npub struct Peripherals {\n");
@@ -255,9 +256,14 @@ fn main() {
     generated.push_str("    }\n}\n");
     fs::write(out.join("_generated.rs"), generated).unwrap();
 
+    let clocked_names: Vec<_> = peripheral_names
+        .iter()
+        .chain(dma_channel_names.iter())
+        .copied()
+        .collect();
     fs::write(
         out.join("_generated_peripheral_clocks.rs"),
-        clock_bindings(md, &peripheral_names),
+        clock_bindings(md, &clocked_names),
     )
     .unwrap();
     for kind in ["eau", "cordic", "iwdt", "wwdt"] {
@@ -1068,18 +1074,18 @@ fn dma_bindings(md: &Metadata) -> String {
         "multiple DMA controllers need independent driver domains"
     );
     let controller = controllers[0];
-    let name = ident(controller.name);
     let dma = controller
         .dma
         .expect("DMA driver requires audited controller topology");
     assert!(!dma.channels.is_empty(), "DMA has no audited channels");
-    let mut out = format!(
-        "/// The sole DMA controller selected by device metadata.\npub type Controller=crate::peripherals::{name};\n\
-         /// Channel tokens obtained only by consuming the complete controller.\npub struct Channels<'d> {{\n"
-    );
+    let mut out = String::new();
     let mut numbers = BTreeSet::new();
     let mut indices = BTreeSet::new();
     let mut aliases = BTreeSet::new();
+    let clock_bit = |r: cw32_metapac::metadata::RegisterBit| {
+        (r.peripheral, r.register, r.field, r.bit, r.offset)
+    };
+    let gate = controller.clock_gate.expect("audited DMA controller clock");
     for channel in dma.channels {
         assert!(numbers.insert(channel.number) && indices.insert(channel.index));
         assert!(
@@ -1094,29 +1100,11 @@ fn dma_bindings(md: &Metadata) -> String {
             .expect("DMA channel instance");
         assert_eq!(p.block, "dmachannel");
         assert_eq!(p.ownership_parent, Some(controller.name));
+        assert_eq!(p.clock_gate.map(&clock_bit), Some(clock_bit(gate)));
+        assert_eq!(p.reset.map(&clock_bit), controller.reset.map(&clock_bit));
         assert!(md.interrupt_bindings.iter().any(|b| b.peripheral == alias
             && b.signal == "GLOBAL"
             && b.interrupt == channel.interrupt));
-        writeln!(
-            out,
-            "pub ch{}:crate::Peri<'d,crate::peripherals::{alias}>,",
-            channel.number
-        )
-        .unwrap();
-    }
-    out.push_str("}\npub(crate) unsafe fn split_tokens<'d>()->Channels<'d>{Channels{\n");
-    for channel in dma.channels {
-        writeln!(
-            out,
-            "ch{}:unsafe{{crate::peripherals::{}::steal()}},",
-            channel.number,
-            ident(channel.peripheral)
-        )
-        .unwrap();
-    }
-    out.push_str("}}\n");
-    for channel in dma.channels {
-        let alias = ident(channel.peripheral);
         let irq = ident(channel.interrupt);
         writeln!(out, "impl sealed::Instance for crate::peripherals::{alias} {{const INDEX:usize={}; fn state()->&'static crate::dma::ChannelState {{static STATE:crate::dma::ChannelState=crate::dma::ChannelState::new(); &STATE}}}}\nimpl Instance for crate::peripherals::{alias}{{type Interrupt=crate::interrupt::typelevel::{irq};}}", channel.index).unwrap();
     }
@@ -1136,8 +1124,9 @@ fn dma_bindings(md: &Metadata) -> String {
         writeln!(out, "{variant}={},", request.selector).unwrap();
     }
     out.push_str("}\n");
-    // The normal clock implementation deliberately omits a shared reset. Only
-    // this whole-controller acquisition may reset its descendant channel views.
+    // The channel clock traits share the controller's one physical resource.
+    // Only global initialization may request its reset; channel constructors
+    // acquire the resource without resetting any sibling or clearing poison.
     let reset = controller.reset.expect("audited DMA controller reset");
     assert!(
         controller.reset_effects.is_empty(),
@@ -1159,11 +1148,13 @@ fn dma_bindings(md: &Metadata) -> String {
             );
         }
     }
-    out.push_str("pub(crate) fn initialize_controller(){\n");
-    for channel in dma.channels {
-        writeln!(out, "crate::dma::quarantine_for_controller_reset(<crate::peripherals::{} as sealed::Instance>::state());", ident(channel.peripheral)).unwrap();
-    }
-    out.push_str("let _clock=<Controller as crate::rcc::PeripheralClock>::acquire();}\n");
+    let first_channel = ident(dma.channels[0].peripheral);
+    writeln!(out,
+        "/// Reset the shared controller once, before any safe channel token escapes.\n\
+         /// # Safety\n\
+         /// Call only during exclusive global initialization, before constructing any channel.\n\
+         pub(crate) unsafe fn init(){{let _clock=<crate::peripherals::{first_channel} as crate::rcc::PeripheralClock>::acquire();}}"
+    ).unwrap();
     out
 }
 

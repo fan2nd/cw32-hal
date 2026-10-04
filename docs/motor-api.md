@@ -184,7 +184,7 @@ v0.16.0移除动态 `AdcUnit`/`TimerUnit` 选择并让IRQ使能必须提供proof
 ## 与真正 DMA 驱动配合
 
 DMA 不是 motor 文件夹中的“启动若干寄存器”代用品。`embassy_cw32::dma` 由
-独立 channel token 驱动；例程将 `dma::split(p.DMA).ch2` 交给
+独立 channel token 驱动；例程将 `p.DMACHANNEL2` 交给
 `Channel::new_blocking` 并保留 `start_repeating_raw` 返回的 guard。
 
 ADC2 保持 `ADC2_SINGLE`、BLOCK、32 位、计数 5、REPEAT=1、双地址自增、RESTART。

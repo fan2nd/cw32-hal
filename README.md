@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.22.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.23.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -21,6 +21,8 @@ v0.20.0 增加 [内部 ADC 源](docs/adc-internal.md)、[窗口看门狗](docs/w
 v0.21.0 增加 [输入捕获/编码器](docs/timer-capture-encoder.md)、[通用互补 PWM](docs/complementary-pwm.md) 和 [UART/SPI 类型化 DMA](docs/bus-dma.md)。F030 A/B 捕获输入、缺失的过捕获指示、不同死区时钟和共享 IRQ 均按真实硬件处理；DMA 仍消费静态资源并在错误/取消时隔离，UART RX 保守限单帧。实例捕获选择器进入 [schema11](docs/schema-v11.md)，[第五阶段范围](docs/timer-dma-v0.21.0.md) 保留后续时钟/低功耗事项。
 
 v0.22.0 增加两芯片 [HSE 启动与 F030 PLL](docs/external-clocks.md)，在寄存器操作前校验电压、频率和时基，按 metadata 保留 PF0/PF1，避免 HSE 与 GPIO 别名。默认 HSI 和 96MHz 电机配置不变。[时钟与低功耗边界](docs/runtime-low-power.md) 明确区分普通休眠、硅片深睡能力与尚未实现的 owner/时间恢复协议；[八项差距最终清单](docs/clock-roadmap-v0.22.0.md) 记录已实现范围和有依据的限制。
+
+v0.23.0 将 DMA 通道直接放入 `Peripherals`：`Channel::new(p.DMACHANNEL1, Irqs)`，不再取得整个 DMA 后 `split`。通道身份、数量、中断及请求关联均来自已有 metadata；控制器只在全局初始化、token 交付前复位一次，后续兄弟通道不再触碰共享复位。见 [DMA 通道所有权](docs/dma-channel-tokens.md) 和 [验证](docs/validation-v0.23.0.md)。
 
 ## 先看设计与边界
 

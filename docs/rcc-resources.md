@@ -80,16 +80,18 @@ DMA handlers already test persistent channel state before hardware access.
 
 Metadata separately identifies bus/kernel sources, shared gates, reset lines,
 ownership parents and reset side effects. Resets across independently owned
-analog/timer siblings remain suppressed. A reset shared only by one complete DMA
-controller and its descendant channel views is allowed for first whole-controller
-acquisition. DMA channel construction never requests a controller reset.
+analog/timer siblings remain suppressed. DMA controller reset runs only during
+global initialization, before its direct channel tokens escape. Channel clock
+acquisition never requests reset, even after the last clean owner drops. There
+is no independently accessible whole-controller HAL token or split path.
 
 DAC channel owners retain separate references, so either may outlive its sibling.
 DMA channels also hold separate references. A forgotten owner leaks its reference
 and therefore prevents subsequent reset/gate-off. ADC/DMA cancellation, error,
 timeout or a forgotten transfer never treats EN=0 as proof of bus quiescence:
 when a dropping owner remains quarantined, its resource is permanently pinned.
-Re-splitting DMA preserves software poison and cannot reset a retained controller.
+Reconstructing a channel through a reborrowed token preserves software poison;
+constructing any sibling cannot reset a retained controller.
 
 F030 comparator-to-ATIM brake sources retain the ATIM clock until the physical
 route is removed. This also covers forgetting the borrow guard, dropping PWM,

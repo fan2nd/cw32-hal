@@ -12,11 +12,17 @@ come from CW documentation, not STM32 assumptions.
 
 ## Ownership and normal use
 
-`dma::split(p.DMA)` consumes the only controller token, enables and resets its
-complete domain, and returns `Channels { ch1, ch2, ... }`. These are `Peri` tokens
-for `peripherals::DMACHANNEL1`, etc. They are not also independently available
-in `Peripherals`. A channel cannot reset the controller or gate its shared clock.
-The returned lifetimes preserve a borrowed parent token's exclusivity.
+`Peripherals` directly owns `DMACHANNEL1` through `DMACHANNEL4` on L012,
+and through `DMACHANNEL5` on F030. Each field is the corresponding exclusive
+`Peri` token, generated from the audited channel metadata. Construct a channel
+with `Channel::new(p.DMACHANNEL1, binding)` or `new_blocking(p.DMACHANNEL1)`.
+The whole-controller `DMA` token and `dma::split`/`Channels` API are removed.
+
+Global HAL initialization resets the shared controller once before any token
+escapes. Channel construction only acquires a counted clock reference and never
+resets hardware, including after all previous clean owners were dropped. A
+channel token can be reborrowed with the normal `Peri` lifetime rules; persistent
+software poison survives owner reconstruction. See [the ownership migration](dma-channel-tokens.md).
 
 - L012: four channels; vectors DMACH12 and DMACH34.
 - F030: five channels; vectors DMACH1, DMACH23 and DMACH45.
@@ -37,12 +43,11 @@ bind_interrupts!(struct Irqs {
 });
 
 async fn copy_words(
-    dma_token: embassy_cw32::Peri<'static, peripherals::DMA>,
+    dma_token: embassy_cw32::Peri<'static, peripherals::DMACHANNEL1>,
     source: &'static [u32],
     destination: &'static mut [u32],
 ) -> Result<dma::CopyBuffers<u32>, dma::Error> {
-    let channels = dma::split(dma_token);
-    let mut channel = dma::Channel::new(channels.ch1, Irqs);
+    let mut channel = dma::Channel::new(dma_token, Irqs);
     let transfer = match channel.copy(source, destination) {
         Ok(transfer) => transfer,
         Err(rejected) => {
@@ -139,8 +144,8 @@ an existing sequence check that lease. ADC owner Drop and explicit `stop` cancel
 an outstanding DMA channel; neither makes an unproven stop reclaimable. DMA owns
 the endpoint's terminal hook, removes it before publishing a reusable channel,
 and records ADC completion/poison immediately. Thus a forgotten ADC guard cannot
-later cancel a new user of the same DMA channel. Controller re-split/reset also
-quarantines active ADC endpoints instead of clearing their lease.
+later cancel a new user of the same DMA channel. Constructing another channel
+never resets the controller or clears an active ADC endpoint's lease.
 
 This composition follows the pinned Embassy
 [`Adc::read_sequence`](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/adc/mod.rs#L984-L1026)
@@ -181,9 +186,9 @@ Consequently:
    static buffer references and poison the channel. Dropping a static reference
    does not deallocate or release its backing storage for safe reuse.
 4. Poison lives in per-channel static state, not in the owner or transfer. Owner
-   reconstruction and splitting a reborrowed controller after forgetting channel
-   handles cannot clear it. A controller reset during re-split quarantines any
-   still-active channels. There is no safe recovery API; restart the device.
+   reconstruction through a reborrowed channel token cannot clear it. Sibling
+   construction cannot reset the controller or clear another channel's state.
+   There is no safe recovery API; restart the device.
 5. A simultaneous TC+TE is an error. The destination is not returned as successful.
 
 This is a conservative usable static-buffer API, not a claim of general safe

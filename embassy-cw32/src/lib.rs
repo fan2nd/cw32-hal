@@ -156,6 +156,13 @@ pub fn try_init(config: Config) -> Result<Peripherals, InitError> {
         // clock routine validates reset state before applying vendor trim.
         let clocks = unsafe { rcc::init(config.rcc) }.map_err(InitError::Clock)?;
         rcc::set_clocks(clocks);
+        #[cfg(dma)]
+        // SAFETY: global initialization holds the critical section, and no DMA
+        // channel token has escaped. Reset the shared controller only here;
+        // constructing any channel later must preserve every sibling's state.
+        unsafe {
+            dma::init()
+        };
         #[cfg(feature = "time-driver-gtim1")]
         // SAFETY: GTIM1 is reserved from the generated safe singleton set;
         // clocks were validated and initialization is globally exclusive.
