@@ -94,7 +94,7 @@ static MOTOR_EXECUTOR: embassy_executor::InterruptExecutor =
     embassy_executor::InterruptExecutor::new();
 
 pub fn start(
-    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMACHANNEL2>,
+    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMA_CH2>,
     peripherals: MotorPeripherals,
     _irq: impl Binding<typelevel::UART2, MotorExecutorHandler>,
 ) {
@@ -150,7 +150,7 @@ async fn next_motor_event() {
 
 #[embassy_executor::task]
 async fn run(
-    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMACHANNEL2>,
+    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMA_CH2>,
     peripherals: MotorPeripherals,
 ) {
     let mut adc2_channel = dma::Channel::new_blocking(dma_channel);

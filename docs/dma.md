@@ -12,10 +12,10 @@ come from CW documentation, not STM32 assumptions.
 
 ## Ownership and normal use
 
-`Peripherals` directly owns `DMACHANNEL1` through `DMACHANNEL4` on L012,
-and through `DMACHANNEL5` on F030. Each field is the corresponding exclusive
+`Peripherals` directly owns `DMA_CH1` through `DMA_CH4` on L012,
+and through `DMA_CH5` on F030. Each field is the corresponding exclusive
 `Peri` token, generated from the audited channel metadata. Construct a channel
-with `Channel::new(p.DMACHANNEL1, binding)` or `new_blocking(p.DMACHANNEL1)`.
+with `Channel::new(p.DMA_CH1, binding)` or `new_blocking(p.DMA_CH1)`.
 The whole-controller `DMA` token and `dma::split`/`Channels` API are removed.
 
 Global HAL initialization resets the shared controller once before any token
@@ -38,12 +38,12 @@ For example, on L012:
 use embassy_cw32::{bind_interrupts, dma, peripherals};
 
 bind_interrupts!(struct Irqs {
-    DMACH12 => dma::InterruptHandler<peripherals::DMACHANNEL1>,
-               dma::InterruptHandler<peripherals::DMACHANNEL2>;
+    DMACH12 => dma::InterruptHandler<peripherals::DMA_CH1>,
+               dma::InterruptHandler<peripherals::DMA_CH2>;
 });
 
 async fn copy_words(
-    dma_token: embassy_cw32::Peri<'static, peripherals::DMACHANNEL1>,
+    dma_token: embassy_cw32::Peri<'static, peripherals::DMA_CH1>,
     source: &'static [u32],
     destination: &'static mut [u32],
 ) -> Result<dma::CopyBuffers<u32>, dma::Error> {
@@ -60,7 +60,7 @@ async fn copy_words(
 ```
 
 For F030 channel 1, replace the binding with
-`DMACH1 => dma::InterruptHandler<peripherals::DMACHANNEL1>;`.
+`DMACH1 => dma::InterruptHandler<peripherals::DMA_CH1>;`.
 
 A blocking owner uses the same `copy` constructor and
 `transfer.blocking_wait(poll_budget)`. The budget counts wait-loop checks, not

@@ -1,4 +1,4 @@
-# Direct DMA channel singletons in v0.23.0
+# Direct DMA channel singletons: v0.23.1 names
 
 DMA channel ownership now begins at `Peripherals`, alongside GPIO pins and other
 peripheral instances. The application does not obtain a controller and partition
@@ -6,7 +6,7 @@ it later.
 
 ```rust,ignore
 let p = embassy_cw32::init(Default::default());
-let mut channel = embassy_cw32::dma::Channel::new_blocking(p.DMACHANNEL2);
+let mut channel = embassy_cw32::dma::Channel::new_blocking(p.DMA_CH2);
 ```
 
 For interrupt-driven transfers on L012:
@@ -15,12 +15,12 @@ For interrupt-driven transfers on L012:
 use embassy_cw32::{bind_interrupts, dma, peripherals};
 
 bind_interrupts!(struct Irqs {
-    DMACH12 => dma::InterruptHandler<peripherals::DMACHANNEL1>,
-               dma::InterruptHandler<peripherals::DMACHANNEL2>;
+    DMACH12 => dma::InterruptHandler<peripherals::DMA_CH1>,
+               dma::InterruptHandler<peripherals::DMA_CH2>;
 });
 
-let first = dma::Channel::new(p.DMACHANNEL1, Irqs);
-let second = dma::Channel::new(p.DMACHANNEL2, Irqs);
+let first = dma::Channel::new(p.DMA_CH1, Irqs);
+let second = dma::Channel::new(p.DMA_CH2, Irqs);
 ```
 
 The second handler is a separate proof even though both channels use the same
@@ -32,11 +32,14 @@ F030 uses DMACH1 for channel 1, DMACH23 for channels 2/3 and DMACH45 for 4/5.
 The pinned Embassy [build script](https://github.com/embassy-rs/embassy/blob/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/build.rs#L288-L291)
 adds one singleton for every `METADATA.dma_channels` entry, then emits those
 identities in its peripheral definitions and `Peripherals` structure. CW32 now
-uses that same ownership granularity. It takes names from the existing audited
-`DmaChannel.peripheral` records: `DMACHANNEL1` through `DMACHANNEL4` on L012 and
-through `DMACHANNEL5` on F030. No invented DMA1 controller or duplicate token
-alias is needed. The `dma::Instance` types and existing typed request bounds
-retain their names.
+uses that same ownership granularity. Since v0.23.1, its HAL spelling is
+`{controller}_CH{number}`, using the audited controller identity `DMA` and
+one-based `DmaChannel.number`: `DMA_CH1` through `DMA_CH4` on L012 and through
+`DMA_CH5` on F030. The hardware/PAC identity in `DmaChannel.peripheral` remains
+`DMACHANNEL1` through `DMACHANNEL4` or `DMACHANNEL5`; no hardware metadata or
+register-view alias is renamed. Singleton fields, `dma::Instance`, clock traits,
+startup reset and typed request bounds all use the same generated HAL spelling.
+There are no duplicate tokens or compatibility aliases for the old HAL names.
 
 The YAML, persisted JSON and PAC metadata already contain the channel number,
 register-bank index, parent, request selectors and physical interrupt. Their
@@ -83,7 +86,11 @@ see [DMA](dma.md) and [bus DMA](bus-dma.md).
 
 ## Application migration
 
-Replace:
+For v0.23.0 callers, rename `p.DMACHANNELn` to `p.DMA_CHn` and
+`peripherals::DMACHANNELn` to `peripherals::DMA_CHn`, including handler types and
+function signatures. Hardware PAC constants and physical IRQ names do not change.
+
+For earlier controller/split callers, replace:
 
 ```rust,ignore
 let channels = dma::split(p.DMA);
@@ -93,17 +100,17 @@ let channel = dma::Channel::new_blocking(channels.ch2);
 with:
 
 ```rust,ignore
-let channel = dma::Channel::new_blocking(p.DMACHANNEL2);
+let channel = dma::Channel::new_blocking(p.DMA_CH2);
 ```
 
 A function that formerly accepted the whole controller should accept the actual
-channel token it uses. A function already accepting
-`Peri<'d, peripherals::DMACHANNEL2>` keeps that signature. No runtime channel
-registry, channel-number allocator or extra owner wrapper is introduced.
+channel token it uses: `Peri<'d, peripherals::DMA_CH2>` for channel 2. No runtime
+channel registry, channel-number allocator or extra owner wrapper is introduced.
 
-Examples 02–05 construct channel 2 directly; example 06 passes `p.DMACHANNEL2`
-to its existing motor startup function. The DMA reset moves to global init;
+Examples 02–05 construct channel 2 directly; example 06 passes `p.DMA_CH2`
+to its existing motor startup function. DMA reset stays in global init;
 channel register programming, ADC request setup, raw repeating-transfer contract,
 ISR bodies, control algorithms, protection logic and executor priorities retain
 their existing order and behavior. Validation is recorded in
-[v0.23.0 checks](validation-v0.23.0.md); no physical-board verification is claimed.
+[v0.23.0 ownership checks](validation-v0.23.0.md) and
+[v0.23.1 naming checks](validation-v0.23.1.md); no physical-board verification is claimed.

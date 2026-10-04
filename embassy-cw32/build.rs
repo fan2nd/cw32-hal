@@ -21,6 +21,12 @@ fn ident(value: &str) -> &str {
     value
 }
 
+/// HAL spelling uses the audited controller and one-based channel number.
+/// The hardware/PAC register-view identity stays in `DmaChannel.peripheral`.
+fn dma_channel_name(controller: &str, channel: &cw32_metapac::metadata::DmaChannel) -> String {
+    format!("{}_CH{}", ident(controller), channel.number)
+}
+
 fn main() {
     println!("cargo:rerun-if-changed=build.rs");
     let out = PathBuf::from(env::var_os("OUT_DIR").unwrap());
@@ -152,17 +158,21 @@ fn main() {
         .map(|p| ident(p.name))
         .collect();
     let mut names = BTreeSet::new();
-    let dma_channel_names: BTreeSet<_> = md
+    let dma_channel_names: BTreeMap<_, _> = md
         .peripherals
         .iter()
-        .filter_map(|p| p.dma)
-        .flat_map(|d| d.channels.iter().map(|ch| ch.peripheral))
+        .filter_map(|p| p.dma.map(|d| (p.name, d)))
+        .flat_map(|(controller, d)| {
+            d.channels
+                .iter()
+                .map(move |ch| (ch.peripheral, dma_channel_name(controller, ch)))
+        })
         .collect();
     for name in peripheral_names
         .iter()
         .copied()
         .chain(md.pins.iter().map(|p| ident(p.name)))
-        .chain(dma_channel_names.iter().copied().map(ident))
+        .chain(dma_channel_names.values().map(|name| ident(name)))
     {
         assert!(names.insert(name), "duplicate singleton name: {name}");
     }
@@ -258,12 +268,12 @@ fn main() {
 
     let clocked_names: Vec<_> = peripheral_names
         .iter()
-        .chain(dma_channel_names.iter())
+        .chain(dma_channel_names.keys())
         .copied()
         .collect();
     fs::write(
         out.join("_generated_peripheral_clocks.rs"),
-        clock_bindings(md, &clocked_names),
+        clock_bindings(md, &clocked_names, &dma_channel_names),
     )
     .unwrap();
     for kind in ["eau", "cordic", "iwdt", "wwdt"] {
@@ -782,7 +792,11 @@ fn ownership_root<'a>(md: &'a Metadata, mut name: &'a str) -> &'a str {
 /// One state object per physical gate. A shared reset is usable only when all
 /// affected views belong to one ownership domain, such as a DMA controller and
 /// its child channel aliases. Independent siblings and cross-effects suppress it.
-fn clock_bindings(md: &Metadata, names: &[&str]) -> String {
+fn clock_bindings(
+    md: &Metadata,
+    names: &[&str],
+    dma_channel_names: &BTreeMap<&str, String>,
+) -> String {
     use cw32_metapac::metadata::{ClockSource, RegisterBit};
     let key = |r: RegisterBit| (r.peripheral, r.register, r.field);
     let mut groups = BTreeMap::<_, Vec<_>>::new();
@@ -858,7 +872,9 @@ fn clock_bindings(md: &Metadata, names: &[&str]) -> String {
             if !names.contains(&p.name) {
                 continue;
             }
-            let name = ident(p.name);
+            let name = dma_channel_names
+                .get(p.name)
+                .map_or_else(|| ident(p.name), |name| ident(name));
             let bus = frequency(tree.bus_clock);
             writeln!(out,"impl PeripheralClock for crate::peripherals::{name} {{fn clock_resource()->&'static ClockResource {{&{resource}}} fn bus_frequency()->u32 {{{bus}}}}}").unwrap();
             if let Some(kernel) = tree.kernel_clock {
@@ -1062,7 +1078,7 @@ fn lsi_startup_audit(md: &Metadata) -> String {
     out
 }
 
-/// Split identities and request encodings are controller topology, not register-name guesses.
+/// Channel identities and request encodings come from audited controller topology.
 fn dma_bindings(md: &Metadata) -> String {
     let controllers: Vec<_> = md.peripherals.iter().filter(|p| p.block == "dma").collect();
     if controllers.is_empty() {
@@ -1106,7 +1122,8 @@ fn dma_bindings(md: &Metadata) -> String {
             && b.signal == "GLOBAL"
             && b.interrupt == channel.interrupt));
         let irq = ident(channel.interrupt);
-        writeln!(out, "impl sealed::Instance for crate::peripherals::{alias} {{const INDEX:usize={}; fn state()->&'static crate::dma::ChannelState {{static STATE:crate::dma::ChannelState=crate::dma::ChannelState::new(); &STATE}}}}\nimpl Instance for crate::peripherals::{alias}{{type Interrupt=crate::interrupt::typelevel::{irq};}}", channel.index).unwrap();
+        let name = dma_channel_name(controller.name, channel);
+        writeln!(out, "impl sealed::Instance for crate::peripherals::{name} {{const INDEX:usize={}; fn state()->&'static crate::dma::ChannelState {{static STATE:crate::dma::ChannelState=crate::dma::ChannelState::new(); &STATE}}}}\nimpl Instance for crate::peripherals::{name}{{type Interrupt=crate::interrupt::typelevel::{irq};}}", channel.index).unwrap();
     }
     out.push_str("/// Audited hardware trigger selectors. The peripheral remains the caller's responsibility.\n#[allow(non_camel_case_types)]\n#[derive(Clone,Copy,Debug,PartialEq,Eq)]\n#[repr(u8)]\npub enum Request {\n");
     let mut requests = BTreeSet::new();
@@ -1148,7 +1165,7 @@ fn dma_bindings(md: &Metadata) -> String {
             );
         }
     }
-    let first_channel = ident(dma.channels[0].peripheral);
+    let first_channel = dma_channel_name(controller.name, &dma.channels[0]);
     writeln!(out,
         "/// Reset the shared controller once, before any safe channel token escapes.\n\
          /// # Safety\n\
@@ -1387,7 +1404,7 @@ fn bus_bindings(md: &Metadata, kind: &str) -> String {
                         ident(requests[0].signal)
                     );
                     for channel in dma.channels {
-                        let channel = ident(channel.peripheral);
+                        let channel = dma_channel_name(controller.name, channel);
                         writeln!(out, "#[cfg(dma)] impl crate::{kind}::dma::sealed::{direction}Dma<crate::peripherals::{name}> for crate::peripherals::{channel} {{}} #[cfg(dma)] impl crate::{kind}::dma::{direction}Dma<crate::peripherals::{name}> for crate::peripherals::{channel} {{const REQUEST:crate::dma::Request=crate::dma::Request::{request};}}").unwrap();
                     }
                 }

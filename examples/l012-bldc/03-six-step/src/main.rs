@@ -55,7 +55,7 @@ fn main() -> ! {
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     // Retain the HAL singleton tokens for the lifetime of this program.
     let _peripherals = embassy_cw32::try_init(config).expect("clock initialization failed");
-    let mut adc2_channel = dma::Channel::new_blocking(_peripherals.DMACHANNEL2);
+    let mut adc2_channel = dma::Channel::new_blocking(_peripherals.DMA_CH2);
     let adc2_stream;
     typelevel::ADC1::disable();
     typelevel::BTIM1::disable();

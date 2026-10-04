@@ -1,4 +1,6 @@
-> Current DMA channel ownership correction: [v0.23.0 validation](validation-v0.23.0.md), [API and ownership](dma-channel-tokens.md).
+> Current DMA token naming correction: [v0.23.1 validation](validation-v0.23.1.md), [API and migration](dma-channel-tokens.md).
+
+> Prior DMA channel ownership correction: [v0.23.0 validation](validation-v0.23.0.md), [API and ownership](dma-channel-tokens.md).
 
 > Prior startup-clock stage: [v0.22.0 validation](validation-v0.22.0.md), [completed scope and limits](clock-roadmap-v0.22.0.md).
 

@@ -76,7 +76,7 @@ fn main() -> ! {
     config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
-    let mut adc2_channel = dma::Channel::new_blocking(p.DMACHANNEL2);
+    let mut adc2_channel = dma::Channel::new_blocking(p.DMA_CH2);
     let adc2_stream;
     typelevel::ADC1::disable();
     typelevel::BTIM1::disable();
