@@ -1,3 +1,5 @@
+> Current PAC renderer: [v0.24.0 actual chiptool backend](chiptool-backend.md), pinned to be1bff3e. Earlier bcf538a2 references below are historical API/core comparisons.
+
 # Current Embassy API alignment and remaining work
 
 The current work fixes the PAC/indexed-register architecture, GPIO shared-driver/interrupt design, ADC/comparator owner/mode/channel design, and generic owned timer/PWM channels. It does not claim that every CW32 HAL API now matches embassy-stm32. Earlier explanations presenting missing Flex/open-drain as “avoiding fictitious hardware” were incorrect: Flex is a software ownership/implementation structure, and both CW32 chips have OPENDRAIN hardware.

@@ -1,3 +1,5 @@
+> Current generator backend: [v0.24.0 validation](validation-v0.24.0.md), [design and upstream references](chiptool-backend.md).
+
 > Current DMA token naming correction: [v0.23.1 validation](validation-v0.23.1.md), [API and migration](dma-channel-tokens.md).
 
 > Prior DMA channel ownership correction: [v0.23.0 validation](validation-v0.23.0.md), [API and ownership](dma-channel-tokens.md).

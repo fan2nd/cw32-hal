@@ -39,3 +39,13 @@ Changes add explicit hardware-side-effect and audited register/array reset polic
 GPIO ownership/driver organization follows the fixed Embassy source listed in
 `docs/embassy-api-alignment.md`; CW32 register operations and capability checks
 remain chip-specific. This does not imply Embassy project endorsement.
+
+## Upstream chiptool renderer dependency (v0.24.0)
+
+`cw32-gen` now directly uses embassy-rs/chiptool at
+`be1bff3e9e1b27b090e69bd9ac753c66fdcce678`, under MIT OR Apache-2.0,
+for actual block, fieldset, array and enum generation. It is a pinned Cargo Git
+dependency, not vendored upstream source. The separate adapted common core above
+is retained through chiptool's external-common option. The CW32 AST adapter
+preserves audited reset and side-effect contracts absent from upstream IR.
+See `docs/chiptool-backend.md` for the exact source chain and retained differences.

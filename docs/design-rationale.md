@@ -1,3 +1,5 @@
+> Current backend: [v0.24.0 actual chiptool integration](chiptool-backend.md). Earlier version records below remain historical.
+
 > v0.14.0 whole-chain review: [v0.14.0](full-chain-audit-v0.14.0.md), [schema 7](schema-v7.md), [validation](validation-v0.14.0.md). Earlier version records remain historical.
 
 > v0.13.2 consolidates build helpers into build.rs and the shared IRQ event latch into interrupt.rs without changing behavior; see [validation](validation-v0.13.2.md).

@@ -1,6 +1,6 @@
 # embassy-cw32：YAML → normalized JSON → PAC → HAL
 
-CW32L012C8 与 CW32F030C8，实验性 **v0.23.1**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
+CW32L012C8 与 CW32F030C8，实验性 **v0.24.0**，尚未上板验证。数据、统一生成器 `cw32-gen`、PAC 与 HAL 位于同一个 Cargo workspace。schema 与两个生成阶段的代码保留在一个 crate 中，仍强制执行 YAML → 落盘的 normalized JSON → PAC，不能用内存模型跳过 JSON 接口。当前提供 typed PAC read/write/modify、显式寄存器/子块数组、有来源的 reset defaults、GPIO Flex/Input/Output/OpenDrain 与真实 IRQ Wait、Adc/Comp 模式 owner 和按调用借入 ADC 通道、拥有真实路由的通用 Timer/SimplePwm、两芯片 DMA、UART/SPI/I2C、CRC/IWDT/WWDT、内部 ADC 源、RTC 和保留数据分区 Flash，以及独立的 L012 电机操作 API；完整寄存器数据覆盖不代表全部外设驱动或 FOC 闭环均已实现。
 
 芯片名与 feature 不带 T7、U6 等封装及温度后缀。`cw32-data` 不维护 packages 层；芯片直接定义 GPIO 能力和信号路由，实际封装是否引出、物理脚号及板级接线由板级设计负责。Flash/RAM 等芯片差异仍由 chip 数据描述。
 
@@ -25,6 +25,8 @@ v0.22.0 增加两芯片 [HSE 启动与 F030 PLL](docs/external-clocks.md)，在�
 v0.23.0 将 DMA 通道直接放入 `Peripherals`，不再取得整个 DMA 后 `split`。通道身份、数量、中断及请求关联均来自已有 metadata；控制器只在全局初始化、token 交付前复位一次，后续兄弟通道不再触碰共享复位。见 [DMA 通道所有权](docs/dma-channel-tokens.md) 和 [验证](docs/validation-v0.23.0.md)。
 
 v0.23.1 将公开 DMA channel token 简化为 `DMA_CH1` 等命名，直接使用 `Channel::new(p.DMA_CH1, Irqs)`：L012 为 `DMA_CH1..4`，F030 为 `DMA_CH1..5`。HAL 根据已审核的控制器名及通道编号生成名称；硬件数据和 PAC 的 `DMACHANNELn` 寄存器视图、中断名称、请求选择及安全生命周期保持不变。见 [命名迁移](docs/dma-channel-tokens.md) 和 [本版验证](docs/validation-v0.23.1.md)。
+
+v0.24.0 将 data→PAC 后端接入真实上游 `chiptool`（固定 `be1bff3e`），由它生成共享 IP block、字段、数组、嵌套块和语义枚举。单个 `cw32-gen` crate 内仍强制 YAML → 落盘 JSON → 重读校验 → PAC；仅对上游不表达的已审核 reset 与寄存器副作用做受结构校验的 Rust AST 扩展。公开 DMA token、HAL 和六个示例逻辑保持不变。见 [实现与上游取舍](docs/chiptool-backend.md) 和 [验证](docs/validation-v0.24.0.md)。
 
 ## 先看设计与边界
 
@@ -57,6 +59,7 @@ cw32-gen/                       统一 host-only 生成器 crate
   src/data/mod.rs               YAML → normalize/validate → 写入 JSON
   src/data/extensions.rs        fixes、perimap 选型与 aliases
   src/pac.rs                    从文件读取/校验 JSON → PAC + Rust metadata
+  src/pac/chiptool_backend.rs   实际 chiptool IR/validate/render + reset/副作用 AST 扩展
   src/lib.rs                    generate(source, selector, json, pac) 编排两阶段
   src/main.rs                   generate / data / pac CLI
 generated-data/                本地生成中间产物，ignore，不入源码包

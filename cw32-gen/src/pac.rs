@@ -1,4 +1,5 @@
 //! Stage 2: read and validate normalized JSON, then render PAC and metadata.
+mod chiptool_backend;
 pub use crate::schema::{validate, Ir, Result};
 use std::{
     collections::{BTreeMap, BTreeSet},
@@ -212,221 +213,6 @@ fn render_chip_pac(ir: &Ir, overrides: &ResetOverrides, shared: &str) -> Result<
     out.push_str("}\nimpl Interrupt { pub const fn number(self)->u16 { self as u16 } }\n");
     Ok(out)
 }
-fn render_block(b: &crate::schema::Block, overrides: &[crate::schema::RegisterReset]) -> String {
-    let mut out = String::from("// Generated shared peripheral kind/version. Do not edit.\n");
-    let parameters = instance_reset_registers(overrides);
-    let declaration = if parameters.is_empty() {
-        String::new()
-    } else {
-        format!(
-            "<{}>",
-            parameters
-                .iter()
-                .map(|name| {
-                    let default = b
-                        .registers
-                        .iter()
-                        .find(|r| &r.name == name)
-                        .unwrap()
-                        .reset_value
-                        .map(u64::from)
-                        .unwrap_or(0x1_0000_0000);
-                    format!("const RESET_{name}:u64={default}")
-                })
-                .collect::<Vec<_>>()
-                .join(",")
-        )
-    };
-    let generics = if parameters.is_empty() {
-        String::new()
-    } else {
-        format!(
-            "<{}>",
-            parameters
-                .iter()
-                .map(|name| format!("const RESET_{name}:u64"))
-                .collect::<Vec<_>>()
-                .join(",")
-        )
-    };
-    let arguments = if parameters.is_empty() {
-        String::new()
-    } else {
-        format!(
-            "<{}>",
-            parameters
-                .iter()
-                .map(|name| format!("RESET_{name}"))
-                .collect::<Vec<_>>()
-                .join(",")
-        )
-    };
-    let peripheral_type = value_name(&b.name);
-    out.push_str(&format!("#[derive(Clone, Copy, PartialEq, Eq)]\npub struct {peripheral_type}{declaration} {{ ptr: *mut u8 }}\nunsafe impl{generics} Send for {peripheral_type}{arguments} {{}}\nunsafe impl{generics} Sync for {peripheral_type}{arguments} {{}}\nimpl{generics} {peripheral_type}{arguments} {{\n/// # Safety\n/// The pointer and instance reset parameters must identify this mapped register block.\n#[inline(always)] pub const unsafe fn from_ptr(ptr:*mut ())->Self {{ Self {{ptr:ptr as _}} }}\n#[inline(always)] pub const fn as_ptr(&self)->*mut () {{self.ptr as _}}\n"));
-    for r in &b.registers {
-        let argument = if parameters.contains(&r.name) {
-            format!("<RESET_{}>", r.name)
-        } else {
-            String::new()
-        };
-        let access = match r.access.as_str() {
-            "ro" => "R",
-            "wo" => "W",
-            _ => "RW",
-        };
-        let value = format!("regs::{}{argument}", value_name(&r.name));
-        let varying_reset = r.array.is_some()
-            && r.reset_value.is_none()
-            && r.elements.iter().all(|e| e.reset_value.is_some());
-        let behavior = if varying_reset
-            || r.write_behavior != crate::schema::WriteBehavior::Ordinary
-            || r.read_behavior != crate::schema::ReadBehavior::Ordinary
-        {
-            format!(
-                ",crate::common::{:?},crate::common::{}",
-                r.write_behavior,
-                read_marker(r.read_behavior)
-            )
-        } else {
-            String::new()
-        };
-        let policy = if varying_reset {
-            format!(",crate::common::GivenReset<{value}>")
-        } else {
-            String::new()
-        };
-        let (index, check, offset) = indexed_offset(r.offset, r.array.as_ref());
-        let constructor = if varying_reset {
-            let defaults = r
-                .elements
-                .iter()
-                .map(|e| e.reset_value.unwrap().to_string())
-                .collect::<Vec<_>>()
-                .join(",");
-            format!(
-                "crate::common::Reg::from_ptr_with_reset(self.ptr.wrapping_add({offset}) as _,{value}([{defaults}][n]))"
-            )
-        } else {
-            format!("crate::common::Reg::from_ptr(self.ptr.wrapping_add({offset}) as _)")
-        };
-        out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {}(self,{index})->crate::common::Reg<{value},crate::common::{access}{behavior}{policy}> {{{check} unsafe {{{constructor}}} }}\n",r.description,rust_ident(&r.name.to_ascii_lowercase())));
-    }
-    for child in &b.blocks {
-        let (index, check, offset) = indexed_offset(child.offset, child.array.as_ref());
-        let ty = format!("crate::{}::{}", child.block, value_name(&child.block));
-        out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {}(self,{index})->{ty} {{{check} unsafe {{{ty}::from_ptr(self.ptr.wrapping_add({offset}) as _)}} }}\n",child.description,rust_ident(&child.name.to_ascii_lowercase())));
-    }
-    out.push_str("}\n");
-    for r in &b.registers {
-        out.push_str(&format!(
-            "#[doc = {:?}]\npub const {}: usize = {:#x};\n",
-            r.description, r.name, r.offset
-        ));
-    }
-    for c in &b.constants {
-        out.push_str(&format!(
-            "#[doc = {:?}]\npub const {}: u32 = {:#x};\n",
-            c.description, c.name, c.value
-        ));
-    }
-    out.push_str("pub mod regs {\n");
-    for r in &b.registers {
-        let register_overrides: Vec<_> = overrides
-            .iter()
-            .filter(|reset| reset.register == r.name)
-            .collect();
-        render_value(&mut out, r, &register_overrides);
-    }
-    out.push_str("}\n");
-    out.push_str("pub mod vals {\n");
-    for r in &b.registers {
-        for f in &r.fields {
-            if f.kind != "enum" {
-                continue;
-            }
-            render_enum(&mut out, r, f);
-        }
-    }
-    out.push_str("}\n");
-    out
-}
-/// Mirrors chiptool bcf538a2's exhaustive enum / sparse-newtype policy.
-/// Every masked bit pattern is valid, including documented reserved encodings.
-fn render_enum(out: &mut String, register: &crate::schema::Register, field: &crate::schema::Field) {
-    let name = format!("{}{}", value_name(&register.name), value_name(&field.name));
-    let ty = field_word(field.bit_size);
-    let count = 1u64 << field.bit_size;
-    let reserved = count - field.values.len() as u64;
-    let sparse = reserved >= 100 && reserved >= field.values.len() as u64;
-    let mask = u32::MAX >> (32 - field.bit_size);
-    out.push_str(&format!(
-        "#[doc = {:?}]\n#[allow(non_camel_case_types)]\n",
-        format!(
-            "{} Source: {}",
-            field.description,
-            field.values_source.as_deref().unwrap()
-        )
-    ));
-    if sparse {
-        out.push_str(&format!("#[repr(transparent)]\n#[derive(Copy,Clone,Eq,PartialEq,Ord,PartialOrd)]\npub struct {name}({ty});\nimpl {name} {{\n"));
-        for value in &field.values {
-            out.push_str(&format!(
-                "pub const {}:Self=Self({});\n",
-                value.name, value.value
-            ));
-        }
-        out.push_str(&format!("#[inline(always)] pub const fn from_bits(value:{ty})->Self {{Self(value & {mask:#x})}}\n#[inline(always)] pub const fn to_bits(self)->{ty} {{self.0}}\n}}\nimpl core::fmt::Debug for {name} {{fn fmt(&self,f:&mut core::fmt::Formatter<'_>)->core::fmt::Result {{match self.0 {{"));
-        for value in &field.values {
-            out.push_str(&format!("{}=>f.write_str({:?}),", value.value, value.name));
-        }
-        out.push_str("other=>core::write!(f,\"0x{:02X}\",other)}}}\n");
-    } else {
-        out.push_str(&format!("#[repr({ty})]\n#[derive(Copy,Clone,Debug,Eq,PartialEq,Ord,PartialOrd)]\npub enum {name} {{\n"));
-        for bits in 0..count {
-            let variant = field
-                .values
-                .iter()
-                .find(|value| u64::from(value.value) == bits)
-                .map(|value| value.name.clone())
-                .unwrap_or_else(|| format!("_RESERVED_{bits:x}"));
-            out.push_str(&format!("{variant}={bits},\n"));
-        }
-        // All patterns through mask are emitted above, making this total.
-        out.push_str(&format!("}}\nimpl {name} {{\n#[inline(always)] pub const fn from_bits(value:{ty})->Self {{unsafe {{core::mem::transmute(value & {mask:#x})}}}}\n#[inline(always)] pub const fn to_bits(self)->{ty} {{self as {ty}}}\n}}\n"));
-    }
-    out.push_str(&format!("impl From<{ty}> for {name} {{#[inline(always)] fn from(value:{ty})->Self {{Self::from_bits(value)}}}}\nimpl From<{name}> for {ty} {{#[inline(always)] fn from(value:{name})->Self {{value.to_bits()}}}}\n"));
-}
-fn field_word(bit_size: u8) -> &'static str {
-    match bit_size {
-        1..=8 => "u8",
-        9..=16 => "u16",
-        _ => "u32",
-    }
-}
-fn indexed_offset(base: usize, array: Option<&crate::schema::Array>) -> (String, String, String) {
-    match array {
-        None => (String::new(), String::new(), base.to_string()),
-        Some(array) => {
-            let offsets = array.offsets().expect("validated array");
-            let offset = match array {
-                crate::schema::Array::Regular(a) => format!("{base}+n*{}", a.stride),
-                crate::schema::Array::Explicit(_) => format!(
-                    "{base}+[{}][n]",
-                    offsets
-                        .iter()
-                        .map(usize::to_string)
-                        .collect::<Vec<_>>()
-                        .join(",")
-                ),
-            };
-            (
-                "n:usize".into(),
-                format!("assert!(n<{});", offsets.len()),
-                offset,
-            )
-        }
-    }
-}
 fn render_array(array: Option<&crate::schema::Array>) -> String {
     match array {
         None => "None".into(),
@@ -458,26 +244,19 @@ fn instance_reset_registers(overrides: &[crate::schema::RegisterReset]) -> BTree
         .map(|reset| reset.register.clone())
         .collect()
 }
-fn render_value(
+fn render_reset_extensions(
     out: &mut String,
     r: &crate::schema::Register,
     overrides: &[&crate::schema::RegisterReset],
 ) {
     let name = value_name(&r.name);
     let word = format!("u{}", r.bit_size);
-    let default = r.reset_value.map(u64::from).unwrap_or(0x1_0000_0000);
-    let declaration = if overrides.is_empty() {
-        String::new()
-    } else {
-        format!("<const RESET:u64={default}>")
-    };
     let generics = if overrides.is_empty() {
         ""
     } else {
         "<const RESET:u64>"
     };
     let arguments = if overrides.is_empty() { "" } else { "<RESET>" };
-    out.push_str(&format!("#[doc = {:?}]\n#[repr(transparent)]\n#[derive(Clone,Copy,Debug,PartialEq,Eq)]\npub struct {name}{declaration}(pub {word});\n", r.description));
     let mut evidence: BTreeMap<u32, (BTreeSet<&str>, BTreeSet<&str>)> = BTreeMap::new();
     if let Some(value) = r.reset_value {
         let entry = evidence.entry(value).or_default();
@@ -546,52 +325,6 @@ fn render_value(
     out.push_str(&format!("impl{generics} {name}{arguments} {{\npub const RESET_VALUE:Option<{word}>={reset_value};\npub const RESET_SOURCE:Option<&'static str>={reset_source};\npub const RESET_NOTE:Option<&'static str>={reset_note};\npub const fn from_bits(bits:{word})->Self {{Self(bits)}}\npub const fn bits(self)->{word} {{self.0}}\n"));
     if r.array.is_some() {
         out.push_str(&format!("pub const RESET_VALUES:&'static [Option<{word}>]=&{:?};\npub const RESET_SOURCES:&'static [Option<&'static str>]=&{:?};\npub const RESET_NOTES:&'static [Option<&'static str>]=&{:?};\n",r.elements.iter().map(|e|e.reset_value).collect::<Vec<_>>(),r.elements.iter().map(|e|e.reset_source.as_deref()).collect::<Vec<_>>(),r.elements.iter().map(|e|e.reset_note.as_deref()).collect::<Vec<_>>()));
-    }
-    for f in &r.fields {
-        let method = rust_ident(&f.name.to_ascii_lowercase());
-        let setter = format!("set_{}", f.name.to_ascii_lowercase());
-        let enum_type = format!(
-            "super::vals::{}{}",
-            value_name(&r.name),
-            value_name(&f.name)
-        );
-        let ty = match f.kind.as_str() {
-            "bool" => "bool".into(),
-            "enum" => enum_type.clone(),
-            _ => format!(
-                "u{}",
-                if f.bit_size <= 8 {
-                    8
-                } else if f.bit_size <= 16 {
-                    16
-                } else {
-                    32
-                }
-            ),
-        };
-        let (index, assertion, shift) = indexed_offset(usize::from(f.bit_offset), f.array.as_ref());
-        let index = if index.is_empty() { "" } else { "n:usize," };
-        let mask = u32::MAX >> (32 - f.bit_size);
-        let read = match f.kind.as_str() {
-            "bool" => format!("((self.0 >> ({shift})) & 1) != 0"),
-            "enum" => format!(
-                "{enum_type}::from_bits(((self.0 >> ({shift})) & {mask:#x}) as {})",
-                field_word(f.bit_size)
-            ),
-            _ => format!("((self.0 >> ({shift})) & {mask:#x}) as {ty}"),
-        };
-        {
-            let read_ty = ty.clone();
-            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {method}(&self,{index})->{read_ty} {{{assertion}{read}}}\n", f.description));
-        }
-        {
-            let value_bits = if f.kind == "enum" {
-                "value.to_bits()"
-            } else {
-                "value"
-            };
-            out.push_str(&format!("#[doc = {:?}]\n#[inline(always)] pub const fn {setter}(&mut self,{index}value:{ty}) {{{assertion}self.0=(self.0 & !(({mask:#x} as {word}) << ({shift}))) | ((({value_bits} as {word}) & {mask:#x}) << ({shift}));}}\n", f.description));
-        }
     }
     out.push_str("}\n");
 }
@@ -1029,10 +762,11 @@ fn generate_shared(irs: &[Ir], out: &Path, nested: bool) -> Result<()> {
     fs::create_dir_all(out.join("registers"))?;
     fs::write(out.join("common.rs"), COMMON_API)?;
     fs::write(out.join("metadata_types.rs"), METADATA_TYPES)?;
+    let rendered = chiptool_backend::render_blocks(&blocks, &overrides)?;
     for ((kind, version), block) in &blocks {
         fs::write(
             out.join(format!("peripherals/{kind}_{version}.rs")),
-            render_block(block, &overrides[&(kind.clone(), version.clone())]),
+            &rendered[&(kind.clone(), version.clone())],
         )?;
         fs::write(
             out.join(format!("registers/{kind}_{version}.rs")),
