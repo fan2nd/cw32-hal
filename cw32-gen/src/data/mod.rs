@@ -1,11 +1,59 @@
 //! Stage 1: layered YAML source data -> normalized, validated JSON IR.
 pub use crate::schema::*;
-pub mod extensions;
-use std::{collections::BTreeMap, fs, path::Path};
+use std::{
+    collections::{BTreeMap, BTreeSet},
+    fs,
+    path::Path,
+};
 fn read<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
-    serde_yaml::from_str(&fs::read_to_string(path)?)
-        .map_err(|e| err(format!("{}: {e}", path.display())))
+    let source = fs::read_to_string(path).map_err(|e| err(format!("{}: {e}", path.display())))?;
+    serde_yaml::from_str(&source).map_err(|e| err(format!("{}: {e}", path.display())))
 }
+
+/// Load canonical family IP selections and all explicit nested block references.
+fn load_blocks(root: &Path, family: &Family) -> Result<BTreeMap<String, Block>> {
+    let mut pending: BTreeSet<_> = family
+        .peripherals
+        .iter()
+        .map(|p| (p.block.clone(), p.version.clone()))
+        .collect();
+    let mut blocks = BTreeMap::<String, Block>::new();
+    while let Some((kind, version)) = pending.pop_first() {
+        check_id(&kind)?;
+        check_id(&version)?;
+        if let Some(block) = blocks.get(&kind) {
+            if block.version != version {
+                return Err(err(format!(
+                    "conflicting register versions for {kind}: {}/{version}; multiple versions of one kind within a single chip are unsupported",
+                    block.version
+                )));
+            }
+            continue;
+        }
+        let path = root
+            .join("registers")
+            .join(&kind)
+            .join(format!("{version}.yaml"));
+        let block: Block = read(&path)?;
+        if block.name != kind || block.version != version {
+            return Err(err(format!(
+                "register block reference/name/version mismatch in {}: expected {kind}/{version}, found {}/{}",
+                path.display(),
+                block.name,
+                block.version
+            )));
+        }
+        pending.extend(
+            block
+                .blocks
+                .iter()
+                .map(|item| (item.block.clone(), item.version.clone())),
+        );
+        blocks.insert(kind, block);
+    }
+    Ok(blocks)
+}
+
 /// Resolve register versions and die-level pins; rejects unknown YAML keys.
 pub fn load(root: &Path, chip: &str) -> Result<Ir> {
     check_id(chip)?;
@@ -19,8 +67,7 @@ pub fn load(root: &Path, chip: &str) -> Result<Ir> {
     if family.name != chip.family {
         return Err(err("family reference/name mismatch"));
     }
-    let mut blocks = extensions::load_blocks(root, &chip.name, &family)?;
-    extensions::apply(root, &chip.name, &mut family, &mut blocks)?;
+    let mut blocks = load_blocks(root, &family)?;
     chip.pins.sort_by(|a, b| a.name.cmp(&b.name));
     chip.memory.sort_by(|a, b| a.name.cmp(&b.name));
     chip.pin_routes.sort_by(|a, b| {

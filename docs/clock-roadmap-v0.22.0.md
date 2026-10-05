@@ -24,8 +24,8 @@ parity or managed runtime/DeepSleep support.
 
 The L012 manual's PB7/PC13 example conflicts with its datasheet and SDK.
 The implemented PF0/PF1 routes use the independently corroborated physical pin
-facts; the conflict and an additional vendor bypass-code port error are retained
-in the source provenance. See [external clocks](external-clocks.md).
+facts; the conflict and an additional vendor bypass-code port error are documented
+in [external clocks](external-clocks.md).
 
 ## Original eight gaps
 

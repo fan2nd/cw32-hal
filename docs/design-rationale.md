@@ -41,11 +41,11 @@
 
 厂商 SVD、header、Cube 数据和手册均是证据，不是无需校验的真理。上游 data-gen 汇合多个来源；register YAML 是清理后维护的模型；perimap 将器件实例和厂商 IP 信息映射到 canonical kind/version/block。generator 校验映射到的 block 存在，并应用有范围的 extras、封装 pin 过滤等。其 register validator 甚至显式允许部分 overlap，因此“同上游”不等于把每个检查开到最严，更不等于证明所有硬件事实正确。
 
-本项目使用审核后的 YAML 作为维护源，vendor header/SVD 作为离线对照证据。v0.6.0 将 schema 和两个生成阶段的实现实际归入单个 `cw32-gen` crate：`cw32_gen::schema` 在 `src/schema.rs` 中维护纯模型和共享验证，不单独作为 package；第一阶段 `cw32_gen::data` 做寄存器版本选型、加载、可追踪 correction/alias、排序、引用校验与芯片直接定义的 pins，再将版本化 JSON 写入磁盘；第二阶段 `cw32_gen::pac` 重新读取并校验落盘 JSON，不重新推断硬件事实或重新读取 YAML。统一入口 `cw32_gen::generate` 必须经过这个文件接口，不能将第一阶段内存模型直接传给渲染器。同一 crate 的 schema/data/pac 模块划分表达职责边界，不再以独立 crate 的依赖隔离声称 PAC 生成工具没有 YAML 依赖。
+本项目使用审核后的 YAML 作为维护源，vendor header/SVD 作为离线对照证据。v0.6.0 将 schema 和两个生成阶段的实现实际归入单个 `cw32-gen` crate：`cw32_gen::schema` 在 `src/schema.rs` 中维护纯模型和共享验证，不单独作为 package；第一阶段 `cw32_gen::data` 按 family 中的规范 IP 引用加载寄存器、解析显式子块依赖、排序、引用校验与芯片直接定义的 pins，再将版本化 JSON 写入磁盘；第二阶段 `cw32_gen::pac` 重新读取并校验落盘 JSON，不重新推断硬件事实或重新读取 YAML。统一入口 `cw32_gen::generate` 必须经过这个文件接口，不能将第一阶段内存模型直接传给渲染器。同一 crate 的 schema/data/pac 模块划分表达职责边界，不再以独立 crate 的依赖隔离声称 PAC 生成工具没有 YAML 依赖。
 
-本地 `perimap.yaml` 现支持两种明确模式：默认 `mode: alias` 仅重命名已加载模型；`mode: select` 则在加载前按 chip、instance 与可选 vendor_ip/vendor_version 提示选择 canonical kind/version 对应的寄存器 YAML，原 vendor 身份的文件可以不存在。load_blocks 先验证所选文件身份，再临时保留原身份供 fixes 定位，最后归一化。两 synthetic-chip 测试使用同名 GPIOA 和不同厂商版本提示，真实选出 offset 不同的 gpio/l012、gpio/f030，并输出两份版本化 JSON。缺文件、错身份、歧义规则和冲突原身份会报错，不能靠遍历顺序覆盖。
+本地 family 的外设实例直接保存最终 `block`/`version`，对应 `registers/<block>/<version>.yaml`；chip 保存内存、引脚和路由等芯片能力。F030 的 37 个实例直接选用 18 个 `f030` 模型及共享的 `iwdt/l012`、`wwdt/l012`，不需要独立映射层或芯片覆盖机制。`vendor_ip`/`vendor_version` 是保留的来源信息，不参与模型选择。
 
-这是实际版本选型，不再只是 alias；但不等同上游的完整数据集或正则 perimap。当前 selector 精确匹配，normalize.block 仅接受 RegisterBlock；同一芯片内一个 kind 的多版本仍不支持，原 block 键也不能承载相冲突的所选模型。fix 仍以 chip+原 block/version 定位，会影响该芯片所有引用此原模型的实例，不是 GPIOA 专属 layout override。跨芯片不同版本可以独立选择；测试不意味着第二个真实器件已获支持。
+数据纠错直接维护在所属的 register、family 或 chip YAML 中；已审核的寄存器同址 alias 和实例 ownership_parent 仍保留在硬件模型里。加载器校验规范文件身份并迭代解析嵌套依赖，再由共享 schema 检查引用、循环、深度及硬件约束。同一芯片内一个 kind 的多版本仍不支持；跨芯片可独立选择不同版本。缺文件、错身份和版本冲突均报错，不能靠遍历顺序覆盖。
 
 不变式：同一发布集合里相同 kind/version 必须指向同一 canonical register 内容；有真实不兼容差异就分版本。多芯片汇总使用这个受校验入口；单芯片 `data::write_json` 也拒绝覆盖同 kind/version 的不同现存内容。
 

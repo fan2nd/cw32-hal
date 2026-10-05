@@ -120,7 +120,7 @@ compare aliases across long horizons.
 
 IWDT and WWDT have independently verified equivalent register and side-effect
 contracts and reuse existing `l012`. The other 18 F030 models use `f030` selected
-through explicit chip/instance/vendor `perimap` rules; no L012 `l012` register model
+directly by the F030 family's peripheral `block`/`version` records; no L012 `l012` register model
 was rewritten to fit F030.
 
 CRC DR8/DR16/DR32 select different hardware feed widths. GPIO also provides byte

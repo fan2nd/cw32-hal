@@ -48,16 +48,12 @@ v0.24.0 将 data→PAC 后端接入真实上游 `chiptool`（固定 `be1bff3e`�
 cw32-data/                      唯一可维护硬件数据源：YAML
   registers/gpio/l012.yaml         共享寄存器 kind/version
   registers/sysctrl/l012.yaml      register/field/access/kind(bool/enum/raw)
-  families/cw32l012.yaml         芯片 family 的实例地址、门控位、物理 IRQ
+  families/cw32l012.yaml         芯片 family 的实例 kind/version、地址、门控位、物理 IRQ
   chips/cw32l012c8.yaml           memory、pins、routing/remap/quirks
   chips/cw32f030c8.yaml           F030C8 的内存与芯片能力，不含封装模型
-  perimap.yaml                 带来源的芯片/实例/vendor IP→规范 kind/version 选型与别名
-  fixes/*.yaml                 带来源的数据纠错；不是 silicon errata workaround
-  sources/provenance.yaml      原厂证据、冲突及未知范围
 cw32-gen/                       统一 host-only 生成器 crate
   src/schema.rs                 纯版本化 IR + 共享校验；不加载 YAML、不生成 PAC
   src/data/mod.rs               YAML → normalize/validate → 写入 JSON
-  src/data/extensions.rs        fixes、perimap 选型与 aliases
   src/pac.rs                    从文件读取/校验 JSON → PAC + Rust metadata
   src/pac/chiptool_backend.rs   实际 chiptool IR/validate/render + reset/副作用 AST 扩展
   src/lib.rs                    generate(source, selector, json, pac) 编排两阶段
@@ -97,7 +93,7 @@ cargo run --offline -p xtask -- regenerate --check
 
 “离线/发布前”指生成时机；默认Cargo可下载缺失依赖，--offline要求已有完整缓存。第一条同时使 Cargo 在本地生成被 ignore 的 Cargo.lock，随后在新临时目录执行：
 
-1. xtask 的薄封装调用 `cw32_gen::generate`；其中 `cw32_gen::data` 读取所有芯片 YAML，应用显式 fixes 和 perimap，排序归一化、校验，将 chips/*.json 与 registers/kind_version.json 实际写入磁盘。
+1. xtask 的薄封装调用 `cw32_gen::generate`；其中 `cw32_gen::data` 读取所有芯片 YAML，按 family 实例的 block/version 直接加载共享寄存器定义及显式子块依赖，排序归一化、校验，将 chips/*.json 与 registers/kind_version.json 实际写入磁盘。
 2. `cw32_gen::pac` 从这些文件重新读取并校验 JSON，按 register references 加载共享定义，再生成每芯片 PAC 和 Rust METADATA。schema、data 与 pac 是同一个 crate 内的模块边界；统一 crate 包含 YAML 依赖，但 schema 保持纯模型/校验职责，PAC 渲染阶段不加载 YAML，也不直接接收上一阶段的内存模型。
 3. 替换由工具拥有的 generated-data/ 与 cw32-metapac/generated/ 两个生成树。
 
@@ -135,13 +131,13 @@ HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--fea
 
 - register：名称、offset、access、字段范围与 overlap；生成 typed raw/bool/enum getter 与 setter。bool 限制为一位，enum 校验值域及重复值，保留值读取返回 None。完整数据按原厂字段审计，不为缺少证据的位值编造枚举。当前真实数据中的多位字段仍为 raw，不能把 enum 生成能力当作已完成全部硬件枚举。
 - JSON schema v11 显式维护字段、寄存器及子块数组，保留完整寄存器 reset_value 与实例级 register_resets；未知值不当作零，见[默认值与write API](docs/register-reset-defaults.md)。继续不包含 Package：`Chip.pins` 直接给出芯片引脚能力。新增 `Register.bit_size` 支持真实 8/16/32-bit volatile 总线访问，省略时为32位；字段范围、对齐和有声明的别名按访问宽度校验，不能用32位读取后截断冒充8位硬件操作。旧版本 JSON 必须重新生成。模型也显式描述同址 alias、寄存器访问副作用、通用门控/复位及 ownership_parent。W0C/W1C 按其实际写入语义显式清除；只有普通 RW 类型允许 typed modify。I2C 合法同址视图必须明确声明，不能以关闭重叠校验来放行；DMA 总块与 channel 视图不能获得互相冲突的安全所有权。
-- perimap：精确 chip+instance+vendor_ip/vendor_version（或原block/version）匹配，保留datasheet实例名。mode: select在加载前选择规范kind/version/register block文件，即使原vendor名没有本地文件也可；mode: alias仅relabel已加载模型。外设根 block 的 perimap 仍精确匹配；嵌套 block 依赖显式解析，不支持上游通用数据库/正则映射。同chip相同原block身份不能选互相矛盾的模型，必须先区分源身份。
-- fixes：原block名下的寄存器/字段纠错，先于alias；要求source/reason，未知目标、错键、冲突均报错，失败回滚。当前selector作用于该chip中共享这个block的全部实例，不支持仅GPIOA特例。局部布局差异应拆版本/数据模型，不能改坏公共 l012 模型。
+- family 实例直接引用规范 block/version，保留 datasheet 实例名；生成器加载对应的 registers/<block>/<version>.yaml，并递归解析显式子块依赖。文件身份必须匹配引用，同一芯片内同 kind 多版本会报错；跨芯片可选择不同版本，共享兼容模型无需复制。vendor_ip/vendor_version 仅保留来源信息，不参与选型。
+- 数据纠错直接修改所属的 register、family 或 chip YAML。实例连接事实属于 family，内存和引脚能力属于 chip；真实寄存器布局差异应拆 IP 版本，不能改坏共享模型。寄存器同址 alias 与 ownership_parent 仍是硬件模型的一部分。
 - shared IRQ：物理 IRQ 表唯一；peripheral signal→IRQ 可多对多。重复引用不复制物理向量。PAC runtime 按物理 IRQ 号生成向量，稀疏编号保留空槽；HAL `bind_interrupts!` 只为实际声明的 handler 生成入口和 Binding，不从关联表批量生成空证明。
-- 芯片 `pins`、pin-signal routes 与 remap 分开；route 验证目标存在。引脚 token 表示芯片能力，不保证某封装或开发板实际接出。现有 FOC 与新增 ATIM/GTIM main-output 路由有逐项证据，尚未审核的其他信号不会推断生成。quirks 与数据 fixes 分开；未列 quirk 不代表不存在 errata。
+- 芯片 `pins`、pin-signal routes 与 remap 分开；route 验证目标存在。引脚 token 表示芯片能力，不保证某封装或开发板实际接出。现有 FOC 与新增 ATIM/GTIM main-output 路由有逐项证据，尚未审核的其他信号不会推断生成。quirks 记录硬件限制；数据纠错本身不是 silicon errata workaround，未列 quirk 不代表不存在 errata。
 - 确定性排序，不含时间戳/绝对源路径；JSON schema_version校验；两chip fixture证明共享寄存器复用、芯片pin集合隔离、同名异内容拒绝、拆新version后共存。
 
-当前输入是人工审计的分层YAML，不是自动融合所有SVD/厂商数据库的通用导入器。原始 vendor/cw32l012.h、CW32L012.svd 及人工审计 manifest.json 是必要的只读证据，不是可再生成产物。可重新下载的 SDK 压缩包放 vendor/cache/ 或 vendor/downloads/，这两处与 vendor 下 zip/pack 都被 ignore，不进入源码包。原始vendor证据只读，源差异记录在provenance；禁止把教学fixture作为真实芯片资料。
+当前输入是人工审计的分层YAML，不是自动融合所有SVD/厂商数据库的通用导入器。原始 vendor/cw32l012.h、CW32L012.svd 及人工审计 manifest.json 是必要的只读证据，不是可再生成产物。可重新下载的 SDK 压缩包放 vendor/cache/ 或 vendor/downloads/，这两处与 vendor 下 zip/pack 都被 ignore，不进入源码包。原始vendor证据只读，已记录的源差异和限制见相关硬件审查文档；禁止把教学fixture作为真实芯片资料。
 
 ## L012C8 数据覆盖
 
@@ -198,13 +194,13 @@ cargo run -p xtask -- regenerate --check
 
 
 
-[验证记录](docs/validation.md) · [寄存器证据](docs/register-evidence.md) · [数据来源](cw32-data/sources/provenance.yaml)
+[验证记录](docs/validation.md) · [寄存器证据](docs/register-evidence.md)
 
 serde_yaml0.9上游已标记deprecated，目前锁定版本使用；crate 内的 schema/data/pac 模块边界允许后续替换 YAML loader。自有代码MIT OR Apache-2.0；厂商资料遵守各自许可，见NOTICE.md。未宣称Embassy官方支持CW32。
 
 ## 源码交付与 ignore
 
-源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/generated/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 YAML、修正规则、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。源码自举、生成及文档列出的日常校验只需 Rust/Cargo，无 Python 或 PyYAML 前置条件；外部审查探针的编排脚本不属于源码项目。
+源码 ZIP 和干净 checkout 不含 generated-data/、cw32-metapac/generated/、Cargo.lock、target/、测试临时文件、日志或下载缓存。保留审核后的 register/family/chip YAML、Rust 生成器、文档以及审计所需 vendor 原厂证据和许可。源码自举、生成及文档列出的日常校验只需 Rust/Cargo，无 Python 或 PyYAML 前置条件；外部审查探针的编排脚本不属于源码项目。
 
 
 `--check` 是只读漂移检查，可捕获缺失文件、多余文件和内容变化。生成工具仅替换两个明确拥有的生成目录，不能用于存放手写代码。临时校验和变异测试使用独立临时目录并自动清理。离线命令需要提前缓存所有 Rust 依赖与目标工具链；缺缓存时先联网执行正常 Cargo 命令。

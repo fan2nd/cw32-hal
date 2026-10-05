@@ -19,7 +19,7 @@ Sources used in this review:
   `Libraries/src/cw32l012_<ip>.c` and `Libraries/inc/cw32l012_<ip>.h`.
 - Repository `vendor/cw32l012.h`, version 1.2, 2026-06-24, and
   `vendor/CW32L012.svd` from the SDK MDK pack. Hashes are recorded in
-  `cw32-data/sources/provenance.yaml`. No newer source or internet inference was
+  [`vendor/manifest.json`](../vendor/manifest.json). No newer source or internet inference was
   substituted for these pinned inputs.
 
 The review checked register lists, access notation, status/clear mechanisms,

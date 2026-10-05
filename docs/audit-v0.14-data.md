@@ -78,8 +78,9 @@ Counts are expanded register views/fields within each reusable block, including 
 - Chip/family, core/target and generated namespace/filename checks fail closed.
 - The 32-bit address-space upper boundary accepts a valid final byte without
   relaxing overflow, alignment, alias or overlap checks.
-- Perimap/fixes remain explicit, auditable transformations. Source comments and
-  provenance now describe the implemented fields and both chips accurately.
+- At this historical stage, explicit mapping/correction rules were also audited.
+  Current data instead records canonical IP choices directly in family instances
+  and corrections directly in the relevant register/family/chip YAML.
 
 Current multi-bit hardware fields remain raw: there are no populated hardware
 enum tables in this dataset. Enum generation support does not mean all semantic

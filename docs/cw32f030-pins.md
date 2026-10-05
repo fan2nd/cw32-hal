@@ -21,9 +21,9 @@ the pin/AF tables: 13 ADC inputs, 26 ATIM routes, 16 comparator inputs and
 6 comparator outputs, totaling **61 routes**. Later timer work added GTIM
 routes, and v0.19 adds **116 UART/SPI/I2C routes**, giving 223 routes at that stage. v0.20 adds the two dedicated LSE routes,
 bringing the total to 225 at that stage; v0.22 adds the two HSE routes for a current total of 227.
-See `cw32-data/sources/timer-pwm-routes.yaml` and
-`cw32-data/sources/bus-routes.yaml` for that independent evidence. BTIM,
-clock-output and LVD routes remain outside this focused audit. Dedicated LSE/HSE pads have separate evidence in the low/high-speed-clock source manifests;
+See [timer/PWM route evidence](timer-pwm-route-evidence.md) and the
+[bus implementation stage](buses-v0.19.0.md) for the later route coverage. BTIM,
+clock-output and LVD routes remain outside this focused audit. Dedicated LSE/HSE pads are documented in [RTC](rtc.md) and [external clocks](external-clocks.md);
 absence does not imply that the silicon lacks those functions. The F030
 does not gain L012-only ADC2, OPA, DAC or CORDIC capabilities from this data.
 

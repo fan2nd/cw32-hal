@@ -8,7 +8,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: adc
-  version: sdk_v2_2
+  version: f030
   vendor_ip: ADC
   vendor_version: '2.2'
   address: 1073816576
@@ -38,7 +38,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: atim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: ATIM
   vendor_version: '2.2'
   address: 1073818624
@@ -61,7 +61,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: awt
-  version: sdk_v2_2
+  version: f030
   vendor_ip: AWT
   vendor_version: '2.2'
   address: 1073826816
@@ -84,7 +84,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: BTIM
   vendor_version: '2.2'
   address: 1073825792
@@ -107,7 +107,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: BTIM
   vendor_version: '2.2'
   address: 1073826048
@@ -130,7 +130,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: btim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: BTIM
   vendor_version: '2.2'
   address: 1073826304
@@ -153,7 +153,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: crc
-  version: sdk_v2_2
+  version: f030
   vendor_ip: CRC
   vendor_version: '2.2'
   address: 1073885184
@@ -174,7 +174,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dma
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMA
   vendor_version: '2.2'
   address: 1073872896
@@ -354,7 +354,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMACHANNEL
   vendor_version: '2.2'
   address: 1073872928
@@ -378,7 +378,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMACHANNEL
   vendor_version: '2.2'
   address: 1073872960
@@ -402,7 +402,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMACHANNEL
   vendor_version: '2.2'
   address: 1073872992
@@ -426,7 +426,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMACHANNEL
   vendor_version: '2.2'
   address: 1073873024
@@ -450,7 +450,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: dmachannel
-  version: sdk_v2_2
+  version: f030
   vendor_ip: DMACHANNEL
   vendor_version: '2.2'
   address: 1073873056
@@ -474,7 +474,7 @@ peripherals:
     kernel_clock: hclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: flash
-  version: sdk_v2_2
+  version: f030
   vendor_ip: FLASH
   vendor_version: '2.2'
   address: 1073881088
@@ -511,7 +511,7 @@ peripherals:
     reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
     reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GPIO
   vendor_version: '2.2'
   address: 1207959552
@@ -554,7 +554,7 @@ peripherals:
     reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
     reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GPIO
   vendor_version: '2.2'
   address: 1207960576
@@ -597,7 +597,7 @@ peripherals:
     reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
     reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GPIO
   vendor_version: '2.2'
   address: 1207961600
@@ -640,7 +640,7 @@ peripherals:
     reset_source: "CW32x030 RM Rev2.5 section 9.6.18, printed p157 (PDF p158); https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf"
     reset_note: "Documented nominal reset value; IDR samples live external pin levels, so this is not a guarantee for a later read or any board input voltage."
   block: gpio
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GPIO
   vendor_version: '2.2'
   address: 1207964672
@@ -679,7 +679,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GTIM
   vendor_version: '2.2'
   address: 1073742848
@@ -709,7 +709,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GTIM
   vendor_version: '2.2'
   address: 1073745920
@@ -739,7 +739,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GTIM
   vendor_version: '2.2'
   address: 1073823744
@@ -769,7 +769,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: gtim
-  version: sdk_v2_2
+  version: f030
   vendor_ip: GTIM
   vendor_version: '2.2'
   address: 1073824768
@@ -792,7 +792,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; section 20.4.2 confirms the serial clock generator uses PCLK
   block: i2c
-  version: sdk_v2_2
+  version: f030
   vendor_ip: I2C
   vendor_version: '2.2'
   address: 1073763328
@@ -815,7 +815,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; section 20.4.2 confirms the serial clock generator uses PCLK
   block: i2c
-  version: sdk_v2_2
+  version: f030
   vendor_ip: I2C
   vendor_version: '2.2'
   address: 1073764352
@@ -838,7 +838,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: iwdt
-  version: sdk_v2_2
+  version: l012
   vendor_ip: IWDT
   vendor_version: '2.2'
   address: 1073754112
@@ -857,7 +857,7 @@ peripherals:
     interrupt: WDT
 - name: LVD
   block: lvd
-  version: sdk_v2_2
+  version: f030
   vendor_ip: LVD
   vendor_version: '2.2'
   address: 1073818240
@@ -868,7 +868,7 @@ peripherals:
     interrupt: LVD
 - name: RAM
   block: ram
-  version: sdk_v2_2
+  version: f030
   vendor_ip: RAM
   vendor_version: '2.2'
   address: 1073882112
@@ -883,7 +883,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: rtc
-  version: sdk_v2_2
+  version: f030
   vendor_ip: RTC
   vendor_version: '2.2'
   address: 1073752064
@@ -906,7 +906,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: spi
-  version: sdk_v2_2
+  version: f030
   vendor_ip: SPI
   vendor_version: '2.2'
   address: 1073819648
@@ -929,7 +929,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: spi
-  version: sdk_v2_2
+  version: f030
   vendor_ip: SPI
   vendor_version: '2.2'
   address: 1073756160
@@ -948,7 +948,7 @@ peripherals:
     interrupt: SPI2
 - name: SYSCTRL
   block: sysctrl
-  version: sdk_v2_2
+  version: f030
   vendor_ip: SYSCTRL
   vendor_version: '2.2'
   address: 1073807360
@@ -965,7 +965,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
-  version: sdk_v2_2
+  version: f030
   vendor_ip: UART
   vendor_version: '2.2'
   address: 1073821696
@@ -988,7 +988,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
-  version: sdk_v2_2
+  version: f030
   vendor_ip: UART
   vendor_version: '2.2'
   address: 1073759232
@@ -1011,7 +1011,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: uart
-  version: sdk_v2_2
+  version: f030
   vendor_ip: UART
   vendor_version: '2.2'
   address: 1073760256
@@ -1034,7 +1034,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: vc
-  version: sdk_v2_2
+  version: f030
   vendor_ip: VC
   vendor_version: '2.2'
   address: 1073818112
@@ -1061,7 +1061,7 @@ peripherals:
     kernel_clock: null
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: vc
-  version: sdk_v2_2
+  version: f030
   vendor_ip: VC
   vendor_version: '2.2'
   address: 1073818128
@@ -1088,7 +1088,7 @@ peripherals:
     kernel_clock: pclk
     source: CW32x030 RM2.5 section 4.3.1, Figure 4-1 and bus clock definitions, printed pp45-46; kernel is omitted for independently selected or analog/filter clock domains; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf
   block: wwdt
-  version: sdk_v2_2
+  version: l012
   vendor_ip: WWDT
   vendor_version: '2.2'
   address: 1073753088

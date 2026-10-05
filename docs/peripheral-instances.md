@@ -11,7 +11,7 @@ Evidence used in this audit:
 - [CW32L012 user manual v1.4](https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf), §§4.7.11–4.7.16 (printed pp.56–63), Table 5-1 (pp.70–71), §25.11 (p.588), and §27.6 (p.626).
 - [SDK v1.0.5](https://www.whxy.com/uploads/files/20260701/CW32L012_StandardPeripheralLib_V1.0.5.zip), `Libraries/inc/cw32l012_sysctrl.h` clock/reset macros and `Libraries/src/cw32l012_vc.c`.
 
-The YAML is the maintained source; vendor files are audit evidence, not runtime inputs. Pinned source hashes and versions are in [provenance](../cw32-data/sources/provenance.yaml).
+The YAML is the maintained source; vendor files are audit evidence, not runtime inputs. Pinned vendor hashes are in the [L012 manifest](../vendor/manifest.json) and [F030 manifest](../vendor/cw32f030/manifest.json); source versions and review scope are documented in the [L012 semantic review](full-peripheral-semantics.md) and [F030 audit](../vendor/cw32f030/AUDIT.md).
 
 ## Complete instance inventory
 

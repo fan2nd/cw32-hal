@@ -9,7 +9,7 @@ This audit covers CW32L012C8 and CW32F030C8 independently. It establishes docume
 - Pinned [L012 header](../vendor/cw32l012.h), [L012 SVD](../vendor/CW32L012.svd), [F030 header](../vendor/cw32f030/cw32f030.h), and [F030 SVD](../vendor/cw32f030/CW32F030.svd) corroborate addresses and external IRQ numbers. Vendor artifacts are not independent hardware measurements.
 - [Embassy STM32 DMA at b12a6d9](https://github.com/embassy-rs/embassy/tree/b12a6d9efcd2711037abca1b63a661a9ef726444/embassy-stm32/src/dma), particularly `mod.rs` and `dma_bdma/mod.rs`, is a design reference only. Its channel ownership, IRQ-bound instances, per-channel state, register-before-check waker sequence, transfer guard, and memory fences are useful architectural precedents. Its EN polling and Drop reset sequences depend on different hardware and are not CW32 evidence.
 
-Hashes and source attribution are maintained in [provenance](../cw32-data/sources/provenance.yaml). The manuals were fetched and their hashes checked during this audit. A targeted official-site errata search on 2026-10-03 found no separately published CW32 DMA erratum that resolves the stop/drain question; this is not a claim that no errata exist.
+The manuals were fetched and their hashes listed above checked during this audit. A targeted official-site errata search on 2026-10-03 found no separately published CW32 DMA erratum that resolves the stop/drain question; this is not a claim that no errata exist.
 
 ## Channels, addresses, clocks and IRQs
 

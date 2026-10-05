@@ -59,7 +59,7 @@ AF values appear after /; leading zeros are normalized to the existing chip-toke
 ## Evidence and constraints
 
 - F030 RM2.5 Table9-2 printed pp146-147 (PDF pages147-148) and DS1.9 Tables5-3/5-4/5-5/5-6 pp28-29 agree on every route. The RM AF tables were rendered and inspected. Section14.3.4.1 / Table14-6 p229 explicitly covers GTIMx_CHy with x,y=1..4 as compare/PWM output. CMMR CCyM=0xE yields high for CNT>=CCR; 0xF yields high for CNT<CCR. Do not substitute TOGP/TOGN outputs or use L012 CCER semantics. SYSCTRL_GTIMxCAP is capture-source selection (pp89-90, p228), not output remapping.
-- L012 RM1.4 Table9-2 printed pp128-129 (PDF pages154-155) was rendered and inspected. All 44 selected routes were extracted geometrically and exactly compared with SDK1.0.5 cw32l012_gpio.h AF macros. The JSON records each macro and header line. GTIM section16.3.4/Table16-9 p262, section16.3.4.3/Table16-10 p264, and external-output example section16.8.8 p282 establish output behavior. Set CCyS=0 while CCyE=0; configure OCyM=6/7, CCyP and CCyE; CCyNP must remain zero in output mode (pp302-303). TISEL is capture-input selection.
+- L012 RM1.4 Table9-2 printed pp128-129 (PDF pages154-155) was rendered and inspected. All 44 selected routes were extracted geometrically and exactly compared with SDK1.0.5 cw32l012_gpio.h AF macros. The matching macros remain in the [pinned GPIO header](../vendor/cw32l012_gpio.h). GTIM section16.3.4/Table16-9 p262, section16.3.4.3/Table16-10 p264, and external-output example section16.8.8 p282 establish output behavior. Set CCyS=0 while CCyE=0; configure OCyM=6/7, CCyP and CCyE; CCyNP must remain zero in output mode (pp302-303). TISEL is capture-input selection.
 - L012 ATIM CH4 has PA3/AF7, PA11/AF7 and PB9/AF5. Section17.3.1.10 p327 explicitly establishes CH1-6 independent outputs; section17.3.4 p341 describes external CHy/CHyN. CH4 output requires CC4S=0, appropriate OC4M/OC4MH and CC4E; output remains subject to BDTR.MOE, break/idle configuration and CC4NE (pp391, 394-395, 402).
 - Both chips: GPIO ANALOG=0 and DIR=0 for output, stated AFR selected. See F030 sections9.4.1/9.4.4 p150 (also unlock GPIO lock), L012 sections9.4.1/9.4.4 p131. Pin compatibility does not establish safe electrical wiring. Oscillator-shared PC14/PC15/PF0/PF1 require board/clock configuration review; this audit does not silently reclaim an active oscillator.
 
@@ -71,7 +71,7 @@ AF values appear after /; leading zeros are normalized to the existing chip-toke
 
 ## Source integration
 
-The complete per-route evidence is maintained in `cw32-data/sources/timer-pwm-routes.yaml`; chip YAML contains the concise pin/peripheral/signal/AF/remap records. Safe timer pin traits deliberately omit PA13/PA14 until a reviewed SWD-release ownership API exists. Route facts remain available in metadata; no SYSCTRL capture remap is performed as a substitute for output AF selection.
+The tables and citations above document this route audit; chip YAML contains the concise pin/peripheral/signal/AF/remap records consumed by generation. Safe timer pin traits deliberately omit PA13/PA14 until a reviewed SWD-release ownership API exists. Route facts remain available in metadata; no SYSCTRL capture remap is performed as a substitute for output AF selection.
 
 ## Official source links
 

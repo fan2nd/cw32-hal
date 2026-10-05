@@ -76,9 +76,10 @@ it is not a new CW32 warning.
 
 ## Preserved scope
 
-The 57 hardware-data files, 12 vendor-evidence files, HAL runtime/build source,
-and all example Rust code are unchanged from v0.23.1. Only workspace package
-versions change outside the generator and documentation. Public DMA tokens
+At the initial backend migration, the 57 hardware-data files, 12 vendor-evidence
+files, HAL runtime/build source, and all example Rust code were unchanged from
+v0.23.1. Only workspace package versions changed outside the generator and
+documentation. The subsequent source-layer cleanup is recorded below. Public DMA tokens
 remain DMA_CH1..4 on L012 and DMA_CH1..5 on F030. The six examples remain in
 examples/l012-bldc/01-gpio through 06-application.
 
@@ -95,3 +96,21 @@ These checks establish generated-code behavior against the maintained data.
 They do not independently prove the manuals' accuracy, hardware reset values,
 physical side effects, electrical safety, timing or loaded-motor behavior.
 No physical-board, flashing, live bus or oscilloscope validation was performed.
+
+## Subsequent source-layer cleanup
+
+The documentation-only source manifests and empty correction list were removed.
+All 37 F030 instance IP selections now live directly in the family YAML, retaining
+the shared L012 watchdog models. The generator loads canonical register files and
+explicit nested dependencies directly; the mapping/correction module is removed.
+The maintained hardware inputs now comprise 50 register/family/chip YAML files.
+
+Fresh generation preserves all 48 normalized JSON and 102 PAC/metadata files byte
+for byte, including source-evidence fields. Twenty-three isolated loader checks
+pass for nested-only/deep dependencies, cross-chip versions, missing or malformed
+models, unknown keys, conflicting versions, cycles and the 256-level depth limit.
+Formatting, both-chip minimal/full HAL ARM release builds, six firmware links and
+motor-enabled 05/06 links pass. The 301-file source-only archive also bootstraps
+and passes regeneration drift checks with a fresh target directory and no initial
+lockfile or generated output. No register facts, HAL logic or package versions
+changed in this cleanup; its checks do not rerun the full backend semantic suite.

@@ -10,7 +10,7 @@ L012 implements eight CRC16 algorithms. Its 32-bit DR access consumes the low by
 
 `Ccitt` is the vendor's reflected, initial-zero CRC16_CCITT (also called KERMIT); `CcittFalse` uses initial 0xffff without reflection. The names do not promise arbitrary polynomial/initial-value configuration. Drop releases the clock; there is no asynchronous operation or outstanding memory access.
 
-Evidence: CW32L012 RM1.4 §§10.3–10.6, printed pp141–145; CW32x030 RM2.5 §§10.3–10.6, pp160–164. Source URLs and SHA-256 values are in `cw32-data/sources/provenance.yaml`. F030 p161's final 32-bit example has a transposed hex word; the explicit low-byte-first rule and preceding word list establish the implemented ordering.
+Evidence: CW32L012 RM1.4 §§10.3–10.6, printed pp141–145; CW32x030 RM2.5 §§10.3–10.6, pp160–164. Manual URLs and SHA-256 values are listed in [DMA hardware evidence](dma-hardware-evidence.md#primary-sources-and-pins). F030 p161's final 32-bit example has a transposed hex word; the explicit low-byte-first rule and preceding word list establish the implemented ordering.
 
 ## Independent watchdog
 
