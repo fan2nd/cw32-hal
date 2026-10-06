@@ -594,7 +594,9 @@ impl Handler<typelevel::ATIM> for PwmHandler {
                 );
                 return;
             }
-            if m.active.mode != Mode::Off && m.control.state() != State::Fault && !m.armed {
+            // 上方已将 Off/Calibrating/Fault 的 active.mode 置 Off；其后控制状态
+            // 不再改变，P0 ISR 也不嵌套。无需在首次解锁路径重复读取/判断 Fault。
+            if m.active.mode != Mode::Off && !m.armed {
                 if pwm.arm().is_err() {
                     m.trip(Fault::Driver, &mut pwm);
                     return;

@@ -95,11 +95,17 @@ impl SingleShuntPwm {
     /// 写下一次真实 reload 才装载的五个预载寄存器。
     /// 调用者必须保证整批写入不会跨越 reload，并维护相同延迟的软件帧身份。
     pub fn stage(&mut self, duty: [u16; 3], sample: [u16; 2]) {
-        for (ch, value) in duty.into_iter().enumerate() {
-            pac::ATIM
-                .ccr(ch)
-                .write_value(pac::atim::regs::Ccr(u32::from(value)));
-        }
+        // 固定三相直接写入：opt-level=s 下迭代器会生成栈副本和三次循环，
+        // 浪费 reload 后预载/首次解锁共用的短时隙。保持原全字写值与顺序。
+        pac::ATIM
+            .ccr(0)
+            .write_value(pac::atim::regs::Ccr(u32::from(duty[0])));
+        pac::ATIM
+            .ccr(1)
+            .write_value(pac::atim::regs::Ccr(u32::from(duty[1])));
+        pac::ATIM
+            .ccr(2)
+            .write_value(pac::atim::regs::Ccr(u32::from(duty[2])));
         pac::ATIM
             .ccr(3)
             .write_value(pac::atim::regs::Ccr(u32::from(sample[0])));
