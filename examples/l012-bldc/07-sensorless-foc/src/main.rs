@@ -9,6 +9,7 @@ mod control;
 mod hardware;
 mod io;
 mod sampling;
+mod trace;
 
 embassy_cw32::bind_interrupts!(struct Irqs {
     ATIM => hardware::PwmHandler;

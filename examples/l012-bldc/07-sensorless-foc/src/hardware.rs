@@ -62,6 +62,12 @@ static FAULT_LOG_READY: AtomicBool = AtomicBool::new(false);
 #[no_mangle]
 pub static mut FOC_CONTROL_FAULT: ControlFaultTrace = ControlFaultTrace::new();
 
+// 不放进 Motor::new，避免初始化大对象时占用 8 KiB SRAM 中的栈空间。
+// 仅 ADC1 P0 写入；首故障停桥、停计数器、关闭 P0 中断并 Release 后，线程才读。
+static mut PLATEAU_TRACE: crate::trace::Trace = crate::trace::Trace::new();
+// 仅 report_fault 所在线程访问，不由中断写入。
+static mut TRACE_DUMP: Option<(usize, u32)> = None;
+
 // EAU 单例与实时状态共同保留；只有不嵌套的 ADC1 P0 路径借用它。
 struct Runtime {
     motor: Motor,
@@ -674,6 +680,7 @@ fn publish(m: &Motor) {
 /// 非阻塞 RTT 仅输出一次；运行中的每帧采样和 ISR 均不打印。
 pub fn report_fault() {
     if !FAULT_LOG_READY.load(Ordering::Acquire) {
+        report_trace_row();
         return;
     }
     FAULT_LOG_READY.store(false, Ordering::Relaxed);
@@ -742,6 +749,66 @@ pub fn report_fault() {
     defmt::error!(
         "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us"
     );
+    if d.fault == Fault::StartupTimeout as u32 || d.fault == Fault::ObserverLost as u32 {
+        // 原故障日志先排出；随后每 20 ms 一行，仍为非阻塞 RTT，序号可检查丢行。
+        unsafe {
+            TRACE_DUMP = Some((0, MILLISECONDS.load(Ordering::Acquire)));
+        }
+    }
+}
+
+fn report_trace_row() {
+    // 只在先读取 FAULT_LOG_READY 的 Acquire 发布之后设置 TRACE_DUMP。
+    // 电机高频源已停止；不关闭中断、不复制整块缓冲，BTIM1 和按键/LED 继续运行。
+    let Some((row, last_ms)) = (unsafe { TRACE_DUMP }) else {
+        return;
+    };
+    let now = MILLISECONDS.load(Ordering::Acquire);
+    let wait_ms = if row == 0 { 100 } else { 20 };
+    if now.wrapping_sub(last_ms) < wait_ms {
+        return;
+    }
+    let trace = unsafe { &*core::ptr::addr_of!(PLATEAU_TRACE) };
+    if row == 0 {
+        defmt::error!("TRACE_BEGIN version=1 period_frames=8 nominal_period_us=2000 records={} total={} phase_bins=16 sector_bins=6; frozen after stop", trace.len, trace.total);
+    } else if row <= crate::trace::PHASE_BINS + crate::trace::SECTOR_BINS {
+        let index = row - 1;
+        let (kind, bin_index, bin) = if index < crate::trace::PHASE_BINS {
+            (0, index, trace.phase[index])
+        } else {
+            let sector = index - crate::trace::PHASE_BINS;
+            (1, sector, trace.sector[sector])
+        };
+        let mean = if bin.count == 0 {
+            0
+        } else {
+            bin.delta_sum / i32::from(bin.count)
+        };
+        defmt::error!(
+            "TRACE_BIN kind={} index={} n={} delta_min={} mean={} max={} transport_peak={}mA",
+            kind,
+            bin_index,
+            bin.count,
+            bin.delta_min,
+            mean,
+            bin.delta_max,
+            bin.transport_peak_ma
+        );
+    } else {
+        let index = row - 1 - crate::trace::PHASE_BINS - crate::trace::SECTOR_BINS;
+        if let Some(record) = trace.record(index) {
+            defmt::error!("TRACE_ROW n={} age={} forced={} observed={} pll={} raw={:?} duty={:?} transport={} emf={:?}", index, record.age, record.forced, record.observer, record.pll_error, record.raw, record.duty, record.transport_ma, record.emf);
+        } else {
+            defmt::error!("TRACE_END records={} total={}; angles=65536/turn duty=96ticks/us raw=ADCcounts transport=mA emf=mV; phase bin=forced>>12; sectors=ABC,ACB,BAC,BCA,CAB,CBA", trace.len, trace.total);
+            unsafe {
+                TRACE_DUMP = None;
+            }
+            return;
+        }
+    }
+    unsafe {
+        TRACE_DUMP = Some((row + 1, now));
+    }
 }
 
 /// 同一次原子读取给出解锁状态和首个锁存故障码；0 表示无故障。
@@ -1108,6 +1175,17 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     m.trip(m.control.fault(), math.pwm);
                 }
                 return;
+            }
+            // 绑定刚消费的 active 波形，不读取已预载的 staged/pending。
+            // 只在 2 ms 抽样点搬运 24 字节并更新少量整数统计；不打印或调用除法。
+            if let Some(observation) = m.control.plateau_observation() {
+                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).push(
+                    observation,
+                    m.raw,
+                    m.active.frame.duty,
+                    m.active.frame.order,
+                    m.phase_ma[m.active.frame.order[0]] + m.dc_ma[0],
+                );
             }
             if !m.checkpoint_control(math.pwm, start, 3) {
                 return;
