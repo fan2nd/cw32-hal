@@ -97,7 +97,7 @@ cargo run --offline -p xtask -- regenerate --check
 2. `cw32_gen::pac` 从这些文件重新读取并校验 JSON，按 register references 加载共享定义，再生成每芯片 PAC 和 Rust METADATA。schema、data 与 pac 是同一个 crate 内的模块边界；统一 crate 包含 YAML 依赖，但 schema 保持纯模型/校验职责，PAC 渲染阶段不加载 YAML，也不直接接收上一阶段的内存模型。
 3. 替换由工具拥有的 generated-data/ 与 cw32-metapac/generated/ 两个生成树。
 
---check 重新生成并逐字节检查文件集合与内容；发现缺失、漂移、多余文件即失败，不修改产物。干净源码先 regenerate，再 --check；没有生成物时 --check 明确失败，绝不默默写入。CI包含此检查。JSON 是可发布中间接口，不是维护源；PAC 同样禁止手改。
+--check 重新生成并逐字节检查文件集合与内容；发现缺失、漂移、多余文件即失败，不修改产物。干净源码先 regenerate，再 --check；没有生成物时 --check 明确失败，绝不默默写入。JSON 是可发布中间接口，不是维护源；PAC 同样禁止手改。
 
 也可直接调用统一 CLI（在新的输出目录中生成，或用于干净源码自举）：
 
@@ -123,7 +123,7 @@ cargo check -p embassy-cw32 --target thumbv6m-none-eabi --features cw32l012c8
 
 测试工具链 Rust/Cargo 1.99.0，Cargo.lock 在本地生成并被 ignore；手工 manifest 固定直接依赖版本，但不承诺跨时点的完整传递依赖图一致。PAC 普通 build.rs **仅选择预生成 Rust 路径**，没有 `cw32-gen` 或其他 generator build dependency，不读取 YAML/JSON。HAL runtime 和 build.rs 依赖同一 cw32-metapac；build.rs 读取 METADATA 生成 kind/version cfg、pin singleton、GPIO 端口与门控掩码、IRQ 标记和只读关联表，并在 `memory-x` 开启时写出 memory.x。模块 gate 实际使用 kind/version cfg；L012 与 F030 的不兼容寄存器版本选择独立驱动，不支持的版本不会被当作兼容布局。驱动算法实际使用生成的 PAC 字段。正常 PAC 构建不复制整份输出到 OUT_DIR；metadata 和 runtime 文件只在对应 feature 开启时要求存在。
 
-HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--features cw32l012c8`，仅构建生成器/xtask 不需要选择芯片。PAC 也没有默认芯片，直接使用 PAC 时同样需要明确选择。`--no-default-features --features cw32l012c8` 可检查不含 runtime 的 HAL。未选芯片报错；不自动将名称相近的 CW32 型号视为兼容。PAC/HAL 为 no_std；生成器在 host 运行。HAL `metadata` feature 控制公开关联表，并转发 PAC metadata feature；build dependency 始终启用 metadata 供生成使用。`unstable-pac` 才公开 `embassy_cw32::pac`。未开启 `memory-x` 时，应用负责自己的内存布局和链接配置。
+HAL 默认 feature 为 `rt`，不会默认选择芯片；HAL 检查需加 `--features cw32l012c8`，仅构建生成器/xtask 不需要选择芯片。PAC 默认开启 `pac`，没有默认芯片；直接使用 PAC 时同样需要明确选择。只读取 metadata 的宿主构建关闭 defaults，并开启 `metadata`；即使 `rt` feature 被依赖转发，也不会编译 PAC 或引用 Cortex-M 异常向量。`--no-default-features --features cw32l012c8` 可检查不含 runtime 的 HAL。未选芯片报错；不自动将名称相近的 CW32 型号视为兼容。PAC/HAL 为 no_std；生成器在 host 运行。HAL `metadata` feature 控制公开关联表，并转发 PAC metadata feature；build dependency 始终启用 metadata 供生成使用。`unstable-pac` 才公开 `embassy_cw32::pac`。未开启 `memory-x` 时，应用负责自己的内存布局和链接配置。
 
 `cw32l012c8` + `rt` 本身不提供 critical-section backend。应用若未通过其他依赖获得正确 backend，需在自己的 Cargo.toml 中加入 `cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }`，或提供另一个适合本芯片的实现；不要同时链接互相冲突的 backend。主机测试的 `std` backend 不能代表裸机配置已具备该实现。
 

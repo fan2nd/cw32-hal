@@ -17,11 +17,11 @@
 
 ## 构建
 
-从干净源码先在workspace根执行 `cargo run -p xtask -- regenerate`。例程不额外添加目标配置文件，构建时显式指定MCU目标：
+从干净源码先在workspace根执行 `cargo run -p xtask -- regenerate`。板级 `.cargo/config.toml` 为六个例程统一设置 `thumbv6m-none-eabi`；在任一例程目录中构建时会自动继承：
 
 ```sh
 cd examples/l012-bldc/01-gpio
-cargo build --offline --release --target thumbv6m-none-eabi
+cargo build --release
 ```
 
 也可从workspace根选择包：
@@ -41,7 +41,27 @@ cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-06-application
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup -p cw32-bldc-06-application --features motor-output-enable
 ```
 
-这些是MCU程序，无宿主入口/平台条件分支；源码包不包含例程测试或外部生成脚本。没有配置通用烧录runner，也没有实际烧录。
+这些是MCU程序，无宿主入口/平台条件分支；源码包不包含例程测试或外部生成脚本。
+
+## 烧录与运行
+
+安装 [probe-rs](https://probe.rs/docs/getting-started/installation/) **0.31.0或更新版本**，并确保 `probe-rs` 在 `PATH` 中。CW32L012C8使用probe-rs内置的 [`CW32L012x8`](https://github.com/probe-rs/probe-rs/blob/v0.31.0/probe-rs/targets/CW32L0_Series.yaml) target及其 `flashcw32l012` 烧录算法；可先用 `probe-rs chip info CW32L012x8` 检查本机支持，无需连接开发板。
+
+板级默认runner为 `probe-rs run --chip CW32L012x8`，不指定调试器型号或序列号。在任一例程目录执行：
+
+```sh
+cargo run --release
+```
+
+它会构建、烧录并启动该例程。只连接一个可用调试器时由probe-rs自动选择；连接多个时按probe-rs提示处理。
+
+从workspace根执行时，Cargo不会自动读取子目录的配置，须显式加载同一份板级配置，例如：
+
+```sh
+cargo run --release --config examples/l012-bldc/.cargo/config.toml -p cw32-bldc-01-gpio
+```
+
+其他阶段替换包名即可。以上命令适用于Windows PowerShell和常见Unix shell。尚未实际烧录或验证调试器连接；烧录和调试前必须物理禁用功率驱动，遵守本页的上板约束。
 
 ## 时钟与ADC
 

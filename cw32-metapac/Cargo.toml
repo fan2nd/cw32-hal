@@ -7,12 +7,14 @@ license = "MIT OR Apache-2.0"
 publish = false
 
 [features]
-default = []
+default = ["pac"]
+# Metadata-only host consumers disable defaults and do not link Cortex-M code.
+pac = ["dep:cortex-m"]
 cw32l012c8 = []
 cw32f030c8 = []
 metadata = []
 rt = ["dep:cortex-m-rt"]
 
 [dependencies]
-cortex-m = "=0.7.7"
+cortex-m = { version = "=0.7.7", optional = true }
 cortex-m-rt = { version = "=0.7.5", optional = true, features = ["device"] }

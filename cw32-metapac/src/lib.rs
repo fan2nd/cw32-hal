@@ -1,22 +1,30 @@
 //! PAC and metadata generated from the layered cw32-data YAML sources.
 #![no_std]
 #![deny(unsafe_op_in_unsafe_fn)]
+#[cfg(feature = "pac")]
 include!(env!("CW32_METAPAC_PAC_PATH"));
 
 // SAFETY: the enum discriminants come from the validated, audited IRQ metadata.
+#[cfg(feature = "pac")]
 unsafe impl cortex_m::interrupt::InterruptNumber for Interrupt {
     fn number(self) -> u16 {
         self as u16
     }
 }
 
-#[cfg(feature = "rt")]
+#[cfg(all(feature = "pac", feature = "rt"))]
 pub use cortex_m_rt::interrupt;
 /// Device interrupts, also used to validate the cortex-m-rt interrupt attribute.
+#[cfg(feature = "pac")]
 pub use Interrupt as interrupt;
 
 // Keep the hardware vector table out of host tools that consume metadata.
-#[cfg(all(feature = "rt", target_arch = "arm", target_os = "none"))]
+#[cfg(all(
+    feature = "pac",
+    feature = "rt",
+    target_arch = "arm",
+    target_os = "none"
+))]
 mod runtime {
     include!(env!("CW32_METAPAC_RT_PATH"));
 }
