@@ -17,7 +17,12 @@ pub const BUS_DIVIDER: i32 = 11;
 // 仅作低电流台架起点；必须先确认电机、功率板和外部硬件保护。
 pub const CURRENT_TRIP_MA: i32 = 750;
 pub const CURRENT_SUM_LIMIT_MA: i32 = 200;
-pub const BUS_MIN_MV: i32 = 8000;
+// 按实际电池/台架配置选择 2S 或 3S；不靠电压自动识别，也不在欠压时降档。
+// 3300 mV/节沿用原 2S 的 6.6 V 实验起点，须按实际电芯和负载确认，不代替 BMS。
+pub const BATTERY_SERIES_CELLS: u8 = 2;
+pub const CELL_UNDERVOLTAGE_MV: i32 = 3300;
+pub const BUS_MIN_MV: i32 = BATTERY_SERIES_CELLS as i32 * CELL_UNDERVOLTAGE_MV;
+// 保留原 16 V 实验过压限制；电池串数不提高功率板额定值或证明驱动低压能力。
 pub const BUS_MAX_MV: i32 = 16000;
 pub const ALIGN_ID_MA: i32 = 150;
 pub const STARTUP_CURRENT_MA: i32 = 200;
@@ -81,6 +86,8 @@ pub fn valid() -> bool {
         && BUS_DIVIDER == 11
         && (500..=8000).contains(&CURRENT_TRIP_MA)
         && (1..=CURRENT_TRIP_MA).contains(&CURRENT_SUM_LIMIT_MA)
+        && matches!(BATTERY_SERIES_CELLS, 2 | 3)
+        && CELL_UNDERVOLTAGE_MV > 0
         && (1000..=50000).contains(&BUS_MIN_MV)
         && (BUS_MIN_MV + 1000..=50000).contains(&BUS_MAX_MV)
         && (1..CURRENT_TRIP_MA).contains(&ALIGN_ID_MA)

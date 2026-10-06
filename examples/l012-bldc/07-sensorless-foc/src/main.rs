@@ -36,6 +36,13 @@ async fn main(spawner: embassy_executor::Spawner) {
         clocks.pclk_hz() / 2,
         clocks.pclk_hz() / 8
     );
+    defmt::info!(
+        "Battery={}S cell_uv={}mV bus_uv={}mV bus_ov={}mV (configured, no auto-detect)",
+        config::BATTERY_SERIES_CELLS,
+        config::CELL_UNDERVOLTAGE_MV,
+        config::BUS_MIN_MV,
+        config::BUS_MAX_MV
+    );
     spawner.spawn(
         hardware::motor_task(hardware::MotorResources {
             atim: p.ATIM,
