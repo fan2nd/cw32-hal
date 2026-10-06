@@ -195,6 +195,33 @@ impl TimingTrace {
         }
     }
 }
+/// 校准失败细分；只在安全停机后打印。candidate 不是已接受的 VDDA。
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct CalibrationTrace {
+    pub reason: u32,
+    pub raw_supply: [u16; 2],
+    pub reference_mv: i32,
+    pub candidate_vdda_mv: i32,
+    pub supply_ready: bool,
+    pub samples: u32,
+    pub minimum: u16,
+    pub maximum: u16,
+}
+impl CalibrationTrace {
+    const fn new() -> Self {
+        Self {
+            reason: 0,
+            raw_supply: [0; 2],
+            reference_mv: 0,
+            candidate_vdda_mv: 0,
+            supply_ready: false,
+            samples: 0,
+            minimum: 4095,
+            maximum: 0,
+        }
+    }
+}
 /// 调试器读取前须物理断开母线；首故障也会在高频源停止后通过 RTT 输出。
 /// 运行中外部读取可能跨越一次更新；不允许其他 Rust 任务借用此对象。
 #[repr(C)]
@@ -203,6 +230,7 @@ pub struct Diagnostics {
     pub state: u32,
     pub fault: u32,
     pub arithmetic_error: u32,
+    pub calibration_trace: CalibrationTrace,
     pub bus_mv: i32,
     pub vdda_mv: i32,
     pub offset_adc: i32,
@@ -229,6 +257,7 @@ pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
     state: 0,
     fault: 0,
     arithmetic_error: 0,
+    calibration_trace: CalibrationTrace::new(),
     bus_mv: 0,
     vdda_mv: 0,
     offset_adc: 0,
@@ -307,6 +336,10 @@ struct Motor {
     bus_mv: i32,
     vdda_mv: i32,
     reference_mv: i32,
+    supply_ready: bool,
+    raw_supply: [u16; 2],
+    candidate_vdda_mv: i32,
+    calibration_reason: u32,
     slow_age: u16,
     slow_pending: bool,
     frames: u32,
@@ -345,6 +378,10 @@ impl Motor {
             bus_mv: 0,
             vdda_mv: ADC_NOMINAL_VDDA_MV,
             reference_mv: i32::from(reference_mv),
+            supply_ready: false,
+            raw_supply: [0; 2],
+            candidate_vdda_mv: 0,
+            calibration_reason: 0,
             slow_age: 0,
             slow_pending: true,
             frames: 0,
@@ -462,15 +499,23 @@ impl Motor {
         adc: &mut AdcScan<peripherals::ADC1>,
         pwm: &mut SingleShuntPwm,
     ) -> bool {
+        // 第一组实测 BGR/VDDA 合格前不使用名义 5 V 校准看门狗或允许启动。
+        // ADC2 首次就绪受原有 3 ms 帧龄预算限制；等待期间仍生成完整 Off 计划。
+        if !self.supply_ready {
+            return true;
+        }
         self.calibration_count += 1;
         self.calibration_sum += u32::from(raw);
         self.calibration_min = self.calibration_min.min(raw);
         self.calibration_max = self.calibration_max.max(raw);
         if self.calibration_count == 2048 {
             self.offset = (self.calibration_sum / self.calibration_count) as i32;
-            if !(1800..=2300).contains(&self.offset)
-                || self.calibration_max - self.calibration_min > 64
-            {
+            if !(1800..=2300).contains(&self.offset) {
+                self.calibration_reason = 1;
+                self.trip(Fault::Calibration, pwm);
+                return false;
+            } else if self.calibration_max - self.calibration_min > 64 {
+                self.calibration_reason = 2;
                 self.trip(Fault::Calibration, pwm);
                 return false;
             } else {
@@ -500,37 +545,72 @@ impl Motor {
     }
     unsafe fn update_bus(&mut self, math: &mut HardwareMath<'_>) {
         let mut adc = unsafe { AdcScan::<peripherals::ADC2>::acquire() };
+        // 工厂标定值不会因等待而恢复；即使首个 EOS 未到也立即拒绝。
+        if !(1000..=1500).contains(&self.reference_mv) {
+            self.calibration_reason = 3;
+            self.trip(Fault::Calibration, math.pwm);
+            return;
+        }
+        if !self.supply_ready
+            && (self.control.state() != State::Calibrating
+                || self.armed
+                || math.pwm.outputs_enabled()
+                || self.active.mode != Mode::Off
+                || self.staged.mode != Mode::Off
+                || self.pending.mode != Mode::Off)
+        {
+            self.calibration_reason = 6;
+            self.trip(Fault::Calibration, math.pwm);
+            return;
+        }
         if self.slow_pending {
             if let Some(raw) = adc.take_sequence::<2>() {
                 self.slow_pending = false;
-                self.slow_age = 0;
-                let reference = i32::from(raw[1]);
-                if reference == 0 || !(1000..=1500).contains(&self.reference_mv) {
-                    self.trip(Fault::Calibration, math.pwm);
-                    return;
-                }
-                let vdda_mv = math.div(self.reference_mv * 4095, reference);
-                if !self.check_arithmetic(math) {
-                    return;
-                }
-                if !(4500..=5500).contains(&vdda_mv) {
-                    self.trip(Fault::Calibration, math.pwm);
-                    return;
-                }
-                self.vdda_mv = vdda_mv;
-                self.bus_mv = math.div(i32::from(raw[0]) * self.vdda_mv * 11, 4095);
-                if !self.check_arithmetic(math) {
-                    return;
-                }
+                self.raw_supply = raw;
+                self.candidate_vdda_mv = 0;
                 if raw[0] >= 4063 {
                     self.trip(Fault::OverVoltage, math.pwm);
                     return;
                 }
+                let reference = i32::from(raw[1]);
+                let reason = if reference == 0 {
+                    4
+                } else {
+                    self.candidate_vdda_mv = math.div(self.reference_mv * 4095, reference);
+                    if !self.check_arithmetic(math) {
+                        return;
+                    }
+                    if !(4500..=5500).contains(&self.candidate_vdda_mv) {
+                        5
+                    } else {
+                        0
+                    }
+                };
+                self.calibration_reason = reason;
+                if reason == 0 {
+                    self.vdda_mv = self.candidate_vdda_mv;
+                    self.bus_mv = math.div(i32::from(raw[0]) * self.vdda_mv * 11, 4095);
+                    if !self.check_arithmetic(math) {
+                        return;
+                    }
+                    self.supply_ready = true;
+                    self.slow_age = 0;
+                } else if self.supply_ready {
+                    // 已就绪之后的任何 BGR/VDDA 异常仍在本次采样立即锁存关断。
+                    self.trip(Fault::Calibration, math.pwm);
+                    return;
+                }
+                // 初次无效转换不能刷新帧龄或成为有效电压；继续原 1 ms 重采样。
             }
         }
         self.slow_age = self.slow_age.saturating_add(1);
         if self.slow_age > SLOW_ADC_MAX_AGE {
-            self.trip(Fault::SampleTimeout, math.pwm);
+            let fault = if !self.supply_ready && self.calibration_reason != 0 {
+                Fault::Calibration
+            } else {
+                Fault::SampleTimeout
+            };
+            self.trip(fault, math.pwm);
             return;
         }
         if self.frames % SLOW_ADC_DIVIDER == 0 && !self.slow_pending {
@@ -547,6 +627,16 @@ fn publish(m: &Motor) {
         state: s.state as u32,
         fault: s.fault as u32,
         arithmetic_error: m.arithmetic_error,
+        calibration_trace: CalibrationTrace {
+            reason: m.calibration_reason,
+            raw_supply: m.raw_supply,
+            reference_mv: m.reference_mv,
+            candidate_vdda_mv: m.candidate_vdda_mv,
+            supply_ready: m.supply_ready,
+            samples: m.calibration_count,
+            minimum: m.calibration_min,
+            maximum: m.calibration_max,
+        },
         bus_mv: m.bus_mv,
         vdda_mv: m.vdda_mv,
         offset_adc: m.offset,
@@ -581,6 +671,15 @@ pub fn report_fault() {
     }
     FAULT_LOG_READY.store(false, Ordering::Relaxed);
     let d = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FOC_DIAGNOSTICS)) };
+    if d.fault == Fault::Calibration as u32 || d.fault == Fault::SampleTimeout as u32 {
+        let c = d.calibration_trace;
+        defmt::error!(
+            "CAL reason={} raw_bus={} raw_bgr={} factory_mv={} candidate_vdda={} ready={} samples={} min={} max={}",
+            c.reason, c.raw_supply[0], c.raw_supply[1], c.reference_mv,
+            c.candidate_vdda_mv, c.supply_ready, c.samples, c.minimum, c.maximum,
+        );
+        defmt::error!("CAL reason: 0=none 1=offset 2=noise 3=factory 4=zero_bgr 5=vdda_range 6=startup_not_off; pre-ready invalid sample has 3ms deadline, post-ready faults immediately");
+    }
     let t = d.sample_trace;
     defmt::error!(
         "07 fault={} state={} frame={} armed={} bus={}mV vdda={}mV offset={} raw={:?}; PWM/ADC triggers stopped",
