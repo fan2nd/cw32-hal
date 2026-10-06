@@ -58,13 +58,64 @@ pub struct Snapshot {
     pub qualified_frames: u32,
 }
 
+/// 首故障冻结后才合成；不在运行中的逐帧/周期快照复制此记录。
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct ControlFaultTrace {
+    pub state_before: u32,
+    pub age_frames: u32,
+    pub raw_emf_mv: [i32; 2],
+    pub filtered_emf_mv: [i32; 2],
+    pub magnitude_mv: i32,
+    pub pll_error: i32,
+    pub observer_angle: u16,
+    pub forced_angle: u16,
+    pub angle_error: i32,
+    pub speed_millihz: i32,
+    pub forced_speed_millihz: i32,
+    pub reject_mask: u32,
+    pub good_frames: u32,
+    pub best_good_frames: u32,
+    // 故障前最后一次完整电流控制的命令；不是本帧已施加的 PWM 电压。
+    pub previous_target_dq_ma: [i32; 2],
+    pub previous_voltage_dq_mv: [i32; 2],
+}
+impl ControlFaultTrace {
+    pub const fn new() -> Self {
+        Self {
+            state_before: 0,
+            age_frames: 0,
+            raw_emf_mv: [0; 2],
+            filtered_emf_mv: [0; 2],
+            magnitude_mv: 0,
+            pll_error: 0,
+            observer_angle: 0,
+            forced_angle: 0,
+            angle_error: 0,
+            speed_millihz: 0,
+            forced_speed_millihz: 0,
+            reject_mask: 0,
+            good_frames: 0,
+            best_good_frames: 0,
+            previous_target_dq_ma: [0; 2],
+            previous_voltage_dq_mv: [0; 2],
+        }
+    }
+}
+
 pub struct Control {
     state: State,
     fault: Fault,
+    state_before_fault: State,
+    age_before_fault: u32,
+    previous_target_dq_ma: [i32; 2],
+    previous_voltage_dq_mv: [i32; 2],
     requested: bool,
     reset_pending: bool,
     age: u32,
     good: u32,
+    best_good: u32,
+    open_speed_millihz: i32,
     bad: u32,
     stall: u32,
     open_phase: u32,
@@ -84,10 +135,16 @@ impl Control {
         Self {
             state: State::Calibrating,
             fault: Fault::None,
+            state_before_fault: State::Calibrating,
+            age_before_fault: 0,
+            previous_target_dq_ma: [0; 2],
+            previous_voltage_dq_mv: [0; 2],
             requested: false,
             reset_pending: false,
             age: 0,
             good: 0,
+            best_good: 0,
+            open_speed_millihz: 0,
             bad: 0,
             stall: 0,
             open_phase: 0,
@@ -178,8 +235,65 @@ impl Control {
         s
     }
 
+    /// 仅供已关桥、已停止触发后的首故障发布使用。
+    pub fn fault_trace(&self) -> ControlFaultTrace {
+        let forced_angle = (self.open_phase >> 16) as u16;
+        let speed = speed_millihz(self.observer.speed);
+        let angle_error = angle_error(self.observer.angle(), forced_angle);
+        let mut reject_mask = 0;
+        // 完整求值用于说明拒绝原因；生产接管仍用原有短路资格判定。
+        if !self.observer.tracking {
+            reject_mask |= 1;
+        }
+        if self.observer.magnitude < BEMF_MIN_MV {
+            reject_mask |= 2;
+        }
+        if self.observer.error.abs() > PLL_ERROR_LIMIT {
+            reject_mask |= 4;
+        }
+        if self.observer.speed <= 0 {
+            reject_mask |= 8;
+        }
+        if self.observer.speed >= const { speed_step_const(OVERSPEED_MILLIHZ) } {
+            reject_mask |= 16;
+        }
+        if speed < HANDOFF_MIN_MILLIHZ {
+            reject_mask |= 32;
+        }
+        if angle_error.abs() > HANDOFF_ANGLE_LIMIT {
+            reject_mask |= 64;
+        }
+        if (speed - self.open_speed_millihz).abs()
+            > (self.open_speed_millihz / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ)
+        {
+            reject_mask |= 128;
+        }
+        ControlFaultTrace {
+            state_before: self.state_before_fault as u32,
+            age_frames: self.age_before_fault,
+            raw_emf_mv: self.observer.raw_emf_mv,
+            filtered_emf_mv: self.estimated_emf_mv(),
+            magnitude_mv: self.observer.magnitude,
+            pll_error: self.observer.error,
+            observer_angle: self.observer.angle(),
+            forced_angle,
+            angle_error,
+            speed_millihz: speed,
+            forced_speed_millihz: self.open_speed_millihz,
+            reject_mask,
+            good_frames: self.good,
+            best_good_frames: self.best_good,
+            previous_target_dq_ma: self.previous_target_dq_ma,
+            previous_voltage_dq_mv: self.previous_voltage_dq_mv,
+        }
+    }
+
     pub fn trip(&mut self, fault: Fault) {
         if self.state != State::Fault {
+            self.state_before_fault = self.state;
+            self.age_before_fault = self.age;
+            self.previous_target_dq_ma = self.snapshot.target_dq_ma;
+            self.previous_voltage_dq_mv = self.snapshot.voltage_dq_mv;
             self.fault = if fault == Fault::None {
                 Fault::Driver
             } else {
@@ -283,6 +397,7 @@ impl Control {
                     self.trip(Fault::Arithmetic);
                     return [0; 2];
                 }
+                self.open_speed_millihz = hz;
                 let angle = (self.open_phase >> 16) as u16;
                 let speed_error = (speed_millihz(self.observer.speed) - hz).abs();
                 let good = self.observer.qualified()
@@ -290,6 +405,7 @@ impl Control {
                     && angle_error(self.observer.angle(), angle).abs() <= HANDOFF_ANGLE_LIMIT
                     && speed_error <= (hz / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ);
                 self.good = if good { self.good.saturating_add(1) } else { 0 };
+                self.best_good = self.best_good.max(self.good);
                 if self.good >= HANDOFF_GOOD_FRAMES {
                     self.blend_offset = angle_error(angle, self.observer.angle());
                     let (sin, cos) = sin_cos(self.blend_offset as u16);
@@ -403,6 +519,8 @@ impl Control {
 
     fn clear_dynamic(&mut self) {
         self.good = 0;
+        self.best_good = 0;
+        self.open_speed_millihz = 0;
         self.bad = 0;
         self.stall = 0;
         self.open_phase = 0;
@@ -477,6 +595,7 @@ struct Observer {
     previous_current: [i32; 2],
     corrected_angle: u16,
     emf_q8: [i32; 2],
+    raw_emf_mv: [i32; 2],
     phase: u32,
     speed: i32,
     magnitude: i32,
@@ -490,6 +609,7 @@ impl Observer {
             previous_current: [0; 2],
             corrected_angle: 0,
             emf_q8: [0; 2],
+            raw_emf_mv: [0; 2],
             phase: 0,
             speed: 0,
             magnitude: 0,
@@ -514,13 +634,14 @@ impl Observer {
                 MODEL_PHASE_R_MILLIOHM * (current[axis] - old_predicted),
                 1000,
             );
-            let emf = mul_div(
+            let raw_emf = mul_div(
                 interval.voltage_response_mv[axis] - resistive,
                 32768,
                 32768 - decay,
                 math,
-            )
-            .clamp(-BUS_MAX_MV, BUS_MAX_MV);
+            );
+            self.raw_emf_mv[axis] = raw_emf;
+            let emf = raw_emf.clamp(-BUS_MAX_MV, BUS_MAX_MV);
             self.emf_q8[axis] +=
                 (((emf << 8) - self.emf_q8[axis]) * BEMF_FILTER_NUMERATOR) >> BEMF_FILTER_SHIFT;
         }

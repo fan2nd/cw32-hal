@@ -25,7 +25,9 @@ pub const BUS_MIN_MV: i32 = BATTERY_SERIES_CELLS as i32 * CELL_UNDERVOLTAGE_MV;
 // 保留原 16 V 实验过压限制；电池串数不提高功率板额定值或证明驱动低压能力。
 pub const BUS_MAX_MV: i32 = 16000;
 pub const ALIGN_ID_MA: i32 = 150;
-pub const STARTUP_CURRENT_MA: i32 = 200;
+// 用户允许 500 mA 台架上限；先仅将启动指令从 200 提到 250 mA，非实测峰值保证。
+// 7.907 V 母线的矢量上限约 1.568 V；500 mA 的 R·I 已为 1.675 V，不能直接设到 500。
+pub const STARTUP_CURRENT_MA: i32 = 250;
 pub const RUN_IQ_MAX_MA: i32 = 250;
 pub const CURRENT_SLEW_MA_PER_FRAME: i32 = 2; // 4 kHz × 2 mA = 8 A/s，保留原物理爬升速率。
 

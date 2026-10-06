@@ -2,7 +2,7 @@
 use crate::{
     arithmetic::Arithmetic,
     config::*,
-    control::{Control, Fault, State},
+    control::{Control, ControlFaultTrace, Fault, State},
     sampling::{self, Frame, Modulator},
     Irqs,
 };
@@ -58,6 +58,9 @@ pub static MILLISECONDS: AtomicU32 = AtomicU32::new(0);
 static mut MOTOR: Option<Runtime> = None;
 static RUN_STATUS: AtomicU32 = AtomicU32::new(0);
 static FAULT_LOG_READY: AtomicBool = AtomicBool::new(false);
+// 只在首故障已关桥、停触发后写一次；不增加运行期诊断复制成本。
+#[no_mangle]
+pub static mut FOC_CONTROL_FAULT: ControlFaultTrace = ControlFaultTrace::new();
 
 // EAU 单例与实时状态共同保留；只有不嵌套的 ADC1 P0 路径借用它。
 struct Runtime {
@@ -457,11 +460,6 @@ impl Motor {
 
     fn trip(&mut self, fault: Fault, pwm: &mut SingleShuntPwm) {
         let first = !self.fault_published;
-        if first {
-            // SampleInvalid 等非 Timing 故障也保存关断前状态，不能把默认 0 误读为校准。
-            self.timing_trace.state_before = self.control.state() as u32;
-            self.timing_trace.armed_before = self.armed;
-        }
         // 先关桥，再停高频触发和中断；保留 BTIM1，普通线程才能输出首故障。
         // 不清 ADC/ATIM 故障旗标，也不自动重新开启计数器。
         pwm.disarm();
@@ -469,6 +467,15 @@ impl Motor {
         typelevel::ATIM::disable();
         typelevel::ADC1::disable();
         self.control.trip(fault);
+        if first {
+            let trace = self.control.fault_trace();
+            // 控制器可先锁存 Fault；使用它在覆盖状态之前保留的来源。
+            self.timing_trace.state_before = trace.state_before;
+            self.timing_trace.armed_before = self.armed;
+            unsafe {
+                core::ptr::write_volatile(core::ptr::addr_of_mut!(FOC_CONTROL_FAULT), trace);
+            }
+        }
         self.armed = false;
         RUN_STATUS.store((self.control.fault() as u32) << 8, Ordering::Release);
         self.pending = Plan::off();
@@ -685,6 +692,22 @@ pub fn report_fault() {
         "07 fault={} state={} frame={} armed={} bus={}mV vdda={}mV offset={} raw={:?}; PWM/ADC triggers stopped",
         d.fault, d.state, d.frames, d.armed, d.bus_mv, d.vdda_mv, d.offset_adc, d.raw_adc,
     );
+    if d.fault == Fault::StartupTimeout as u32 || d.fault == Fault::ObserverLost as u32 {
+        let c = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FOC_CONTROL_FAULT)) };
+        defmt::error!(
+            "HANDOFF state_before={} age={} reject={} good={}/{} best={} forced={}mHz pll={}mHz angle_forced={} observer={} delta={} pll_error={}; angle units=65536/turn",
+            c.state_before, c.age_frames, c.reject_mask, c.good_frames, HANDOFF_GOOD_FRAMES,
+            c.best_good_frames, c.forced_speed_millihz, c.speed_millihz, c.forced_angle,
+            c.observer_angle, c.angle_error, c.pll_error,
+        );
+        defmt::error!(
+            "OBSERVER raw_unclamped_ab={:?} filtered_ab={:?} magnitude={}mV min={}mV; phase={:?}mA previous_dq={:?} previous_target={:?}mA previous_vdq={:?}mV vlimit={}mV",
+            c.raw_emf_mv, c.filtered_emf_mv, c.magnitude_mv, BEMF_MIN_MV, d.phase_ma,
+            d.current_dq_ma, c.previous_target_dq_ma, c.previous_voltage_dq_mv,
+            d.bus_mv * VOLTAGE_LIMIT_Q15 >> 15,
+        );
+        defmt::error!("HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_error 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=angle 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM");
+    }
     defmt::error!(
         "ADC sample={} reason={} entry={} read={} raw={} expected={}..={} trigger={:?} received={:?} previous_end={} max_first={} ticks",
         t.index, t.reason, t.irq_entry, t.result_read, t.raw, t.expected_min, t.expected_max,
