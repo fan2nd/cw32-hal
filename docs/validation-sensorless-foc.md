@@ -1,6 +1,22 @@
 # 第 7 例程验证记录（2026-10-06）
 
 
+
+## 工厂 BGR 半字读取顺序修正
+
+本节对应 `dba9a4124b5a25d6be9668034b022a4dbb8de1dd` 之后的定向修正。实板日志显示 `CAL reason=3 factory_mv=10240 raw_bus=0 raw_bgr=0 candidate_vdda=0 ready=false samples=0`，即首个 ADC2 结果处理前因工厂半字越界关断，与 ADC2 等待时间无关。
+
+- [RM1.4](https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf) §25.8（印刷页 585）及官方 V1.0.5 SDK 的 `ADC_BGR_VOL_ADDRESS` / `ADC_GetAVcc` 一致要求：以 `uint16_t` 读取 `0x001007D2`，值直接为 mV，不是 3 V 下的 ADC 转换码。原 HAL 地址、宽度和单位正确。
+- 修改前同源码本地 ARM ELF（SHA-256 `eb99352d671152cd6260a036cc2c4f474fa84f2c6610f996acef9e4267520a75`）在主 Flash `0x000007D2` 恰为字节 `00 28`，即 `0x2800 = 10240`，与工厂区的异常读数相同。这支持缓存开启后两个区域读访问发生别名的判断，但不是用户实际 ELF 的逐字节核对，也不是已证实的硬件勘误。官方资料没有描述该别名机制。
+- 07 现在在 `enable_read_acceleration` 前读取工厂半字并保留到 RAM，经任务参数传给 `Motor::new`，任务不再重读工厂区。开启后只追加一次只读诊断，打印 `before_accel` / `after_accel` 和固定地址/宽度/单位；控制只使用前者。初始 FETCH/CACHE 若不是都关闭，则在创建电机任务前停止启动，不能把已有缓存下的读取称为无缓存工厂值。
+- 未改共享 HAL 的地址或读取方式，未增删 Flash wait、缓存清空、Flash 擦写/保护操作。RM §7.10.2 说明清缓存时写 CACHEINVALID=1 再写0；SDK 的普通 CACHE 使能没有先清空要求，因此没有同时加入未经证实的清空实验。正常运行仍为 WAIT=3、FETCH/CACHE 开启。
+- `factory_mv=10240` 在早期读取仍存在时继续立即 CAL reason=3；不采用 1200 mV 兜底，不扩大范围。4 kHz、ADC2 3 ms 上限、VDDA 4.5–5.5 V、零点/噪声、过流/欠过压、按键启动和时序截止均未变。故障日志额外注明 `source=boot_pre_accel_u16@0x001007D2`。
+
+验证：真实 `thumbv6m-none-eabi` release、`-D warnings` 和修改 Rust 文件格式检查通过；临时夹具 15 项测试通过，其中 3 项提取本次实际启动语句验证前后读取顺序、仅保留前值及原缓存已开的拒绝路径，12 项回归验证供电就绪/超时/零点/故障，新增 `10240` 输入仍立即关断。emitted ARM 确认对 `0x001007D2` 的首个 LDRH 在带 KEY 的 FLASH_CR2 写之前，DSB/ISB 后才执行诊断用第二个 LDRH。text=23836 B、data=848 B、bss=1176 B，即 Flash 24684 B、静态 RAM 2024 B。未将测试或编译产物放入源码包；01–06 和共享 HAL 未变。
+
+尚未上板确认：需要新启动日志的前后两个工厂原始值。若前值合理而后值异常，即直接支持缓存读路径问题；若前值仍异常，保持故障，不继续提高电流或改标定值，再检查复位状态和只读工厂区内容。软件编译/测试不证明实板校准成功或缓存的全路径实时性。
+
+
 ## 当前版本：4 kHz、指数加权 RL 与 Flash/EAU 热路径重预算
 
 本节对应 `43a10594be749588f079eb7cbe598829366c0fb9` 之后的本次修改；后文保留早期版本的历史验证记录，不将其中的 8/10 kHz 数值当作当前参数。

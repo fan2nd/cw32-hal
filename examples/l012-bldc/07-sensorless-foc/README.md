@@ -59,6 +59,7 @@ PC13 常亮表示软件已解锁，熄灭表示未解锁；不能证明转子转
 
 标准 defmt-rtt 非阻塞输出仅在启动前和首故障关桥停触发后进行；高频 ISR 不打印。保留完整 `07 fault`、`ADC`、`TIMING`、`CONTROL` 和可能的 `CAL`、`EAU error` 行。RTT 缓冲区满可能丢日志。
 
+- BGR 工厂值在启用 Flash FETCH/CACHE 前读一次并传入电机任务。启动日志打印 `before_accel` / `after_accel`，两者都来自 0x001007D2 的原始 u16/mV；仅使用 `before_accel`。直接复位时原 FETCH/CACHE 必须均关闭，否则停在启动检查，不接受无法证明来源的数值。开启后读数仅作诊断，不代替工厂值。10240（0x2800）仍无效，不回退到 1200、不放宽标定范围。
 - CAL reason：1 零点越界，2 噪声超限，3 工厂标定无效，4 BGR 原始值为零，5 计算 VDDA 超出 4.5–5.5 V，6 就绪前输出未全部关闭。raw_bus/raw_bgr 是 ADC2 原始值，factory_mv 是工厂半字，candidate_vdda 是此次计算值；首行 vdda 仍为上次已接受值或上电名义 5000，不能用它替代 candidate。ready 表示已经有过有效供电样本，samples/min/max 用于区分零点校准；原始母线饱和仍立即过压关断。
 - ADC reason：1 跨 reload，2 多余样本，3 过早，4 过晚，0 其他。entry 是入口 CNT，read 是 RESULT0 读取/确认后的 CNT；保护检查 read，不用更早 entry 放宽判定。
 - TIMING site：1 reload 入口、2 预载完成、3 解锁末尾、4 第二样本分段检查、5 输入 dt。合法 dt 为 12000–36000 tick。state_before 是故障前状态：0 校准、1 Off、2 Bootstrap、3 Align、4 OpenLoop、5 Blend、6 ClosedLoop、7 Fault。
@@ -90,7 +91,7 @@ cargo run -p xtask -- regenerate
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-07-sensorless-foc
 ```
 
-1. 断开功率，检查复位/引脚极性、PB0 零点、BGR/VDDA/母线比例；确认启动日志 Flash wait=3 且预取/缓存回读已启用。
+1. 断开功率，检查复位/引脚极性、PB0 零点、BGR/VDDA/母线比例；确认启动日志 Flash wait=3、原预取/缓存关闭且回读已启用，并保留 BGR `before_accel` / `after_accel` 两个原始值。
 2. 使用低压限流、空载电机和独立断电保护，确认驱动 VCC、5 V、MOS 门极、死区、双采样位置与电流符号。
 3. 测量完整中断延迟和首样本占用；覆盖 Align、OpenLoop、Blend、ClosedLoop、速度环/ADC2/诊断重合帧及限幅路径，不能只看 Align 成功或历史最大值。
 4. 验证 Id/Iq、方向、资格接管以及停止/失锁/过流/电压/漏采样/超预算关断。不能用“编译或模型通过”替代实板验收。

@@ -674,7 +674,7 @@ pub fn report_fault() {
     if d.fault == Fault::Calibration as u32 || d.fault == Fault::SampleTimeout as u32 {
         let c = d.calibration_trace;
         defmt::error!(
-            "CAL reason={} raw_bus={} raw_bgr={} factory_mv={} candidate_vdda={} ready={} samples={} min={} max={}",
+            "CAL reason={} raw_bus={} raw_bgr={} factory_mv={} candidate_vdda={} ready={} samples={} min={} max={} source=boot_pre_accel_u16@0x001007D2",
             c.reason, c.raw_supply[0], c.raw_supply[1], c.reference_mv,
             c.candidate_vdda_mv, c.supply_ready, c.samples, c.minimum, c.maximum,
         );
@@ -716,7 +716,7 @@ pub fn running_and_fault_code() -> (bool, u8) {
 }
 
 #[embassy_executor::task]
-pub async fn motor_task(resources: MotorResources) {
+pub async fn motor_task(resources: MotorResources, factory_reference_mv: u16) {
     typelevel::ATIM::disable();
     typelevel::ADC1::disable();
     typelevel::BTIM1::disable();
@@ -759,7 +759,8 @@ pub async fn motor_task(resources: MotorResources) {
     cortex_m::asm::delay(CPU_HZ / 1000);
     unsafe {
         core::ptr::addr_of_mut!(MOTOR).write(Some(Runtime {
-            motor: Motor::new(motor::factory_reference_mv()),
+            // 使用缓存启用前传入的原始半字；无效值仍走 CAL reason=3。
+            motor: Motor::new(factory_reference_mv),
             eau: Eau::new(resources.eau),
         }));
         for pin in GATES {
