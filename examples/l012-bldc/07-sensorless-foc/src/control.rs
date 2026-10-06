@@ -83,6 +83,16 @@ pub struct ControlFaultTrace {
     pub last_reject_age: u32,
     pub last_reject_angle_error: i32,
     pub last_reject_pll_error: i32,
+    pub plateau_angle_range: [i32; 2],
+    pub plateau_angle_mean: i32,
+    pub plateau_pll_peak: i32,
+    pub plateau_pll_over_limit: u32,
+    pub window_angle_range: [i32; 2],
+    pub window_pll_mean_square: u32,
+    pub last_reject_window_frames: u32,
+    pub last_reject_window_angle_range: [i32; 2],
+    pub last_reject_window_pll_mean_square: u32,
+    pub last_reject_window_outliers: u32,
     // 故障前最后一次完整电流控制的命令；不是本帧已施加的 PWM 电压。
     pub previous_target_dq_ma: [i32; 2],
     pub previous_voltage_dq_mv: [i32; 2],
@@ -110,6 +120,16 @@ impl ControlFaultTrace {
             last_reject_age: 0,
             last_reject_angle_error: 0,
             last_reject_pll_error: 0,
+            plateau_angle_range: [0; 2],
+            plateau_angle_mean: 0,
+            plateau_pll_peak: 0,
+            plateau_pll_over_limit: 0,
+            window_angle_range: [0; 2],
+            window_pll_mean_square: 0,
+            last_reject_window_frames: 0,
+            last_reject_window_angle_range: [0; 2],
+            last_reject_window_pll_mean_square: 0,
+            last_reject_window_outliers: 0,
             previous_target_dq_ma: [0; 2],
             previous_voltage_dq_mv: [0; 2],
         }
@@ -134,11 +154,18 @@ pub struct Control {
     last_reject_age: u32,
     last_reject_angle_error: i32,
     last_reject_pll_error: i32,
+    plateau_angle_range: [i32; 2],
+    plateau_angle_sum_quarter: i32,
+    plateau_pll_peak: i32,
+    plateau_pll_over_limit: u32,
+    handoff_window: HandoffWindow,
+    handoff_reject: u32,
+    last_reject_window_frames: u32,
+    last_reject_window: HandoffWindow,
     open_speed_millihz: i32,
     bad: u32,
     stall: u32,
     open_phase: u32,
-    blend_offset: i32,
     blend_d_reference: i32,
     speed_reference: i32,
     iq_reference: i32,
@@ -169,11 +196,18 @@ impl Control {
             last_reject_age: 0,
             last_reject_angle_error: 0,
             last_reject_pll_error: 0,
+            plateau_angle_range: [0; 2],
+            plateau_angle_sum_quarter: 0,
+            plateau_pll_peak: 0,
+            plateau_pll_over_limit: 0,
+            handoff_window: HandoffWindow::new(),
+            handoff_reject: 0,
+            last_reject_window_frames: 0,
+            last_reject_window: HandoffWindow::new(),
             open_speed_millihz: 0,
             bad: 0,
             stall: 0,
             open_phase: 0,
-            blend_offset: 0,
             blend_d_reference: 0,
             speed_reference: 0,
             iq_reference: 0,
@@ -265,7 +299,12 @@ impl Control {
         let forced_angle = (self.open_phase >> 16) as u16;
         let speed = speed_millihz(self.observer.speed);
         let angle_error = angle_error(self.observer.angle(), forced_angle);
-        let reject_mask = self.handoff_reject_mask(forced_angle, self.open_speed_millihz);
+        let reject_mask =
+            if self.state == State::Fault && self.state_before_fault == State::OpenLoop {
+                self.handoff_reject
+            } else {
+                self.handoff_reject_mask(forced_angle, self.open_speed_millihz)
+            };
         ControlFaultTrace {
             state_before: self.state_before_fault as u32,
             age_frames: self.age_before_fault,
@@ -287,6 +326,28 @@ impl Control {
             last_reject_age: self.last_reject_age,
             last_reject_angle_error: self.last_reject_angle_error,
             last_reject_pll_error: self.last_reject_pll_error,
+            plateau_angle_range: self.plateau_angle_range,
+            plateau_angle_mean: if self.plateau_frames == 0 {
+                0
+            } else {
+                self.plateau_angle_sum_quarter / self.plateau_frames as i32 * 4
+            },
+            plateau_pll_peak: self.plateau_pll_peak,
+            plateau_pll_over_limit: self.plateau_pll_over_limit,
+            window_angle_range: self.handoff_window.angle_range,
+            window_pll_mean_square: if self.good == 0 {
+                0
+            } else {
+                self.handoff_window.pll_square_sum / self.good * 256
+            },
+            last_reject_window_frames: self.last_reject_window_frames,
+            last_reject_window_angle_range: self.last_reject_window.angle_range,
+            last_reject_window_pll_mean_square: if self.last_reject_window_frames == 0 {
+                0
+            } else {
+                self.last_reject_window.pll_square_sum / self.last_reject_window_frames * 256
+            },
+            last_reject_window_outliers: self.last_reject_window.pll_outlier_frames,
             previous_target_dq_ma: self.previous_target_dq_ma,
             previous_voltage_dq_mv: self.previous_voltage_dq_mv,
         }
@@ -303,7 +364,7 @@ impl Control {
         if self.observer.magnitude < BEMF_MIN_MV {
             reject_mask |= 2;
         }
-        if self.observer.error.abs() > PLL_ERROR_LIMIT {
+        if self.observer.error.abs() > HANDOFF_PLL_PEAK_LIMIT {
             reject_mask |= 4;
         }
         if self.observer.speed <= 0 {
@@ -315,7 +376,7 @@ impl Control {
         if speed < HANDOFF_MIN_MILLIHZ {
             reject_mask |= 32;
         }
-        if angle_error.abs() > HANDOFF_ANGLE_LIMIT {
+        if !(-HANDOFF_LAG_MAX..=HANDOFF_LEAD_MAX).contains(&angle_error) {
             reject_mask |= 64;
         }
         if (speed - forced_speed).abs() > (forced_speed / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ) {
@@ -324,9 +385,27 @@ impl Control {
         reject_mask
     }
 
-    fn record_handoff(&mut self, reject_mask: u32, forced_angle: u16) {
+    fn record_handoff(&mut self, mut reject_mask: u32, forced_angle: u16) {
+        let delta = angle_error(self.observer.angle(), forced_angle);
         if self.age > OPEN_RAMP_FRAMES {
             self.plateau_frames += 1;
+            if self.plateau_frames == 1 {
+                self.plateau_angle_range = [delta; 2];
+            }
+            self.plateau_angle_range[0] = self.plateau_angle_range[0].min(delta);
+            self.plateau_angle_range[1] = self.plateau_angle_range[1].max(delta);
+            self.plateau_angle_sum_quarter += delta / 4;
+            self.plateau_pll_peak = self.plateau_pll_peak.max(self.observer.error.abs());
+            if self.observer.error.abs() > PLL_ERROR_LIMIT {
+                self.plateau_pll_over_limit += 1;
+            }
+            // 使用固定候选窗口的极值，不跟随均值漂移，避免把持续滑差当成稳定偏置。
+            reject_mask |= self
+                .handoff_window
+                .push(delta, self.observer.error, self.good);
+            if self.good + 1 >= HANDOFF_GOOD_FRAMES && delta > 0 {
+                reject_mask |= 64;
+            }
             if reject_mask != 0 {
                 for (bit, count) in self.plateau_reject_counts.iter_mut().enumerate() {
                     if reject_mask & (1 << bit) != 0 {
@@ -335,17 +414,23 @@ impl Control {
                 }
             }
         }
+        self.handoff_reject = reject_mask;
         if reject_mask != 0 {
             self.last_reject_mask = reject_mask;
             self.last_reject_age = self.age;
-            self.last_reject_angle_error = angle_error(self.observer.angle(), forced_angle);
+            self.last_reject_angle_error = delta;
             self.last_reject_pll_error = self.observer.error;
+            if self.age > OPEN_RAMP_FRAMES {
+                self.last_reject_window_frames = self.good + 1;
+                self.last_reject_window = self.handoff_window;
+            }
         }
-        self.good = if reject_mask == 0 {
-            self.good.saturating_add(1)
+        if reject_mask == 0 && self.age > OPEN_RAMP_FRAMES {
+            self.good = self.good.saturating_add(1).min(HANDOFF_GOOD_FRAMES);
         } else {
-            0
-        };
+            self.good = 0;
+            self.handoff_window = HandoffWindow::new();
+        }
         self.best_good = self.best_good.max(self.good);
     }
 
@@ -439,6 +524,7 @@ impl Control {
 
         // 开环 I/F 使用旋转 d 轴电流；轻载转子跟随此轴，而不是相差约 90° 的 q 轴。
         let mut target = [STARTUP_CURRENT_MA, 0];
+        let mut transfer_to_observer = false;
         let angle = match self.state {
             State::Align => {
                 target = [ALIGN_ID_MA, 0];
@@ -462,15 +548,11 @@ impl Control {
                 let angle = (self.open_phase >> 16) as u16;
                 let reject_mask = self.handoff_reject_mask(angle, hz);
                 self.record_handoff(reject_mask, angle);
-                if self.good >= HANDOFF_GOOD_FRAMES {
-                    self.blend_offset = angle_error(angle, self.observer.angle());
-                    let (sin, cos) = sin_cos(self.blend_offset as u16);
-                    let observed_reference = inverse_park(self.snapshot.target_dq_ma, sin, cos);
-                    self.blend_d_reference = observed_reference[0];
-                    self.iq_reference = observed_reference[1].clamp(0, RUN_IQ_MAX_MA);
-                    self.speed_pi.integral = self.iq_reference << 15;
-                    self.speed_reference = speed_millihz(self.observer.speed)
-                        .clamp(HANDOFF_MIN_MILLIHZ, RUN_TARGET_MILLIHZ);
+                if self.good >= HANDOFF_GOOD_FRAMES
+                    && angle_error(self.observer.angle(), angle) <= 0
+                {
+                    // 本帧先完成原强制参考系的 PI；末尾按实际有界输出跟踪重置。
+                    transfer_to_observer = true;
                     self.enter(State::Blend);
                 } else if self.age >= STARTUP_TIMEOUT_FRAMES {
                     self.trip(Fault::StartupTimeout);
@@ -503,41 +585,47 @@ impl Control {
                     self.trip(fault);
                     return [0; 2];
                 }
-                // Blend 立即接入限流速度环，不能在半秒过渡中固定注入满启动转矩。
+                let remaining = if self.state == State::Blend {
+                    BLEND_FRAMES.saturating_sub(self.age)
+                } else {
+                    0
+                };
+                let d_reference = if remaining == 0 {
+                    0
+                } else {
+                    math.div(
+                        self.blend_d_reference * remaining as i32,
+                        BLEND_FRAMES as i32,
+                    )
+                };
                 if math.rem_unsigned(self.age, SPEED_LOOP_DIVIDER) == 0 {
-                    self.speed_reference = slew(
-                        self.speed_reference,
-                        RUN_TARGET_MILLIHZ,
-                        SPEED_REF_SLEW_MILLIHZ,
-                    );
+                    // 先在接管速度稳定并淡出 Id，再向 25 Hz 加速，避免两种瞬态叠加。
+                    if self.state == State::ClosedLoop {
+                        self.speed_reference = slew(
+                            self.speed_reference,
+                            RUN_TARGET_MILLIHZ,
+                            SPEED_REF_SLEW_MILLIHZ,
+                        );
+                    }
+                    let q_limit = if d_reference == 0 {
+                        RUN_IQ_MAX_MA
+                    } else {
+                        math.sqrt(
+                            (RUN_IQ_MAX_MA * RUN_IQ_MAX_MA - d_reference * d_reference).max(0)
+                                as u32,
+                        ) as i32
+                    };
                     self.iq_reference =
                         self.speed_pi
-                            .scalar(self.speed_reference - speed, 0, RUN_IQ_MAX_MA, math);
+                            .scalar(self.speed_reference - speed, 0, q_limit, math);
                 }
-                if self.state == State::Blend {
-                    let remaining = BLEND_FRAMES.saturating_sub(self.age);
-                    let offset =
-                        math.div(self.blend_offset * remaining as i32, BLEND_FRAMES as i32);
-                    let angle = self.observer.angle().wrapping_add(offset as u16);
-                    let observer_target = [
-                        math.div(
-                            self.blend_d_reference * remaining as i32,
-                            BLEND_FRAMES as i32,
-                        ),
-                        self.iq_reference,
-                    ];
-                    let (sin, cos) = sin_cos(offset as u16);
-                    // 先在真实转子参考系淡出 Id，再转回当前混合参考系，避免电流指令跳变。
-                    target = park(observer_target, sin, cos);
-                    if remaining == 0 {
-                        self.enter(State::ClosedLoop);
-                    }
-                    angle
-                } else {
-                    target = [0, self.iq_reference];
-                    self.observer.angle()
+                target = [d_reference, self.iq_reference];
+                if self.state == State::Blend && remaining == 0 {
+                    self.enter(State::ClosedLoop);
                 }
+                self.observer.angle()
             }
+
             _ => return [0; 2],
         };
         self.snapshot.angle = angle;
@@ -546,6 +634,10 @@ impl Control {
         self.snapshot.current_dq_ma = dq;
         for (command, desired) in self.snapshot.target_dq_ma.iter_mut().zip(target) {
             *command = slew(*command, desired, CURRENT_SLEW_MA_PER_FRAME);
+        }
+        if self.state == State::Blend {
+            self.snapshot.target_dq_ma =
+                limit_vector(self.snapshot.target_dq_ma, RUN_IQ_MAX_MA, math);
         }
         let errors = [
             self.snapshot.target_dq_ma[0] - dq[0],
@@ -558,7 +650,36 @@ impl Control {
         self.d_pi.commit(errors[0], vd, bounded[0], id);
         self.q_pi.commit(errors[1], vq, bounded[1], iq);
         self.snapshot.voltage_dq_mv = bounded;
-        inverse_park(bounded, sin, cos)
+        let applied_ab = inverse_park(bounded, sin, cos);
+        if transfer_to_observer {
+            // 电压输出保持本帧原计算值；只重新表达状态，不旋转物理电流/电压矢量。
+            // 不能仅旋转 PI 积分：饱和时其分量重限幅会制造跳变。
+            let observer_angle = self.observer.angle();
+            let (offset_sin, offset_cos) = sin_cos(angle.wrapping_sub(observer_angle));
+            let reference = limit_vector(
+                inverse_park(self.snapshot.target_dq_ma, offset_sin, offset_cos),
+                RUN_IQ_MAX_MA,
+                math,
+            );
+            let voltage = inverse_park(bounded, offset_sin, offset_cos);
+            let (observer_sin, observer_cos) = sin_cos(observer_angle);
+            let observed_current = park(current, observer_sin, observer_cos);
+            self.d_pi
+                .track_output(voltage[0], reference[0] - observed_current[0]);
+            self.q_pi
+                .track_output(voltage[1], reference[1] - observed_current[1]);
+            self.snapshot.angle = observer_angle;
+            self.snapshot.current_dq_ma = observed_current;
+            self.snapshot.target_dq_ma = reference;
+            self.snapshot.voltage_dq_mv = voltage;
+            self.blend_d_reference = reference[0].max(0);
+            self.iq_reference = reference[1].max(0);
+            self.speed_reference =
+                speed_millihz(self.observer.speed).clamp(HANDOFF_MIN_MILLIHZ, RUN_TARGET_MILLIHZ);
+            // 速度参考等于当前估计，所以 P 项为零；当前正向 Iq 是速度 PI 的初值。
+            self.speed_pi.integral = self.iq_reference << 15;
+        }
+        applied_ab
     }
 
     fn energized(&self) -> bool {
@@ -582,20 +703,85 @@ impl Control {
         self.last_reject_age = 0;
         self.last_reject_angle_error = 0;
         self.last_reject_pll_error = 0;
+        self.plateau_angle_range = [0; 2];
+        self.plateau_angle_sum_quarter = 0;
+        self.plateau_pll_peak = 0;
+        self.plateau_pll_over_limit = 0;
+        self.handoff_window = HandoffWindow::new();
+        self.handoff_reject = 0;
+        self.last_reject_window_frames = 0;
+        self.last_reject_window = HandoffWindow::new();
         self.open_speed_millihz = 0;
         self.bad = 0;
         self.stall = 0;
         self.open_phase = 0;
-        self.blend_offset = 0;
         self.blend_d_reference = 0;
         self.speed_reference = 0;
         self.iq_reference = 0;
         self.d_pi.integral = 0;
         self.q_pi.integral = 0;
         self.speed_pi.integral = 0;
+        self.d_pi.tracking_reserve = false;
+        self.q_pi.tracking_reserve = false;
+        self.speed_pi.tracking_reserve = false;
         self.observer = Observer::new();
         self.snapshot.target_dq_ma = [0; 2];
         self.snapshot.voltage_dq_mv = [0; 2];
+    }
+}
+
+// PLL 均方累计先降 8 位：120000 帧内仍不溢出 u32；实际窗口最多 1000 帧。
+// 每次失败全部清零；不删掉坏样本、不跨窗口拼接合格帧。
+#[derive(Clone, Copy)]
+struct HandoffWindow {
+    angle_range: [i32; 2],
+    pll_square_sum: u32,
+    pll_spike_frames: u32,
+    pll_outlier_frames: u32,
+}
+impl HandoffWindow {
+    const fn new() -> Self {
+        Self {
+            angle_range: [0; 2],
+            pll_square_sum: 0,
+            pll_spike_frames: 0,
+            pll_outlier_frames: 0,
+        }
+    }
+    fn push(&mut self, delta: i32, pll_error: i32, good: u32) -> u32 {
+        if good == 0 {
+            self.angle_range = [delta; 2];
+        }
+        self.angle_range[0] = self.angle_range[0].min(delta);
+        self.angle_range[1] = self.angle_range[1].max(delta);
+        // 完整 250 ms 后若本帧负载角仍为轻微领先，则继续等正 Iq 入口；
+        // 冻结方差分母会错误累积，因此完整窗口需要重新开始。
+        if good >= HANDOFF_GOOD_FRAMES {
+            return 64;
+        }
+        let error = pll_error.abs();
+        self.pll_spike_frames = if error > PLL_ERROR_LIMIT {
+            self.pll_spike_frames + 1
+        } else {
+            0
+        };
+        if error > PLL_ERROR_LIMIT {
+            self.pll_outlier_frames += 1;
+        }
+        // PLL error 来自 i16 角差，平方 <=2^30；记录拒绝帧的真实均方而非钳位后值。
+        self.pll_square_sum += ((error * error) as u32) >> 8;
+        let mut reject = 0;
+        if error > HANDOFF_PLL_PEAK_LIMIT
+            || self.pll_spike_frames >= HANDOFF_PLL_SPIKE_FRAMES
+            || self.pll_outlier_frames > HANDOFF_PLL_OUTLIER_FRAMES
+            || self.pll_square_sum > ((PLL_ERROR_LIMIT * PLL_ERROR_LIMIT) as u32 >> 8) * (good + 1)
+        {
+            reject |= 4;
+        }
+        if self.angle_range[1] - self.angle_range[0] > HANDOFF_ANGLE_SPREAD {
+            reject |= 64;
+        }
+        reject
     }
 }
 
@@ -603,6 +789,7 @@ struct Pi {
     kp: i32,
     ki: i32,
     integral: i32,
+    tracking_reserve: bool,
 }
 
 impl Pi {
@@ -611,11 +798,12 @@ impl Pi {
             kp,
             ki,
             integral: 0,
+            tracking_reserve: false,
         }
     }
 
     fn propose(
-        &self,
+        &mut self,
         error: i32,
         low: i32,
         high: i32,
@@ -631,11 +819,31 @@ impl Pi {
                 i32::from(PWM_TICKS),
             )
         };
+        let ordinary_low = low << 15;
+        let ordinary_high = high << 15;
+        if (ordinary_low..=ordinary_high).contains(&self.integral) {
+            self.tracking_reserve = false;
+        }
+        // 仅 track_output 继承的补偿可超普通界限，并且只能向内消退。
+        // 消退后清除许可；普通母线下降、速度 PI 和界内行为仍用原夹紧规则。
+        let (integral_low, integral_high) = if self.tracking_reserve {
+            (
+                ordinary_low.min(self.integral),
+                ordinary_high.max(self.integral),
+            )
+        } else {
+            (ordinary_low, ordinary_high)
+        };
         let integral = self
             .integral
             .saturating_add(error * ki)
-            .clamp(low << 15, high << 15);
+            .clamp(integral_low, integral_high);
         ((error * self.kp >> 15) + (integral >> 15), integral)
+    }
+
+    fn track_output(&mut self, output: i32, error: i32) {
+        self.integral = (output - (error * self.kp >> 15)) << 15;
+        self.tracking_reserve = true;
     }
 
     // 已达到电压圆/电流边界时，只允许积分沿退出饱和的方向变化。

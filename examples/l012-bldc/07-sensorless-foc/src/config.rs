@@ -69,9 +69,16 @@ pub const PLL_KP_Q16: i32 = 10240;
 pub const PLL_KI_Q16: i32 = 100;
 pub const PLL_MAX_MILLIHZ: i32 = 100000;
 pub const PLL_ERROR_LIMIT: i32 = 1820; // 10 电角度
-pub const HANDOFF_ANGLE_LIMIT: i32 = 5461; // 30 电角度
+                                       // I/F 的 d 轴是电流轴；正转负载使转子磁链落后，不能把负载角当成观测误差。
+                                       // 资格只在恒速平台累计，要求同一 250 ms 内相差落在有界走廊且峰峰变化 <=20°。
+pub const HANDOFF_LAG_MAX: i32 = 10922; // 60°；保留到 90° 失稳边界的余量。
+pub const HANDOFF_LEAD_MAX: i32 = 1820; // 10° 瞬时摆动；实际接管帧不允许负 Iq。
+pub const HANDOFF_ANGLE_SPREAD: i32 = 3640; // 20° 峰峰；不是编码器精度保证。
+pub const HANDOFF_PLL_PEAK_LIMIT: i32 = 3640; // 20° 硬上限，RMS 仍 <=10°。
+pub const HANDOFF_PLL_SPIKE_FRAMES: u32 = CONTROL_HZ / 1000; // 连续 >=1 ms 超10°拒绝。
 pub const HANDOFF_SPEED_ERROR_MILLIHZ: i32 = 2000;
 pub const HANDOFF_GOOD_FRAMES: u32 = CONTROL_HZ / 4;
+pub const HANDOFF_PLL_OUTLIER_FRAMES: u32 = HANDOFF_GOOD_FRAMES / 20; // 窗口最多5%超10°。
 pub const OBSERVER_BAD_FRAMES: u32 = CONTROL_HZ / 20;
 pub const STALL_FRAMES: u32 = CONTROL_HZ / 10;
 
@@ -135,7 +142,12 @@ pub fn valid() -> bool {
         && (1..=16384).contains(&PLL_KP_Q16)
         && (1..=256).contains(&PLL_KI_Q16)
         && (100..=2730).contains(&PLL_ERROR_LIMIT)
-        && (PLL_ERROR_LIMIT..=8192).contains(&HANDOFF_ANGLE_LIMIT)
+        && (5461..=10922).contains(&HANDOFF_LAG_MAX)
+        && (0..=PLL_ERROR_LIMIT).contains(&HANDOFF_LEAD_MAX)
+        && (PLL_ERROR_LIMIT..=3640).contains(&HANDOFF_ANGLE_SPREAD)
+        && (PLL_ERROR_LIMIT..=3640).contains(&HANDOFF_PLL_PEAK_LIMIT)
+        && HANDOFF_PLL_SPIKE_FRAMES == CONTROL_HZ / 1000
+        && HANDOFF_PLL_OUTLIER_FRAMES == HANDOFF_GOOD_FRAMES / 20
         && (100..HANDOFF_MIN_MILLIHZ).contains(&HANDOFF_SPEED_ERROR_MILLIHZ)
         && (CONTROL_HZ / 10..=CONTROL_HZ).contains(&HANDOFF_GOOD_FRAMES)
         && (1..=CONTROL_HZ / 10).contains(&OBSERVER_BAD_FRAMES)

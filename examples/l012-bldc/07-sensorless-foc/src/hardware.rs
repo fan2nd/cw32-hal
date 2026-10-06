@@ -706,12 +706,19 @@ pub fn report_fault() {
             c.last_reject_angle_error, c.last_reject_pll_error,
         );
         defmt::error!(
+            "HANDOFF_COHERENCE plateau_delta_min_max={:?} mean={} pll_peak={} over10deg={} window_delta={:?} pll_mean_square={} last_window_frames={} delta={:?} pll_mean_square={} outliers={}; angle units65536/turn, mean_square units angle_squared",
+            c.plateau_angle_range, c.plateau_angle_mean, c.plateau_pll_peak,
+            c.plateau_pll_over_limit, c.window_angle_range, c.window_pll_mean_square,
+            c.last_reject_window_frames, c.last_reject_window_angle_range,
+            c.last_reject_window_pll_mean_square, c.last_reject_window_outliers,
+        );
+        defmt::error!(
             "OBSERVER raw_unclamped_ab={:?} filtered_ab={:?} magnitude={}mV min={}mV; phase={:?}mA previous_dq={:?} previous_target={:?}mA previous_vdq={:?}mV vlimit={}mV",
             c.raw_emf_mv, c.filtered_emf_mv, c.magnitude_mv, BEMF_MIN_MV, d.phase_ma,
             d.current_dq_ma, c.previous_target_dq_ma, c.previous_voltage_dq_mv,
             d.bus_mv * VOLTAGE_LIMIT_Q15 >> 15,
         );
-        defmt::error!("HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_error 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=angle 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM");
+        defmt::error!("HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_peak_rms_burst_count 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=load_angle_spread_entry 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM");
     }
     defmt::error!(
         "ADC sample={} reason={} entry={} read={} raw={} expected={}..={} trigger={:?} received={:?} previous_end={} max_first={} ticks",
