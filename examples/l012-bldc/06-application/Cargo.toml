@@ -7,12 +7,9 @@ publish = false
 license = "MIT OR Apache-2.0"
 description = "Embassy application composing the L012 motor controller and bounded UI task"
 
-[features]
-default = []
-# Explicit opt-in only; default firmware never energizes the bridge.
-motor-output-enable = []
-
 [dependencies]
+defmt = { version = "=1.0.1" }
+defmt-rtt = { version = "=1.0.0", features = ["disable-blocking-mode"] }
 
 embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x"] }
 cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }

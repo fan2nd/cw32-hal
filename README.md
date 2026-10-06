@@ -213,6 +213,6 @@ v0.13.1 按外设 IP/能力分层与复用的变化见 [v0.13.1 验证](docs/val
 
 ## 上传 C 工程的递进 Rust 例程（v0.18.0）
 
-新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；默认构建保持功率输出禁用。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
+新增根目录 [`examples/`](examples/README.md)，按 01–06 逐步迁移上传工程的无感六步 BLDC 功能。该源程序不是 FOC；01–04 不输出功率，05/06 普通构建上电执行 6 ms 低桥充电，随后关闭桥臂等待按键启动。六个例程直接构建为 MCU 程序，面向原工程 CW32L012 引脚与时钟契约，尚无实板或带载验证。所有例程仅放在根目录 `examples/`。
 
-例程为六个独立、仅有 main.rs 入口的 binary crate（无 lib.rs），位于 [`examples/l012-bldc/`](examples/l012-bldc/)，每级的业务源码都在自己的 src 内，使用普通 mod 声明，仅引入必要代码、依赖与外设，不保留主机入口、例程测试或目标平台条件分支。只有 05/06 保留 `motor-output-enable` 输出授权开关。01–04 不初始化、不写入六个桥臂引脚，实验须物理断开母线或禁用驱动；GPIO 例程仅初始化 LED/按键；采样例程不初始化 UART 或换相定时器。构建与所有权边界见[板级 README](examples/l012-bldc/README.md)，验证与 v0.11.6 执行器/ISR 分工说明见 [验证记录](docs/validation-v0.11.6.md)。
+例程为六个独立、仅有 main.rs 入口的 binary crate（无 lib.rs），位于 [`examples/l012-bldc/`](examples/l012-bldc/)，每级的业务源码都在自己的 src 内，使用普通 mod 声明，仅引入必要代码、依赖与外设，不保留主机入口、例程测试或目标平台条件分支。六个例程均不定义本地 feature；05/06 无需额外编译开关即可驱动电机，烧录前须物理禁用驱动。01–04 不初始化、不写入六个桥臂引脚，实验须物理断开母线或禁用驱动；GPIO 例程仅初始化 LED/按键；采样例程不初始化 UART 或换相定时器。构建与所有权边界见[板级 README](examples/l012-bldc/README.md)，验证与 v0.11.6 执行器/ISR 分工说明见 [验证记录](docs/validation-v0.11.6.md)。

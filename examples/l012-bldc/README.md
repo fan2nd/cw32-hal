@@ -2,7 +2,7 @@
 
 输入是 `10 XUNLIANYING 260726 LAST.zip` 的 `BLDC CONTROL`：反电动势过零检测的六步换相，不是FOC。ADC、电机和故障处理按原工程恢复；UART、LED、按键的组织方式可以不同。逐项依据、原有边界和明确例外见[原工程一致性审查](../../docs/bldc-source-parity.md)。
 
-**尚未实板验证。01–04不配置或写入六个桥臂脚；05/06默认禁止功率输出。** 这不能代替物理禁用驱动器。编译和宿主轨迹通过均不代表可以直接给电机上电。
+**尚未实板验证。01–04不配置或写入六个桥臂脚；05/06普通构建包含功率输出，上电执行6 ms低桥充电，随后关闭桥臂等待按键启动。** 这不能代替物理禁用驱动器。编译和宿主轨迹通过均不代表可以直接给电机上电。
 
 ## 六个阶段
 
@@ -35,11 +35,9 @@ cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-06-application
 ```
 
-只有05/06提供 `motor-output-enable`。它改变实际功率引脚授权，不改变控制器的逻辑状态或六个bootstrap计时tick。确认原理图、供电、门极极性、死区及保护后才可选择：
+六个例程均不定义本地 feature，不需要额外的 `--features` 参数。依赖项中的芯片、运行时、临界区、执行器和 RTT 非阻塞 feature 仍是实际构建所需。
 
-```sh
-cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup -p cw32-bldc-06-application --features motor-output-enable
-```
+05/06 普通构建即包含实际功率输出：初始化先将六个桥臂输出置低，随后按原流程执行 6 ms 三个低桥 bootstrap 充电，再关闭桥臂等待按键启动。原故障处理与 panic/异常紧急关断保留；不能把“等待按键”理解为上电期间从未输出。烧录或运行前须确认原理图、供电、门极极性、死区及保护，并物理禁用驱动。
 
 这些是MCU程序，无宿主入口/平台条件分支；源码包不包含例程测试或外部生成脚本。
 
@@ -62,6 +60,27 @@ cargo run --release --config examples/l012-bldc/.cargo/config.toml -p cw32-bldc-
 ```
 
 其他阶段替换包名即可。以上命令适用于Windows PowerShell和常见Unix shell。尚未实际烧录或验证调试器连接；烧录和调试前必须物理禁用功率驱动，遵守本页的上板约束。
+
+## defmt RTT 日志（01–06）
+
+六个例程均已接入 `defmt` / `defmt-rtt`，各自 `build.rs` 链接 `defmt.x`，未设置 `DEFMT_LOG` 时默认 `info`（从 workspace 根构建也有效），显式环境变量优先。在对应例程目录执行 `cargo run --release`，现有 probe-rs runner 会读取 ELF 中的 defmt 描述并显示 RTT 日志；不需要占用 UART 引脚。Windows PowerShell 可在构建前设置日志级别：
+
+```powershell
+$env:DEFMT_LOG = "info"
+cargo run --release
+```
+
+- 01：启动、标称时钟、按键/LED 状态变化（限频观察，可能略过短按）。
+- 02：每秒 ADC1/ADC2 原码和已观察采样计数。
+- 03：每秒原码及逻辑扇区/桥图；仍不驱动桥臂。
+- 04：每秒原码、扇区及被动阈值资格观察次数；不是机械转速。
+- 05/06：启动时说明低桥充电和按键启动流程；状态、启动阶段、档位或故障变化时，以及每 500 ms，输出启动步数、连续过零数、ADC 原码、校准值和上次保护计算的电压/电流。`bus` 单位 dV（0.1 V），`duty` 满量程 4800；`step_ticks` 单位为 8 MHz 定时器计数。保护在启动/故障等待期间按原逻辑暂停，`last_protection_bus` 不保证为本次 ADC 对应的即时电压。
+
+`StartupFailed / code=3` 表示强制启动未满足连续 15 次有效过零。`armed` 表示初始化已成功完成软件输出解锁，不代表电机正在转动，也不证明功率管实际导通或硬件无故障。结合 `off`、启动阶段、ADC 原码及过零计数定位问题，不据此自动断定硬件原因。
+
+运行日志均在普通线程中输出；05 在释放控制器临界区后输出，06 通过现有 UI 状态交换复制少量观测值后输出，电机 ISR/中断执行器不调用 RTT。06 使用最新值覆盖，极短的中间状态可能合并。ADC2 仍是逐槽 DMA 观测，可能混合相邻扫描数据，日志不把它冒充完整 EOS 快照。
+
+明确启用 `disable-blocking-mode`：缓冲区满或主机断开时允许丢失日志，不能因 probe-rs 将通道设成阻塞而一直等待。标准 RTT 编码器仍会短暂屏蔽中断，因此日志有时序开销，最坏延迟仍需实测；保留原 panic/异常安全关闭路径，不在这些路径追加可能重入的日志。诊断版本未做实板验证，不要带功率随意 halt 调试器。
 
 ## 时钟与ADC
 

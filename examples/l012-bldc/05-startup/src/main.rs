@@ -1,6 +1,9 @@
 #![no_std]
 #![no_main]
 
+mod logging;
+use defmt_rtt as _;
+
 pub mod control;
 pub mod protection;
 use crate::control::{Actions, Adc1Sample, Bridge, MotorController, TimerCommand};
@@ -76,6 +79,17 @@ fn main() -> ! {
     config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
+    let clocks = embassy_cw32::rcc::clocks();
+    defmt::info!(
+        "05-startup: boot HCLK={}Hz PCLK={}Hz RTT=nonblocking",
+        clocks.hclk_hz(),
+        clocks.pclk_hz()
+    );
+    defmt::info!(
+        "PWM=20000Hz ADC1=48000000Hz ADC2=12000000Hz; bootstrap=6ms, delay=400ms, align=150ms"
+    );
+    defmt::info!("power outputs: 6ms low-side bootstrap, then off until key start");
+
     let mut adc2_channel = dma::Channel::new_blocking(p.DMA_CH2);
     let adc2_stream;
     typelevel::ADC1::disable();
@@ -171,29 +185,25 @@ fn main() -> ! {
     );
     let mut controller = MotorController::new(calibration_mv);
     controller.begin_bootstrap();
-    let output_opt_in = cfg!(feature = "motor-output-enable");
-    let armed = output_opt_in;
-    // Always preserve the original six-tick startup bookkeeping. Physical
-    // low-side bootstrap charge is enabled only by the output opt-in feature.
+    // Preserve the source's six-tick low-side bootstrap charge. The tick
+    // handler then turns all low sides off and waits for a key start.
     unsafe {
-        if armed {
-            // Configure the physical PWM connection once. Commutation below
-            // changes CCR/low sides only, as in the C source.
-            for pin in [5, 6, 7] {
-                MotorPin::acquire(PinId::new(Port::B, pin)).alternate_function(7);
-            }
-            PwmBridge::acquire()
-                .arm_outputs()
-                .expect("hardware break latched");
-            // Source bootstrap toggles only the three low-side GPIOs.
-            MotorPin::acquire(PinId::new(Port::A, 15)).set_high(true);
-            MotorPin::acquire(PinId::new(Port::B, 3)).set_high(true);
-            MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
+        // Configure the physical PWM connection once. Commutation below
+        // changes CCR/low sides only, as in the C source.
+        for pin in [5, 6, 7] {
+            MotorPin::acquire(PinId::new(Port::B, pin)).alternate_function(7);
         }
+        PwmBridge::acquire()
+            .arm_outputs()
+            .expect("hardware break latched");
+        // Source bootstrap toggles only the three low-side GPIOs.
+        MotorPin::acquire(PinId::new(Port::A, 15)).set_high(true);
+        MotorPin::acquire(PinId::new(Port::B, 3)).set_high(true);
+        MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
         core::ptr::addr_of_mut!(CONTROLLER).write(Some(controller));
-        core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(armed);
+        core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(true);
         core::ptr::addr_of_mut!(BOOTSTRAP_MS).write(6);
-        (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = output_opt_in;
+        (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = true;
         AdcScan::<peripherals::ADC1>::acquire().clear_events();
         AdcScan::<peripherals::ADC2>::acquire().clear_events();
         AdcScan::<peripherals::ADC1>::acquire().enable_sequence_interrupt::<AdcHandler>(Irqs);
@@ -243,10 +253,13 @@ fn main() -> ! {
         typelevel::BTIM3_HALLTIM::enable();
     }
 
+    let mut last_status = None;
+    let mut last_log_ms = 0u32;
+    let mut last_fault = None;
     loop {
-        critical_section::with(|_| unsafe {
+        let snapshot = critical_section::with(|_| unsafe {
             if BOOTSTRAP_MS != 0 {
-                return;
+                return None;
             }
             let controller = (&mut *core::ptr::addr_of_mut!(CONTROLLER))
                 .as_mut()
@@ -273,7 +286,36 @@ fn main() -> ! {
                 controller.foreground_step(BasicTimer::<peripherals::BTIM2>::acquire().counter());
             apply_actions(controller, diagnostics, armed, actions);
             core::hint::black_box(&*diagnostics);
+            let status = (
+                controller.state(),
+                controller.startup_state(),
+                controller.fault(),
+                controller.powered_off(),
+                controller.speed_percent(),
+            );
+            if last_status != Some(status)
+                || diagnostics.milliseconds.wrapping_sub(last_log_ms) >= 500
+            {
+                last_status = Some(status);
+                last_log_ms = diagnostics.milliseconds;
+                Some(logging::Snapshot::capture(
+                    controller,
+                    diagnostics.milliseconds,
+                    diagnostics.adc1,
+                    diagnostics.adc2,
+                    diagnostics.adc1_sequences,
+                    *armed,
+                    calibration_mv,
+                ))
+            } else {
+                None
+            }
         });
+        // All controller borrows and motor critical sections ended before RTT.
+        if let Some(snapshot) = snapshot {
+            snapshot.report(last_fault);
+            last_fault = snapshot.fault;
+        }
         core::hint::black_box((&motor_peripherals, &adc2_stream));
     }
 }

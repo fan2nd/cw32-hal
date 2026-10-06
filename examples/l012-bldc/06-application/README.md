@@ -18,8 +18,14 @@ UI 每次真实 tick 唤醒最多尝试发送一字节；迟到 UI 的按键观�
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-06-application
 ```
 
-默认功率关闭，`motor-output-enable` 为审核硬件后的显式选择。两种构建保留相同的 6 个逻辑 bootstrap tick；只有 opt-in 构建执行实际低桥充电。没有 Board/Runtime/State 硬件套壳、lib target、跨例程源码依赖、主机入口或例程内测试。
+不再提供例程 feature 开关，普通构建包含实际功率输出。上电先执行原有 6 ms 三个低桥 bootstrap 充电，随后关闭桥臂等待按键启动；原故障处理与 panic/异常紧急关断保留。烧录前须核对硬件并物理禁用驱动。没有 Board/Runtime/State 硬件套壳、lib target、跨例程源码依赖、主机入口或例程内测试。
 
 原板 VDDA=5 V，96 MHz HCLK/PCLK、20 kHz PWM/4800 刻度、8 MHz BTIM2/3、ADC1 48 MHz/70 周期与 ADC2 12 MHz/518 周期不变。保留原保护暂停、故障派发先后及启动边界。ADC2 DMA 最小确定性修复与 ADC CR bit8 的新版官方库依据见[一致性审查](../../../docs/bldc-source-parity.md)，引脚和电气限制见[板级说明](../README.md)。未上板验证。
 
 专用ownership-bypass接口的安全契约、操作清单和DMA配合见[电机API](../../../docs/motor-api.md)。unsafe acquire不证明独占；这里靠P1不嵌套域、未被其他驱动使用的tokens和不跨await的借用兑现义务。
+
+## RTT 调试
+
+本例默认包含 defmt RTT 日志。在本目录运行 `cargo run --release`，由 probe-rs 显示启动时钟/输出状态、启动阶段和故障；周期诊断为 500 ms，状态变化另行报告。检查 `armed`、`steps`、`crossings`、ADC 原码及 `last_protection_bus` 可定位三闪 `StartupFailed`。普通构建可驱动电机：上电先执行 6 ms 低桥充电，随后关闭桥臂等待按键启动；烧录前须物理禁用驱动。
+
+日志只在普通线程中发出，保留原 panic/异常关闭路径；主机断开不等待，但可能丢日志。ADC2 不是原子 EOS 快照，保护电压在启动等待期间可能保持上次结果，日志仍有短暂关中断的时序代价。命令、单位与全部限制见[统一 RTT 说明](../README.md#defmt-rtt-日志01–06)。

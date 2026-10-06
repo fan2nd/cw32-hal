@@ -7,12 +7,9 @@ publish = false
 license = "MIT OR Apache-2.0"
 description = "Stage 05: protected nonblocking sensorless motor startup"
 
-[features]
-default = []
-# Permission only: reset is still off and the key must request a start.
-motor-output-enable = []
-
 [dependencies]
+defmt = { version = "=1.0.1" }
+defmt-rtt = { version = "=1.0.0", features = ["disable-blocking-mode"] }
 critical-section = { version = "=1.2.0" }
 embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x"] }
 cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }

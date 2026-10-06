@@ -29,7 +29,7 @@ pub const MEASUREMENT_INTERVAL_MS: u16 = 100;
 pub const STOP_SETTLE_MS: u16 = 500;
 
 /// Source state numbers are retained for diagnostics and source comparison.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
 pub enum MotorState {
     StartCheck = 0,
@@ -42,7 +42,7 @@ pub enum MotorState {
     RunOpen = 10,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 pub enum StartupState {
     Inactive,
     Aligning,
@@ -50,7 +50,7 @@ pub enum StartupState {
 }
 
 /// `Sta` values from sensorless.c, made explicit.
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
 pub enum SensorlessState {
     Idle = 0,
@@ -300,7 +300,6 @@ impl MotorController {
     }
 
     /// The source sets closeflag=1 and timecountforClose=1000 after bootstrap.
-    /// The output feature gates hardware only, not these logical timer ticks.
     pub fn finish_bootstrap(&mut self) {
         self.powered_off = true;
         self.idle_ms = 1000;
@@ -338,6 +337,10 @@ impl MotorController {
     }
     pub const fn step_time(&self) -> u16 {
         self.step_time
+    }
+    /// Observational only: completed forced-start iterations.
+    pub const fn startup_iterations(&self) -> u16 {
+        self.startup_iterations
     }
     pub const fn good_crossings(&self) -> u32 {
         self.good_crossings

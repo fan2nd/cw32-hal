@@ -12,8 +12,14 @@
 cargo build --release
 ```
 
-本例仅有 main.rs 二进制入口，无 lib.rs，直接构建为 MCU 程序，观察实际 ADC。没有 `motor-output-enable` feature。实验先物理断开母线或禁用 gate driver；外部拖动测 BEMF 也需要先确认电气条件。ADC/OPA 模拟特性和 IRQ 最坏延迟尚未实板验证。
+本例仅有 main.rs 二进制入口，无 lib.rs，直接构建为 MCU 程序，观察实际 ADC。实验先物理断开母线或禁用 gate driver；外部拖动测 BEMF 也需要先确认电气条件。ADC/OPA 模拟特性和 IRQ 最坏延迟尚未实板验证。
 
-外设初始化直接写在 `main`，ADC 和毫秒节拍直接写在对应 ISR；仅 IRQ 使用的数组、计数器放在静态变量中。全部相关 IRQ 固定为同一 P1 优先级，不能互相抢占；主循环解屏蔽后只休眠，不访问这些变量。
+外设初始化直接写在 `main`，ADC 和毫秒节拍直接写在对应 ISR；仅 IRQ 使用的数组、计数器放在静态变量中。全部相关 IRQ 固定为同一 P1 优先级，不能互相抢占；主循环在休眠唤醒后检查毫秒数，每秒仅在短临界区内复制一次诊断快照，在临界区外输出日志，不写控制状态。
 
 本级使用HAL独立 `motor` 操作API与真正的DMA通道驱动，不再直接操作PAC或启用 `unstable-pac`。板级参数、算法和ISR仍留在本crate；接口排他义务与顺序保证见[电机API](../../../docs/motor-api.md)。
+
+## defmt RTT 日志
+
+已接入非阻塞 `defmt-rtt`，启动时输出例程和 HAL 记录的标称时钟。每秒输出实际 ADC 原始值、采样计数、当前逻辑扇区和累计阈值资格报告次数。`qualified_threshold_observations` 只表示被动比较条件满足，不证明真实转子过零。ADC2 是原有实时 DMA 视图，可能包含尚未整组刷新完的值；EOS 次数不等于实际触发次数。
+
+RTT 通过 SWD 输出，不使用 UART；构建已自动链接 `defmt.x`。查看方式见[板级 RTT 说明](../README.md)。ADC/定时器 ISR 不输出日志；快照复制和 RTT 编码仍有短暂关中断开销，不能将带日志版本当作硬实时延迟保证。调试器未读取或缓冲满时允许丢日志，程序不会等待 RTT 主机。原有 panic/异常安全处理保持不变，不在故障路径调用日志。

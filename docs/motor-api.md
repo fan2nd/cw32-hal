@@ -212,7 +212,7 @@ DMA guard 常驻整个程序；它不与 ADC/定时器 ISR 分享可变 Rust 句
 
 ## 验证边界
 
-六级默认与 05/06 `motor-output-enable` 均经 Thumb ARM release 构建。
+迁移时的六级默认与 05/06 功率 opt-in 均经 Thumb ARM release 构建；当前例程已移除功率编译开关。
 控制、保护、协议、帧队列与过零算法文件和迁移前逐字节一致。
 另在发布树外将真实 motor 源码与生成 PAC 接入记录式 MMIO，比较原桥臂写序，
 覆盖 ADC 保留位、EOS、PWM 初始化/故障、定时器与致命关断；结果见

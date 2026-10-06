@@ -1,6 +1,9 @@
 #![no_std]
 #![no_main]
 
+mod logging;
+use defmt_rtt as _;
+
 pub mod control;
 pub mod frame_queue;
 mod motor;
@@ -24,6 +27,16 @@ async fn main(_spawner: embassy_executor::Spawner) {
     config.rcc.hsi_divider = embassy_cw32::rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
+    let clocks = embassy_cw32::rcc::clocks();
+    defmt::info!(
+        "06-application: boot HCLK={}Hz PCLK={}Hz RTT=nonblocking",
+        clocks.hclk_hz(),
+        clocks.pclk_hz()
+    );
+    defmt::info!(
+        "PWM=20000Hz ADC1=48000000Hz ADC2=12000000Hz; bootstrap=6ms, delay=400ms, align=150ms"
+    );
+    defmt::info!("power outputs: 6ms low-side bootstrap, then off until key start");
 
     // Transfer the motor's singleton tokens out of the thread executor domain.
     motor::start(

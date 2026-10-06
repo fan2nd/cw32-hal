@@ -4,6 +4,7 @@
 #![no_main]
 
 use core::sync::atomic::{AtomicBool, Ordering};
+use defmt_rtt as _;
 use embassy_cw32::{
     dma,
     gpio::Port,
@@ -31,8 +32,9 @@ const SAMPLING_PERIOD: u16 = 4800; // 96 MHz / 20 kHz, original scale.
 static mut ADC2_DMA: [u32; 5] = [0; 5];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
-// Only ADC1 and BTIM1 access these observation variables after unmask.
-// Both run at P1 and cannot preempt each other. Main never reads them.
+// ADC1 and BTIM1 write these observation variables after unmask.
+// Both run at P1 and cannot preempt each other. Main only copies a diagnostic
+// snapshot with interrupts masked, then logs its owned copies outside that scope.
 // NMI/HardFault touch no software state and shut hardware down before diverging.
 // No other handler may access these variables or change the IRQ priorities.
 static mut ADC1_RAW: [u16; 4] = [0; 4];
@@ -44,11 +46,19 @@ static mut ADC2_ELAPSED_MS: u8 = 0;
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
+    defmt::info!("02 sampling boot; motor gate pins untouched");
     let mut config = embassy_cw32::Config::default();
     config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
     // Retain the HAL singleton tokens for the lifetime of this program.
     let _peripherals = embassy_cw32::try_init(config).expect("clock initialization failed");
+    let clocks = rcc::clocks();
+    defmt::info!(
+        "nominal clocks: sysclk={} Hz hclk={} Hz pclk={} Hz",
+        clocks.sysclk_hz(),
+        clocks.hclk_hz(),
+        clocks.pclk_hz()
+    );
     let mut adc2_channel = dma::Channel::new_blocking(_peripherals.DMA_CH2);
     let adc2_stream;
     typelevel::ADC1::disable();
@@ -160,9 +170,34 @@ fn main() -> ! {
         typelevel::ADC1::enable();
         typelevel::BTIM1::enable();
     }
+    defmt::info!(
+        "sampling started: ADC1 20 kHz trigger; ADC2 live DMA snapshot may contain a partial scan"
+    );
+    let mut last_log_ms = 0u32;
     loop {
         core::hint::black_box(&adc2_stream);
         cortex_m::asm::wfi();
+        // Only copy once per second. IRQs never log, and the raw ADC2 values
+        // retain their existing live-DMA (possibly partially refreshed) meaning.
+        let snapshot = cortex_m::interrupt::free(|_| unsafe {
+            let ms = MILLISECONDS;
+            if ms.wrapping_sub(last_log_ms) < 1_000 {
+                None
+            } else {
+                Some((ms, ADC1_RAW, ADC2_RAW, ADC1_SEQUENCES, ADC2_SEQUENCES))
+            }
+        });
+        if let Some((ms, adc1, adc2, adc1_sequences, adc2_sequences)) = snapshot {
+            last_log_ms = ms;
+            defmt::info!(
+                "ms={} ADC1 raw={} seq={} ADC2 live raw={} observed_eos={}",
+                ms,
+                adc1,
+                adc1_sequences,
+                adc2,
+                adc2_sequences
+            );
+        }
     }
 }
 

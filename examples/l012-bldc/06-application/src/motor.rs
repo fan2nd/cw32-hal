@@ -239,29 +239,25 @@ async fn run(
 
     let mut controller = MotorController::new(calibration_mv);
     controller.begin_bootstrap();
-    let output_opt_in = cfg!(feature = "motor-output-enable");
-    let armed = output_opt_in;
-    // Always preserve the original six-tick startup bookkeeping. Physical
-    // low-side bootstrap charge is enabled only by the output opt-in feature.
+    // Preserve the source's six-tick low-side bootstrap charge. The tick
+    // handler then turns all low sides off and waits for a key start.
     unsafe {
-        if armed {
-            // Configure the physical PWM connection once. Commutation below
-            // changes CCR/low sides only, as in the C source.
-            for pin in [5, 6, 7] {
-                MotorPin::acquire(PinId::new(Port::B, pin)).alternate_function(7);
-            }
-            PwmBridge::acquire()
-                .arm_outputs()
-                .expect("hardware break latched");
-            // Source bootstrap toggles only the three low-side GPIOs.
-            MotorPin::acquire(PinId::new(Port::A, 15)).set_high(true);
-            MotorPin::acquire(PinId::new(Port::B, 3)).set_high(true);
-            MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
+        // Configure the physical PWM connection once. Commutation below
+        // changes CCR/low sides only, as in the C source.
+        for pin in [5, 6, 7] {
+            MotorPin::acquire(PinId::new(Port::B, pin)).alternate_function(7);
         }
+        PwmBridge::acquire()
+            .arm_outputs()
+            .expect("hardware break latched");
+        // Source bootstrap toggles only the three low-side GPIOs.
+        MotorPin::acquire(PinId::new(Port::A, 15)).set_high(true);
+        MotorPin::acquire(PinId::new(Port::B, 3)).set_high(true);
+        MotorPin::acquire(PinId::new(Port::B, 4)).set_high(true);
         core::ptr::addr_of_mut!(CONTROLLER).write(Some(controller));
-        core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(armed);
+        core::ptr::addr_of_mut!(OUTPUTS_ARMED).write(true);
         core::ptr::addr_of_mut!(BOOTSTRAP_MS).write(6);
-        (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = output_opt_in;
+        (*core::ptr::addr_of_mut!(DIAGNOSTICS)).outputs_armed = true;
         AdcScan::<peripherals::ADC1>::acquire().clear_events();
         AdcScan::<peripherals::ADC2>::acquire().clear_events();
         AdcScan::<peripherals::ADC1>::acquire().enable_sequence_interrupt::<AdcHandler>(Irqs);
@@ -311,6 +307,8 @@ async fn run(
         typelevel::BTIM3_HALLTIM::enable();
     }
 
+    let mut last_status = None;
+    let mut last_log_ms = 0u32;
     loop {
         next_motor_event().await;
         // No interrupt can mutate this controller while UART2/P1 is active.
@@ -345,6 +343,29 @@ async fn run(
                     .foreground_step(BasicTimer::<peripherals::BTIM2>::acquire().counter());
                 apply_actions(controller, diagnostics, armed, actions, None);
                 core::hint::black_box(&*diagnostics);
+                let status = (
+                    controller.state(),
+                    controller.startup_state(),
+                    controller.fault(),
+                    controller.powered_off(),
+                    controller.speed_percent(),
+                );
+                if last_status != Some(status)
+                    || diagnostics.milliseconds.wrapping_sub(last_log_ms) >= 500
+                {
+                    last_status = Some(status);
+                    last_log_ms = diagnostics.milliseconds;
+                    // Copy only. The thread-mode UI emits RTT after leaving the motor domain.
+                    crate::ui::publish_diagnostics(crate::logging::Snapshot::capture(
+                        controller,
+                        diagnostics.milliseconds,
+                        diagnostics.adc1,
+                        diagnostics.adc2,
+                        diagnostics.adc1_sequences,
+                        *armed,
+                        calibration_mv,
+                    ));
+                }
                 if !controller.foreground_ready() {
                     break;
                 }

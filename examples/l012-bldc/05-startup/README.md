@@ -10,10 +10,16 @@
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-05-startup
 ```
 
-默认功率关闭。只有审核硬件后显式添加 `--features motor-output-enable` 才允许桥臂输出；逻辑上两种构建都保留6个bootstrap tick。没有实板验证或烧录。
+不再提供例程 feature 开关，普通构建包含实际功率输出。上电先执行原有 6 ms 三个低桥 bootstrap 充电，随后关闭桥臂等待按键启动；原故障处理与 panic/异常紧急关断保留。烧录前须核对硬件并物理禁用驱动；没有实板验证或烧录。
 
 原板VDDA=5 V，时钟恢复96 MHz HCLK/PCLK、20 kHz PWM（4800刻度）、8 MHz BTIM2/3；ADC1为48 MHz/70采样周期，ADC2为12 MHz/518周期、双触发和逐槽DMA。ADC2请求选择的确定性修复、ADC CR bit8的新版官方库依据及故障边界见[一致性审查](../../../docs/bldc-source-parity.md)。
 
 原始ADC、逻辑桥图、状态、错误和实际输出授权可在断电halt时查看DIAGNOSTICS。正常错误处理时机保持原C；不再添加ADC失联故障或同事件立即关桥。原源码存在的状态覆盖和保护暂停均明示，不能把源码一致性当作电气安全认证。完整引脚和上板约束见[板级说明](../README.md)。
 
 本级使用HAL独立 `motor` 操作API与真正的DMA通道驱动，不再直接操作PAC或启用 `unstable-pac`。板级参数、算法和ISR仍留在本crate；接口排他义务与顺序保证见[电机API](../../../docs/motor-api.md)。
+
+## RTT 调试
+
+本例默认包含 defmt RTT 日志。在本目录运行 `cargo run --release`，由 probe-rs 显示启动时钟/输出状态、启动阶段和故障；周期诊断为 500 ms，状态变化另行报告。检查 `armed`、`steps`、`crossings`、ADC 原码及 `last_protection_bus` 可定位三闪 `StartupFailed`。普通构建可驱动电机：上电先执行 6 ms 低桥充电，随后关闭桥臂等待按键启动；烧录前须物理禁用驱动。
+
+日志只在普通线程中发出，保留原 panic/异常关闭路径；主机断开不等待，但可能丢日志。ADC2 不是原子 EOS 快照，保护电压在启动等待期间可能保持上次结果，日志仍有短暂关中断的时序代价。命令、单位与全部限制见[统一 RTT 说明](../README.md#defmt-rtt-日志01–06)。

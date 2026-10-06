@@ -7,7 +7,7 @@
 //! InvalidCalibration guard. Calibration 0 and 0xffff are not rejected merely
 //! for their values. This guard is a documented difference, not source parity.
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
 pub enum Fault {
     TooFast = 2,

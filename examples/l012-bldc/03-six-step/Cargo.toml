@@ -13,6 +13,8 @@ embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, featu
 
 cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }
 cortex-m-rt = { version = "=0.7.5" }
+defmt = { version = "=1.0.1" }
+defmt-rtt = { version = "=1.0.0", features = ["disable-blocking-mode"] }
 
 [[bin]]
 name = "bldc_03_six_step"
