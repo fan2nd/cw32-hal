@@ -1,155 +1,165 @@
 #![deny(unsafe_code)]
-//! 有界停机诊断：每 8 帧记录一次平台数据，不改变任何控制量或资格。
-//! 64 × 2 ms = 128 ms 历史；16 个角度箱和 6 个采样顺序箱覆盖整次平台。
+//! 固定平台位置的连续输入记录。只重放观察器/错时电流运输，不替代真实角度测量。
+//! 80 帧约 20 ms，替换旧抽样环；不打印、不分配、不改变控制或资格。
 
-pub const RECORDS: usize = 64;
-pub const PHASE_BINS: usize = 16;
-pub const SECTOR_BINS: usize = 6;
-pub const DECIMATION: u16 = 8;
+pub const MODEL_TAG: &str = "fe0f93827826c14bf238a231a210d82e4105a8fa1e493e9290cb1a6644af5d10";
+pub const RECORDS: usize = 80;
+pub const START_AGE: u16 = (crate::config::OPEN_RAMP_FRAMES + crate::config::CONTROL_HZ) as u16;
 
-#[derive(Clone, Copy)]
-pub struct Observation {
-    pub age: u16,
-    pub forced: u16,
-    pub observer: u16,
-    pub pll_error: i16,
-    pub emf: [i16; 2],
+/// 首帧处理前、末帧处理后的完整观察状态。Q8/Q16 小数位原样保留。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ReplayState {
+    pub previous_current: [i32; 2],
+    pub emf_q8: [i32; 2],
+    pub raw_emf_mv: [i32; 2],
+    pub phase: u32,
+    pub speed: i32,
+    pub magnitude: i32,
+    pub error: i32,
+    pub open_phase: u32,
+    pub corrected_angle: u16,
+    pub tracking: u16,
+}
+impl ReplayState {
+    pub const EMPTY: Self = Self {
+        previous_current: [0; 2],
+        emf_q8: [0; 2],
+        raw_emf_mv: [0; 2],
+        phase: 0,
+        speed: 0,
+        magnitude: 0,
+        error: 0,
+        open_phase: 0,
+        corrected_angle: 0,
+        tracking: 0,
+    };
 }
 
 #[repr(C)]
 #[derive(Clone, Copy)]
-pub struct Record {
+pub struct Seed {
+    pub state: ReplayState,
+    pub previous_duty: [u16; 3],
+    pub offset: i16,
+    pub previous_bus_mv: u16,
     pub age: u16,
-    pub forced: u16,
-    pub observer: u16,
-    pub pll_error: i16,
+}
+impl Seed {
+    const EMPTY: Self = Self {
+        state: ReplayState::EMPTY,
+        previous_duty: [0; 3],
+        offset: 0,
+        previous_bus_mv: 0,
+        age: 0,
+    };
+}
+
+/// duty 是本帧已生效的 CCR。vdda 是电流换算前的旧值，bus 是 ADC2 更新后的值。
+/// 时间/order 从严格分离的 duty 与既有采样常数还原；每项必须来自相邻物理帧。
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Record {
     pub raw: [u16; 2],
     pub duty: [u16; 3],
-    pub transport_ma: i16,
-    pub emf: [i16; 2],
+    pub vdda_mv: u16,
+    pub bus_mv: u16,
+    pub forced_angle: u16,
+    pub observer_angle: u16,
+    pub pll_error: i16,
+    pub first_phase_ma: i16,
 }
 impl Record {
     const EMPTY: Self = Self {
-        age: 0,
-        forced: 0,
-        observer: 0,
-        pll_error: 0,
         raw: [0; 2],
         duty: [0; 3],
-        transport_ma: 0,
-        emf: [0; 2],
+        vdda_mv: 0,
+        bus_mv: 0,
+        forced_angle: 0,
+        observer_angle: 0,
+        pll_error: 0,
+        first_phase_ma: 0,
     };
-    pub fn delta(&self) -> i16 {
-        self.observer.wrapping_sub(self.forced) as i16
-    }
-}
-
-#[repr(C)]
-#[derive(Clone, Copy)]
-pub struct Bin {
-    pub delta_sum: i32,
-    pub count: u16,
-    pub delta_min: i16,
-    pub delta_max: i16,
-    pub transport_peak_ma: u16,
-}
-impl Bin {
-    const EMPTY: Self = Self {
-        delta_sum: 0,
-        count: 0,
-        delta_min: i16::MAX,
-        delta_max: i16::MIN,
-        transport_peak_ma: 0,
-    };
-    fn push(&mut self, delta: i16, transport_ma: i16) {
-        // 单次平台最多 15000 个抽样点；i16 角差累计仍在 i32 内。
-        self.count += 1;
-        self.delta_sum += i32::from(delta);
-        self.delta_min = self.delta_min.min(delta);
-        self.delta_max = self.delta_max.max(delta);
-        self.transport_peak_ma = self.transport_peak_ma.max(transport_ma.unsigned_abs());
-    }
 }
 
 pub struct Trace {
-    pub phase: [Bin; PHASE_BINS],
-    pub sector: [Bin; SECTOR_BINS],
+    pub seed: Seed,
+    pub terminal: ReplayState,
     records: [Record; RECORDS],
-    pub total: u16,
-    pub last_age: u16,
-    next: u8,
-    pub len: u8,
+    pub len: u16,
+    pub complete: bool,
+    started: bool,
 }
 impl Trace {
     pub const fn new() -> Self {
         Self {
-            phase: [Bin::EMPTY; PHASE_BINS],
-            sector: [Bin::EMPTY; SECTOR_BINS],
+            seed: Seed::EMPTY,
+            terminal: ReplayState::EMPTY,
             records: [Record::EMPTY; RECORDS],
-            total: 0,
-            last_age: 0,
-            next: 0,
             len: 0,
+            complete: false,
+            started: false,
         }
     }
-    pub fn push(
-        &mut self,
-        o: Observation,
-        raw: [u16; 2],
-        duty: [u16; 3],
-        order: [usize; 3],
-        transport_ma: i32,
-    ) {
-        // 新启动的 age 回退时只清空小统计区；不在 ISR 复制整个环形缓冲。
-        if o.age <= self.last_age {
-            self.phase = [Bin::EMPTY; PHASE_BINS];
-            self.sector = [Bin::EMPTY; SECTOR_BINS];
-            self.total = 0;
-            self.next = 0;
-            self.len = 0;
+    /// 再次手动启动时仅清元数据，不清大缓冲。窗口外没有数据搬运。
+    pub fn wants_input(&mut self, age: u16) -> bool {
+        if age < START_AGE {
+            return false;
         }
-        let record = Record {
-            age: o.age,
-            forced: o.forced,
-            observer: o.observer,
-            pll_error: o.pll_error,
-            raw,
-            duty,
-            transport_ma: transport_ma.clamp(i16::MIN as i32, i16::MAX as i32) as i16,
-            emf: o.emf,
-        };
-        self.phase[usize::from(o.forced >> 12)].push(record.delta(), record.transport_ma);
-        // [最早下降相, 最晚下降相] 唯一确定六种合法顺序；Frame::valid 已验证。
-        let sector = match (order[0], order[2]) {
-            (0, 2) => 0, // ABC
-            (0, 1) => 1, // ACB
-            (1, 2) => 2, // BAC
-            (1, 0) => 3, // BCA
-            (2, 1) => 4, // CAB
-            (2, 0) => 5, // CBA
-            _ => return,
-        };
-        self.sector[sector].push(record.delta(), record.transport_ma);
-        self.records[usize::from(self.next)] = record;
-        self.next = (self.next + 1) & (RECORDS as u8 - 1);
-        self.len = self.len.saturating_add(1).min(RECORDS as u8);
-        self.total += 1;
-        self.last_age = o.age;
+        !self.complete
+            && age >= START_AGE
+            && age < START_AGE + RECORDS as u16
+            && ((!self.started && age == START_AGE)
+                || (self.started && age == self.seed.age + self.len))
     }
-    /// 停机后按最旧到最新读取；索引越界返回 None，不暴露失效的旧启动记录。
-    pub fn record(&self, chronological: usize) -> Option<Record> {
-        if chronological >= usize::from(self.len) {
-            return None;
+    /// 只清小header；旧记录不可见，避免新启动过早故障被误配到上一启动。
+    pub fn reset(&mut self) {
+        self.len = 0;
+        self.complete = false;
+        self.started = false;
+        self.seed.age = 0;
+    }
+    pub fn needs_seed(&self) -> bool {
+        !self.started
+    }
+    pub fn begin(&mut self, seed: Seed) {
+        self.seed = seed;
+        self.len = 0;
+        self.complete = false;
+        self.started = true;
+    }
+    /// 只有完整且成功处理的输入帧才能提交；缺帧不补算、不拼接另一窗口。
+    pub fn push(&mut self, age: u16, record: Record) -> bool {
+        if !self.started
+            || self.complete
+            || usize::from(self.len) >= RECORDS
+            || age != self.seed.age + self.len
+        {
+            return false;
         }
-        let oldest = if usize::from(self.len) == RECORDS {
-            usize::from(self.next)
+        self.records[usize::from(self.len)] = record;
+        self.len += 1;
+        usize::from(self.len) == RECORDS
+    }
+    pub fn finish(&mut self, state: ReplayState) {
+        if usize::from(self.len) == RECORDS {
+            self.terminal = state;
+            self.complete = true;
+        }
+    }
+    pub fn record(&self, index: usize) -> Option<Record> {
+        if index < usize::from(self.len) {
+            Some(self.records[index])
         } else {
-            0
-        };
-        Some(self.records[(oldest + chronological) & (RECORDS - 1)])
+            None
+        }
     }
 }
-
-const _: () = assert!(core::mem::size_of::<Record>() == 24);
-const _: () = assert!(core::mem::size_of::<Bin>() == 12);
-const _: () = assert!(core::mem::size_of::<Trace>() <= 1824);
+const _: () = assert!(
+    crate::config::OPEN_RAMP_FRAMES + crate::config::CONTROL_HZ + (RECORDS as u32)
+        < crate::config::STARTUP_TIMEOUT_FRAMES
+);
+const _: () = assert!(crate::config::STARTUP_TIMEOUT_FRAMES <= u16::MAX as u32);
+const _: () = assert!(core::mem::size_of::<Record>() == 22);
+const _: () = assert!(core::mem::size_of::<ReplayState>() == 48);
+const _: () = assert!(core::mem::size_of::<Trace>() <= 1920);

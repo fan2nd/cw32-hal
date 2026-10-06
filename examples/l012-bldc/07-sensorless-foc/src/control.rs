@@ -266,26 +266,41 @@ impl Control {
         [self.observer.emf_q8[0] >> 8, self.observer.emf_q8[1] >> 8]
     }
 
-    /// 只读诊断，固定 2 ms 抽样；不生成速度换算、除法或整块控制快照。
-    /// 故障帧不记录，优先沿用立即关桥路径；角度属于本次第二保持时刻。
-    pub fn plateau_observation(&self) -> Option<crate::trace::Observation> {
-        const {
-            assert!(STARTUP_TIMEOUT_FRAMES <= u16::MAX as u32);
+    pub fn trace_reset_pending(&self) -> bool {
+        self.reset_pending
+    }
+
+    /// 下一个尚未处理的物理输入帧龄；诊断只在稳定的 OpenLoop 状态取种子。
+    pub fn trace_next_age(&self) -> Option<u16> {
+        if self.state == State::OpenLoop && !self.reset_pending {
+            Some((self.age + 1) as u16)
+        } else {
+            None
         }
-        if self.state != State::OpenLoop {
-            return None;
+    }
+
+    /// 不做浮点、除法或状态重置；原样保留重放所需的小数状态。
+    pub fn replay_state(&self) -> crate::trace::ReplayState {
+        crate::trace::ReplayState {
+            previous_current: self.observer.previous_current,
+            emf_q8: self.observer.emf_q8,
+            raw_emf_mv: self.observer.raw_emf_mv,
+            phase: self.observer.phase,
+            speed: self.observer.speed,
+            magnitude: self.observer.magnitude,
+            error: self.observer.error,
+            open_phase: self.open_phase,
+            corrected_angle: self.observer.corrected_angle,
+            tracking: self.observer.tracking as u16,
         }
-        let age = self.age;
-        if age <= OPEN_RAMP_FRAMES || age & (u32::from(crate::trace::DECIMATION) - 1) != 0 {
-            return None;
-        }
-        Some(crate::trace::Observation {
-            age: age as u16,
-            forced: (self.open_phase >> 16) as u16,
-            observer: self.observer.angle(),
-            pll_error: self.observer.error as i16,
-            emf: self.estimated_emf_mv().map(|v| v as i16),
-        })
+    }
+
+    pub fn trace_output(&self) -> (u16, u16, i16) {
+        (
+            (self.open_phase >> 16) as u16,
+            self.observer.angle(),
+            self.observer.error as i16,
+        )
     }
 
     pub fn fault(&self) -> Fault {

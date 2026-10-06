@@ -472,6 +472,12 @@ impl Motor {
         pwm.stop();
         typelevel::ATIM::disable();
         typelevel::ADC1::disable();
+        // 若新启动尚未消费首个完整ADC帧就故障，先废弃上一启动的记录。
+        if self.control.trace_reset_pending() {
+            unsafe {
+                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
+            }
+        }
         self.control.trip(fault);
         if first {
             let trace = self.control.fault_trace();
@@ -749,7 +755,10 @@ pub fn report_fault() {
     defmt::error!(
         "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us"
     );
-    if d.fault == Fault::StartupTimeout as u32 || d.fault == Fault::ObserverLost as u32 {
+    if d.fault == Fault::StartupTimeout as u32
+        || d.fault == Fault::ObserverLost as u32
+        || unsafe { (&*core::ptr::addr_of!(PLATEAU_TRACE)).len != 0 }
+    {
         // 原故障日志先排出；随后每 20 ms 一行，仍为非阻塞 RTT，序号可检查丢行。
         unsafe {
             TRACE_DUMP = Some((0, MILLISECONDS.load(Ordering::Acquire)));
@@ -758,56 +767,61 @@ pub fn report_fault() {
 }
 
 fn report_trace_row() {
-    // 只在先读取 FAULT_LOG_READY 的 Acquire 发布之后设置 TRACE_DUMP。
-    // 电机高频源已停止；不关闭中断、不复制整块缓冲，BTIM1 和按键/LED 继续运行。
+    // 仅首故障停桥/停源并 Release/Acquire 后读取；不会在捕获完成时打印。
     let Some((row, last_ms)) = (unsafe { TRACE_DUMP }) else {
         return;
     };
     let now = MILLISECONDS.load(Ordering::Acquire);
-    let wait_ms = if row == 0 { 100 } else { 20 };
-    if now.wrapping_sub(last_ms) < wait_ms {
+    if now.wrapping_sub(last_ms) < if row == 0 { 100 } else { 20 } {
         return;
     }
     let trace = unsafe { &*core::ptr::addr_of!(PLATEAU_TRACE) };
-    if row == 0 {
-        defmt::error!("TRACE_BEGIN version=1 period_frames=8 nominal_period_us=2000 records={} total={} phase_bins=16 sector_bins=6; frozen after stop", trace.len, trace.total);
-    } else if row <= crate::trace::PHASE_BINS + crate::trace::SECTOR_BINS {
-        let index = row - 1;
-        let (kind, bin_index, bin) = if index < crate::trace::PHASE_BINS {
-            (0, index, trace.phase[index])
-        } else {
-            let sector = index - crate::trace::PHASE_BINS;
-            (1, sector, trace.sector[sector])
-        };
-        let mean = if bin.count == 0 {
-            0
-        } else {
-            bin.delta_sum / i32::from(bin.count)
-        };
+    if trace.len == 0 {
         defmt::error!(
-            "TRACE_BIN kind={} index={} n={} delta_min={} mean={} max={} transport_peak={}mA",
-            kind,
-            bin_index,
-            bin.count,
-            bin.delta_min,
-            mean,
-            bin.delta_max,
-            bin.transport_peak_ma
+            "REPLAY_UNAVAILABLE requested_start_age={}; no successful input frame from this start",
+            crate::trace::START_AGE
         );
-    } else {
-        let index = row - 1 - crate::trace::PHASE_BINS - crate::trace::SECTOR_BINS;
-        if let Some(record) = trace.record(index) {
-            defmt::error!("TRACE_ROW n={} age={} forced={} observed={} pll={} raw={:?} duty={:?} transport={} emf={:?}", index, record.age, record.forced, record.observer, record.pll_error, record.raw, record.duty, record.transport_ma, record.emf);
-        } else {
-            defmt::error!("TRACE_END records={} total={}; angles=65536/turn duty=96ticks/us raw=ADCcounts transport=mA emf=mV; phase bin=forced>>12; sectors=ABC,ACB,BAC,BCA,CAB,CBA", trace.len, trace.total);
-            unsafe {
-                TRACE_DUMP = None;
-            }
-            return;
+        unsafe {
+            TRACE_DUMP = None;
         }
+        return;
+    }
+    if row == 0 {
+        defmt::error!("REPLAY_BEGIN version=2 model={} start_age={} records={} complete={} period_frames=1 nominal_period_us=250; fixed plateau window, not final fault frames", crate::trace::MODEL_TAG, trace.seed.age, trace.len, trace.complete);
+    } else if row == 1 {
+        defmt::error!("REPLAY_MOTOR previous_duty={:?} previous_bus={} offset={}; duties active, vdda before ADC2 update, bus after update", trace.seed.previous_duty, trace.seed.previous_bus_mv, trace.seed.offset);
+    } else if row == 2 || row == 3 {
+        report_replay_state(0, row == 3, &trace.seed.state);
+    } else if row < 4 + usize::from(trace.len) {
+        let index = row - 4;
+        if let Some(r) = trace.record(index) {
+            defmt::error!("REPLAY_ROW n={} raw={:?} duty={:?} vdda={} bus={} forced={} observed={} pll={} first_ma={}", index, r.raw, r.duty, r.vdda_mv, r.bus_mv, r.forced_angle, r.observer_angle, r.pll_error, r.first_phase_ma);
+        }
+    } else if trace.complete && row < 6 + usize::from(trace.len) {
+        report_replay_state(1, row == 5 + usize::from(trace.len), &trace.terminal);
+    } else {
+        defmt::error!("REPLAY_END records={} complete={}; seed before first input, end after last observer update; angles65536/turn, duty96ticks/us, currentsmA, voltagemV", trace.len, trace.complete);
+        unsafe {
+            TRACE_DUMP = None;
+        }
+        return;
     }
     unsafe {
         TRACE_DUMP = Some((row + 1, now));
+    }
+}
+
+fn report_replay_state(end: u8, second: bool, state: &crate::trace::ReplayState) {
+    if !second {
+        defmt::error!(
+            "REPLAY_STATE_A end={} previous_current={:?} emf_q8={:?} raw_emf={:?}",
+            end,
+            state.previous_current,
+            state.emf_q8,
+            state.raw_emf_mv
+        );
+    } else {
+        defmt::error!("REPLAY_STATE_B end={} phase={} speed={} magnitude={} error={} open_phase={} corrected={} tracking={}", end, state.phase, state.speed, state.magnitude, state.error, state.open_phase, state.corrected_angle, state.tracking);
     }
 }
 
@@ -1064,12 +1078,17 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             }
             m.checkpoint = start;
             m.stage_ticks = [0; 5];
+            if m.control.trace_reset_pending() {
+                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
+            }
             let mut math = HardwareMath {
                 eau: &mut runtime.eau,
                 pwm: &mut pwm,
                 failed: false,
                 error: 0,
             };
+            // 连续重放记录保留本次换算真正使用的旧 VDDA，不能记录更新后的比例。
+            let sample_vdda_mv = m.vdda_mv as u16;
             // 两个样本共用采样时的 VDDA；必须先换算，再允许 ADC2 更新比例。
             m.dc_ma = if m.armed {
                 [
@@ -1112,6 +1131,25 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             }
             if !m.checkpoint_control(math.pwm, start, 0) {
                 return;
+            }
+            // 首帧种子必须早于首样本运输及 observer.update，previous 尚未晋升。
+            // 固定平台窗口：完整 Foc 前后帧才可用 duty 还原全部真实边沿与保持时刻。
+            let capture_age = m.control.trace_next_age().filter(|&age| {
+                m.active.mode == Mode::Foc
+                    && m.previous.mode == Mode::Foc
+                    && (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).wants_input(age)
+            });
+            if let Some(age) = capture_age {
+                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
+                if trace.needs_seed() {
+                    trace.begin(crate::trace::Seed {
+                        state: m.control.replay_state(),
+                        previous_duty: m.previous.frame.duty,
+                        previous_bus_mv: m.previous_bus_mv as u16,
+                        offset: m.offset as i16,
+                        age,
+                    });
+                }
             }
             m.phase_ma = if m.active.mode == Mode::Foc {
                 m.active.frame.reconstruct_timed(
@@ -1176,16 +1214,25 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 }
                 return;
             }
-            // 绑定刚消费的 active 波形，不读取已预载的 staged/pending。
-            // 只在 2 ms 抽样点搬运 24 字节并更新少量整数统计；不打印或调用除法。
-            if let Some(observation) = m.control.plateau_observation() {
-                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).push(
-                    observation,
-                    m.raw,
-                    m.active.frame.duty,
-                    m.active.frame.order,
-                    m.phase_ma[m.active.frame.order[0]] + m.dc_ma[0],
-                );
+            // 故障分支已优先关桥返回；只提交完整成功帧，80 帧后永久冻结至再启动。
+            if let Some(age) = capture_age.filter(|_| m.control.state() == State::OpenLoop) {
+                let (forced_angle, observer_angle, pll_error) = m.control.trace_output();
+                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
+                if trace.push(
+                    age,
+                    crate::trace::Record {
+                        raw: m.raw,
+                        duty: m.active.frame.duty,
+                        vdda_mv: sample_vdda_mv,
+                        bus_mv: m.bus_mv as u16,
+                        forced_angle,
+                        observer_angle,
+                        pll_error,
+                        first_phase_ma: m.phase_ma[m.active.frame.order[0]] as i16,
+                    },
+                ) {
+                    trace.finish(m.control.replay_state());
+                }
             }
             if !m.checkpoint_control(math.pwm, start, 3) {
                 return;
