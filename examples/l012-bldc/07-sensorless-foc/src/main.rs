@@ -1,5 +1,8 @@
 #![no_std]
 #![no_main]
+
+use defmt_rtt as _;
+
 mod config;
 mod control;
 mod hardware;
@@ -18,8 +21,21 @@ async fn main(spawner: embassy_executor::Spawner) {
     config.rcc.hsi_divider = embassy_cw32::rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
     let p = embassy_cw32::init(config);
-    assert_eq!(embassy_cw32::rcc::clocks().hclk_hz(), config::CPU_HZ);
-    assert_eq!(embassy_cw32::rcc::clocks().pclk_hz(), config::CPU_HZ);
+    let clocks = embassy_cw32::rcc::clocks();
+    assert_eq!(clocks.hclk_hz(), config::CPU_HZ);
+    assert_eq!(clocks.pclk_hz(), config::CPU_HZ);
+    // 此时电机定时器尚未启动；实时采样期间不输出日志。
+    defmt::info!(
+        "07-sensorless-foc: boot HCLK={}Hz PCLK={}Hz RTT=nonblocking",
+        clocks.hclk_hz(),
+        clocks.pclk_hz()
+    );
+    defmt::info!(
+        "PWM={}Hz ADC1={}Hz ADC2={}Hz; outputs off, calibrate then wait for PA3 key",
+        config::PWM_HZ,
+        clocks.pclk_hz() / 2,
+        clocks.pclk_hz() / 8
+    );
     spawner.spawn(
         hardware::motor_task(hardware::MotorResources {
             atim: p.ATIM,

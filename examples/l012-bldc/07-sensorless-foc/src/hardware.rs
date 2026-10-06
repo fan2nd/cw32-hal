@@ -53,7 +53,42 @@ pub static MILLISECONDS: AtomicU32 = AtomicU32::new(0);
 // 全部实时状态只有 P0 中断访问；线程只读独立原子状态字。
 static mut MOTOR: Option<Motor> = None;
 static RUN_STATUS: AtomicU32 = AtomicU32::new(0);
-/// 调试器在物理断开母线并暂停 CPU 后读取；没有 RTT/UART 输出。
+static FAULT_LOG_READY: AtomicBool = AtomicBool::new(false);
+
+/// 首个故障的采样证据；reason：0=其他，1=跨 reload，2=多余样本，3=过早，4=过晚。
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct SampleTrace {
+    pub reason: u32,
+    pub index: u32,
+    pub irq_entry: u16,
+    pub result_read: u16,
+    pub raw: u16,
+    pub expected_min: u16,
+    pub expected_max: u16,
+    pub previous_irq_end: u16,
+    pub max_first_irq_ticks: u16,
+    pub trigger: [u16; 2],
+    pub received: [u16; 2],
+}
+impl SampleTrace {
+    const fn new() -> Self {
+        Self {
+            reason: 0,
+            index: 0,
+            irq_entry: 0,
+            result_read: 0,
+            raw: 0,
+            expected_min: 0,
+            expected_max: 0,
+            previous_irq_end: 0,
+            max_first_irq_ticks: 0,
+            trigger: [0; 2],
+            received: [0; 2],
+        }
+    }
+}
+/// 调试器读取前须物理断开母线；首故障也会在高频源停止后通过 RTT 输出。
 /// 运行中外部读取可能跨越一次更新；不允许其他 Rust 任务借用此对象。
 #[repr(C)]
 #[derive(Clone, Copy)]
@@ -76,6 +111,7 @@ pub struct Diagnostics {
     pub bemf_mv: i32,
     pub pll_error: i32,
     pub qualified_frames: u32,
+    pub sample_trace: SampleTrace,
 }
 #[no_mangle]
 pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
@@ -97,6 +133,7 @@ pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
     bemf_mv: 0,
     pll_error: 0,
     qualified_frames: 0,
+    sample_trace: SampleTrace::new(),
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -162,6 +199,7 @@ struct Motor {
     max_control_ticks: u16,
     max_update_ticks: u16,
     armed: bool,
+    sample_trace: SampleTrace,
 }
 impl Motor {
     fn new(reference_mv: u16) -> Self {
@@ -194,20 +232,26 @@ impl Motor {
             max_control_ticks: 0,
             max_update_ticks: 0,
             armed: false,
+            sample_trace: SampleTrace::new(),
         }
     }
     fn trip(&mut self, fault: Fault, pwm: &mut SingleShuntPwm) {
         let first = !self.fault_published;
+        // 先关桥，再停高频触发和中断；保留 BTIM1，普通线程才能输出首故障。
+        // 不清 ADC/ATIM 故障旗标，也不自动重新开启计数器。
+        pwm.disarm();
+        pwm.stop();
+        typelevel::ATIM::disable();
+        typelevel::ADC1::disable();
         self.control.trip(fault);
         self.armed = false;
         RUN_STATUS.store((self.control.fault() as u32) << 8, Ordering::Release);
         self.pending = Plan::off();
         self.pending_ready = true;
-        // 故障时刻立即关断 MOE；不等待下一次 update，也不自动复位错误旗标。
-        pwm.disarm();
         if first {
             self.fault_published = true;
             publish(self);
+            FAULT_LOG_READY.store(true, Ordering::Release);
         }
     }
     fn convert_current(&self, raw: u16) -> i32 {
@@ -284,7 +328,7 @@ impl Motor {
     }
 }
 
-/// 仅 ISR 写入，不与任何 Rust 线程读取者共享，避免保护大快照而屏蔽高频采样。
+/// 仅 ISR 写入；普通线程只在高频源停止、首故障已冻结之后读取。
 fn publish(m: &Motor) {
     let s = m.control.snapshot();
     let value = Diagnostics {
@@ -306,10 +350,34 @@ fn publish(m: &Motor) {
         bemf_mv: s.bemf_mv,
         pll_error: s.pll_error,
         qualified_frames: s.qualified_frames,
+        sample_trace: m.sample_trace,
     };
     unsafe {
         core::ptr::write_volatile(core::ptr::addr_of_mut!(FOC_DIAGNOSTICS), value);
     }
+}
+
+/// 只在普通线程调用。Release/Acquire 发布后，高频源已停止，快照不会再改写。
+/// 非阻塞 RTT 仅输出一次；运行中的每帧采样和 ISR 均不打印。
+pub fn report_fault() {
+    if !FAULT_LOG_READY.load(Ordering::Acquire) {
+        return;
+    }
+    FAULT_LOG_READY.store(false, Ordering::Relaxed);
+    let d = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FOC_DIAGNOSTICS)) };
+    let t = d.sample_trace;
+    defmt::error!(
+        "07 fault={} state={} frame={} armed={} bus={}mV vdda={}mV offset={} raw={:?}; PWM/ADC triggers stopped",
+        d.fault, d.state, d.frames, d.armed, d.bus_mv, d.vdda_mv, d.offset_adc, d.raw_adc,
+    );
+    defmt::error!(
+        "ADC sample={} reason={} entry={} read={} raw={} expected={}..={} trigger={:?} received={:?} previous_end={} max_first={} ticks",
+        t.index, t.reason, t.irq_entry, t.result_read, t.raw, t.expected_min, t.expected_max,
+        t.trigger, t.received, t.previous_irq_end, t.max_first_irq_ticks,
+    );
+    defmt::error!(
+        "ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us"
+    );
 }
 
 /// 同一次原子读取给出解锁状态和首个锁存故障码；0 表示无故障。
@@ -455,24 +523,47 @@ pub struct AdcHandler;
 impl Handler<typelevel::ADC1> for AdcHandler {
     unsafe fn on_interrupt() {
         unsafe {
+            let mut pwm = SingleShuntPwm::acquire();
+            let irq_entry = pwm.counter();
             let mut adc = AdcScan::<peripherals::ADC1>::acquire();
             let Some(raw) = adc.take_single() else {
                 return;
             };
-            let mut pwm = SingleShuntPwm::acquire();
+            // 仍以 RESULT0 读取/确认之后的时间判定，不用更早的 entry 放宽保护。
             let start = pwm.counter();
             let m = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
-            if pwm.update_pending() || !m.active.frame.accepts(m.samples, start) {
+            let index = m.samples;
+            let reason = m
+                .active
+                .frame
+                .sample_fault_reason(index, start, pwm.update_pending());
+            if reason != 0 {
+                // 故障才填充完整证据，避免每个正常样本额外搬运大快照。
+                let trace = &mut m.sample_trace;
+                trace.reason = reason;
+                trace.index = index as u32;
+                trace.irq_entry = irq_entry;
+                trace.result_read = start;
+                trace.raw = raw;
+                trace.trigger = m.active.frame.sample;
+                trace.expected_min = if index < 2 {
+                    m.active.frame.sample[index] + sampling::CONVERSION_TICKS
+                } else {
+                    0
+                };
+                trace.expected_max = trace.expected_min + sampling::SAMPLE_IRQ_SLACK;
                 m.trip(Fault::SampleInvalid, &mut pwm);
                 return;
             }
-            let index = m.samples;
+            m.sample_trace.received[index] = start;
             m.samples += 1;
             m.raw[index] = raw;
             if m.control.state() == State::Calibrating {
                 m.calibrate(raw, &mut adc, &mut pwm);
             }
-            let current = m.convert_current(raw);
+            // 未解锁时电流不会进入控制器，不能让无用的软件除法占住两次 EOS 间隙。
+            // 校准仍逐样本累积；解锁后每个样本的电流/电源轨/看门狗检查保持原样。
+            let current = if m.armed { m.convert_current(raw) } else { 0 };
             if m.armed
                 && (raw < 32
                     || raw > 4063
@@ -483,6 +574,12 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             }
             m.dc_ma[index] = current;
             if index == 0 {
+                let end = pwm.counter();
+                m.sample_trace.previous_irq_end = end;
+                m.sample_trace.max_first_irq_ticks = m
+                    .sample_trace
+                    .max_first_irq_ticks
+                    .max(end.wrapping_sub(irq_entry));
                 return;
             }
             // 慢速 ADC2 的除法放在第二样本后的控制时隙，不能占用 reload
@@ -530,10 +627,11 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             };
             m.pending = Plan::for_state(frame, m.control.state());
             m.pending_ready = true;
-            if m.frames % 500 == 0 {
+            if m.frames % 500 == 0 && !m.fault_published {
                 publish(m);
             }
             let end = pwm.counter();
+            m.sample_trace.previous_irq_end = end;
             m.max_control_ticks = m.max_control_ticks.max(end.wrapping_sub(start));
             if end >= sampling::CONTROL_DEADLINE || end < start || pwm.update_pending() {
                 m.trip(Fault::Timing, &mut pwm);

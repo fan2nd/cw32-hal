@@ -1,6 +1,6 @@
 # 第 7 例程验证记录（2026-10-06）
 
-基线为 `47e19457a2bbde3c7ba8b38a69bb300d818105c4`（平铺 MotorResources 与中文注释版）。新增独立 `07-sensorless-foc`；01–06 目录逐字节保持不变。没有新增测试文件、CI、本地 example feature、RTT/defmt 或 UART 日志。
+基线为 `47e19457a2bbde3c7ba8b38a69bb300d818105c4`（平铺 MotorResources 与中文注释版）。新增独立 `07-sensorless-foc`；01–06 目录逐字节保持不变。没有新增测试文件、CI 或本地 example feature。后续按用户要求恢复标准 defmt-rtt，仅在启动前和首次故障安全停机后输出，仍无 UART 日志。
 
 ## 最终参数来源
 
@@ -15,7 +15,7 @@
 - 从仅有源文件、没有 PAC/generated-data/Cargo.lock 的独立副本运行 `xtask regenerate`，再 `regenerate --check`；生成文件逐字节一致，07 release 构建通过。
 - 最终普通构建已包含完整输出/接管分支，以 ARM release、`-D warnings` 构建通过；没有烧录或运行硬件。
 - 最小共享 HAL 修正之后，01、02、03、04、05、06 全部 ARM release 回归构建通过。
-- 07 ELF 不含 `_SEGGER_RTT` / defmt 符号。调试数据仅为具名 `FOC_DIAGNOSTICS`。
+- 当前日志版包含标准 `_SEGGER_RTT` / defmt 符号；禁止实时采样期间打印。故障快照仍为具名 `FOC_DIAGNOSTICS`。
 
 ## 外部数学检查（不随源码交付）
 
@@ -34,13 +34,13 @@
 
 ## 存储与时间预算
 
-最终普通构建：text=17216 B、data=484 B、bss=212 B，即约 17700 B Flash 和 696 B 静态 RAM。CW32L012C8 链接区为 64 KiB Flash / 8 KiB RAM，剩余 RAM 还要容纳运行栈，未测栈高水位。
+当前首故障日志版构建：text=19404 B、data=572 B、bss=1288 B，即约 19976 B Flash 和 1860 B 静态 RAM。CW32L012C8 链接区为 64 KiB Flash / 8 KiB RAM，剩余 RAM 还要容纳运行栈，未测栈高水位。
 
 10 kHz 每帧只有 9600 个 96 MHz CPU tick。调制最大比较值限制为 4800，最晚第二样本服务时刻为 4762，控制截止点为 9000，预留约 44.1 µs。早期 update 服务截止为 CNT=700。第一样本的读取容差仅 128 tick（约 1.33 µs），必须验证所有短临界区与 ISR 的实际最坏延迟。
 
 纯控制/采样 ARM 汇编没有浮点或 64 位除法调用；速度诊断使用少量 64 位乘法，整个程序的启动时钟校验仍可能使用 64 位运算。除法调用点数量不是一次控制迭代的周期数。尚无 Cortex-M0+ 实测 WCET，运行时 deadline/漏采样检测只负责失败关断，不构成性能证明。
 
-`max_control_ticks` / `max_update_ticks` 为运行时辅助观察，未覆盖完整异常入口/退出。无 RTT 后不再有整条日志的 PRIMASK 区；线程只读原子状态，waker 的 clone/drop/wake 位于短临界区之外。
+`max_control_ticks` / `max_update_ticks` 为运行时辅助观察，未覆盖完整异常入口/退出。实时采样期间没有日志调用；首故障关闭桥臂、停止 ATIM 触发并禁用高频 IRQ 后，I/O 线程才打印冻结快照。waker 的 clone/drop/wake 位于短临界区之外。
 
 ## 寄存器审核依据与最小 HAL 变更
 
@@ -59,3 +59,9 @@
 没有烧录、门极示波器测量、真实电流采样、带电/空载/负载运行、温升、短路或独立过流保护验证；也没有调试器连线验证。没有证明 MCU halt/失时钟时功率能自动关断。
 
 本环境未安装 Clippy，因此 Clippy 没有运行；实际编译器 `-D warnings` 与格式检查已通过。完整上板前检查清单见 [07 README](../examples/l012-bldc/07-sensorless-foc/README.md)。
+
+## 按键前 3 号故障的定向修改
+
+手册 §25.4.1/25.5.2 确认 70+15 ADC 周期与 ENS=0 单次转换配置一致，未改动 128 tick 接收容差。ARM 汇编确认旧首样本路径即使未解锁也调用电流软件除法；现仅在解锁后做该换算，逐样本校准和全部运行保护保留。加入 entry/read、预期区间、采样序号、早/晚/多余/跨帧原因及前次处理结束计数，只在故障时复制完整诊断。尚未得到新的实板计数，不能据此宣称已确认或解决板上根因。
+
+两项新增外部主机测试检查原因分类和全部 4 个序号×9600 个计数值，证实接受集合与原 `accepts` 完全一致；连同既有控制、采样和 LED 回归共 27 项通过。外部验证脚本不进入源码包。

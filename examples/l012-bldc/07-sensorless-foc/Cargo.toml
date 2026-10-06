@@ -8,6 +8,8 @@ license = "MIT OR Apache-2.0"
 description = "Experimental single-shunt sensorless field-oriented control for the L012 BLDC board"
 
 [dependencies]
+defmt = { version = "=1.0.1" }
+defmt-rtt = { version = "=1.0.0", features = ["disable-blocking-mode"] }
 
 embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x"] }
 cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }

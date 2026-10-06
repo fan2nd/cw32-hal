@@ -52,6 +52,20 @@ impl Frame {
             && now >= self.sample[sample] + CONVERSION_TICKS
             && now <= self.sample[sample] + CONVERSION_TICKS + SAMPLE_IRQ_SLACK
     }
+    /// 对原时序保护分类，不改变接受区间；先判跨帧，再判样本序号和早/晚。
+    pub fn sample_fault_reason(&self, sample: usize, now: u16, reload_pending: bool) -> u32 {
+        if reload_pending {
+            1
+        } else if sample >= 2 {
+            2
+        } else if now < self.sample[sample] + CONVERSION_TICKS {
+            3
+        } else if !self.accepts(sample, now) {
+            4
+        } else {
+            0
+        }
+    }
     pub fn reconstruct(&self, dc_ma: [i32; 2]) -> [i32; 3] {
         let mut phase = [0; 3];
         phase[self.order[0]] = -dc_ma[0];

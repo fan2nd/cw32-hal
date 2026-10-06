@@ -1,6 +1,6 @@
 # 01 → 07：独立的 BLDC / FOC 例程
 
-新增 [`07-sensorless-foc`](07-sensorless-foc/README.md)：独立的单电阻无感 FOC，实际 10 mΩ 分流电阻，双硬件触发/电流重建/Id-Iq PI/观测器。普通构建按键启动，无额外确认开关，没有 RTT/defmt/UART 日志，尚未实板验证。以下原工程一致性、20 kHz 采样和六步流程说明仅适用于 01–06。
+新增 [`07-sensorless-foc`](07-sensorless-foc/README.md)：独立的单电阻无感 FOC，实际 10 mΩ 分流电阻，双硬件触发/电流重建/Id-Iq PI/观测器。普通构建按键启动，无额外确认开关，仅在启动前及故障安全停机后输出非阻塞 RTT 日志，尚未实板验证。以下原工程一致性、20 kHz 采样和六步流程说明仅适用于 01–06。
 
 输入是 `10 XUNLIANYING 260726 LAST.zip` 的 `BLDC CONTROL`：反电动势过零检测的六步换相，不是FOC。ADC、电机和故障处理按原工程恢复；UART、LED、按键的组织方式可以不同。逐项依据、原有边界和明确例外见[原工程一致性审查](../../docs/bldc-source-parity.md)。
 

@@ -131,6 +131,13 @@ impl SingleShuntPwm {
     pub fn start(&mut self) {
         pac::ATIM.cr1().modify(|v| v.set_cen(true));
     }
+    /// 关闭桥臂并停止计数/更新中断，终止 CH4/5 后续 ADC 触发；保留故障旗标。
+    /// 仅关 NVIC 不能停止 ADC 硬件触发，故障后输出日志前必须停止计数器。
+    pub fn stop(&mut self) {
+        self.disarm();
+        pac::ATIM.dier().write(|_| {});
+        pac::ATIM.cr1().modify(|v| v.set_cen(false));
+    }
     pub fn fault_pending(&self) -> bool {
         let f = pac::ATIM.isr().read();
         f.bif() || f.b2if() || f.sbif()

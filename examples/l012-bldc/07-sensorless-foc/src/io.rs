@@ -1,4 +1,4 @@
-//! 普通 Embassy 线程任务只处理按键消抖与 LED；本例没有 RTT/UART 日志。
+//! 普通 Embassy 线程任务处理按键、LED，并在停机后输出一次锁存故障。
 use crate::hardware::{MILLISECONDS, RUN_REQUEST};
 use core::{
     cell::RefCell,
@@ -71,6 +71,7 @@ pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, p
     loop {
         let before = previous;
         next_tick(&mut previous).await;
+        crate::hardware::report_fault();
         if previous.wrapping_sub(before) > 2 {
             held = 0;
             released = false;
