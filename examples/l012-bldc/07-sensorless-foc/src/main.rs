@@ -3,6 +3,7 @@
 
 use defmt_rtt as _;
 
+mod arithmetic;
 mod config;
 mod control;
 mod hardware;
@@ -46,6 +47,7 @@ async fn main(spawner: embassy_executor::Spawner) {
     spawner.spawn(
         hardware::motor_task(hardware::MotorResources {
             atim: p.ATIM,
+            eau: p.EAU,
             adc1: p.ADC1,
             adc2: p.ADC2,
             opa1: p.OPA1,

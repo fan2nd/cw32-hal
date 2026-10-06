@@ -1,5 +1,6 @@
 //! 单电阻硬件时序。P0 的 ATIM/ADC1 ISR 同级且不嵌套；控制计算不进入异步任务。
 use crate::{
+    arithmetic::Arithmetic,
     config::*,
     control::{Control, Fault, State},
     sampling::{self, Frame, Modulator},
@@ -7,6 +8,7 @@ use crate::{
 };
 use core::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 use embassy_cw32::{
+    eau::{Eau, Error as EauError},
     gpio::Port,
     interrupt::{
         self,
@@ -22,6 +24,7 @@ use embassy_cw32::{
 /// 字段用于独占保留单例，避免其他驱动复用电机引脚和外设。
 #[allow(dead_code)]
 pub struct MotorResources {
+    pub eau: Peri<'static, peripherals::EAU>,
     pub atim: Peri<'static, peripherals::ATIM>,
     pub adc1: Peri<'static, peripherals::ADC1>,
     pub adc2: Peri<'static, peripherals::ADC2>,
@@ -51,9 +54,80 @@ static INITIALIZED: AtomicBool = AtomicBool::new(false);
 pub static RUN_REQUEST: AtomicBool = AtomicBool::new(false);
 pub static MILLISECONDS: AtomicU32 = AtomicU32::new(0);
 // 全部实时状态只有 P0 中断访问；线程只读独立原子状态字。
-static mut MOTOR: Option<Motor> = None;
+static mut MOTOR: Option<Runtime> = None;
 static RUN_STATUS: AtomicU32 = AtomicU32::new(0);
 static FAULT_LOG_READY: AtomicBool = AtomicBool::new(false);
+
+// EAU 单例与实时状态共同保留；只有不嵌套的 ADC1 P0 路径借用它。
+struct Runtime {
+    motor: Motor,
+    eau: Eau<'static, peripherals::EAU>,
+}
+
+struct HardwareMath<'a> {
+    eau: &'a mut Eau<'static, peripherals::EAU>,
+    pwm: &'a mut SingleShuntPwm,
+    failed: bool,
+    error: u32,
+}
+impl HardwareMath<'_> {
+    // RM1.4 §11.3：除法 2–35 HCLK、开方 17 HCLK；64 次状态读取是有限
+    // 轮询预算，不是已实测 WCET。任何失败立即关桥/停触发，绝不软件重算。
+    #[inline(always)]
+    fn accept<T>(&mut self, result: Result<T, EauError>) -> Option<T> {
+        match result {
+            Ok(value) => Some(value),
+            Err(error) => {
+                self.error = match error {
+                    EauError::DivisionByZero => 1,
+                    EauError::SignedOverflow => 2,
+                    EauError::Busy => 3,
+                    EauError::Timeout => 4,
+                    EauError::ZeroPollBudget => 5,
+                };
+                self.pwm.disarm();
+                self.pwm.stop();
+                self.failed = true;
+                None
+            }
+        }
+    }
+}
+impl Arithmetic for HardwareMath<'_> {
+    #[inline(always)]
+    fn failed(&self) -> bool {
+        self.failed
+    }
+    #[inline(always)]
+    fn div(&mut self, n: i32, d: i32) -> i32 {
+        self.div_rem(n, d).0
+    }
+    #[inline(always)]
+    fn div_rem(&mut self, n: i32, d: i32) -> (i32, i32) {
+        if self.failed {
+            return (0, 0);
+        }
+        let result = self.eau.divide_signed(n, d, 64);
+        self.accept(result)
+            .map_or((0, 0), |r| (r.quotient, r.remainder))
+    }
+    #[inline(always)]
+    fn rem_unsigned(&mut self, n: u32, d: u32) -> u32 {
+        if self.failed {
+            return 0;
+        }
+        let result = self.eau.divide_unsigned(n, d, 64);
+        self.accept(result).map_or(0, |r| r.remainder)
+    }
+    #[inline(always)]
+    fn sqrt(&mut self, value: u32) -> u32 {
+        if self.failed {
+            return 0;
+        }
+        let result = self.eau.sqrt(value, 64);
+        self.accept(result).map_or(0, |r| r.root)
+    }
+}
 
 /// 首个故障的采样证据；reason：0=其他，1=跨 reload，2=多余样本，3=过早，4=过晚。
 #[repr(C)]
@@ -100,6 +174,8 @@ pub struct TimingTrace {
     pub limit: u16,
     pub samples: u16,
     pub reload_pending: bool,
+    pub elapsed_min: u16,
+    pub stage: u16,
 }
 impl TimingTrace {
     const fn new() -> Self {
@@ -112,6 +188,8 @@ impl TimingTrace {
             limit: 0,
             samples: 0,
             reload_pending: false,
+            elapsed_min: 0,
+            stage: 0,
         }
     }
 }
@@ -122,12 +200,15 @@ impl TimingTrace {
 pub struct Diagnostics {
     pub state: u32,
     pub fault: u32,
+    pub arithmetic_error: u32,
     pub bus_mv: i32,
     pub vdda_mv: i32,
     pub offset_adc: i32,
     pub raw_adc: [u16; 2],
     pub phase_ma: [i32; 3],
     pub max_control_ticks: u16,
+    pub stage_ticks: [u16; 5],
+    pub max_stage_ticks: [u16; 5],
     pub max_update_ticks: u16,
     pub armed: bool,
     pub frames: u32,
@@ -145,12 +226,15 @@ pub struct Diagnostics {
 pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
     state: 0,
     fault: 0,
+    arithmetic_error: 0,
     bus_mv: 0,
     vdda_mv: 0,
     offset_adc: 0,
     raw_adc: [0; 2],
     phase_ma: [0; 3],
     max_control_ticks: 0,
+    stage_ticks: [0; 5],
+    max_stage_ticks: [0; 5],
     max_update_ticks: 0,
     armed: false,
     frames: 0,
@@ -206,6 +290,7 @@ struct Motor {
     previous: Plan,
     previous_bus_mv: i32,
     fault_published: bool,
+    arithmetic_error: u32,
     staged: Plan,
     pending: Plan,
     pending_ready: bool,
@@ -226,6 +311,9 @@ struct Motor {
     raw: [u16; 2],
     phase_ma: [i32; 3],
     max_control_ticks: u16,
+    stage_ticks: [u16; 5],
+    max_stage_ticks: [u16; 5],
+    checkpoint: u16,
     max_update_ticks: u16,
     armed: bool,
     sample_trace: SampleTrace,
@@ -240,6 +328,7 @@ impl Motor {
             previous: Plan::off(),
             previous_bus_mv: 0,
             fault_published: false,
+            arithmetic_error: 0,
             staged: Plan::off(),
             pending: Plan::off(),
             pending_ready: true,
@@ -260,6 +349,9 @@ impl Motor {
             raw: [0; 2],
             phase_ma: [0; 3],
             max_control_ticks: 0,
+            stage_ticks: [0; 5],
+            max_stage_ticks: [0; 5],
+            checkpoint: 0,
             max_update_ticks: 0,
             armed: false,
             sample_trace: SampleTrace::new(),
@@ -286,9 +378,44 @@ impl Motor {
             limit,
             samples: self.samples as u16,
             reload_pending,
+            elapsed_min: if site == 5 {
+                0
+            } else {
+                elapsed_min(start, observed, reload_pending)
+            },
+            stage: self.timing_trace.stage,
         };
         self.trip(Fault::Timing, pwm);
     }
+    #[inline(always)]
+    fn check_arithmetic(&mut self, math: &mut HardwareMath<'_>) -> bool {
+        if math.failed {
+            self.arithmetic_error = math.error;
+            self.trip(Fault::Arithmetic, math.pwm);
+            false
+        } else {
+            true
+        }
+    }
+    #[inline(always)]
+    fn checkpoint_control(&mut self, pwm: &mut SingleShuntPwm, start: u16, stage: usize) -> bool {
+        let end = pwm.counter();
+        let reload = pwm.update_pending();
+        self.timing_trace.stage = stage as u16 + 1;
+        self.stage_ticks[stage] = elapsed_min(self.checkpoint, end, reload);
+        self.sample_trace.previous_irq_end = end;
+        if end >= sampling::CONTROL_DEADLINE || end < start || reload {
+            self.trip_timing(4, start, end, sampling::CONTROL_DEADLINE, reload, pwm);
+            return false;
+        }
+        self.max_stage_ticks[stage] = self.max_stage_ticks[stage].max(end - self.checkpoint);
+        self.checkpoint = end;
+        if stage == 4 {
+            self.max_control_ticks = self.max_control_ticks.max(end - start);
+        }
+        true
+    }
+
     fn trip(&mut self, fault: Fault, pwm: &mut SingleShuntPwm) {
         let first = !self.fault_published;
         if first {
@@ -313,9 +440,13 @@ impl Motor {
             FAULT_LOG_READY.store(true, Ordering::Release);
         }
     }
-    fn convert_current(&self, raw: u16) -> i32 {
-        (i32::from(raw) - self.offset) * self.vdda_mv * (1_000 / (SHUNT_MILLIOHM * CURRENT_GAIN))
-            / 4095
+    fn convert_current(&self, raw: u16, math: &mut impl Arithmetic) -> i32 {
+        math.div(
+            (i32::from(raw) - self.offset)
+                * self.vdda_mv
+                * (1_000 / (SHUNT_MILLIOHM * CURRENT_GAIN)),
+            4095,
+        )
     }
     fn current_over_limit(&self, raw: u16) -> bool {
         let numerator = (i32::from(raw) - self.offset)
@@ -365,7 +496,7 @@ impl Motor {
         }
         true
     }
-    unsafe fn update_bus(&mut self, pwm: &mut SingleShuntPwm) {
+    unsafe fn update_bus(&mut self, math: &mut HardwareMath<'_>) {
         let mut adc = unsafe { AdcScan::<peripherals::ADC2>::acquire() };
         if self.slow_pending {
             if let Some(raw) = adc.take_sequence::<2>() {
@@ -373,25 +504,31 @@ impl Motor {
                 self.slow_age = 0;
                 let reference = i32::from(raw[1]);
                 if reference == 0 || !(1000..=1500).contains(&self.reference_mv) {
-                    self.trip(Fault::Calibration, pwm);
+                    self.trip(Fault::Calibration, math.pwm);
                     return;
                 }
-                let vdda_mv = self.reference_mv * 4095 / reference;
+                let vdda_mv = math.div(self.reference_mv * 4095, reference);
+                if !self.check_arithmetic(math) {
+                    return;
+                }
                 if !(4500..=5500).contains(&vdda_mv) {
-                    self.trip(Fault::Calibration, pwm);
+                    self.trip(Fault::Calibration, math.pwm);
                     return;
                 }
                 self.vdda_mv = vdda_mv;
-                self.bus_mv = i32::from(raw[0]) * self.vdda_mv * 11 / 4095;
+                self.bus_mv = math.div(i32::from(raw[0]) * self.vdda_mv * 11, 4095);
+                if !self.check_arithmetic(math) {
+                    return;
+                }
                 if raw[0] >= 4063 {
-                    self.trip(Fault::OverVoltage, pwm);
+                    self.trip(Fault::OverVoltage, math.pwm);
                     return;
                 }
             }
         }
         self.slow_age = self.slow_age.saturating_add(1);
         if self.slow_age > SLOW_ADC_MAX_AGE {
-            self.trip(Fault::SampleTimeout, pwm);
+            self.trip(Fault::SampleTimeout, math.pwm);
             return;
         }
         if self.frames % SLOW_ADC_DIVIDER == 0 && !self.slow_pending {
@@ -407,12 +544,15 @@ fn publish(m: &Motor) {
     let value = Diagnostics {
         state: s.state as u32,
         fault: s.fault as u32,
+        arithmetic_error: m.arithmetic_error,
         bus_mv: m.bus_mv,
         vdda_mv: m.vdda_mv,
         offset_adc: m.offset,
         raw_adc: m.raw,
         phase_ma: m.phase_ma,
         max_control_ticks: m.max_control_ticks,
+        stage_ticks: m.stage_ticks,
+        max_stage_ticks: m.max_stage_ticks,
         max_update_ticks: m.max_update_ticks,
         armed: m.armed,
         frames: m.frames,
@@ -452,15 +592,19 @@ pub fn report_fault() {
     defmt::error!(
         "ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us"
     );
+    if d.arithmetic_error != 0 {
+        defmt::error!("EAU error={} (1=divide_zero 2=overflow 3=busy 4=timeout 5=poll_budget); PWM stopped before return", d.arithmetic_error);
+    }
     let t = d.timing_trace;
     defmt::error!(
-        "TIMING site={} start={} observed={} limit={} reload={} samples={} state_before={} armed_before={} max_update={} max_control={} ticks",
+        "TIMING site={} start={} observed={} limit={} reload={} samples={} state_before={} armed_before={} max_update={} max_control={} ticks elapsed_min={} stage={}",
         t.site, t.start, t.observed, t.limit, t.reload_pending, t.samples,
         t.state_before, t.armed_before,
-        d.max_update_ticks, d.max_control_ticks,
+        d.max_update_ticks, d.max_control_ticks, t.elapsed_min, t.stage,
     );
+    defmt::error!("CONTROL stages supply/reconstruct/interval/control/modulate: last={:?} max={:?} ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true", d.stage_ticks, d.max_stage_ticks);
     defmt::error!(
-        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_end 5=control_dt (6000..=18000); 96 ticks/us"
+        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (6000..=18000); 96 ticks/us"
     );
 }
 
@@ -513,7 +657,10 @@ pub async fn motor_task(resources: MotorResources) {
     }
     cortex_m::asm::delay(CPU_HZ / 1000);
     unsafe {
-        core::ptr::addr_of_mut!(MOTOR).write(Some(Motor::new(motor::factory_reference_mv())));
+        core::ptr::addr_of_mut!(MOTOR).write(Some(Runtime {
+            motor: Motor::new(motor::factory_reference_mv()),
+            eau: Eau::new(resources.eau),
+        }));
         for pin in GATES {
             MotorPin::acquire(pin).alternate_function(7);
         }
@@ -537,8 +684,20 @@ pub async fn motor_task(resources: MotorResources) {
         typelevel::BTIM1::enable();
     }
     // 单例归此任务永久保留；高频闭环由同步 ISR 运行，不建轮询执行器。
-    core::hint::black_box(&resources);
+    core::hint::black_box(&resources.atim);
     core::future::pending::<()>().await;
+}
+
+// UIF 不能计数多个回绕；发生 reload 时只报告至少一个周期的下界。
+fn elapsed_min(start: u16, end: u16, reload: bool) -> u16 {
+    if end < start {
+        PWM_TICKS - start + end
+    } else if reload {
+        // CNT 可能先在周期末读出，UIF 随后才置位；不能把旧 CNT 再加一周期。
+        PWM_TICKS - start
+    } else {
+        end - start
+    }
 }
 
 pub struct PwmHandler;
@@ -549,7 +708,8 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             if !pwm.take_update() {
                 return;
             }
-            let m = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
+            let runtime = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
+            let m = &mut runtime.motor;
             let start = pwm.counter();
             if start > sampling::UPDATE_DEADLINE {
                 m.trip_timing(
@@ -649,7 +809,8 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             };
             // 仍以 RESULT0 读取/确认之后的时间判定，不用更早的 entry 放宽保护。
             let start = pwm.counter();
-            let m = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
+            let runtime = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
+            let m = &mut runtime.motor;
             let index = m.samples;
             let reason = m
                 .active
@@ -697,25 +858,54 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     .max(end.wrapping_sub(irq_entry));
                 return;
             }
+            m.checkpoint = start;
+            m.stage_ticks = [0; 5];
+            let mut math = HardwareMath {
+                eau: &mut runtime.eau,
+                pwm: &mut pwm,
+                failed: false,
+                error: 0,
+            };
             // 两个样本共用采样时的 VDDA；必须先换算，再允许 ADC2 更新比例。
             m.dc_ma = if m.armed {
-                [m.convert_current(m.raw[0]), m.convert_current(m.raw[1])]
+                [
+                    m.convert_current(m.raw[0], &mut math),
+                    m.convert_current(m.raw[1], &mut math),
+                ]
             } else {
                 [0; 2]
             };
             // 慢速 ADC2 的除法放在第二样本后的控制时隙，不能占用 reload
             // 后 700 tick 的五路 CCR 预载/解锁预算。仍在本帧控制截止前检查。
-            m.update_bus(&mut pwm);
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
+            m.update_bus(&mut math);
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
             if m.control.state() == State::Fault {
                 return;
             }
+            if !m.checkpoint_control(math.pwm, start, 0) {
+                return;
+            }
             m.phase_ma = if m.active.mode == Mode::Foc {
-                m.active
-                    .frame
-                    .reconstruct_timed(m.dc_ma, m.bus_mv, m.control.estimated_emf_mv())
+                m.active.frame.reconstruct_timed(
+                    m.dc_ma,
+                    m.bus_mv,
+                    m.control.estimated_emf_mv(),
+                    &mut math,
+                )
             } else {
                 [0; 3]
             };
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
+            if !m.checkpoint_control(math.pwm, start, 1) {
+                return;
+            }
             let (applied, interval_ticks) = m.active.frame.interval_voltage(
                 &m.previous.frame,
                 if m.previous.mode == Mode::Foc {
@@ -730,14 +920,29 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 },
                 m.previous_bus_mv,
                 m.bus_mv,
+                &mut math,
             );
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
+            if !m.checkpoint_control(math.pwm, start, 2) {
+                return;
+            }
             // 本帧已消费 previous，提前保留供下帧使用；ATIM 不再复制第三份 Plan。
             // 同级 ISR 不嵌套，漏采样时 ATIM 会先关断并返回，绝不晋升半成品。
             m.previous = m.active;
             m.previous_bus_mv = m.bus_mv;
-            let requested =
-                m.control
-                    .on_frame_timed(m.phase_ma, applied, m.bus_mv, true, interval_ticks);
+            let requested = m.control.on_frame_timed(
+                m.phase_ma,
+                applied,
+                m.bus_mv,
+                true,
+                interval_ticks,
+                &mut math,
+            );
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
             if m.control.state() == State::Fault {
                 if m.control.fault() == Fault::Timing {
                     m.trip_timing(
@@ -745,22 +950,28 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                         0,
                         interval_ticks,
                         PWM_TICKS * 3 / 2,
-                        pwm.update_pending(),
-                        &mut pwm,
+                        math.pwm.update_pending(),
+                        math.pwm,
                     );
                 } else {
-                    m.trip(m.control.fault(), &mut pwm);
+                    m.trip(m.control.fault(), math.pwm);
                 }
+                return;
+            }
+            if !m.checkpoint_control(math.pwm, start, 3) {
                 return;
             }
             let frame = if matches!(
                 m.control.state(),
                 State::Align | State::OpenLoop | State::Blend | State::ClosedLoop
             ) {
-                match m.modulator.plan(requested, m.bus_mv) {
+                match m.modulator.plan(requested, m.bus_mv, &mut math) {
                     Some(f) => f,
                     None => {
-                        m.trip(Fault::SampleInvalid, &mut pwm);
+                        if !m.check_arithmetic(&mut math) {
+                            return;
+                        }
+                        m.trip(Fault::SampleInvalid, math.pwm);
                         return;
                     }
                 }
@@ -768,26 +979,15 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 m.modulator.reset();
                 Frame::initial()
             };
+            if !m.check_arithmetic(&mut math) {
+                return;
+            }
             m.pending = Plan::for_state(frame, m.control.state());
             m.pending_ready = true;
             if m.frames % DIAGNOSTIC_DIVIDER == 0 && !m.fault_published {
                 publish(m);
             }
-            let end = pwm.counter();
-            m.sample_trace.previous_irq_end = end;
-            m.max_control_ticks = m.max_control_ticks.max(end.wrapping_sub(start));
-            let reload_pending = pwm.update_pending();
-            if end >= sampling::CONTROL_DEADLINE || end < start || reload_pending {
-                m.trip_timing(
-                    4,
-                    start,
-                    end,
-                    sampling::CONTROL_DEADLINE,
-                    reload_pending,
-                    &mut pwm,
-                );
-                return;
-            }
+            m.checkpoint_control(math.pwm, start, 4);
         }
     }
 }

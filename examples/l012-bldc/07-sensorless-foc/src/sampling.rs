@@ -1,5 +1,6 @@
 //! 单电阻采样重建与可测量 PWM。时间单位为 96 MHz ATIM 计数。
 //! 边沿对齐 PWM1：两桥上管导通时 Idc=-I首降相，一桥上管时 Idc=I末降相。
+use crate::arithmetic::Arithmetic;
 use crate::config::{CPU_HZ, MODEL_PHASE_L_UH, MODEL_PHASE_R_MILLIOHM, PWM_TICKS};
 
 pub const DEAD_TICKS: u16 = 96; // 外加 1 us；不能代替示波器测量驱动传播与 MOS 管关断。
@@ -78,7 +79,13 @@ impl Frame {
     }
     /// 将首降相从第一个保持时刻预测到第二个保持时刻，再利用 KCL。
     /// 使用已配置 R/L 和上一轮反电势估计；错误参数/死区/管压降仍会产生误差。
-    pub fn reconstruct_timed(&self, dc_ma: [i32; 2], bus_mv: i32, emf_ab_mv: [i32; 2]) -> [i32; 3] {
+    pub fn reconstruct_timed(
+        &self,
+        dc_ma: [i32; 2],
+        bus_mv: i32,
+        emf_ab_mv: [i32; 2],
+        math: &mut impl Arithmetic,
+    ) -> [i32; 3] {
         let mut phase = self.reconstruct(dc_ma);
         let start = i32::from(self.hold_tick(0));
         let end = i32::from(self.hold_tick(1));
@@ -86,13 +93,15 @@ impl Frame {
         let high_ticks = self.duty.map(|d| (i32::from(d) - start).clamp(0, dt));
         let first = self.order[0];
         let sum = high_ticks.iter().sum::<i32>();
-        let volt_ticks = (3 * high_ticks[first] - sum) * bus_mv / 3;
+        let volt_ticks = math.div((3 * high_ticks[first] - sum) * bus_mv, 3);
         let [ea, eb] = emf_ab_mv;
         let e_b = (-ea + eb + ((eb * 23_988) >> 15)) / 2;
         let emf = [ea, e_b, -ea - e_b][first];
-        let resistance_mv = phase[first] * MODEL_PHASE_R_MILLIOHM / 1_000;
-        let delta = (volt_ticks - (resistance_mv + emf) * dt)
-            / ((CPU_HZ / 1_000_000) as i32 * MODEL_PHASE_L_UH);
+        let resistance_mv = math.div(phase[first] * MODEL_PHASE_R_MILLIOHM, 1_000);
+        let delta = math.div(
+            volt_ticks - (resistance_mv + emf) * dt,
+            (CPU_HZ / 1_000_000) as i32 * MODEL_PHASE_L_UH,
+        );
         phase[first] += delta;
         phase[self.order[1]] = -phase[first] - phase[self.order[2]];
         phase
@@ -106,6 +115,7 @@ impl Frame {
         duty: [u16; 3],
         previous_bus_mv: i32,
         bus_mv: i32,
+        math: &mut impl Arithmetic,
     ) -> ([i32; 2], u16) {
         let old_t = previous.hold_tick(1);
         let now_t = self.hold_tick(1);
@@ -120,8 +130,8 @@ impl Frame {
         let [a, b, c] = volt_ticks;
         (
             [
-                (2 * a - b - c) / (3 * i32::from(dt)),
-                (((b - c) / i32::from(dt)) * 18_919) >> 15,
+                math.div(2 * a - b - c, 3 * i32::from(dt)),
+                (math.div(b - c, i32::from(dt)) * 18_919) >> 15,
             ],
             dt,
         )
@@ -142,7 +152,12 @@ impl Modulator {
     pub fn reset(&mut self) {
         self.error_ticks = [0; 3];
     }
-    pub fn plan(&mut self, voltage_mv: [i32; 2], bus_mv: i32) -> Option<Frame> {
+    pub fn plan(
+        &mut self,
+        voltage_mv: [i32; 2],
+        bus_mv: i32,
+        math: &mut impl Arithmetic,
+    ) -> Option<Frame> {
         if !(1_000..=55_000).contains(&bus_mv) {
             return None;
         }
@@ -154,7 +169,7 @@ impl Modulator {
         let phase = [alpha, b, -alpha - b];
         let mut demand = [0; 3];
         for i in 0..3 {
-            demand[i] = phase[i] * i32::from(PWM_TICKS) / bus_mv + self.error_ticks[i];
+            demand[i] = math.div(phase[i] * i32::from(PWM_TICKS), bus_mv) + self.error_ticks[i];
         }
         let original = demand;
         let span = demand.iter().max().unwrap() - demand.iter().min().unwrap();
@@ -162,7 +177,7 @@ impl Modulator {
         let saturated = span > available;
         if saturated {
             for x in &mut demand {
-                *x = *x * available / span;
+                *x = math.div(*x * available, span);
             }
         }
         let mut order = [0, 1, 2];
@@ -195,7 +210,7 @@ impl Modulator {
         if !frame.valid() {
             return None;
         }
-        let mean = duty.iter().map(|x| i32::from(*x)).sum::<i32>() / 3;
+        let mean = math.div(duty.iter().map(|x| i32::from(*x)).sum::<i32>(), 3);
         for i in 0..3 {
             self.error_ticks[i] = if saturated {
                 0

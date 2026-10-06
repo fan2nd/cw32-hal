@@ -5,7 +5,7 @@
 //! R/L 电压模型假定两次电流为同一时刻的相电流；错位采样及 PWM 纹波是误差源。
 //! CCR 重建不包含死区、管压降或 ADC 延迟误差，观测器不能代替实板标定。
 
-use crate::config::*;
+use crate::{arithmetic::Arithmetic, config::*};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[repr(u8)]
@@ -37,6 +37,7 @@ pub enum Fault {
     Overspeed,
     Driver,
     Timing,
+    Arithmetic,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -199,6 +200,7 @@ impl Control {
         bus_mv: i32,
         sample_valid: bool,
         dt_ticks: u16,
+        math: &mut impl Arithmetic,
     ) -> [i32; 2] {
         // 必须先复位再消费任何控制输入；启动时首个物理帧仍是 Off，
         // 新 Bootstrap 计划仅在本次计算之后产生，下一次真实 reload 才能预载。
@@ -237,7 +239,7 @@ impl Control {
             self.trip(fault);
             return [0; 2];
         }
-        let current = clarke(phase_ma);
+        let current = clarke(phase_ma, math);
         self.age = self.age.wrapping_add(1);
         if self.state == State::Bootstrap {
             if self.age < BOOTSTRAP_FRAMES {
@@ -253,7 +255,13 @@ impl Control {
             self.state,
             State::OpenLoop | State::Blend | State::ClosedLoop
         ) {
-            self.observer.update(current, actual_voltage_mv, dt_ticks);
+            self.observer
+                .update(current, actual_voltage_mv, dt_ticks, math);
+        }
+
+        if math.failed() {
+            self.trip(Fault::Arithmetic);
+            return [0; 2];
         }
 
         // 开环 I/F 使用旋转 d 轴电流；轻载转子跟随此轴，而不是相差约 90° 的 q 轴。
@@ -266,10 +274,17 @@ impl Control {
             State::OpenLoop => {
                 let ramp = self.age.min(OPEN_RAMP_FRAMES) as i32;
                 let hz = OPEN_START_MILLIHZ
-                    + (OPEN_END_MILLIHZ - OPEN_START_MILLIHZ) * ramp / OPEN_RAMP_FRAMES as i32;
-                self.open_phase = self
-                    .open_phase
-                    .wrapping_add(scale_dt(speed_step(hz), dt_ticks) as u32);
+                    + math.div(
+                        (OPEN_END_MILLIHZ - OPEN_START_MILLIHZ) * ramp,
+                        OPEN_RAMP_FRAMES as i32,
+                    );
+                self.open_phase =
+                    self.open_phase
+                        .wrapping_add(scale_dt(speed_step(hz, math), dt_ticks, math) as u32);
+                if math.failed() {
+                    self.trip(Fault::Arithmetic);
+                    return [0; 2];
+                }
                 let angle = (self.open_phase >> 16) as u16;
                 let speed_error = (speed_millihz(self.observer.speed) - hz).abs();
                 let good = self.observer.qualified()
@@ -319,7 +334,7 @@ impl Control {
                     return [0; 2];
                 }
                 // Blend 立即接入限流速度环，不能在半秒过渡中固定注入满启动转矩。
-                if self.age % SPEED_LOOP_DIVIDER == 0 {
+                if math.rem_unsigned(self.age, SPEED_LOOP_DIVIDER) == 0 {
                     self.speed_reference = slew(
                         self.speed_reference,
                         RUN_TARGET_MILLIHZ,
@@ -327,14 +342,18 @@ impl Control {
                     );
                     self.iq_reference =
                         self.speed_pi
-                            .scalar(self.speed_reference - speed, 0, RUN_IQ_MAX_MA);
+                            .scalar(self.speed_reference - speed, 0, RUN_IQ_MAX_MA, math);
                 }
                 if self.state == State::Blend {
                     let remaining = BLEND_FRAMES.saturating_sub(self.age);
-                    let offset = self.blend_offset * remaining as i32 / BLEND_FRAMES as i32;
+                    let offset =
+                        math.div(self.blend_offset * remaining as i32, BLEND_FRAMES as i32);
                     let angle = self.observer.angle().wrapping_add(offset as u16);
                     let observer_target = [
-                        self.blend_d_reference * remaining as i32 / BLEND_FRAMES as i32,
+                        math.div(
+                            self.blend_d_reference * remaining as i32,
+                            BLEND_FRAMES as i32,
+                        ),
                         self.iq_reference,
                     ];
                     let (sin, cos) = sin_cos(offset as u16);
@@ -363,9 +382,9 @@ impl Control {
             self.snapshot.target_dq_ma[1] - dq[1],
         ];
         let limit = bus_mv * VOLTAGE_LIMIT_Q15 >> 15;
-        let (vd, id) = self.d_pi.propose(errors[0], -limit, limit, dt_ticks);
-        let (vq, iq) = self.q_pi.propose(errors[1], -limit, limit, dt_ticks);
-        let bounded = limit_vector([vd, vq], limit);
+        let (vd, id) = self.d_pi.propose(errors[0], -limit, limit, dt_ticks, math);
+        let (vq, iq) = self.q_pi.propose(errors[1], -limit, limit, dt_ticks, math);
+        let bounded = limit_vector([vd, vq], limit, math);
         self.d_pi.commit(errors[0], vd, bounded[0], id);
         self.q_pi.commit(errors[1], vq, bounded[1], iq);
         self.snapshot.voltage_dq_mv = bounded;
@@ -417,8 +436,18 @@ impl Pi {
         }
     }
 
-    fn propose(&self, error: i32, low: i32, high: i32, dt_ticks: u16) -> (i32, i32) {
-        let ki = (self.ki * i32::from(dt_ticks) + i32::from(PWM_TICKS) / 2) / i32::from(PWM_TICKS);
+    fn propose(
+        &self,
+        error: i32,
+        low: i32,
+        high: i32,
+        dt_ticks: u16,
+        math: &mut impl Arithmetic,
+    ) -> (i32, i32) {
+        let ki = math.div(
+            self.ki * i32::from(dt_ticks) + i32::from(PWM_TICKS) / 2,
+            i32::from(PWM_TICKS),
+        );
         let integral = self
             .integral
             .saturating_add(error * ki)
@@ -433,8 +462,8 @@ impl Pi {
         }
     }
 
-    fn scalar(&mut self, error: i32, low: i32, high: i32) -> i32 {
-        let (raw, integral) = self.propose(error, low, high, PWM_TICKS);
+    fn scalar(&mut self, error: i32, low: i32, high: i32, math: &mut impl Arithmetic) -> i32 {
+        let (raw, integral) = self.propose(error, low, high, PWM_TICKS, math);
         let applied = raw.clamp(low, high);
         self.commit(error, raw, applied, integral);
         applied
@@ -471,15 +500,22 @@ impl Observer {
         self.previous_current = current;
     }
 
-    fn update(&mut self, current: [i32; 2], applied: [i32; 2], dt_ticks: u16) {
+    fn update(
+        &mut self,
+        current: [i32; 2],
+        applied: [i32; 2],
+        dt_ticks: u16,
+        math: &mut impl Arithmetic,
+    ) {
         for axis in 0..2 {
             let average = (current[axis] + self.previous_current[axis]) / 2;
-            let resistive = MODEL_PHASE_R_MILLIOHM * average / 1000;
+            let resistive = math.div(MODEL_PHASE_R_MILLIOHM * average, 1000);
             // μH·ΔmA·96 / ATIMticks = mV；商/余数分解避免 M0+ 的 64 位除法。
             let inductive = mul_div(
                 MODEL_PHASE_L_UH * (current[axis] - self.previous_current[axis]),
                 (CPU_HZ / 1_000_000) as i32,
                 i32::from(dt_ticks),
+                math,
             );
             let emf = (applied[axis] - resistive - inductive).clamp(-BUS_MAX_MV, BUS_MAX_MV);
             self.emf_q8[axis] +=
@@ -488,35 +524,38 @@ impl Observer {
         self.previous_current = current;
         let emf = [self.emf_q8[0] >> 8, self.emf_q8[1] >> 8];
         // 先缩小一位使最大配置下平方和仍在 u32 范围内。
-        self.magnitude = (isqrt(((emf[0] / 2).pow(2) + (emf[1] / 2).pow(2)) as u32) * 2) as i32;
-        let increment = scale_dt(self.speed, dt_ticks);
+        self.magnitude = (math.sqrt(((emf[0] / 2).pow(2) + (emf[1] / 2).pow(2)) as u32) * 2) as i32;
+        let increment = scale_dt(self.speed, dt_ticks, math);
         if self.magnitude < BEMF_MIN_MV / 4 {
             self.phase = self.phase.wrapping_add(increment as u32);
             self.error = 32767;
-            self.correct_angle(dt_ticks);
+            self.correct_angle(dt_ticks, math);
             return;
         }
         // 正转时 eα=-E sinθ，eβ=E cosθ；仅测得的反电势可修正 PLL。
-        let measured = atan2_angle(-emf[0], emf[1]);
+        let measured = atan2_angle(-emf[0], emf[1], math);
         if !self.tracking {
             self.phase = (measured as u32) << 16;
             self.tracking = true;
         }
         let predicted = self.phase.wrapping_add(increment as u32);
         self.error = angle_error(measured, (predicted >> 16) as u16);
-        self.speed = (self.speed + scale_dt(self.error * PLL_KI_Q16, dt_ticks))
-            .clamp(-speed_step(PLL_MAX_MILLIHZ), speed_step(PLL_MAX_MILLIHZ));
+        self.speed = (self.speed + scale_dt(self.error * PLL_KI_Q16, dt_ticks, math)).clamp(
+            -const { speed_step_const(PLL_MAX_MILLIHZ) },
+            const { speed_step_const(PLL_MAX_MILLIHZ) },
+        );
         self.phase = predicted.wrapping_add((self.error * PLL_KP_Q16) as u32);
-        self.correct_angle(dt_ticks);
+        self.correct_angle(dt_ticks, math);
     }
 
-    fn correct_angle(&mut self, dt_ticks: u16) {
+    fn correct_angle(&mut self, dt_ticks: u16, math: &mut impl Arithmetic) {
         // 滤波低频群延迟 + 当前差分区间的半个 dt；校正值只计算一次。
         let advance = mul_div(
             self.speed,
             (1 << BEMF_FILTER_SHIFT) - BEMF_FILTER_NUMERATOR,
             BEMF_FILTER_NUMERATOR,
-        ) + scale_dt(self.speed, dt_ticks) / 2;
+            math,
+        ) + scale_dt(self.speed, dt_ticks, math) / 2;
         self.corrected_angle = (self.phase.wrapping_add(advance as u32) >> 16) as u16;
     }
 
@@ -529,12 +568,15 @@ impl Observer {
             && self.magnitude >= BEMF_MIN_MV
             && self.error.abs() <= PLL_ERROR_LIMIT
             && self.speed > 0
-            && self.speed < speed_step(OVERSPEED_MILLIHZ)
+            && self.speed < const { speed_step_const(OVERSPEED_MILLIHZ) }
     }
 }
 
-fn clarke(i: [i32; 3]) -> [i32; 2] {
-    [(2 * i[0] - i[1] - i[2]) / 3, (i[1] - i[2]) * 18919 >> 15]
+fn clarke(i: [i32; 3], math: &mut impl Arithmetic) -> [i32; 2] {
+    [
+        math.div(2 * i[0] - i[1] - i[2], 3),
+        (i[1] - i[2]) * 18919 >> 15,
+    ]
 }
 
 fn park(v: [i32; 2], sin: i32, cos: i32) -> [i32; 2] {
@@ -551,16 +593,22 @@ fn inverse_park(v: [i32; 2], sin: i32, cos: i32) -> [i32; 2] {
     ]
 }
 
-fn limit_vector(mut v: [i32; 2], limit: i32) -> [i32; 2] {
+fn limit_vector(mut v: [i32; 2], limit: i32, math: &mut impl Arithmetic) -> [i32; 2] {
     let maximum = v[0].abs().max(v[1].abs());
     if maximum > limit {
         // 先限制分量，避免平方溢出；仍按同一个系数缩放整个矢量。
-        v = [v[0] * limit / maximum, v[1] * limit / maximum];
+        v = [
+            math.div(v[0] * limit, maximum),
+            math.div(v[1] * limit, maximum),
+        ];
     }
     let squared = (v[0] * v[0] + v[1] * v[1]) as u32;
     if squared > (limit * limit) as u32 {
-        let magnitude = isqrt(squared) as i32 + 1; // 向上取整，限幅不能超圆。
-        v = [v[0] * limit / magnitude, v[1] * limit / magnitude];
+        let magnitude = math.sqrt(squared) as i32 + 1; // 向上取整，限幅不能超圆。
+        v = [
+            math.div(v[0] * limit, magnitude),
+            math.div(v[1] * limit, magnitude),
+        ];
     }
     v
 }
@@ -574,16 +622,17 @@ fn slew(value: i32, target: i32, amount: i32) -> i32 {
 }
 
 // 定点整数运算；没有浮点或运行时三角函数。
-fn scale_dt(value: i32, dt_ticks: u16) -> i32 {
-    mul_div(value, i32::from(dt_ticks), i32::from(PWM_TICKS))
+fn scale_dt(value: i32, dt_ticks: u16, math: &mut impl Arithmetic) -> i32 {
+    mul_div(value, i32::from(dt_ticks), i32::from(PWM_TICKS), math)
 }
 
 // divisor > 0；有效参数保证两个小乘积不溢出，正负输入均等于向零截断。
-fn mul_div(value: i32, multiplier: i32, divisor: i32) -> i32 {
-    (value / divisor) * multiplier + (value % divisor) * multiplier / divisor
+fn mul_div(value: i32, multiplier: i32, divisor: i32, math: &mut impl Arithmetic) -> i32 {
+    let (quotient, remainder) = math.div_rem(value, divisor);
+    quotient * multiplier + math.div(remainder * multiplier, divisor)
 }
 
-fn speed_step(millihz: i32) -> i32 {
+const fn speed_step_const(millihz: i32) -> i32 {
     // 8 kHz：2^32/8e6 = 536 + 13608/15625；|mHz| <= 100000 时
     // 最大分数乘积 1,360,800,000，避免 M0+ 的 64 位除法并保持精确截断。
     let magnitude = millihz.unsigned_abs();
@@ -599,22 +648,14 @@ fn speed_millihz(step: i32) -> i32 {
     ((step as i64 * (CONTROL_HZ as i64 * 1000)) >> 32) as i32
 }
 
-fn isqrt(mut n: u32) -> u32 {
-    let mut root = 0;
-    let mut bit = 1 << 30;
-    while bit > n {
-        bit >>= 2;
+fn speed_step(millihz: i32, math: &mut impl Arithmetic) -> i32 {
+    let magnitude = millihz.abs();
+    let step = magnitude * 536 + math.div(magnitude * 13_608, 15_625);
+    if millihz < 0 {
+        -step
+    } else {
+        step
     }
-    while bit != 0 {
-        if n >= root + bit {
-            n -= root + bit;
-            root = (root >> 1) + bit;
-        } else {
-            root >>= 1;
-        }
-        bit >>= 2;
-    }
-    root
 }
 
 fn sin_cos(angle: u16) -> (i32, i32) {
@@ -641,14 +682,14 @@ fn sin_q15(angle: u16) -> i32 {
     }
 }
 
-fn atan2_angle(y: i32, x: i32) -> u16 {
+fn atan2_angle(y: i32, x: i32, math: &mut impl Arithmetic) -> u16 {
     let ax = x.abs();
     let ay = y.abs();
     let maximum = ax.max(ay);
     if maximum == 0 {
         return 0;
     }
-    let ratio = ax.min(ay) * 32768 / maximum;
+    let ratio = math.div(ax.min(ay) * 32768, maximum);
     let index = (ratio >> 8) as usize;
     let mut angle = ATAN_OCTANT[index] as i32;
     if index < 128 {

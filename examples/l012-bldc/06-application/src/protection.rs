@@ -6,6 +6,10 @@
 //! C 语言没有定义对应的整数结果；仅在这些算术边界使用显式的
 //! InvalidCalibration 防护。不会仅因校准值为 0 或 0xffff
 //! 就拒绝它们。此防护是已记录的差异，不声称与原源码一致。
+//!
+//! 实板分流电阻为 10 mΩ，OPA 差分增益为 10，灵敏度 100 mV/A。
+//! 原 C 的毫伏值乘 10 已对应此硬件；不是按图纸旧标注的 2 mΩ 换算。
+//! ADC2 使用 PB2 上的 RC 滤波母线电流，不是 ADC1 的瞬时值或相电流 RMS。
 
 #[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
@@ -34,7 +38,7 @@ pub struct Adc2Sample {
 pub struct Measurements {
     /// CanshuV：单位为 0.1 V。
     pub bus_decivolts: u32,
-    /// CanshuI：单位为 mA。
+    /// CanshuI：ADC2 滤波母线电流，单位为 mA，负向差值按原 C 置零。
     pub current_ma: u32,
 }
 
@@ -54,6 +58,8 @@ impl Protection {
     pub const fn new(calibration_mv: u16) -> Self {
         Self {
             calibration_mv,
+            // 保留原 C 初值；控制器在首次测量和启动前用 ADC2 实测零点覆盖。
+            // 不把 OPA 理想中点（VDDA=5 V 时约 2048 码）当成实测校准。
             current_offset: 884,
             measurements: Measurements {
                 bus_decivolts: 0,
@@ -100,7 +106,9 @@ impl Protection {
             self.measurements.current_ma = 0;
         } else {
             t -= f32::from(self.current_offset);
+            // 内部参考校准值的单位为 mV，先将去零点后的 ADC2 原码换算为 mV。
             t = calibration * t / reference;
+            // 10 mΩ × 10 倍 = 100 mV/A，即 10 mA/mV；保留原 C 的求值顺序。
             t *= 10.0;
             let Some(current) = c_unsigned_int(t) else {
                 return Err(self.latch(Fault::InvalidCalibration));

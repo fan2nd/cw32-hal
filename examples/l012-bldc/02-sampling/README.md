@@ -20,6 +20,8 @@ cargo build --release
 
 本级使用HAL独立 `motor` 操作API与真正的DMA通道驱动，不再直接操作PAC或启用 `unstable-pac`。板级参数、算法和ISR仍留在本crate；接口排他义务与顺序保证见[电机API](../../../docs/motor-api.md)。
 
+本板实际电流采样电阻为 **10 mΩ**，OPA 差分增益为 10，灵敏度为 100 mV/A。ADC1/PB0 读取瞬时母线电流，ADC2/PB2 读取同一信号经 RC 滤波后的母线电流；本例只记录原码，没有安培换算或软件过流门限，因此不更改 ADC 原码。零点和后续换算依据见[板级电流说明](../README.md#电流采样与10-mω实板校准)。
+
 ## defmt RTT 日志
 
 已接入非阻塞 `defmt-rtt`，启动时输出例程和 HAL 记录的标称时钟。每秒输出实际 ADC1 四槽、ADC2 五槽原始值，以及 ADC1 序列数和 ADC2 已观察到的 EOS 次数。ADC2 是原有实时 DMA 视图，可能包含尚未整组刷新完的值；EOS 次数不等于实际触发次数。
