@@ -1,0 +1,20 @@
+[package]
+name = "cw32-bldc-07-sensorless-foc"
+version = "0.24.0"
+edition = "2021"
+rust-version = "1.99"
+publish = false
+license = "MIT OR Apache-2.0"
+description = "Experimental single-shunt sensorless field-oriented control for the L012 BLDC board"
+
+[dependencies]
+
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt", "cw32l012c8", "memory-x"] }
+cortex-m = { version = "=0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = { version = "=0.7.5" }
+critical-section = { version = "=1.2.0" }
+embassy-executor = { version = "=0.10.0", features = ["platform-cortex-m", "executor-thread"] }
+
+[[bin]]
+name = "bldc_07_sensorless_foc"
+path = "src/main.rs"

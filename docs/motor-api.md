@@ -219,3 +219,21 @@ DMA guard 常驻整个程序；它不与 ADC/定时器 ISR 分享可变 Rust 句
 [原工程一致性审查](bldc-source-parity.md)。
 
 以上不包含真实电气波形、DMA 总线行为、最坏 IRQ 延迟或上板验证。
+
+
+## 07 单电阻 FOC 的独立扩展
+
+`SingleShuntPwm` 独立于原 `PwmBridge`，不改变六步 API 语义。它配置 L012
+CH1–3 高有效互补 PWM1 与内部 CH4/5 PWM2，预载 CCR1–5，MMS2=26 双上升沿
+TRGO2。CCR5/6 使用独立 `ccr_group` 地址，清除组合位。初始化只在停止状态 UG，
+运行时 `stage` 由调用者在已验证 reload 后时隙提交整批预载，并维护 active/staged/pending。
+
+`arm` 仍需显式 unsafe 授权、检查 break；`disarm` 保留 OSSI/OSSR 与 CCxE/NE，
+以 MOE=0/OIS=0 强制六路低电平。没有自动重启，也不凭空接出硬件 BK 保护。
+更新 IRQ 使用实际 `Binding<typelevel::ATIM, H>`。
+
+ADC 新增 `trigger_from_atim_trgo2`、离散 `configure_watchdog`
+和 `take_single`。后者只确认 EOC/EOS，ICR=0x1c 保留 AWDL/AWDH 和 RFU bit2，
+`clear_events` 也只将清除字从 0 修正为 0x04，仍清全部实际事件，保留 RFU bit2；
+旧 `take_sequence` 的顺序与事件语义不变。单槽 ADC 没有 OVR，调用者必须验证样本
+的帧、次序和时间。详见 [07 时序与限制](../examples/l012-bldc/07-sensorless-foc/README.md)。

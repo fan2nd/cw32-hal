@@ -33,6 +33,10 @@ pub use adc::*;
 mod pwm;
 #[cfg(atim_l012)]
 pub use pwm::*;
+#[cfg(atim_l012)]
+mod single_shunt;
+#[cfg(atim_l012)]
+pub use single_shunt::*;
 #[cfg(btim_l012)]
 mod timer;
 #[cfg(btim_l012)]

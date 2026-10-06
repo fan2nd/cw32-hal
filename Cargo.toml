@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["cw32-gen", "cw32-metapac", "embassy-cw32", "xtask", "examples/l012-bldc/01-gpio", "examples/l012-bldc/02-sampling", "examples/l012-bldc/03-six-step", "examples/l012-bldc/04-sensorless", "examples/l012-bldc/05-startup", "examples/l012-bldc/06-application"]
+members = ["cw32-gen", "cw32-metapac", "embassy-cw32", "xtask", "examples/l012-bldc/01-gpio", "examples/l012-bldc/02-sampling", "examples/l012-bldc/03-six-step", "examples/l012-bldc/04-sensorless", "examples/l012-bldc/05-startup", "examples/l012-bldc/06-application", "examples/l012-bldc/07-sensorless-foc"]
 
 [profile.release]
 codegen-units = 1

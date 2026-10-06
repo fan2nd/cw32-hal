@@ -1,0 +1,88 @@
+//! 普通 Embassy 线程任务只处理按键消抖与 LED；本例没有 RTT/UART 日志。
+use crate::hardware::{MILLISECONDS, RUN_REQUEST};
+use core::{
+    cell::RefCell,
+    sync::atomic::Ordering,
+    task::{Poll, Waker},
+};
+use critical_section::Mutex;
+use embassy_cw32::{
+    gpio::{Input, Level, Output, Pull},
+    peripherals, Peri,
+};
+static WAKER: Mutex<RefCell<Option<Waker>>> = Mutex::new(RefCell::new(None));
+
+pub fn wake_tasks() {
+    let wake = critical_section::with(|cs| WAKER.borrow(cs).borrow_mut().take());
+    if let Some(w) = wake {
+        w.wake();
+    }
+}
+async fn next_tick(last: &mut u32) {
+    core::future::poll_fn(|cx| {
+        // clone/drop 放在临界区外；屏蔽区仅检查毫秒和交换一个 waker。
+        let mut replacement = Some(cx.waker().clone());
+        let (ready, old) = critical_section::with(|cs| {
+            let now = MILLISECONDS.load(Ordering::Acquire);
+            if now != *last {
+                *last = now;
+                (true, None)
+            } else {
+                let mut w = WAKER.borrow(cs).borrow_mut();
+                if !w.as_ref().is_some_and(|old| old.will_wake(cx.waker())) {
+                    (false, core::mem::replace(&mut *w, replacement.take()))
+                } else {
+                    (false, None)
+                }
+            }
+        });
+        drop(old);
+        drop(replacement);
+        if ready {
+            Poll::Ready(())
+        } else {
+            Poll::Pending
+        }
+    })
+    .await
+}
+
+#[embassy_executor::task]
+pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, peripherals::PA3>) {
+    let mut led = Output::new(led, Level::High);
+    let key = Input::new(key, Pull::Up);
+    let mut previous = 0;
+    let mut held = 0u16;
+    let mut released = false; // PA3 是 VSR/ESC 接口，不是图上的板载按键。
+    let mut release_count = 0u16; // 手动开关模式必须先连续释放 60 ms。
+    loop {
+        let before = previous;
+        next_tick(&mut previous).await;
+        if previous.wrapping_sub(before) > 2 {
+            held = 0;
+            released = false;
+            release_count = 0;
+        }
+        if key.is_low() {
+            release_count = 0;
+            held = held.saturating_add(1);
+            if held == 60 && released {
+                RUN_REQUEST.store(!RUN_REQUEST.load(Ordering::Acquire), Ordering::Release);
+                released = false;
+            }
+        } else {
+            held = 0;
+            release_count = release_count.saturating_add(1);
+            if release_count >= 60 {
+                released = true;
+            }
+        }
+        let (running, fault) = crate::hardware::running_or_fault();
+        let on = if fault { previous % 200 < 100 } else { running };
+        if on {
+            led.set_low();
+        } else {
+            led.set_high();
+        }
+    }
+}

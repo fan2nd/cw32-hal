@@ -87,7 +87,8 @@ impl<T: Instance> AdcScan<T> {
     }
     /// Clear all ADC event flags; intended for startup and ADC1 EOS service.
     pub fn clear_events(&mut self) {
-        self.regs.icr().write_value(pac::adc::regs::Icr(0));
+        // RM25.12.10：RFU bit2 保持复位值 1，其余实际事件位写 0 清除。
+        self.regs.icr().write_value(pac::adc::regs::Icr(0x04));
     }
     /// Replace IRQ/DMA enables with EOS IRQ only.
     ///
@@ -108,6 +109,28 @@ impl<T: Instance> AdcScan<T> {
     /// reload; this does not promise a sample at CNT == CCR4.
     pub fn trigger_from_pwm(&mut self) {
         self.regs.trigger().write(|w| w.set_atim_ocref(3, true));
+    }
+    /// 仅选择 ATIM TRGO2；单电阻场景必须配合 ENS=0 的单槽配置。
+    /// 两次转换来自两个独立硬件事件，不是一次触发连续扫描两槽。
+    pub fn trigger_from_atim_trgo2(&mut self) {
+        self.regs.trigger().write(|w| w.set_atimtrgo2(true));
+    }
+    /// 设置离散采样模拟看门狗；这不是连续、异步的硬件功率关断。
+    pub fn configure_watchdog(&mut self, channel: u8, low: u16, high: u16) {
+        assert!(channel < 16 && low < high && high <= 4095);
+        self.regs.awdtr().write(|w| { w.set_vtl(low); w.set_vth(high); });
+        self.regs.awdcr().write(|w| w.set_in(channel as usize, true));
+    }
+    pub fn watchdog_pending(&self) -> bool {
+        let flags = self.regs.isr().read(); flags.awdl() || flags.awdh()
+    }
+    /// 单槽 EOS 读取，保留 AWDL/AWDH；ISR 还须验证当前帧和采样时刻。
+    /// 硬件没有 OVR，不能凭一个 EOS 断言期间只发生过一次转换。
+    pub fn take_single(&mut self) -> Option<u16> {
+        if !self.sequence_pending() { return None; }
+        let raw = self.regs.result(0).read().result();
+        self.regs.icr().write_value(pac::adc::regs::Icr(0x1c));
+        Some(raw)
     }
     /// Start once without clearing flags or changing the hardware trigger route.
     /// A busy conversion may coalesce/ignore the request, as on the peripheral.
