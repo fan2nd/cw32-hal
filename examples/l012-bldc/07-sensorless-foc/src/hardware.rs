@@ -291,6 +291,11 @@ impl Motor {
     }
     fn trip(&mut self, fault: Fault, pwm: &mut SingleShuntPwm) {
         let first = !self.fault_published;
+        if first {
+            // SampleInvalid 等非 Timing 故障也保存关断前状态，不能把默认 0 误读为校准。
+            self.timing_trace.state_before = self.control.state() as u32;
+            self.timing_trace.armed_before = self.armed;
+        }
         // 先关桥，再停高频触发和中断；保留 BTIM1，普通线程才能输出首故障。
         // 不清 ADC/ATIM 故障旗标，也不自动重新开启计数器。
         pwm.disarm();
@@ -311,6 +316,12 @@ impl Motor {
     fn convert_current(&self, raw: u16) -> i32 {
         (i32::from(raw) - self.offset) * self.vdda_mv * (1_000 / (SHUNT_MILLIOHM * CURRENT_GAIN))
             / 4095
+    }
+    fn current_over_limit(&self, raw: u16) -> bool {
+        let numerator = (i32::from(raw) - self.offset)
+            * self.vdda_mv
+            * (1_000 / (SHUNT_MILLIOHM * CURRENT_GAIN));
+        numerator.unsigned_abs() >= (CURRENT_TRIP_MA as u32 + 1) * 4095
     }
     fn calibrate(
         &mut self,
@@ -379,11 +390,11 @@ impl Motor {
             }
         }
         self.slow_age = self.slow_age.saturating_add(1);
-        if self.slow_age > 30 {
+        if self.slow_age > SLOW_ADC_MAX_AGE {
             self.trip(Fault::SampleTimeout, pwm);
             return;
         }
-        if self.frames % 10 == 0 && !self.slow_pending {
+        if self.frames % SLOW_ADC_DIVIDER == 0 && !self.slow_pending {
             adc.start_software();
             self.slow_pending = true;
         }
@@ -449,7 +460,7 @@ pub fn report_fault() {
         d.max_update_ticks, d.max_control_ticks,
     );
     defmt::error!(
-        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_end 5=control_dt (4800..=14400); 96 ticks/us"
+        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_end 5=control_dt (6000..=18000); 96 ticks/us"
     );
 }
 
@@ -668,19 +679,15 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if m.control.state() == State::Calibrating && !m.calibrate(raw, &mut adc, &mut pwm) {
                 return;
             }
-            // 未解锁时电流不会进入控制器，不能让无用的软件除法占住两次 EOS 间隙。
-            // 校准仍逐样本累积；解锁后每个样本的电流/电源轨/看门狗检查保持原样。
-            let current = if m.armed { m.convert_current(raw) } else { 0 };
+            // 每个已解锁样本仍即时检查电源轨、过流和硬件看门狗。向零截断的
+            // |numerator / 4095| > trip 等价于 |numerator| >= (trip + 1) * 4095；
+            // 把两次电流换算除法留到第二样本后，首样本不再占用窄采样间隙。
             if m.armed
-                && (raw < 32
-                    || raw > 4063
-                    || current.abs() > CURRENT_TRIP_MA
-                    || adc.watchdog_pending())
+                && (raw < 32 || raw > 4063 || m.current_over_limit(raw) || adc.watchdog_pending())
             {
                 m.trip(Fault::OverCurrent, &mut pwm);
                 return;
             }
-            m.dc_ma[index] = current;
             if index == 0 {
                 let end = pwm.counter();
                 m.sample_trace.previous_irq_end = end;
@@ -690,6 +697,12 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     .max(end.wrapping_sub(irq_entry));
                 return;
             }
+            // 两个样本共用采样时的 VDDA；必须先换算，再允许 ADC2 更新比例。
+            m.dc_ma = if m.armed {
+                [m.convert_current(m.raw[0]), m.convert_current(m.raw[1])]
+            } else {
+                [0; 2]
+            };
             // 慢速 ADC2 的除法放在第二样本后的控制时隙，不能占用 reload
             // 后 700 tick 的五路 CCR 预载/解锁预算。仍在本帧控制截止前检查。
             m.update_bus(&mut pwm);
@@ -757,7 +770,7 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             };
             m.pending = Plan::for_state(frame, m.control.state());
             m.pending_ready = true;
-            if m.frames % 500 == 0 && !m.fault_published {
+            if m.frames % DIAGNOSTIC_DIVIDER == 0 && !m.fault_published {
                 publish(m);
             }
             let end = pwm.counter();

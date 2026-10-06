@@ -6,11 +6,11 @@ pub const DEAD_TICKS: u16 = 96; // 外加 1 us；不能代替示波器测量驱�
 pub const BLANK_TICKS: u16 = 240; // 开关沿后等待 2.5 us，包含死区和模拟建立预算。
 pub const ACQUISITION_TICKS: u16 = 140; // 70 个 ADC 时钟结束时的保持时刻。
 pub const CONVERSION_TICKS: u16 = 170; // 70+15 个 ADC 时钟，ADC=PCLK/2。
-pub const WINDOW_TICKS: u16 = 576; // 每个有效矢量至少 6 us。
-pub const DUTY_MIN: u16 = 960;
-pub const DUTY_MAX: u16 = 4800; // 预留第二次采样后的控制计算时间，不追求满调制度。
+pub const WINDOW_TICKS: u16 = 960; // 每个有效矢量至少 10 us；两次 EOS 间留出完整首样本 ISR。
+pub const DUTY_MIN: u16 = PWM_TICKS / 10;
+pub const DUTY_MAX: u16 = PWM_TICKS / 2; // 预留第二次采样后的控制计算时间，不追求满调制度。
 pub const UPDATE_DEADLINE: u16 = 700;
-pub const CONTROL_DEADLINE: u16 = 9000;
+pub const CONTROL_DEADLINE: u16 = PWM_TICKS - 600;
 pub const SAMPLE_IRQ_SLACK: u16 = 128; // 到达过迟即停机，绝不猜测 RESULT0 属于哪一帧。
 
 #[derive(Clone, Copy, Debug)]
@@ -22,8 +22,8 @@ pub struct Frame {
 impl Frame {
     pub const fn initial() -> Self {
         Self {
-            duty: [2304, 2880, 3456],
-            sample: [2544, 3120],
+            duty: [2640, 3600, 4560],
+            sample: [2640 + BLANK_TICKS, 3600 + BLANK_TICKS],
             order: [0, 1, 2],
         }
     }

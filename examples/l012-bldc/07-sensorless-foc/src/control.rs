@@ -1,5 +1,5 @@
 #![deny(unsafe_code)]
-//! 10 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
+//! 8 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
 //! 输入电压是两个电流保持时刻间按实际 PWM 开关状态积分的平均 αβ 电压。
 //! 板级将首样本运输到第二保持时刻，并传入真实 dt，不能回填未限幅指令。
 //! R/L 电压模型假定两次电流为同一时刻的相电流；错位采样及 PWM 纹波是误差源。
@@ -482,7 +482,8 @@ impl Observer {
                 i32::from(dt_ticks),
             );
             let emf = (applied[axis] - resistive - inductive).clamp(-BUS_MAX_MV, BUS_MAX_MV);
-            self.emf_q8[axis] += ((emf << 8) - self.emf_q8[axis]) >> BEMF_FILTER_SHIFT;
+            self.emf_q8[axis] +=
+                (((emf << 8) - self.emf_q8[axis]) * BEMF_FILTER_NUMERATOR) >> BEMF_FILTER_SHIFT;
         }
         self.previous_current = current;
         let emf = [self.emf_q8[0] >> 8, self.emf_q8[1] >> 8];
@@ -511,8 +512,11 @@ impl Observer {
 
     fn correct_angle(&mut self, dt_ticks: u16) {
         // 滤波低频群延迟 + 当前差分区间的半个 dt；校正值只计算一次。
-        let advance =
-            self.speed * ((1 << BEMF_FILTER_SHIFT) - 1) + scale_dt(self.speed, dt_ticks) / 2;
+        let advance = mul_div(
+            self.speed,
+            (1 << BEMF_FILTER_SHIFT) - BEMF_FILTER_NUMERATOR,
+            BEMF_FILTER_NUMERATOR,
+        ) + scale_dt(self.speed, dt_ticks) / 2;
         self.corrected_angle = (self.phase.wrapping_add(advance as u32) >> 16) as u16;
     }
 
@@ -580,9 +584,10 @@ fn mul_div(value: i32, multiplier: i32, divisor: i32) -> i32 {
 }
 
 fn speed_step(millihz: i32) -> i32 {
-    // 2^32/10^7 = 429 + 38807/78125；|mHz| <= 100000 时 u32 乘积不溢出。
+    // 8 kHz：2^32/8e6 = 536 + 13608/15625；|mHz| <= 100000 时
+    // 最大分数乘积 1,360,800,000，避免 M0+ 的 64 位除法并保持精确截断。
     let magnitude = millihz.unsigned_abs();
-    let step = magnitude * 429 + magnitude * 38_807 / 78_125;
+    let step = magnitude * 536 + magnitude * 13_608 / 15_625;
     if millihz < 0 {
         -(step as i32)
     } else {
