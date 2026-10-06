@@ -76,6 +76,13 @@ pub struct ControlFaultTrace {
     pub reject_mask: u32,
     pub good_frames: u32,
     pub best_good_frames: u32,
+    // 仅统计强制加速结束后的平台，避免低速必然拒绝淹没接管诊断。
+    pub plateau_frames: u32,
+    pub plateau_reject_counts: [u32; 8],
+    pub last_reject_mask: u32,
+    pub last_reject_age: u32,
+    pub last_reject_angle_error: i32,
+    pub last_reject_pll_error: i32,
     // 故障前最后一次完整电流控制的命令；不是本帧已施加的 PWM 电压。
     pub previous_target_dq_ma: [i32; 2],
     pub previous_voltage_dq_mv: [i32; 2],
@@ -97,6 +104,12 @@ impl ControlFaultTrace {
             reject_mask: 0,
             good_frames: 0,
             best_good_frames: 0,
+            plateau_frames: 0,
+            plateau_reject_counts: [0; 8],
+            last_reject_mask: 0,
+            last_reject_age: 0,
+            last_reject_angle_error: 0,
+            last_reject_pll_error: 0,
             previous_target_dq_ma: [0; 2],
             previous_voltage_dq_mv: [0; 2],
         }
@@ -115,6 +128,12 @@ pub struct Control {
     age: u32,
     good: u32,
     best_good: u32,
+    plateau_frames: u32,
+    plateau_reject_counts: [u32; 8],
+    last_reject_mask: u32,
+    last_reject_age: u32,
+    last_reject_angle_error: i32,
+    last_reject_pll_error: i32,
     open_speed_millihz: i32,
     bad: u32,
     stall: u32,
@@ -144,6 +163,12 @@ impl Control {
             age: 0,
             good: 0,
             best_good: 0,
+            plateau_frames: 0,
+            plateau_reject_counts: [0; 8],
+            last_reject_mask: 0,
+            last_reject_age: 0,
+            last_reject_angle_error: 0,
+            last_reject_pll_error: 0,
             open_speed_millihz: 0,
             bad: 0,
             stall: 0,
@@ -240,8 +265,38 @@ impl Control {
         let forced_angle = (self.open_phase >> 16) as u16;
         let speed = speed_millihz(self.observer.speed);
         let angle_error = angle_error(self.observer.angle(), forced_angle);
+        let reject_mask = self.handoff_reject_mask(forced_angle, self.open_speed_millihz);
+        ControlFaultTrace {
+            state_before: self.state_before_fault as u32,
+            age_frames: self.age_before_fault,
+            raw_emf_mv: self.observer.raw_emf_mv,
+            filtered_emf_mv: self.estimated_emf_mv(),
+            magnitude_mv: self.observer.magnitude,
+            pll_error: self.observer.error,
+            observer_angle: self.observer.angle(),
+            forced_angle,
+            angle_error,
+            speed_millihz: speed,
+            forced_speed_millihz: self.open_speed_millihz,
+            reject_mask,
+            good_frames: self.good,
+            best_good_frames: self.best_good,
+            plateau_frames: self.plateau_frames,
+            plateau_reject_counts: self.plateau_reject_counts,
+            last_reject_mask: self.last_reject_mask,
+            last_reject_age: self.last_reject_age,
+            last_reject_angle_error: self.last_reject_angle_error,
+            last_reject_pll_error: self.last_reject_pll_error,
+            previous_target_dq_ma: self.previous_target_dq_ma,
+            previous_voltage_dq_mv: self.previous_voltage_dq_mv,
+        }
+    }
+
+    /// 与故障快照共用同一资格位；只新增整数比较/计数，不打印或复制整份快照。
+    fn handoff_reject_mask(&self, forced_angle: u16, forced_speed: i32) -> u32 {
+        let speed = speed_millihz(self.observer.speed);
+        let angle_error = angle_error(self.observer.angle(), forced_angle);
         let mut reject_mask = 0;
-        // 完整求值用于说明拒绝原因；生产接管仍用原有短路资格判定。
         if !self.observer.tracking {
             reject_mask |= 1;
         }
@@ -263,29 +318,35 @@ impl Control {
         if angle_error.abs() > HANDOFF_ANGLE_LIMIT {
             reject_mask |= 64;
         }
-        if (speed - self.open_speed_millihz).abs()
-            > (self.open_speed_millihz / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ)
-        {
+        if (speed - forced_speed).abs() > (forced_speed / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ) {
             reject_mask |= 128;
         }
-        ControlFaultTrace {
-            state_before: self.state_before_fault as u32,
-            age_frames: self.age_before_fault,
-            raw_emf_mv: self.observer.raw_emf_mv,
-            filtered_emf_mv: self.estimated_emf_mv(),
-            magnitude_mv: self.observer.magnitude,
-            pll_error: self.observer.error,
-            observer_angle: self.observer.angle(),
-            forced_angle,
-            angle_error,
-            speed_millihz: speed,
-            forced_speed_millihz: self.open_speed_millihz,
-            reject_mask,
-            good_frames: self.good,
-            best_good_frames: self.best_good,
-            previous_target_dq_ma: self.previous_target_dq_ma,
-            previous_voltage_dq_mv: self.previous_voltage_dq_mv,
+        reject_mask
+    }
+
+    fn record_handoff(&mut self, reject_mask: u32, forced_angle: u16) {
+        if self.age > OPEN_RAMP_FRAMES {
+            self.plateau_frames += 1;
+            if reject_mask != 0 {
+                for (bit, count) in self.plateau_reject_counts.iter_mut().enumerate() {
+                    if reject_mask & (1 << bit) != 0 {
+                        *count += 1;
+                    }
+                }
+            }
         }
+        if reject_mask != 0 {
+            self.last_reject_mask = reject_mask;
+            self.last_reject_age = self.age;
+            self.last_reject_angle_error = angle_error(self.observer.angle(), forced_angle);
+            self.last_reject_pll_error = self.observer.error;
+        }
+        self.good = if reject_mask == 0 {
+            self.good.saturating_add(1)
+        } else {
+            0
+        };
+        self.best_good = self.best_good.max(self.good);
     }
 
     pub fn trip(&mut self, fault: Fault) {
@@ -399,13 +460,8 @@ impl Control {
                 }
                 self.open_speed_millihz = hz;
                 let angle = (self.open_phase >> 16) as u16;
-                let speed_error = (speed_millihz(self.observer.speed) - hz).abs();
-                let good = self.observer.qualified()
-                    && speed_millihz(self.observer.speed) >= HANDOFF_MIN_MILLIHZ
-                    && angle_error(self.observer.angle(), angle).abs() <= HANDOFF_ANGLE_LIMIT
-                    && speed_error <= (hz / 4).max(HANDOFF_SPEED_ERROR_MILLIHZ);
-                self.good = if good { self.good.saturating_add(1) } else { 0 };
-                self.best_good = self.best_good.max(self.good);
+                let reject_mask = self.handoff_reject_mask(angle, hz);
+                self.record_handoff(reject_mask, angle);
                 if self.good >= HANDOFF_GOOD_FRAMES {
                     self.blend_offset = angle_error(angle, self.observer.angle());
                     let (sin, cos) = sin_cos(self.blend_offset as u16);
@@ -520,6 +576,12 @@ impl Control {
     fn clear_dynamic(&mut self) {
         self.good = 0;
         self.best_good = 0;
+        self.plateau_frames = 0;
+        self.plateau_reject_counts = [0; 8];
+        self.last_reject_mask = 0;
+        self.last_reject_age = 0;
+        self.last_reject_angle_error = 0;
+        self.last_reject_pll_error = 0;
         self.open_speed_millihz = 0;
         self.bad = 0;
         self.stall = 0;

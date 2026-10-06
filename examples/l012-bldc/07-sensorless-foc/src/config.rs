@@ -51,7 +51,10 @@ pub const OPEN_RAMP_FRAMES: u32 = CONTROL_HZ * 5 / 2;
 pub const STARTUP_TIMEOUT_FRAMES: u32 = CONTROL_HZ * 5;
 pub const BLEND_FRAMES: u32 = CONTROL_HZ / 2;
 pub const OPEN_START_MILLIHZ: i32 = 2000;
-pub const OPEN_END_MILLIHZ: i32 = 25000;
+// 7.907 V 台架原 25 Hz/250 mA 已触及电压圆；降低 I/F 平台以留接管余量。
+// 18 Hz 兼顾本次 E≈1.14 V@24.641 Hz 与旧假定磁链的 500 mV 可观测门槛。
+// 这是本台架起点，不是按估计反电势自适应调速，也不保证所有母线/电机均可接管。
+pub const OPEN_END_MILLIHZ: i32 = 18000;
 pub const RUN_TARGET_MILLIHZ: i32 = 25000;
 pub const HANDOFF_MIN_MILLIHZ: i32 = 8000;
 pub const STALL_MIN_MILLIHZ: i32 = 4000;

@@ -701,6 +701,11 @@ pub fn report_fault() {
             c.observer_angle, c.angle_error, c.pll_error,
         );
         defmt::error!(
+            "HANDOFF_HISTORY plateau_frames={} reject_counts_bits1_to128={:?} last_reject={} age={} delta={} pll_error={}; counts overlap, OpenLoop only",
+            c.plateau_frames, c.plateau_reject_counts, c.last_reject_mask, c.last_reject_age,
+            c.last_reject_angle_error, c.last_reject_pll_error,
+        );
+        defmt::error!(
             "OBSERVER raw_unclamped_ab={:?} filtered_ab={:?} magnitude={}mV min={}mV; phase={:?}mA previous_dq={:?} previous_target={:?}mA previous_vdq={:?}mV vlimit={}mV",
             c.raw_emf_mv, c.filtered_emf_mv, c.magnitude_mv, BEMF_MIN_MV, d.phase_ma,
             d.current_dq_ma, c.previous_target_dq_ma, c.previous_voltage_dq_mv,
