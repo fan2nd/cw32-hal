@@ -57,8 +57,13 @@
 - `start` 是本次 ISR 的检查起点，`observed` 是故障检查实际读取的 CNT，`limit` 是原有截止点，`reload` 是该检查读到的 UIF；`samples` 是当时已接受样本数。site 2/3 的 samples 已因 reload 归零，不表示前帧漏采样。site 5 的 observed 改为帧间隔 tick，合法范围是 4800–14400。
 - site 1–3 仍要求 CNT≤700；site 4 仍要求 CNT<9000，并拒绝计数回绕或未处理 reload。样本接收容差仍是 128 tick。`observed-start` 可区分处理耗时与入口已经延迟，但不包含完整异常入口/退出。
 - `max_update` / `max_control` 只表示已记录的检查点间耗时；当前失败路径的准确数值以 site/start/observed 为准，不能把历史最大值当作失败时刻。
+- `state_before` / `armed_before` 在关断前保存，避免把故障处理后的 `state=7 armed=false` 误判成一直未启动。state 编码为 0=校准、1=Off、2=Bootstrap、3=Align、4=OpenLoop、5=Blend、6=ClosedLoop、7=Fault。
 
 实板旧日志 `received=[2802,3405] previous_end=5814 frame=1` 表明两次采样已接受，且最近 ADC 末尾计数低于 9000；仅凭旧日志不能区分 ATIM 的三个检查点或 UIF 条件。为缩短 reload 路径，前帧备份和调制器复位移至第二样本尾部，待机时不再反复重建已准备好的 Off 计划；启动/停止请求仍在 reload 处理，五路 CCR 流水线身份不变。每个故障分支关断后立即返回，避免冻结快照后继续写预载或计算。仍须用新日志或台架测量确认，不把此优化宣称为实测时限已满足。
+
+随后用户确认 `site=2 start=110 observed=989 limit=700 frame=57071` 发生在按键之后，不是待机随机故障。旧 ARM release 的按键边沿路径在 CCR 预载前调用两次 `__aeabi_memclr4` 批量复位 PI/观测器；正常待机不会走这两次调用。现 reload 仍即时接受启动/停止状态，停止仍即时关桥，但只标记待复位；第二样本后的控制计算先执行完整复位，再产生新计划。首个启动帧仍是 Off，Bootstrap 计划只能在复位完成后产生，因此没有把未复位的控制状态交给功率输出。诊断在此间仍按复位后的零命令/估计值呈现。
+
+最终 ARM release 已确认 ATIM 不再含批量清零调用；700/9000/128 tick、逐样本保护、故障锁存和手动启动不变。这消除了已发现的按键路径额外工作，但尚不能证明实板最坏时延达标，也不能把调试探针、Flash 或总线等待认定为根因。
 
 ## 模块和任务
 

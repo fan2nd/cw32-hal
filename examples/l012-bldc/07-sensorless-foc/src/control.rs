@@ -60,6 +60,7 @@ pub struct Control {
     state: State,
     fault: Fault,
     requested: bool,
+    reset_pending: bool,
     age: u32,
     good: u32,
     bad: u32,
@@ -82,6 +83,7 @@ impl Control {
             state: State::Calibrating,
             fault: Fault::None,
             requested: false,
+            reset_pending: false,
             age: 0,
             good: 0,
             bad: 0,
@@ -125,14 +127,15 @@ impl Control {
     }
 
     /// 停止优先；故障锁存到复位，持续为 true 也不会重新启动。
+    /// reload 只切换状态并标记复位；PI/观测器批量清零留给第二样本后的控制时隙。
     pub fn request_run(&mut self, run: bool) {
         let rising = run && !self.requested;
         self.requested = run;
         if !run && self.energized() {
-            self.clear_dynamic();
+            self.reset_pending = true;
             self.enter(State::Off);
         } else if rising && self.state == State::Off {
-            self.clear_dynamic();
+            self.reset_pending = true;
             self.enter(State::Bootstrap);
         }
     }
@@ -153,11 +156,23 @@ impl Control {
         let mut s = self.snapshot;
         s.state = self.state;
         s.fault = self.fault;
-        s.observer_angle = self.observer.angle();
-        s.speed_millihz = speed_millihz(self.observer.speed);
-        s.bemf_mv = self.observer.magnitude;
-        s.pll_error = self.observer.error;
-        s.qualified_frames = self.good;
+        // 命令边沿之后、下一帧计算之前也报告复位后的命令/估计量；
+        // 诊断按需合成，不把整块清零搬回 reload 的紧时隙。
+        if self.reset_pending {
+            s.target_dq_ma = [0; 2];
+            s.voltage_dq_mv = [0; 2];
+            s.observer_angle = 0;
+            s.speed_millihz = 0;
+            s.bemf_mv = 0;
+            s.pll_error = 0;
+            s.qualified_frames = 0;
+        } else {
+            s.observer_angle = self.observer.angle();
+            s.speed_millihz = speed_millihz(self.observer.speed);
+            s.bemf_mv = self.observer.magnitude;
+            s.pll_error = self.observer.error;
+            s.qualified_frames = self.good;
+        }
         s
     }
 
@@ -185,6 +200,12 @@ impl Control {
         sample_valid: bool,
         dt_ticks: u16,
     ) -> [i32; 2] {
+        // 必须先复位再消费任何控制输入；启动时首个物理帧仍是 Off，
+        // 新 Bootstrap 计划仅在本次计算之后产生，下一次真实 reload 才能预载。
+        if self.reset_pending {
+            self.clear_dynamic();
+            self.reset_pending = false;
+        }
         self.snapshot.bus_mv = bus_mv;
         self.snapshot.phase_ma = phase_ma;
         if !self.energized() {

@@ -93,6 +93,8 @@ impl SampleTrace {
 #[derive(Clone, Copy)]
 pub struct TimingTrace {
     pub site: u32,
+    pub state_before: u32,
+    pub armed_before: bool,
     pub start: u16,
     pub observed: u16,
     pub limit: u16,
@@ -103,6 +105,8 @@ impl TimingTrace {
     const fn new() -> Self {
         Self {
             site: 0,
+            state_before: 0,
+            armed_before: false,
             start: 0,
             observed: 0,
             limit: 0,
@@ -275,6 +279,8 @@ impl Motor {
     ) {
         self.timing_trace = TimingTrace {
             site,
+            state_before: self.control.state() as u32,
+            armed_before: self.armed,
             start,
             observed,
             limit,
@@ -437,8 +443,9 @@ pub fn report_fault() {
     );
     let t = d.timing_trace;
     defmt::error!(
-        "TIMING site={} start={} observed={} limit={} reload={} samples={} max_update={} max_control={} ticks",
+        "TIMING site={} start={} observed={} limit={} reload={} samples={} state_before={} armed_before={} max_update={} max_control={} ticks",
         t.site, t.start, t.observed, t.limit, t.reload_pending, t.samples,
+        t.state_before, t.armed_before,
         d.max_update_ticks, d.max_control_ticks,
     );
     defmt::error!(
