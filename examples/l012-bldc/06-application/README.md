@@ -1,12 +1,14 @@
 # 06：中断执行器电机任务与普通执行器 UI
 
-独立 MCU binary。普通 `#[embassy_executor::main]` 初始化时钟并拆分所有权：电机外设和引脚 tokens 转移到高优先级电机任务；PA3/PC13/UART1 与串口引脚留给普通线程执行器中的 UI。UART2 硬件不启用，仅占用其向量作为 P1 `InterruptExecutor` 的软件中断。
+独立 MCU binary。普通 `#[embassy_executor::main]` 初始化时钟并拆分所有权：`MotorResources` 将 ADC2 DMA 通道、其余电机外设和引脚 tokens 一起转移到高优先级 `motor_task`；PA3/PC13/UART1 与串口引脚留给普通线程执行器中的 `ui_task`。UART2 硬件不启用，仅占用其向量作为 P1 `InterruptExecutor` 的软件中断。
 
 - `main.rs`：入口、时钟配置、DMA通道/所有权拆分、不可返回的异常出口。
 - `motor.rs`：板级管脚与采样参数、短期unsafe HAL操作、所有权 tokens、独立DMA guard、事件驱动任务及ADC1/BTIM1/BTIM3 ISR。换相寄存器写序由HAL `motor::PwmBridge`实现，不搬入控制算法。
 - `control.rs` / `protection.rs`：本地纯控制与保护算法。
 - `ui.rs`：按键采样、LED、非阻塞串口发送及少量软件命令/状态同步；不是硬件 mailbox。
 - `protocol.rs` / `frame_queue.rs`：遥测帧格式与完整帧发送队列。
+
+`MotorResources.adc2_dma` 持有 `DMA_CH2` token，`peripherals` 保留其余电机 tokens。电机任务内部创建通道驱动和 repeating transfer guard，二者覆盖整个任务生命周期；DMA 的五字缓冲仍是模块内静态存储，不随资源结构移动。CPU 继续使用原始指针做 volatile 读取，不将正在 DMA 写入的缓冲改成可移动的任务局部数组或普通 Rust 借用。
 
 ADC1 的每次采样/滤波和 BTIM3 的立即换相仍在对应硬件 ISR 完成，BTIM1 保留每个真实 1 ms tick 的原计数/按键职责。ADC/换相 ISR 仅在产生可推进的控制工作时唤醒电机任务；BTIM1 更新时限与 UI 后通知任务。任务连续推进已就绪的有限状态延续，然后等待真实中断事件；没有忙轮询、`yield_now` 或 `Timer::after(1 ms)` 轮询。
 

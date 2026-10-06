@@ -58,7 +58,7 @@ use embassy_cw32::{
     uart::{ClockSource, Config, Uart},
 };
 
-pub async fn run(
+pub async fn ui_task(
     led: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PC13>,
     key: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PA3>,
     uart: embassy_cw32::Peri<'static, embassy_cw32::peripherals::UART1>,

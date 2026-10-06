@@ -25,6 +25,7 @@ use embassy_cw32::{
 const CPU_HZ: u32 = 96_000_000;
 const PWM_PERIOD: u16 = 4800;
 // DMA is the only writer after setup. CPU uses raw volatile reads, never Rust references.
+// Keep the storage static: moving MotorResources must never move the DMA target.
 static mut ADC2_DMA: [u32; 5] = [0; 5];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
@@ -90,12 +91,18 @@ pub type MotorPeripherals = (
     embassy_cw32::Peri<'static, embassy_cw32::peripherals::PA11>,
     embassy_cw32::Peri<'static, embassy_cw32::peripherals::UART2>,
 );
+
+/// Singleton ownership transferred together into the motor executor domain.
+pub struct MotorResources {
+    pub adc2_dma: embassy_cw32::Peri<'static, peripherals::DMA_CH2>,
+    pub peripherals: MotorPeripherals,
+}
+
 static MOTOR_EXECUTOR: embassy_executor::InterruptExecutor =
     embassy_executor::InterruptExecutor::new();
 
 pub fn start(
-    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMA_CH2>,
-    peripherals: MotorPeripherals,
+    resources: MotorResources,
     _irq: impl Binding<typelevel::UART2, MotorExecutorHandler>,
 ) {
     typelevel::UART2::disable();
@@ -106,7 +113,7 @@ pub fn start(
     // UART2 peripheral stays unused; its singleton is retained by the motor task.
     MOTOR_EXECUTOR
         .start(typelevel::UART2::IRQ)
-        .spawn(run(dma_channel, peripherals).unwrap());
+        .spawn(motor_task(resources).unwrap());
 }
 
 pub(crate) struct MotorExecutorHandler;
@@ -149,11 +156,13 @@ async fn next_motor_event() {
 }
 
 #[embassy_executor::task]
-async fn run(
-    dma_channel: embassy_cw32::Peri<'static, embassy_cw32::peripherals::DMA_CH2>,
-    peripherals: MotorPeripherals,
-) {
-    let mut adc2_channel = dma::Channel::new_blocking(dma_channel);
+async fn motor_task(resources: MotorResources) {
+    let MotorResources {
+        adc2_dma,
+        peripherals,
+    } = resources;
+    let mut adc2_channel = dma::Channel::new_blocking(adc2_dma);
+    // The repeating guard borrows the channel and stays alive across every await.
     let adc2_stream;
     typelevel::ADC1::disable();
     typelevel::BTIM1::disable();
