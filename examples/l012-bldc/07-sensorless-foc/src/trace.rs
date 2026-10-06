@@ -2,7 +2,7 @@
 //! 固定平台位置的连续输入记录。只重放观察器/错时电流运输，不替代真实角度测量。
 //! 80 帧约 20 ms，替换旧抽样环；不打印、不分配、不改变控制或资格。
 
-pub const MODEL_TAG: &str = "fe0f93827826c14bf238a231a210d82e4105a8fa1e493e9290cb1a6644af5d10";
+pub const MODEL_TAG: &str = "9d4ad6ff50936fb83299373a9fbd5dd1283e7d0cbbe08df506f8e6b758101351";
 pub const RECORDS: usize = 80;
 pub const START_AGE: u16 = (crate::config::OPEN_RAMP_FRAMES + crate::config::CONTROL_HZ) as u16;
 

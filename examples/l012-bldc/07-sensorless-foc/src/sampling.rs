@@ -4,7 +4,10 @@ use crate::arithmetic::Arithmetic;
 use crate::config::{BUS_MAX_MV, CPU_HZ, MODEL_PHASE_L_UH, MODEL_PHASE_R_MILLIOHM, PWM_TICKS};
 
 pub const DEAD_TICKS: u16 = 96; // 外加 1 us；不能代替示波器测量驱动传播与 MOS 管关断。
-pub const BLANK_TICKS: u16 = 240; // 开关沿后等待 2.5 us，包含死区和模拟建立预算。
+                                // 诊断 B：只将首样本推迟到下降沿后 5 us；第二样本和控制起点不变。
+                                // 这用于辨别首样本的建立/运输敏感性，不是已验证的物理模型修复。
+pub const FIRST_BLANK_TICKS: u16 = 480;
+pub const BLANK_TICKS: u16 = 240; // 第二样本仍在下降沿后 2.5 us。
 pub const ACQUISITION_TICKS: u16 = 140; // 70 个 ADC 时钟结束时的保持时刻。
 pub const CONVERSION_TICKS: u16 = 170; // 70+15 个 ADC 时钟，ADC=PCLK/2。
 pub const WINDOW_TICKS: u16 = 960; // 每个有效矢量至少 10 us；两次 EOS 间留出完整首样本 ISR。
@@ -29,7 +32,7 @@ impl Frame {
                 DUTY_MIN + 2 * WINDOW_TICKS,
             ],
             sample: [
-                DUTY_MIN + BLANK_TICKS,
+                DUTY_MIN + FIRST_BLANK_TICKS,
                 DUTY_MIN + WINDOW_TICKS + BLANK_TICKS,
             ],
             order: [0, 1, 2],
@@ -49,7 +52,7 @@ impl Frame {
                 .all(|&d| (DUTY_MIN..=DUTY_MAX).contains(&d))
             && self.duty[b] >= self.duty[a] + WINDOW_TICKS
             && self.duty[c] >= self.duty[b] + WINDOW_TICKS
-            && self.sample[0] == self.duty[a] + BLANK_TICKS
+            && self.sample[0] == self.duty[a] + FIRST_BLANK_TICKS
             && self.sample[1] == self.duty[b] + BLANK_TICKS
             && self.sample[0] + CONVERSION_TICKS + SAMPLE_IRQ_SLACK < self.duty[b]
             && self.sample[1] + CONVERSION_TICKS + SAMPLE_IRQ_SLACK < self.duty[c]
@@ -213,7 +216,7 @@ impl Modulator {
         duty[c] = (high + common) as u16;
         let frame = Frame {
             duty,
-            sample: [duty[a] + BLANK_TICKS, duty[b] + BLANK_TICKS],
+            sample: [duty[a] + FIRST_BLANK_TICKS, duty[b] + BLANK_TICKS],
             order,
         };
         if !frame.valid() {
