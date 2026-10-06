@@ -1,5 +1,5 @@
-//! Sampling is shown directly in main and the two equal-priority IRQs.
-//! ATIM CH4 is an internal ADC trigger; bridge gate pins are untouched.
+//! 采样流程直接展示在 main 和两个同优先级 IRQ 中。
+//! ATIM CH4 仅用作内部 ADC 触发源，不操作桥臂栅极引脚。
 #![no_std]
 #![no_main]
 
@@ -27,16 +27,16 @@ embassy_cw32::bind_interrupts!(
 );
 
 const CPU_HZ: u32 = 96_000_000;
-const SAMPLING_PERIOD: u16 = 4800; // 96 MHz / 20 kHz, original scale.
-                                   // DMA is the only writer after setup. CPU uses raw volatile reads, never Rust references.
+const SAMPLING_PERIOD: u16 = 4800; // 96 MHz / 20 kHz，沿用原始计数尺度。
+                                   // 配置完成后仅由 DMA 写入；CPU 通过裸指针进行易失读取，绝不创建 Rust 引用。
 static mut ADC2_DMA: [u32; 5] = [0; 5];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
 
-// ADC1 and BTIM1 write these observation variables after unmask.
-// Both run at P1 and cannot preempt each other. Main only copies a diagnostic
-// snapshot with interrupts masked, then logs its owned copies outside that scope.
-// NMI/HardFault touch no software state and shut hardware down before diverging.
-// No other handler may access these variables or change the IRQ priorities.
+// 解除中断屏蔽后，由 ADC1 和 BTIM1 写入这些观测变量。
+// 两者均运行在 P1 优先级，不能相互抢占。主循环仅在屏蔽中断时复制诊断
+// 快照，然后在该作用域外记录其独立持有的副本。
+// NMI/HardFault 不访问任何软件状态，并在进入不返回的路径前关闭硬件。
+// 其他处理程序不得访问这些变量或更改 IRQ 优先级。
 static mut ADC1_RAW: [u16; 4] = [0; 4];
 static mut ADC2_RAW: [u16; 5] = [0; 5];
 static mut ADC1_SEQUENCES: u32 = 0;
@@ -50,7 +50,7 @@ fn main() -> ! {
     let mut config = embassy_cw32::Config::default();
     config.rcc.hsi_divider = rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = rcc::PclkDivider::Div1;
-    // Retain the HAL singleton tokens for the lifetime of this program.
+    // 在程序的整个生命周期内保留 HAL 单例令牌。
     let _peripherals = embassy_cw32::try_init(config).expect("clock initialization failed");
     let clocks = rcc::clocks();
     defmt::info!(
@@ -63,10 +63,10 @@ fn main() -> ! {
     let adc2_stream;
     typelevel::ADC1::disable();
     typelevel::BTIM1::disable();
-    // SAFETY: HAL initialization transferred the peripheral singletons;
-    // main keeps the singleton tokens; it never accesses hardware after unmask.
+    // 安全性：HAL 初始化已移交外设单例；
+    // main 保留这些单例令牌；解除中断屏蔽后，main 不再访问硬件。
     unsafe {
-        // LED/key plus analog inputs only; bridge gate pins are untouched.
+        // 仅配置 LED/按键和模拟输入，不操作桥臂栅极引脚。
         for (port, pin, analog, pull_up, output) in [
             (Port::C, 13, false, false, true),
             (Port::A, 3, false, true, false),
@@ -98,9 +98,9 @@ fn main() -> ! {
             sample_compare: 2400,
             phase_outputs: false,
         });
-        // External-feedback OPA1: PA6 INP2, PA7 INN2, PB0 output/ADC1 CH8.
+        // 采用外部反馈的 OPA1：PA6 接 INP2，PA7 接 INN2，PB0 为输出/ADC1 CH8。
         motor::configure_current_sense(PositiveInput::Inp2, NegativeInput::Inn2);
-        // Board channels and acquisition times remain explicit here.
+        // 在此显式列出板级通道和采样时间。
         AdcScan::<peripherals::ADC1>::acquire().configure(ScanConfig {
             slots: &[
                 ScanSlot::new(8, SampleTime::Cycles70),
@@ -125,7 +125,7 @@ fn main() -> ! {
             reload: 999,
         });
     }
-    // Nominal >= 1 ms startup settling; not used as a sample timebase.
+    // 标称启动稳定等待时间 >= 1 ms，不用作采样时基。
     cortex_m::asm::delay(CPU_HZ / 1_000);
     INITIALIZED.store(true, Ordering::Release);
 
@@ -133,11 +133,11 @@ fn main() -> ! {
         AdcScan::<peripherals::ADC1>::acquire().clear_events();
         AdcScan::<peripherals::ADC2>::acquire().clear_events();
         AdcScan::<peripherals::ADC1>::acquire().enable_sequence_interrupt::<AdcHandler>(Irqs);
-        // Original EOC + BLOCK intent: one 32-bit result per conversion.
-        // Defined correction: ADC2_SINGLE (15), not source's mismatched SEQ (14).
-        // EOS DMA is explicitly disabled; CNT=5, REPEAT=1, both addresses increment.
-        // Static DMA-only storage outlives the stream even on cancellation.
-        // CPU reads remain volatile words: a scan can be partially refreshed.
+        // 保留原始 EOC + BLOCK 设计意图：每次转换传输一个 32 位结果。
+        // 明确修正为 ADC2_SINGLE (15)，而非原始代码中不匹配的 SEQ (14)。
+        // 显式禁用 EOS DMA；CNT=5、REPEAT=1，源地址和目标地址均递增。
+        // 此静态存储仅由 DMA 写入；即使传输被取消，其生命周期仍长于传输流。
+        // CPU 仍按字进行易失读取：一次扫描的数据可能仅有部分已刷新。
         adc2_stream = adc2_channel
             .start_repeating_raw::<u32>(
                 AdcScan::<peripherals::ADC2>::acquire().result_address(),
@@ -161,11 +161,11 @@ fn main() -> ! {
         typelevel::BTIM1::unpend();
         typelevel::BTIM1::set_priority(interrupt::Priority::P1);
         AdcScan::<peripherals::ADC1>::acquire().trigger_from_pwm();
-        BasicTimer::<peripherals::BTIM1>::acquire().start(); // Original timer enable.
+        BasicTimer::<peripherals::BTIM1>::acquire().start(); // 沿用原始定时器使能操作。
         PwmBridge::acquire().start();
 
         AdcScan::<peripherals::ADC2>::acquire().start_software();
-        // Initialization and all borrows finish before any IRQ can run.
+        // 在任何 IRQ 能够运行前，完成初始化并结束所有借用。
         core::sync::atomic::compiler_fence(Ordering::Release);
         typelevel::ADC1::enable();
         typelevel::BTIM1::enable();
@@ -177,8 +177,8 @@ fn main() -> ! {
     loop {
         core::hint::black_box(&adc2_stream);
         cortex_m::asm::wfi();
-        // Only copy once per second. IRQs never log, and the raw ADC2 values
-        // retain their existing live-DMA (possibly partially refreshed) meaning.
+        // 每秒仅复制一次。IRQ 中从不记录日志，ADC2 原始值
+        // 仍表示实时 DMA 数据（可能仅部分刷新），其原有语义不变。
         let snapshot = cortex_m::interrupt::free(|_| unsafe {
             let ms = MILLISECONDS;
             if ms.wrapping_sub(last_log_ms) < 1_000 {
@@ -204,7 +204,7 @@ fn main() -> ! {
 struct AdcHandler;
 impl Handler<typelevel::ADC1> for AdcHandler {
     unsafe fn on_interrupt() {
-        // SAFETY: only the non-nesting P1 handlers access these static variables.
+        // 安全性：仅有不会相互嵌套的 P1 处理程序访问这些静态变量。
         unsafe {
             let Some(raw) = AdcScan::<peripherals::ADC1>::acquire().take_sequence::<4>() else {
                 return;
@@ -258,7 +258,7 @@ impl Handler<typelevel::BTIM1> for TickHandler {
 
 fn fatal() -> ! {
     cortex_m::interrupt::disable();
-    // No software-state borrow, even when an exception interrupted an ISR.
+    // 即使异常打断了 ISR，也不借用任何软件状态。
     if INITIALIZED.load(Ordering::Acquire) {
         unsafe { motor::emergency_disable_outputs() };
     }

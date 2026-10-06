@@ -1,13 +1,13 @@
 #![forbid(unsafe_code)]
-//! Stage 03 adds a pure six-step bridge image and one-press sector selection.
-//! These values are observations. No hardware output function exists here.
+//! 阶段 03 增加纯数据形式的六步桥臂状态映像，以及单次按键切换扇区功能。
+//! 这些数值仅用于观测，此处不包含任何硬件输出功能。
 
 pub const PWM_PERIOD: u16 = 4800;
 pub const DEMONSTRATION_DUTY: u16 = PWM_PERIOD / 20;
 pub const KEY_DEBOUNCE_MS: u8 = 60;
 
-/// Original 4800-count PWM scale (96 MHz / 4800 = 20 kHz).
-/// Stages 03/04 only display this image; main leaves gate pins untouched.
+/// 沿用原始的 4800 计数 PWM 尺度（96 MHz / 4800 = 20 kHz）。
+/// 阶段 03/04 仅展示此状态映像，main 不操作栅极引脚。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Bridge {
     pub pwm_counts: [u16; 3],
@@ -23,7 +23,7 @@ impl Bridge {
         }
     }
 
-    /// A+B-, A+C-, B+C-, B+A-, C+A-, C+B-. Invalid sectors fail closed.
+    /// A+B-、A+C-、B+C-、B+A-、C+A-、C+B-。无效扇区返回全部关闭的安全状态。
     pub const fn commutation(sector: u8, duty: u16) -> Self {
         let (high, low) = match sector {
             0 => (0, 1),

@@ -1,4 +1,4 @@
-//! GPIO-only bring-up: LED and key only; motor pins are untouched.
+//! 仅进行 GPIO 初步调试：只使用 LED 和按键，不操作电机引脚。
 #![no_std]
 #![no_main]
 
@@ -9,7 +9,7 @@ use embassy_cw32::gpio::{Input, Level, Output, Pull};
 #[entry]
 fn main() -> ! {
     defmt::info!("01 GPIO boot; motor gate pins untouched");
-    // Default 4 MHz reset profile. No time-driver feature is selected.
+    // 使用默认的 4 MHz 复位配置，未启用时间驱动特性。
     let p = embassy_cw32::init(Default::default());
     let clocks = embassy_cw32::rcc::clocks();
     defmt::info!(
@@ -22,8 +22,8 @@ fn main() -> ! {
     let key = Input::new(p.PA3, Pull::Up);
     let mut logged_pressed = key.is_low();
     defmt::info!("PA3 key_pressed={} (active low)", logged_pressed);
-    // Limit diagnostics only; LED/key behavior remains immediate. This is a
-    // loop-count divider, not a calibrated timebase or a key debouncer.
+    // 仅限制诊断输出频率，LED/按键仍保持即时响应。这里采用的是
+    // 循环计数分频，不是校准后的时基，也不用于按键消抖。
     let mut log_poll = 0u32;
     loop {
         let pressed = key.is_low();

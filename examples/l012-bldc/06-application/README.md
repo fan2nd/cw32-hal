@@ -8,7 +8,7 @@
 - `io.rs`：按键采样、LED、非阻塞串口发送、线程 RTT 日志及少量软件命令/状态同步；不是硬件 mailbox。
 - `protocol.rs` / `frame_queue.rs`：遥测帧格式与完整帧发送队列。
 
-`MotorResources.adc2_dma` 持有 `DMA_CH2` token，`peripherals` 保留其余电机 tokens。电机任务内部创建通道驱动和 repeating transfer guard，二者覆盖整个任务生命周期；DMA 的五字缓冲仍是模块内静态存储，不随资源结构移动。CPU 继续使用原始指针做 volatile 读取，不将正在 DMA 写入的缓冲改成可移动的任务局部数组或普通 Rust 借用。
+`MotorResources` 直接以具名字段持有全部电机 tokens：`adc1`、`adc2`、`adc2_dma` 等处于同一层级，不再嵌套外设元组。电机任务内部创建通道驱动和 repeating transfer guard，二者覆盖整个任务生命周期；DMA 的五字缓冲仍是模块内静态存储，不随资源结构移动。CPU 继续使用原始指针做 volatile 读取，不将正在 DMA 写入的缓冲改成可移动的任务局部数组或普通 Rust 借用。
 
 ADC1 的每次采样/滤波和 BTIM3 的立即换相仍在对应硬件 ISR 完成，BTIM1 保留每个真实 1 ms tick 的原计数/按键职责。ADC/换相 ISR 仅在产生可推进的控制工作时唤醒电机任务；BTIM1 更新时限与 I/O 后通知任务。任务连续推进已就绪的有限状态延续，然后等待真实中断事件；没有忙轮询、`yield_now` 或 `Timer::after(1 ms)` 轮询。
 

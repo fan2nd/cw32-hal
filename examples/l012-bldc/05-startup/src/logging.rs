@@ -1,8 +1,8 @@
-//! Copied observations only. Call `report` from thread mode, never a motor IRQ.
+//! 仅处理复制出的观测值。在普通线程模式下调用 `report`，不得在电机中断中调用。
 use crate::control::{MotorController, MotorState, SensorlessState, StartupState};
 use crate::protection::Fault;
 
-/// A latest-value diagnostic sample, not a motor event queue or DMA EOS snapshot.
+/// 保存最新值的诊断样本，不是电机事件队列，也不是 DMA 序列结束（EOS）快照。
 #[derive(Clone, Copy)]
 pub(crate) struct Snapshot {
     pub ms: u32,

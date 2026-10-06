@@ -11,7 +11,7 @@ mod motor;
 pub mod protection;
 pub mod protocol;
 
-// Application wiring: each handler runs synchronously in its exact vector.
+// 应用中断绑定：每个处理函数均在对应的中断向量中同步执行。
 embassy_cw32::bind_interrupts!(
     struct Irqs {
         ADC1 => motor::AdcHandler;
@@ -38,15 +38,35 @@ async fn main(_spawner: embassy_executor::Spawner) {
     );
     defmt::info!("power outputs: 6ms low-side bootstrap, then off until key start");
 
-    // Transfer the motor's singleton tokens out of the thread executor domain.
+    // 将电机单例 token 的所有权移出普通线程执行器域。
     motor::start(
         motor::MotorResources {
+            atim: p.ATIM,
+            adc1: p.ADC1,
+            adc2: p.ADC2,
             adc2_dma: p.DMA_CH2,
-            peripherals: (
-                p.ATIM, p.ADC1, p.ADC2, p.OPA1, p.BGR, p.BTIM1, p.BTIM2, p.BTIM3, p.PA15, p.PB3,
-                p.PB4, p.PB5, p.PB6, p.PB7, p.PA0, p.PA1, p.PA2, p.PA6, p.PA7, p.PB0, p.PB2, p.PA8,
-                p.PA10, p.PA11, p.UART2,
-            ),
+            opa1: p.OPA1,
+            bgr: p.BGR,
+            btim1: p.BTIM1,
+            btim2: p.BTIM2,
+            btim3: p.BTIM3,
+            pa15: p.PA15,
+            pb3: p.PB3,
+            pb4: p.PB4,
+            pb5: p.PB5,
+            pb6: p.PB6,
+            pb7: p.PB7,
+            pa0: p.PA0,
+            pa1: p.PA1,
+            pa2: p.PA2,
+            pa6: p.PA6,
+            pa7: p.PA7,
+            pb0: p.PB0,
+            pb2: p.PB2,
+            pa8: p.PA8,
+            pa10: p.PA10,
+            pa11: p.PA11,
+            uart2: p.UART2,
         },
         Irqs,
     );

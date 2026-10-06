@@ -1,7 +1,7 @@
 #![deny(unsafe_code)]
-//! Bounded UART buffering owned exclusively by the application I/O task.
+//! 容量有界的 UART 缓冲，由应用 I/O 任务独占。
 
-/// One immutable in-flight UART frame and one coalescing newest status frame.
+/// 一个发送期间不可修改的 UART 帧，以及一个合并更新的最新状态帧。
 pub struct FrameQueue {
     active: [u8; 7],
     next: usize,

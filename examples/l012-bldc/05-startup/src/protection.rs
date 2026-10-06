@@ -1,11 +1,11 @@
 #![deny(unsafe_code)]
-//! `compu.c` SampleVI then SampleT, called at the original 100 ms cadence.
+//! 按原有 100 ms 周期，先调用 `compu.c` 的 SampleVI，再调用 SampleT。
 //!
-//! Preserve C's single-precision expression order, unsigned-char counters and
-//! ErrorCode gating. Zero reference or a nonfinite/out-of-u32 conversion has no
-//! defined C integer result; only that arithmetic boundary uses the explicit
-//! InvalidCalibration guard. Calibration 0 and 0xffff are not rejected merely
-//! for their values. This guard is a documented difference, not source parity.
+//! 保留 C 源码的单精度表达式求值顺序、unsigned-char 计数器以及
+//! ErrorCode 条件控制。参考值为零，或转换值非有限/超出 u32 范围时，
+//! C 语言没有定义对应的整数结果；仅在这些算术边界使用显式的
+//! InvalidCalibration 防护。不会仅因校准值为 0 或 0xffff
+//! 就拒绝它们。此防护是已记录的差异，不声称与原源码一致。
 
 #[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
@@ -32,9 +32,9 @@ pub struct Adc2Sample {
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Measurements {
-    /// CanshuV: 0.1 V units.
+    /// CanshuV：单位为 0.1 V。
     pub bus_decivolts: u32,
-    /// CanshuI: mA.
+    /// CanshuI：单位为 mA。
     pub current_ma: u32,
 }
 
@@ -79,14 +79,14 @@ impl Protection {
         self.fault
     }
 
-    /// The C key path clears ErrorCode, not the functions' static counters.
+    /// C 源码的按键路径只清除 ErrorCode，不清除这些函数的静态计数器。
     pub fn reset(&mut self) {
         self.fault = None;
     }
 
-    /// `external_fault` is the current shared C ErrorCode, including motor
-    /// errors or a key clear since the preceding call. Existing errors inhibit
-    /// trips but do not skip SampleVI's measurement updates and counter resets.
+    /// `external_fault` 为当前共享的 C ErrorCode，包含自上次调用以来的电机
+    /// 错误或按键清错结果。已有错误会阻止新的保护触发，
+    /// 但不会跳过 SampleVI 的测量值更新和计数器重置。
     pub fn sample_vi(
         &mut self,
         sample: Adc2Sample,
@@ -151,15 +151,15 @@ impl Protection {
         }
     }
 
-    /// Original periodic sequence: SampleVI followed by SampleT.
+    /// 原有周期调用顺序：先 SampleVI，再 SampleT。
     pub fn sample(
         &mut self,
         sample: Adc2Sample,
         external_fault: Option<Fault>,
     ) -> Result<Measurements, Fault> {
         self.sample_vi(sample, external_fault)?;
-        // SampleT returns before touching ntcCount for an existing error or
-        // st < 50. Neither condition clears previously accumulated hot samples.
+        // 存在错误或 st < 50 时，SampleT 会在访问 ntcCount 前返回。
+        // 这两个条件都不会清除此前累计的高温样本计数。
         if self.fault.is_none() && sample.temperature >= 50 {
             if sample.temperature <= 342 {
                 self.temperature_count = self.temperature_count.wrapping_add(1);
@@ -182,7 +182,7 @@ impl Protection {
 }
 
 fn c_unsigned_int(value: f32) -> Option<u32> {
-    // The upper endpoint is exclusive: 2^32 cannot be converted to C uint32_t.
-    // Do not silently use Rust's saturating float cast outside C's domain.
+    // 不包含上界：2^32 无法转换为 C 的 uint32_t。
+    // 超出 C 定义域时，不得悄悄使用 Rust 的饱和浮点转换。
     (value.is_finite() && (0.0..4_294_967_296.0).contains(&value)).then(|| value as u32)
 }

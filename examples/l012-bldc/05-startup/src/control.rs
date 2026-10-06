@@ -1,16 +1,16 @@
 #![deny(unsafe_code)]
-//! Port of `MOTOR.C`, `sensorless.c`, `control.c`, and the BTIM1/main loop.
+//! 移植自 `MOTOR.C`、`sensorless.c`、`control.c` 以及 BTIM1/主循环。
 //!
-//! Timing units matter: BTIM2/3 count at **8 MHz**, PWM compares use a 4800-count
-//! period, and [`MotorController::tick_1ms`] runs at 1 kHz. `StepTime >> 3` is
-//! preserved from the source (one eighth of the previous commutation interval),
-//! rather than silently replacing it with a textbook 30-degree delay.
+//! 注意时间单位：BTIM2/3 以 **8 MHz** 计数，PWM 比较值使用 4800 计数的
+//! 周期，[`MotorController::tick_1ms`] 以 1 kHz 运行。`StepTime >> 3`
+//! 保留原源码的含义（上一次换相间隔的八分之一），
+//! 不擅自替换为教科书中的 30 度延迟。
 //!
-//! Timer ISRs only update the source counters and key state. The motor
-//! foreground calls foreground_step continuously. Explicit continuations
-//! preserve the original blocking waits without holding a Rust borrow across
-//! an interrupt. Protection is paused during startup, settling and error loops.
-//! Original state-order edge cases are deliberately retained.
+//! 定时器 ISR 只更新原源码中的计数器和按键状态。电机
+//! 前台持续调用 foreground_step。显式的状态延续
+//! 保留原有阻塞等待，同时避免持有 Rust 借用跨越
+//! 中断。启动、稳定等待和错误循环期间暂停保护。
+//! 有意保留原有状态执行顺序的边界情况。
 
 use crate::protection::{Adc2Sample, Fault, Measurements, Protection};
 
@@ -28,7 +28,7 @@ pub const AUTO_POWER_OFF_MS: u16 = 10_000;
 pub const MEASUREMENT_INTERVAL_MS: u16 = 100;
 pub const STOP_SETTLE_MS: u16 = 500;
 
-/// Source state numbers are retained for diagnostics and source comparison.
+/// 保留原源码的状态编号，便于诊断和对照。
 #[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
 pub enum MotorState {
@@ -49,7 +49,7 @@ pub enum StartupState {
     Forced,
 }
 
-/// `Sta` values from sensorless.c, made explicit.
+/// 显式列出 sensorless.c 中的 `Sta` 值。
 #[derive(Clone, Copy, Debug, defmt::Format, Eq, PartialEq)]
 #[repr(u8)]
 pub enum SensorlessState {
@@ -65,7 +65,7 @@ pub enum Edge {
     Falling,
 }
 
-/// The C uses `TAB_RFling[1]` and ADC channels `{3,2,1,3,2,1}`.
+/// C 源码使用 `TAB_RFling[1]` 和 ADC 通道 `{3,2,1,3,2,1}`。
 pub const EXPECTED_EDGE: [Edge; 6] = [
     Edge::Falling,
     Edge::Rising,
@@ -76,8 +76,8 @@ pub const EXPECTED_EDGE: [Edge; 6] = [
 ];
 pub const BEMF_CHANNEL: [usize; 6] = [3, 2, 1, 3, 2, 1];
 
-/// ADC1 sequence is current, phase A, phase B, phase C. Only the floating
-/// phase enters the source zero-crossing detector; bus threshold is ADC2/2.
+/// ADC1 序列依次为电流、A 相、B 相、C 相。只有悬空
+/// 相参与原源码的过零检测；母线阈值为 ADC2/2。
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct Adc1Sample {
     pub current: u16,
@@ -112,9 +112,9 @@ fn crossing_side_matches(sector: u8, sample: Adc1Sample, bus_adc: u16) -> bool {
     }
 }
 
-/// Complete desired bridge image. The board must perform break-before-make
-/// when applying it: remove old low-side/high-side drive before enabling new
-/// drive. A compare value is not a low-side gate signal.
+/// 完整的目标桥臂状态。板级代码应用时必须先断后通：
+/// 先撤销原有低侧/高侧驱动，再使能新的
+/// 驱动。比较值并不是低侧栅极信号。
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct Bridge {
     pub pwm_counts: [u32; 3],
@@ -131,9 +131,9 @@ impl Bridge {
         }
     }
 
-    /// The source's six-tick (while TimeCountTemp <= 5) bootstrap charge. Applying and
-    /// ending this is an explicit board initialization step, not implicit in
-    /// `MotorController::new`.
+    /// 原源码中持续六个 tick（while TimeCountTemp <= 5）的自举充电。开始和
+    /// 结束充电均为显式的板级初始化步骤，不隐含在
+    /// `MotorController::new` 中。
     pub const fn bootstrap() -> Self {
         Self {
             pwm_counts: [0; 3],
@@ -142,8 +142,8 @@ impl Bridge {
         }
     }
 
-    /// Six-step table, sectors 0..5: A+B-, A+C-, B+C-, B+A-, C+A-, C+B-.
-    /// Invalid sectors fail closed instead of retaining a previous bridge.
+    /// 六步换相表，扇区 0..5：A+B-、A+C-、B+C-、B+A-、C+A-、C+B-。
+    /// 无效扇区会关闭桥臂，而非保留上一次桥臂状态。
     pub const fn commutation(sector: u8, duty: u32) -> Self {
         let (high, low) = match sector {
             0 => (0, 1),
@@ -164,7 +164,7 @@ impl Bridge {
         result
     }
 
-    /// A+ with both B- and C- for initial rotor alignment.
+    /// 初始转子对齐时，A+ 与 B-、C- 同时导通。
     pub const fn alignment(duty: u32) -> Self {
         let mut result = Self::commutation(0, duty);
         result.low_sides[2] = true;
@@ -177,28 +177,28 @@ pub enum TimerCommand {
     #[default]
     Unchanged,
     Stop,
-    /// BTIM3 auto-reload value, in 8 MHz ticks, exactly as in the source.
+    /// BTIM3 自动重载值，以 8 MHz 计数周期为单位，与原源码完全一致。
     Arm(u16),
 }
 
-/// Effects for the hardware adapter to apply once, in event order.
+/// 由硬件适配层按事件顺序各执行一次的操作。
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 #[must_use = "apply returned bridge/timer/ADC/LED actions to the board"]
 pub struct Actions {
     pub bridge: Option<Bridge>,
-    /// UPPWM updates compares without changing any low-side GPIO.
+    /// UPPWM 更新比较值，不改变任何低侧 GPIO。
     pub pwm_only: bool,
-    /// Source alignment calls UPPWM on STEP_last before Commutation(0).
+    /// 原源码对齐时，先对 STEP_last 调用 UPPWM，再调用 Commutation(0)。
     pub pre_alignment_pwm: Option<(u8, u32)>,
     pub sensorless_timer: TimerCommand,
-    /// Set the free-running BTIM2 counter. Commutation resets it to zero.
+    /// 设置自由运行的 BTIM2 计数器。Commutation 将其清零。
     pub step_timer_preset: Option<u16>,
     pub start_adc2: bool,
     pub led_on: Option<bool>,
 }
 
-/// Single-owner, allocation-free state machine. Serialize calls from IRQs or
-/// run them in a foreground event loop; shared interrupt globals are not needed.
+/// 单一所有者、无需动态分配的状态机。可将中断中的调用串行化，或
+/// 在前台事件循环中执行；无需中断共享的全局变量。
 pub struct MotorController {
     state: MotorState,
     startup: StartupState,
@@ -294,12 +294,12 @@ impl MotorController {
         }
     }
 
-    /// Before User/main.c sets closeflag=1, BTIM1 counts through bootstrap.
+    /// User/main.c 设置 closeflag=1 前，BTIM1 在整个自举充电期间持续计数。
     pub fn begin_bootstrap(&mut self) {
         self.powered_off = false;
     }
 
-    /// The source sets closeflag=1 and timecountforClose=1000 after bootstrap.
+    /// 原源码在自举充电后设置 closeflag=1 和 timecountforClose=1000。
     pub fn finish_bootstrap(&mut self) {
         self.powered_off = true;
         self.idle_ms = 1000;
@@ -338,7 +338,7 @@ impl MotorController {
     pub const fn step_time(&self) -> u16 {
         self.step_time
     }
-    /// Observational only: completed forced-start iterations.
+    /// 仅用于观察：已完成的强制启动迭代次数。
     pub const fn startup_iterations(&self) -> u16 {
         self.startup_iterations
     }
@@ -357,8 +357,8 @@ impl MotorController {
     pub const fn adc2_age_ms(&self) -> u16 {
         self.adc2_age_ms
     }
-    /// Source `RealS = commutations_in_100ms * 100`; not mechanical RPM without
-    /// the motor pole-pair and commutations-per-revolution conversion.
+    /// 原源码为 `RealS = commutations_in_100ms * 100`；未经
+    /// 电机极对数和每转换相次数换算，不能视为机械转速 RPM。
     pub const fn reported_speed(&self) -> u32 {
         self.reported_speed
     }
@@ -366,14 +366,14 @@ impl MotorController {
         self.protection.measurements()
     }
 
-    /// Test/board-level speed command; the original key chooses 0/20/40/60/80/100.
-    /// This does not power on or clear a fault. Values above 100 are bounded.
+    /// 测试/板级速度指令；原按键选择 0/20/40/60/80/100。
+    /// 此操作不会上电或清除故障；大于 100 的值会被限幅。
     pub fn set_speed_percent(&mut self, percent: u8) {
         self.set_speed = percent.min(100);
         self.speed_level = self.set_speed / 20;
     }
 
-    /// Called on completed ADC2 sequence; conversion is requested every 5ms.
+    /// ADC2 序列完成后调用；每 5 ms 请求一次转换。
     pub fn update_adc2(&mut self, sample: Adc2Sample) {
         if !self.adc2_ready {
             self.protection.set_current_offset(sample.current);
@@ -395,14 +395,14 @@ impl MotorController {
         actions.bridge = Some(bridge);
     }
 
-    // MOTOR_STOP0 does not clear the C duty, filter or BTIM3 state.
+    // MOTOR_STOP0 不清除 C 源码中的占空比、滤波器或 BTIM3 状态。
     fn motor_stop(&mut self, actions: &mut Actions) {
         self.motor_enabled = false;
         self.set_bridge(Bridge::off(), actions);
     }
 
-    /// Assign the source ErrorCode. The foreground observes it on its next
-    /// outer-loop iteration; the ISR does not invent immediate shutdown.
+    /// 设置原源码的 ErrorCode。前台在下一次
+    /// 外层循环迭代时处理；ISR 不额外引入立即关断行为。
     pub fn report_fault(&mut self, fault: Fault) -> Actions {
         self.fault = Some(fault);
         Actions::default()
@@ -423,21 +423,21 @@ impl MotorController {
             self.protection.reset();
             self.set_speed = 0;
             self.speed_level = 0;
-            // The C key ISR clears ErrorCode only. MotorErrorOver resumes
-            // into WAITSTART in the foreground, rather than here.
+            // C 源码的按键 ISR 只清除 ErrorCode。MotorErrorOver 在
+            // 前台恢复执行并进入 WAITSTART，而不是在这里完成。
         } else {
             self.speed_level = (self.speed_level + 1) % 6;
             self.set_speed = self.speed_level * 20;
         }
     }
 
-    /// BTIM1 bookkeeping only. The motor foreground is not a 1 kHz task.
+    /// 仅维护 BTIM1 的计数等状态。电机前台并非 1 kHz 周期任务。
     pub fn tick_1ms(&mut self, key_pressed: bool, _step_ticks: u16) -> Actions {
         let mut actions = Actions::default();
         self.adc1_age_ms = self.adc1_age_ms.saturating_add(1);
         self.adc2_age_ms = self.adc2_age_ms.saturating_add(1);
         if key_pressed {
-            // UI choice: saturating debounce avoids repeat presses on wrap.
+            // 界面处理选择：消抖计数采用饱和运算，避免回绕时重复触发按键。
             self.key_hold_ms = self.key_hold_ms.saturating_add(1);
             if self.key_hold_ms == KEY_DEBOUNCE_MS {
                 self.key_pressed(&mut actions);
@@ -468,9 +468,9 @@ impl MotorController {
         actions
     }
 
-    /// One original main-loop/continuation iteration. Call repeatedly, not on
-    /// a millisecond schedule. No reference may survive the adapter's critical
-    /// section. ISR flags can change between calls while a C busy wait is active.
+    /// 执行原主循环/状态延续的一次迭代。应反复调用，而不是按
+    /// 毫秒周期调度。任何引用都不能超出适配层的临界
+    /// 区。模拟 C 忙等待期间，ISR 标志可在两次调用之间改变。
     pub fn foreground_step(&mut self, step_ticks: u16) -> Actions {
         let mut actions = Actions::default();
         if !self.initialized_measurements {
@@ -487,8 +487,8 @@ impl MotorController {
             return actions;
         }
 
-        // These are continuations of blocking C functions. In particular,
-        // they bypass SampleVI/SampleT and the outer ErrorCode dispatch.
+        // 这些是 C 阻塞函数的状态延续。特别是，
+        // 它们会跳过 SampleVI/SampleT 和外层 ErrorCode 分派。
         if self.startup != StartupState::Inactive {
             self.advance_startup(step_ticks, &mut actions);
             return actions;
@@ -525,7 +525,7 @@ impl MotorController {
                 self.stall_windows = self.stall_windows.wrapping_add(1);
                 if self.stall_windows >= 50 {
                     self.stall_windows = 0;
-                    // The source does not gate this assignment on ErrorCode.
+                    // 原源码的此处赋值不受 ErrorCode 条件限制。
                     self.fault = Some(Fault::Stall);
                 }
             } else {
@@ -547,8 +547,8 @@ impl MotorController {
                 }
             }
             MotorState::StartDelay => {
-                // Deliberately independent conditions: the C can overwrite
-                // STOP with STARTOPEN when cancellation coincides with expiry.
+                // 有意保留两个独立条件：当取消与到期同时发生时，C 源码可以用
+                // STARTOPEN 覆盖 STOP。
                 if self.set_speed == 0 {
                     self.state = MotorState::Stop;
                 }
@@ -577,8 +577,8 @@ impl MotorController {
             }
             MotorState::Stop => {
                 self.motor_stop(&mut actions);
-                // RealS1 is initialized to zero and never assigned nonzero
-                // in the supplied project: this branch always waits 500 ms.
+                // RealS1 初始化为零，且在所提供的工程中从未被赋为非零值；
+                // 因此此分支始终等待 500 ms。
                 if self.adc1.phase_a < 180 && self.adc1.phase_b < 180 && self.adc1.phase_c < 180 {
                     self.sensorless = SensorlessState::Idle;
                 }
@@ -610,8 +610,8 @@ impl MotorController {
     }
 
     fn blink_fault(&mut self, actions: &mut Actions) {
-        // LED presentation is permitted to differ; it does not mutate motor,
-        // fault counters, timer commands or the original ErrorCode.
+        // 允许 LED 显示方式不同；它不会改变电机、
+        // 故障计数器、定时器命令或原始 ErrorCode。
         let pulses = self.fault.unwrap() as u32 * 400;
         let at = self.state_ms % (200 + pulses + 500);
         self.set_led(
@@ -622,7 +622,7 @@ impl MotorController {
 
     fn update_pwm(&mut self, actions: &mut Actions) {
         self.duty = self.target_percent.wrapping_mul(u32::from(ONE_PERCENT_PWM));
-        // UPPWM changes CCR1..4 only; it does not change the low-side GPIOs.
+        // UPPWM 仅改变 CCR1..4，不改变低侧 GPIO。
         let mut bridge = Bridge::commutation(self.last_sector, self.duty);
         bridge.low_sides = self.bridge.low_sides;
         actions.pwm_only = true;
@@ -632,8 +632,8 @@ impl MotorController {
     fn begin_alignment(&mut self, actions: &mut Actions) {
         let voltage = self.measurements().bus_decivolts;
         if voltage == 0 {
-            // C division by zero is undefined. This explicit boundary is not
-            // claimed as a matching source behavior.
+            // C 语言除零行为未定义。这里显式处理该边界，
+            // 并不声称与原源码行为一致。
             self.fault = Some(Fault::InvalidCalibration);
             return;
         }
@@ -641,7 +641,7 @@ impl MotorController {
         self.duty = u32::from(PWM_PERIOD).wrapping_mul(percent) / 100;
         self.startup = StartupState::Aligning;
         self.state_ms = 0;
-        self.startup_locked = false; // C StOk=2 during alignment, not success.
+        self.startup_locked = false; // C 源码对齐期间 StOk=2，不代表成功。
         self.sensorless = SensorlessState::Idle;
         self.motor_enabled = true;
         self.sector = 0;
@@ -662,7 +662,7 @@ impl MotorController {
                 self.required_samples = 3;
                 self.startup_locked = false;
                 self.startup_iterations = 0;
-                self.sector = 2; // source sets 1, then pre-increments in do loop.
+                self.sector = 2; // 原源码先设为 1，再在 do 循环中前置递增。
                 self.commutate(30_000, actions);
                 self.state_ms = 0;
             }
@@ -681,8 +681,8 @@ impl MotorController {
                 {
                     if !self.startup_locked {
                         self.motor_stop(actions);
-                        // Sensorless_START returned 0. The caller increments
-                        // coun and sets ErrorCode=3 only if no earlier error.
+                        // Sensorless_START 返回了 0。调用方递增
+                        // coun，且仅在此前无错误时设置 ErrorCode=3。
                         if self.fault.is_none() {
                             self.fault = Some(Fault::StartupFailed);
                             self.state = MotorState::Error;
@@ -692,8 +692,8 @@ impl MotorController {
                         self.measurement_ms = 0;
                     }
                     self.startup = StartupState::Inactive;
-                    // Preserve MotorStartOPEN's unconditional assignment,
-                    // even after its callee wrote STATEERROR.
+                    // 保留 MotorStartOPEN 的无条件赋值，
+                    // 即使它调用的函数已写入 STATEERROR 也如此。
                     self.state = MotorState::RunOpen;
                     self.target_percent = self.duty / u32::from(ONE_PERCENT_PWM);
                     return;
@@ -727,7 +727,7 @@ impl MotorController {
         actions.step_timer_preset = Some(0);
         actions.sensorless_timer = TimerCommand::Arm(measured_ticks >> 3);
         self.sensorless = SensorlessState::Demagnetizing;
-        // ADCS_chuli's static cou is NOT reset by C Commutation.
+        // C 源码的 Commutation 不会重置 ADCS_chuli 的静态变量 cou。
         self.commutations_in_window = self.commutations_in_window.wrapping_add(1);
     }
 
@@ -743,7 +743,7 @@ impl MotorController {
                 self.sector = (self.sector + 1) % 6;
                 self.commutate(step_ticks, &mut actions);
             }
-            _ => {} // source leaves the periodic timer running in this case.
+            _ => {} // 原源码在此情况下保持周期定时器运行。
         }
         actions
     }
@@ -770,8 +770,8 @@ impl MotorController {
         self.sensorless = SensorlessState::WaitingCommutation;
         self.good_crossings = self.good_crossings.wrapping_add(1);
         self.crossing_flag = true;
-        // C StOk=2 prevents success during alignment, but does not suppress
-        // ADCS_chuli or its static filter while aligning.
+        // C 源码的 StOk=2 阻止在对齐期间判定成功，但不抑制
+        // 对齐期间的 ADCS_chuli 处理及其静态滤波器。
         if self.good_crossings >= u32::from(STARTUP_CROSSINGS)
             && self.startup != StartupState::Aligning
         {
@@ -786,8 +786,8 @@ impl MotorController {
                 self.commutate(step_ticks, &mut actions);
             }
         }
-        // The original foreground consumes FFlag; the ADC ISR does not run
-        // the forced-start loop or increment OutPwmValue itself.
+        // 原前台处理 FFlag；ADC ISR 不执行
+        // 强制启动循环，也不自行递增 OutPwmValue。
         actions
     }
 }

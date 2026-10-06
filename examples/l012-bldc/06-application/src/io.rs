@@ -1,6 +1,6 @@
-//! Board I/O: button sampling, LED, UART telemetry and thread-mode RTT logs.
-//! Bounded messages connect this task with the motor interrupt domain.
-//! No peripheral handle, register pointer or controller reference crosses here.
+//! 板级 I/O：按键采样、LED、UART 遥测与普通线程模式下的 RTT 日志。
+//! 通过容量有界的消息连接此任务与电机中断域。
+//! 外设句柄、寄存器指针和控制器引用均不跨越此边界。
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub struct IoFeedback {
@@ -9,8 +9,8 @@ pub struct IoFeedback {
 }
 
 impl IoFeedback {
-    /// Latest complete message wins while a consumer is delayed. A frame is
-    /// copied as seven bytes, never interleaved with an older partial frame.
+    /// 消费者延迟处理时，保留最新的完整消息。每帧按
+    /// 完整七字节复制，绝不与旧帧的未完成部分交错。
     pub fn merge(&mut self, newer: Self) {
         if newer.led_on.is_some() {
             self.led_on = newer.led_on;
@@ -44,8 +44,8 @@ impl IoCommand {
     pub fn tick_1ms(&mut self) {
         self.age_ms = self.age_ms.saturating_add(1);
     }
-    // Debounce requires a stream of fresh observations. One pressed sample
-    // followed by a stalled task must never masquerade as a 60 ms key hold.
+    // 消抖需要持续获得新采样。单次按下采样之后
+    // 若任务停滞，绝不能将其误判为持续按键 60 ms。
     pub const fn key_pressed(&self) -> bool {
         self.key_pressed && self.age_ms < 2
     }
@@ -68,9 +68,9 @@ pub async fn io_task(
 ) {
     let mut led = Output::new(led, Level::High);
     let key = Input::new(key, Pull::Up);
-    // Keep the source application's 96 MHz PCLK / (16 * 52 + 1), 8N1,
-    // PB12 TX / PB11 RX routing and polling cadence. UART2 is still the motor
-    // software executor's vector; UART1 does not enable any interrupt here.
+    // 保留原应用的 96 MHz PCLK / (16 * 52 + 1) 分频、8N1 格式、
+    // PB12 TX / PB11 RX 引脚映射与轮询节奏。UART2 仍作为电机
+    // 软件执行器的中断向量；此处 UART1 不使能任何中断。
     let mut config = Config::default();
     config.baudrate = 115_200;
     config.clock_source = ClockSource::PclkAlt;
@@ -83,7 +83,7 @@ pub async fn io_task(
         let pressed = key.is_low();
         critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().command.update(pressed));
         if let Some(on) = feedback.led_on {
-            // PC13 LED is active-low; SET/CLR does not race motor GPIO mux RMW.
+            // PC13 LED 低电平点亮；SET/CLR 操作不会与电机 GPIO 复用配置的读改写竞争。
 
             if on {
                 led.set_low();
@@ -94,14 +94,14 @@ pub async fn io_task(
         if let Some(frame) = feedback.telemetry {
             tx.push(frame);
         }
-        // Nonblocking, at most one UART byte per task wake.
+        // 非阻塞发送，每次任务唤醒最多发送一个 UART 字节。
         if uart.is_write_ready() {
             if let Some(byte) = tx.pop_byte() {
                 let _ = uart.try_write(byte).unwrap();
             }
         }
-        // The snapshot holds copied values only. RTT runs outside IO_LINK's
-        // critical section, never in ADC/commutation/the motor executor IRQ.
+        // 快照只保存复制值。RTT 在 IO_LINK 的临界区
+        // 之外执行，绝不在 ADC/换相/电机执行器中断内执行。
         if let Some(snapshot) = snapshot {
             snapshot.report(last_fault);
             last_fault = snapshot.fault;
@@ -173,7 +173,7 @@ pub fn publish_status(feedback: IoFeedback) {
     critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().feedback.merge(feedback));
 }
 
-/// Same latest-value exchange as LED/UART feedback; no event queue or live references.
+/// 与 LED/UART 反馈一样，仅交换最新值；不使用事件队列或指向实时状态的引用。
 pub fn publish_diagnostics(snapshot: crate::logging::Snapshot) {
     critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().diagnostics = Some(snapshot));
 }

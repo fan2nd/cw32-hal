@@ -1,12 +1,12 @@
 #![deny(unsafe_code)]
-//! The seven-byte UART frame from `init.c::SendDataToUsart()`.
+//! 来自 `init.c::SendDataToUsart()` 的七字节 UART 帧。
 
-/// Build the source's telemetry frame without sending it to a peripheral.
+/// 构造与原源码一致的遥测帧，不向外设发送。
 ///
-/// Bytes are `43 57 04`, the speed level, the low byte of bus voltage in
-/// decivolts, the powered-off flag, and the modulo-256 sum of the first six
-/// bytes. The source sums its full-width voltage before transmitting its low
-/// byte; reducing before summing produces exactly the same checksum.
+/// 字节依次为 `43 57 04`、速度档位、以 0.1 V 为单位的母线电压
+/// 低字节、关闭标志，以及前六字节总和对 256 取模的结果。
+/// 原源码先用完整位宽的电压求和，再发送其低
+/// 字节；先截取低字节再求和会得到完全相同的校验和。
 pub const fn telemetry_frame(speed_level: u8, bus_decivolts: u32, powered_off: bool) -> [u8; 7] {
     let voltage = bus_decivolts as u8;
     let off = powered_off as u8;

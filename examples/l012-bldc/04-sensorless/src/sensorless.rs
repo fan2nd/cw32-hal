@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
-//! Stage 04 adds a passive, qualified BEMF threshold observation.
-//! It never commutates, starts a motor, arms an output or schedules a timer.
-//! Demagnetization blanking and commutation delay belong to the active stage.
+//! 阶段 04 增加经过判定确认的被动反电动势（BEMF）阈值观测。
+//! 它绝不执行换相、启动电机、使输出就绪或调度定时器。
+//! 退磁消隐和换相延迟由主动驱动阶段负责。
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum Edge {
@@ -9,7 +9,7 @@ pub enum Edge {
     Falling,
 }
 
-/// The C uses `TAB_RFling[1]` and ADC channels `{3,2,1,3,2,1}`.
+/// 原 C 代码使用 `TAB_RFling[1]` 和 ADC 通道 `{3,2,1,3,2,1}`。
 pub const EXPECTED_EDGE: [Edge; 6] = [
     Edge::Falling,
     Edge::Rising,
@@ -20,10 +20,10 @@ pub const EXPECTED_EDGE: [Edge; 6] = [
 ];
 pub const BEMF_CHANNEL: [usize; 6] = [3, 2, 1, 3, 2, 1];
 
-/// Standalone passive detector for the ADC/zero-crossing teaching stage.
-/// It never drives a bridge or starts a timer. Call `begin_sector` after the
-/// relevant demagnetization interval, then feed PWM-synchronous ADC samples.
-/// The first qualified crossing is reported once until another sector begins.
+/// 用于 ADC/过零检测教学阶段的独立被动检测器。
+/// 它绝不驱动桥臂或启动定时器。应在相应的退磁间隔结束后调用
+/// `begin_sector`，随后输入与 PWM 同步的 ADC 样本。
+/// 首次满足确认条件的过零事件仅报告一次，直到下一个扇区开始。
 pub struct ZeroCrossingDetector {
     sector: u8,
     required: u8,
@@ -47,7 +47,7 @@ impl ZeroCrossingDetector {
         }
     }
 
-    /// Invalid sector or zero qualification count disarms the detector.
+    /// 扇区无效或确认样本数为零时，禁用检测器。
     pub fn begin_sector(&mut self, sector: u8, required_samples: u8) -> bool {
         self.consecutive = 0;
         self.armed = sector < 6 && required_samples > 0;
