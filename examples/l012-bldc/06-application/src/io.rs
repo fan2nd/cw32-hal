@@ -1,13 +1,14 @@
-//! Bounded messages between the motor interrupt domain and the UI task.
+//! Board I/O: button sampling, LED, UART telemetry and thread-mode RTT logs.
+//! Bounded messages connect this task with the motor interrupt domain.
 //! No peripheral handle, register pointer or controller reference crosses here.
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct UiFeedback {
+pub struct IoFeedback {
     pub led_on: Option<bool>,
     pub telemetry: Option<[u8; 7]>,
 }
 
-impl UiFeedback {
+impl IoFeedback {
     /// Latest complete message wins while a consumer is delayed. A frame is
     /// copied as seven bytes, never interleaved with an older partial frame.
     pub fn merge(&mut self, newer: Self) {
@@ -24,12 +25,12 @@ impl UiFeedback {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
-pub struct UiCommand {
+pub struct IoCommand {
     key_pressed: bool,
     age_ms: u16,
 }
 
-impl UiCommand {
+impl IoCommand {
     pub const fn default_const() -> Self {
         Self {
             key_pressed: false,
@@ -58,7 +59,7 @@ use embassy_cw32::{
     uart::{ClockSource, Config, Uart},
 };
 
-pub async fn ui_task(
+pub async fn io_task(
     led: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PC13>,
     key: embassy_cw32::Peri<'static, embassy_cw32::peripherals::PA3>,
     uart: embassy_cw32::Peri<'static, embassy_cw32::peripherals::UART1>,
@@ -78,9 +79,9 @@ pub async fn ui_task(
     let mut tx = FrameQueue::new();
     let mut last_fault = None;
     loop {
-        let (feedback, snapshot) = next_ui_tick().await;
+        let (feedback, snapshot) = next_io_tick().await;
         let pressed = key.is_low();
-        critical_section::with(|cs| UI_LINK.borrow(cs).borrow_mut().command.update(pressed));
+        critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().command.update(pressed));
         if let Some(on) = feedback.led_on {
             // PC13 LED is active-low; SET/CLR does not race motor GPIO mux RMW.
 
@@ -99,7 +100,7 @@ pub async fn ui_task(
                 let _ = uart.try_write(byte).unwrap();
             }
         }
-        // The snapshot holds copied values only. RTT runs outside UI_LINK's
+        // The snapshot holds copied values only. RTT runs outside IO_LINK's
         // critical section, never in ADC/commutation/the motor executor IRQ.
         if let Some(snapshot) = snapshot {
             snapshot.report(last_fault);
@@ -109,16 +110,16 @@ pub async fn ui_task(
     }
 }
 
-struct UiLink {
-    command: UiCommand,
-    feedback: UiFeedback,
+struct IoLink {
+    command: IoCommand,
+    feedback: IoFeedback,
     diagnostics: Option<crate::logging::Snapshot>,
     pending_tick: bool,
     waker: Option<core::task::Waker>,
 }
-static UI_LINK: Mutex<RefCell<UiLink>> = Mutex::new(RefCell::new(UiLink {
-    command: UiCommand::default_const(),
-    feedback: UiFeedback {
+static IO_LINK: Mutex<RefCell<IoLink>> = Mutex::new(RefCell::new(IoLink {
+    command: IoCommand::default_const(),
+    feedback: IoFeedback {
         led_on: None,
         telemetry: None,
     },
@@ -127,9 +128,9 @@ static UI_LINK: Mutex<RefCell<UiLink>> = Mutex::new(RefCell::new(UiLink {
     waker: None,
 }));
 
-pub fn publish_ui_tick() {
+pub fn publish_io_tick() {
     let waker = critical_section::with(|cs| {
-        let mut link = UI_LINK.borrow(cs).borrow_mut();
+        let mut link = IO_LINK.borrow(cs).borrow_mut();
         link.pending_tick = true;
         link.waker.take()
     });
@@ -138,10 +139,10 @@ pub fn publish_ui_tick() {
     }
 }
 
-async fn next_ui_tick() -> (UiFeedback, Option<crate::logging::Snapshot>) {
+async fn next_io_tick() -> (IoFeedback, Option<crate::logging::Snapshot>) {
     core::future::poll_fn(|cx| {
         critical_section::with(|cs| {
-            let mut link = UI_LINK.borrow(cs).borrow_mut();
+            let mut link = IO_LINK.borrow(cs).borrow_mut();
             if link.pending_tick {
                 link.pending_tick = false;
                 core::task::Poll::Ready((link.feedback.take(), link.diagnostics.take()))
@@ -162,17 +163,17 @@ async fn next_ui_tick() -> (UiFeedback, Option<crate::logging::Snapshot>) {
 
 pub fn key_sample() -> bool {
     critical_section::with(|cs| {
-        let mut link = UI_LINK.borrow(cs).borrow_mut();
+        let mut link = IO_LINK.borrow(cs).borrow_mut();
         link.command.tick_1ms();
         link.command.key_pressed()
     })
 }
 
-pub fn publish_status(feedback: UiFeedback) {
-    critical_section::with(|cs| UI_LINK.borrow(cs).borrow_mut().feedback.merge(feedback));
+pub fn publish_status(feedback: IoFeedback) {
+    critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().feedback.merge(feedback));
 }
 
 /// Same latest-value exchange as LED/UART feedback; no event queue or live references.
 pub fn publish_diagnostics(snapshot: crate::logging::Snapshot) {
-    critical_section::with(|cs| UI_LINK.borrow(cs).borrow_mut().diagnostics = Some(snapshot));
+    critical_section::with(|cs| IO_LINK.borrow(cs).borrow_mut().diagnostics = Some(snapshot));
 }

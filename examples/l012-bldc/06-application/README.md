@@ -1,20 +1,20 @@
-# 06：中断执行器电机任务与普通执行器 UI
+# 06：中断执行器电机任务与普通执行器板级 I/O
 
-独立 MCU binary。普通 `#[embassy_executor::main]` 初始化时钟并拆分所有权：`MotorResources` 将 ADC2 DMA 通道、其余电机外设和引脚 tokens 一起转移到高优先级 `motor_task`；PA3/PC13/UART1 与串口引脚留给普通线程执行器中的 `ui_task`。UART2 硬件不启用，仅占用其向量作为 P1 `InterruptExecutor` 的软件中断。
+独立 MCU binary。普通 `#[embassy_executor::main]` 初始化时钟并拆分所有权：`MotorResources` 将 ADC2 DMA 通道、其余电机外设和引脚 tokens 一起转移到高优先级 `motor_task`；PA3/PC13/UART1 与串口引脚留给普通线程执行器中的 `io_task`。UART2 硬件不启用，仅占用其向量作为 P1 `InterruptExecutor` 的软件中断。
 
 - `main.rs`：入口、时钟配置、DMA通道/所有权拆分、不可返回的异常出口。
 - `motor.rs`：板级管脚与采样参数、短期unsafe HAL操作、所有权 tokens、独立DMA guard、事件驱动任务及ADC1/BTIM1/BTIM3 ISR。换相寄存器写序由HAL `motor::PwmBridge`实现，不搬入控制算法。
 - `control.rs` / `protection.rs`：本地纯控制与保护算法。
-- `ui.rs`：按键采样、LED、非阻塞串口发送及少量软件命令/状态同步；不是硬件 mailbox。
+- `io.rs`：按键采样、LED、非阻塞串口发送、线程 RTT 日志及少量软件命令/状态同步；不是硬件 mailbox。
 - `protocol.rs` / `frame_queue.rs`：遥测帧格式与完整帧发送队列。
 
 `MotorResources.adc2_dma` 持有 `DMA_CH2` token，`peripherals` 保留其余电机 tokens。电机任务内部创建通道驱动和 repeating transfer guard，二者覆盖整个任务生命周期；DMA 的五字缓冲仍是模块内静态存储，不随资源结构移动。CPU 继续使用原始指针做 volatile 读取，不将正在 DMA 写入的缓冲改成可移动的任务局部数组或普通 Rust 借用。
 
-ADC1 的每次采样/滤波和 BTIM3 的立即换相仍在对应硬件 ISR 完成，BTIM1 保留每个真实 1 ms tick 的原计数/按键职责。ADC/换相 ISR 仅在产生可推进的控制工作时唤醒电机任务；BTIM1 更新时限与 UI 后通知任务。任务连续推进已就绪的有限状态延续，然后等待真实中断事件；没有忙轮询、`yield_now` 或 `Timer::after(1 ms)` 轮询。
+ADC1 的每次采样/滤波和 BTIM3 的立即换相仍在对应硬件 ISR 完成，BTIM1 保留每个真实 1 ms tick 的原计数/按键职责。ADC/换相 ISR 仅在产生可推进的控制工作时唤醒电机任务；BTIM1 更新时限与 I/O 后通知任务。任务连续推进已就绪的有限状态延续，然后等待真实中断事件；没有忙轮询、`yield_now` 或 `Timer::after(1 ms)` 轮询。
 
-四个电机向量（ADC1、BTIM1、BTIM3_HALLTIM、UART2）均为 P1。ARMv6-M 同优先级异常不能互相抢占，控制器/诊断/桥臂借用只存在于该域的一次有限执行中，不能跨 await。硬件事件在 ISR 内完整执行，只有“重新检查状态”的通知允许合并；置 pending 与登记 waker 也在同一不可嵌套域，避免丢失唤醒。线程 UI 通过短临界区交换复制值，不持有电机引用。改变此优先级布局需要重新审查；同级阻塞时间、ADC 最坏延迟和线程可调度性仍需实板测量，不能由编译通过证明。
+四个电机向量（ADC1、BTIM1、BTIM3_HALLTIM、UART2）均为 P1。ARMv6-M 同优先级异常不能互相抢占，控制器/诊断/桥臂借用只存在于该域的一次有限执行中，不能跨 await。硬件事件在 ISR 内完整执行，只有“重新检查状态”的通知允许合并；置 pending 与登记 waker 也在同一不可嵌套域，避免丢失唤醒。线程 I/O 通过短临界区交换复制值，不持有电机引用。改变此优先级布局需要重新审查；同级阻塞时间、ADC 最坏延迟和线程可调度性仍需实板测量，不能由编译通过证明。
 
-UI 每次真实 tick 唤醒最多尝试发送一字节；迟到 UI 的按键观察会过期，不引入原工程没有的 UI 失联故障。HAL操作按需打开时钟，共享门和GPIO配置读改写在短临界区内完成。UI持有普通安全GPIO与UART1/PB12/PB11驱动句柄；最终程序没有直接PAC访问，也不启用 `unstable-pac`。UART保留实际96MHz PCLK下BRRI52/BRRF1的原分频和8N1格式，名义配置115200，实际约115246baud。
+I/O 每次真实 tick 唤醒最多尝试发送一字节；迟到 I/O 的按键观察会过期，不引入原工程没有的 I/O 失联故障。HAL操作按需打开时钟，共享门和GPIO配置读改写在短临界区内完成。I/O持有普通安全GPIO与UART1/PB12/PB11驱动句柄；最终程序没有直接PAC访问，也不启用 `unstable-pac`。UART保留实际96MHz PCLK下BRRI52/BRRF1的原分频和8N1格式，名义配置115200，实际约115246baud。
 
 ```sh
 cargo build --release --target thumbv6m-none-eabi -p cw32-bldc-06-application

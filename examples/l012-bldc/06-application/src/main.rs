@@ -6,10 +6,10 @@ use defmt_rtt as _;
 
 pub mod control;
 pub mod frame_queue;
+mod io;
 mod motor;
 pub mod protection;
 pub mod protocol;
-mod ui;
 
 // Application wiring: each handler runs synchronously in its exact vector.
 embassy_cw32::bind_interrupts!(
@@ -50,7 +50,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
         },
         Irqs,
     );
-    ui::ui_task(p.PC13, p.PA3, p.UART1, p.PB12, p.PB11).await;
+    io::io_task(p.PC13, p.PA3, p.UART1, p.PB12, p.PB11).await;
 }
 
 #[panic_handler]

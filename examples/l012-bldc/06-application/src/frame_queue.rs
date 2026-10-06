@@ -1,5 +1,5 @@
 #![deny(unsafe_code)]
-//! Bounded UART buffering owned exclusively by the application UI task.
+//! Bounded UART buffering owned exclusively by the application I/O task.
 
 /// One immutable in-flight UART frame and one coalescing newest status frame.
 pub struct FrameQueue {

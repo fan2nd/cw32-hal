@@ -437,7 +437,7 @@ impl MotorController {
         self.adc1_age_ms = self.adc1_age_ms.saturating_add(1);
         self.adc2_age_ms = self.adc2_age_ms.saturating_add(1);
         if key_pressed {
-            // UI choice: saturating debounce avoids repeat presses on wrap.
+            // Saturating debounce avoids repeat presses on wrap.
             self.key_hold_ms = self.key_hold_ms.saturating_add(1);
             if self.key_hold_ms == KEY_DEBOUNCE_MS {
                 self.key_pressed(&mut actions);

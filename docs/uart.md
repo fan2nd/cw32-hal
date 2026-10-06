@@ -129,12 +129,12 @@ pinned Embassy USART source also documents.
 
 ## Example 06 compatibility
 
-`examples/l012-bldc/06-application/src/ui.rs` now owns a blocking UART1 driver.
+`examples/l012-bldc/06-application/src/io.rs` now owns a blocking UART1 driver.
 It keeps the original 96 MHz PCLK source encoding 1, BRRI=52, BRRF=1, requested
 115,200 baud (actual approximately 115,246), 8N1, PB12 AF1 TX, PB11 AF1 RX pull-up,
 and both TX/RX enables. UART1 interrupts remain disabled. The task still checks
 TXE and pops at most one byte from the unchanged seven-byte frame queue on each
-UI tick. It still does not consume RX data, so no new command or receive-error
+I/O tick. It still does not consume RX data, so no new command or receive-error
 path affects the motor application. UART2's P1 software motor executor, tick
 publishing, frame replacement rules and motor timing code are unchanged.
 

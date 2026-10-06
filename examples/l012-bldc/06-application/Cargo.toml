@@ -5,7 +5,7 @@ edition = "2021"
 rust-version = "1.99"
 publish = false
 license = "MIT OR Apache-2.0"
-description = "Embassy application composing the L012 motor controller and bounded UI task"
+description = "Embassy application composing the L012 motor controller and bounded I/O task"
 
 [dependencies]
 defmt = { version = "=1.0.1" }

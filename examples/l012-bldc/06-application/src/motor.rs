@@ -1,8 +1,8 @@
 //! Board wiring, motor task and immediate ISR work using explicit motor HAL leases.
 use crate::control::{Actions, Adc1Sample, Bridge, MotorController, TimerCommand, KEY_DEBOUNCE_MS};
+use crate::io::IoFeedback;
 use crate::protection::Adc2Sample;
 use crate::protocol::telemetry_frame;
-use crate::ui::UiFeedback;
 use crate::Irqs;
 use core::sync::atomic::{AtomicBool, Ordering};
 use embassy_cw32::{
@@ -46,7 +46,7 @@ pub struct Diagnostics {
 // Only the P1 motor task and P1 motor handlers access these objects. ARMv6-M
 // does not preempt an active exception with one of equal priority, including
 // software-pended UART2. No borrow crosses await or returns from a handler.
-// Thread-mode UI exchanges copied values only. Fatal exceptions never return.
+// Thread-mode I/O exchanges copied values only. Fatal exceptions never return.
 static mut CONTROLLER: Option<MotorController> = None;
 static mut OUTPUTS_ARMED: bool = false;
 static mut BOOTSTRAP_MS: u8 = 0;
@@ -364,8 +364,8 @@ async fn motor_task(resources: MotorResources) {
                 {
                     last_status = Some(status);
                     last_log_ms = diagnostics.milliseconds;
-                    // Copy only. The thread-mode UI emits RTT after leaving the motor domain.
-                    crate::ui::publish_diagnostics(crate::logging::Snapshot::capture(
+                    // Copy only. The thread-mode I/O emits RTT after leaving the motor domain.
+                    crate::io::publish_diagnostics(crate::logging::Snapshot::capture(
                         controller,
                         diagnostics.milliseconds,
                         diagnostics.adc1,
@@ -392,7 +392,7 @@ unsafe fn apply_actions(
     mut actions: Actions,
     telemetry: Option<[u8; 7]>,
 ) {
-    crate::ui::publish_status(UiFeedback {
+    crate::io::publish_status(IoFeedback {
         led_on: actions.led_on.take(),
         telemetry,
     });
@@ -484,8 +484,8 @@ impl Handler<typelevel::BTIM1> for TickHandler {
             let diagnostics = &mut *core::ptr::addr_of_mut!(DIAGNOSTICS);
             let armed = &mut *core::ptr::addr_of_mut!(OUTPUTS_ARMED);
             diagnostics.milliseconds = diagnostics.milliseconds.wrapping_add(1);
-            crate::ui::publish_ui_tick();
-            let key_pressed = crate::ui::key_sample();
+            crate::io::publish_io_tick();
+            let key_pressed = crate::io::key_sample();
             let step_ticks = BasicTimer::<peripherals::BTIM2>::acquire().counter();
 
             let (motor, telemetry) = {
