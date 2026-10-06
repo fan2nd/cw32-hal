@@ -88,6 +88,29 @@ impl SampleTrace {
         }
     }
 }
+/// 13 号故障的确切检查点；只在故障时填写，不增加逐样本快照复制。
+#[repr(C)]
+#[derive(Clone, Copy)]
+pub struct TimingTrace {
+    pub site: u32,
+    pub start: u16,
+    pub observed: u16,
+    pub limit: u16,
+    pub samples: u16,
+    pub reload_pending: bool,
+}
+impl TimingTrace {
+    const fn new() -> Self {
+        Self {
+            site: 0,
+            start: 0,
+            observed: 0,
+            limit: 0,
+            samples: 0,
+            reload_pending: false,
+        }
+    }
+}
 /// 调试器读取前须物理断开母线；首故障也会在高频源停止后通过 RTT 输出。
 /// 运行中外部读取可能跨越一次更新；不允许其他 Rust 任务借用此对象。
 #[repr(C)]
@@ -112,6 +135,7 @@ pub struct Diagnostics {
     pub pll_error: i32,
     pub qualified_frames: u32,
     pub sample_trace: SampleTrace,
+    pub timing_trace: TimingTrace,
 }
 #[no_mangle]
 pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
@@ -134,6 +158,7 @@ pub static mut FOC_DIAGNOSTICS: Diagnostics = Diagnostics {
     pll_error: 0,
     qualified_frames: 0,
     sample_trace: SampleTrace::new(),
+    timing_trace: TimingTrace::new(),
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -200,6 +225,7 @@ struct Motor {
     max_update_ticks: u16,
     armed: bool,
     sample_trace: SampleTrace,
+    timing_trace: TimingTrace,
 }
 impl Motor {
     fn new(reference_mv: u16) -> Self {
@@ -233,7 +259,29 @@ impl Motor {
             max_update_ticks: 0,
             armed: false,
             sample_trace: SampleTrace::new(),
+            timing_trace: TimingTrace::new(),
         }
+    }
+    #[cold]
+    #[inline(never)]
+    fn trip_timing(
+        &mut self,
+        site: u32,
+        start: u16,
+        observed: u16,
+        limit: u16,
+        reload_pending: bool,
+        pwm: &mut SingleShuntPwm,
+    ) {
+        self.timing_trace = TimingTrace {
+            site,
+            start,
+            observed,
+            limit,
+            samples: self.samples as u16,
+            reload_pending,
+        };
+        self.trip(Fault::Timing, pwm);
     }
     fn trip(&mut self, fault: Fault, pwm: &mut SingleShuntPwm) {
         let first = !self.fault_published;
@@ -263,7 +311,7 @@ impl Motor {
         raw: u16,
         adc: &mut AdcScan<peripherals::ADC1>,
         pwm: &mut SingleShuntPwm,
-    ) {
+    ) -> bool {
         self.calibration_count += 1;
         self.calibration_sum += u32::from(raw);
         self.calibration_min = self.calibration_min.min(raw);
@@ -274,6 +322,7 @@ impl Motor {
                 || self.calibration_max - self.calibration_min > 64
             {
                 self.trip(Fault::Calibration, pwm);
+                return false;
             } else {
                 // 阈值是本示例的实验软件保护值，不是板子额定电流。
                 let delta = (i64::from(CURRENT_TRIP_MA)
@@ -283,7 +332,7 @@ impl Motor {
                     / i64::from(self.vdda_mv * 1_000)) as i32;
                 if self.offset - delta < 0 || self.offset + delta > 4095 {
                     self.trip(Fault::Parameters, pwm);
-                    return;
+                    return false;
                 }
                 adc.configure_watchdog(
                     8,
@@ -291,8 +340,13 @@ impl Motor {
                     (self.offset + delta) as u16,
                 );
                 self.control.finish_calibration();
+                if self.control.state() == State::Fault {
+                    self.trip(self.control.fault(), pwm);
+                    return false;
+                }
             }
         }
+        true
     }
     unsafe fn update_bus(&mut self, pwm: &mut SingleShuntPwm) {
         let mut adc = unsafe { AdcScan::<peripherals::ADC2>::acquire() };
@@ -314,12 +368,14 @@ impl Motor {
                 self.bus_mv = i32::from(raw[0]) * self.vdda_mv * 11 / 4095;
                 if raw[0] >= 4063 {
                     self.trip(Fault::OverVoltage, pwm);
+                    return;
                 }
             }
         }
         self.slow_age = self.slow_age.saturating_add(1);
         if self.slow_age > 30 {
             self.trip(Fault::SampleTimeout, pwm);
+            return;
         }
         if self.frames % 10 == 0 && !self.slow_pending {
             adc.start_software();
@@ -351,6 +407,7 @@ fn publish(m: &Motor) {
         pll_error: s.pll_error,
         qualified_frames: s.qualified_frames,
         sample_trace: m.sample_trace,
+        timing_trace: m.timing_trace,
     };
     unsafe {
         core::ptr::write_volatile(core::ptr::addr_of_mut!(FOC_DIAGNOSTICS), value);
@@ -377,6 +434,15 @@ pub fn report_fault() {
     );
     defmt::error!(
         "ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us"
+    );
+    let t = d.timing_trace;
+    defmt::error!(
+        "TIMING site={} start={} observed={} limit={} reload={} samples={} max_update={} max_control={} ticks",
+        t.site, t.start, t.observed, t.limit, t.reload_pending, t.samples,
+        d.max_update_ticks, d.max_control_ticks,
+    );
+    defmt::error!(
+        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_end 5=control_dt (4800..=14400); 96 ticks/us"
     );
 }
 
@@ -468,17 +534,26 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             let m = (&mut *core::ptr::addr_of_mut!(MOTOR)).as_mut().unwrap();
             let start = pwm.counter();
             if start > sampling::UPDATE_DEADLINE {
-                m.trip(Fault::Timing, &mut pwm);
+                m.trip_timing(
+                    1,
+                    start,
+                    start,
+                    sampling::UPDATE_DEADLINE,
+                    pwm.update_pending(),
+                    &mut pwm,
+                );
+                return;
             }
             if !m.first_frame && (m.samples != 2 || !m.pending_ready) {
                 m.trip(Fault::SampleTimeout, &mut pwm);
+                return;
             }
             m.first_frame = false;
             if pwm.fault_pending() || (m.armed && !pwm.outputs_enabled()) {
                 m.trip(Fault::Driver, &mut pwm);
+                return;
             }
             // 硬件已经 reload：软件身份必须先晋升旧 staged，绝不把 pending 配给旧波形。
-            m.previous = m.active;
             m.active = m.staged;
             m.samples = 0;
             m.frames = m.frames.wrapping_add(1);
@@ -487,9 +562,11 @@ impl Handler<typelevel::ATIM> for PwmHandler {
                 m.control.state(),
                 State::Off | State::Calibrating | State::Fault
             ) {
-                m.pending = Plan::off();
+                // 正常待机的 pending 已在 ADC 尾部准备好；只在停止过渡时覆盖。
+                if m.pending.mode != Mode::Off {
+                    m.pending = Plan::off();
+                }
                 m.active.mode = Mode::Off;
-                m.modulator.reset();
                 pwm.disarm();
                 m.armed = false;
             }
@@ -497,20 +574,41 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             m.staged = m.pending;
             m.pending_ready = false;
             pwm.stage(m.staged.duty(), m.staged.frame.sample);
-            if pwm.counter() > sampling::UPDATE_DEADLINE || pwm.update_pending() {
-                m.trip(Fault::Timing, &mut pwm);
+            let staged_at = pwm.counter();
+            let reload_pending = pwm.update_pending();
+            if staged_at > sampling::UPDATE_DEADLINE || staged_at < start || reload_pending {
+                m.trip_timing(
+                    2,
+                    start,
+                    staged_at,
+                    sampling::UPDATE_DEADLINE,
+                    reload_pending,
+                    &mut pwm,
+                );
+                return;
             }
             if m.active.mode != Mode::Off && m.control.state() != State::Fault && !m.armed {
                 if pwm.arm().is_err() {
                     m.trip(Fault::Driver, &mut pwm);
+                    return;
                 } else {
                     m.armed = true;
                 }
             }
-            if pwm.counter() > sampling::UPDATE_DEADLINE || pwm.update_pending() {
-                m.trip(Fault::Timing, &mut pwm);
+            let armed_at = pwm.counter();
+            let reload_pending = pwm.update_pending();
+            if armed_at > sampling::UPDATE_DEADLINE || armed_at < start || reload_pending {
+                m.trip_timing(
+                    3,
+                    start,
+                    armed_at,
+                    sampling::UPDATE_DEADLINE,
+                    reload_pending,
+                    &mut pwm,
+                );
+                return;
             }
-            m.max_update_ticks = m.max_update_ticks.max(pwm.counter().wrapping_sub(start));
+            m.max_update_ticks = m.max_update_ticks.max(armed_at.wrapping_sub(start));
             RUN_STATUS.store(
                 m.armed as u32 | (m.control.fault() as u32) << 8,
                 Ordering::Release,
@@ -558,8 +656,8 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             m.sample_trace.received[index] = start;
             m.samples += 1;
             m.raw[index] = raw;
-            if m.control.state() == State::Calibrating {
-                m.calibrate(raw, &mut adc, &mut pwm);
+            if m.control.state() == State::Calibrating && !m.calibrate(raw, &mut adc, &mut pwm) {
+                return;
             }
             // 未解锁时电流不会进入控制器，不能让无用的软件除法占住两次 EOS 间隙。
             // 校准仍逐样本累积；解锁后每个样本的电流/电源轨/看门狗检查保持原样。
@@ -571,6 +669,7 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     || adc.watchdog_pending())
             {
                 m.trip(Fault::OverCurrent, &mut pwm);
+                return;
             }
             m.dc_ma[index] = current;
             if index == 0 {
@@ -585,6 +684,9 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             // 慢速 ADC2 的除法放在第二样本后的控制时隙，不能占用 reload
             // 后 700 tick 的五路 CCR 预载/解锁预算。仍在本帧控制截止前检查。
             m.update_bus(&mut pwm);
+            if m.control.state() == State::Fault {
+                return;
+            }
             m.phase_ma = if m.active.mode == Mode::Foc {
                 m.active
                     .frame
@@ -607,10 +709,28 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 m.previous_bus_mv,
                 m.bus_mv,
             );
+            // 本帧已消费 previous，提前保留供下帧使用；ATIM 不再复制第三份 Plan。
+            // 同级 ISR 不嵌套，漏采样时 ATIM 会先关断并返回，绝不晋升半成品。
+            m.previous = m.active;
             m.previous_bus_mv = m.bus_mv;
             let requested =
                 m.control
                     .on_frame_timed(m.phase_ma, applied, m.bus_mv, true, interval_ticks);
+            if m.control.state() == State::Fault {
+                if m.control.fault() == Fault::Timing {
+                    m.trip_timing(
+                        5,
+                        0,
+                        interval_ticks,
+                        PWM_TICKS * 3 / 2,
+                        pwm.update_pending(),
+                        &mut pwm,
+                    );
+                } else {
+                    m.trip(m.control.fault(), &mut pwm);
+                }
+                return;
+            }
             let frame = if matches!(
                 m.control.state(),
                 State::Align | State::OpenLoop | State::Blend | State::ClosedLoop
@@ -619,10 +739,11 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     Some(f) => f,
                     None => {
                         m.trip(Fault::SampleInvalid, &mut pwm);
-                        Frame::initial()
+                        return;
                     }
                 }
             } else {
+                m.modulator.reset();
                 Frame::initial()
             };
             m.pending = Plan::for_state(frame, m.control.state());
@@ -633,11 +754,17 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             let end = pwm.counter();
             m.sample_trace.previous_irq_end = end;
             m.max_control_ticks = m.max_control_ticks.max(end.wrapping_sub(start));
-            if end >= sampling::CONTROL_DEADLINE || end < start || pwm.update_pending() {
-                m.trip(Fault::Timing, &mut pwm);
-            }
-            if m.control.state() == State::Fault {
-                m.trip(m.control.fault(), &mut pwm);
+            let reload_pending = pwm.update_pending();
+            if end >= sampling::CONTROL_DEADLINE || end < start || reload_pending {
+                m.trip_timing(
+                    4,
+                    start,
+                    end,
+                    sampling::CONTROL_DEADLINE,
+                    reload_pending,
+                    &mut pwm,
+                );
+                return;
             }
         }
     }
