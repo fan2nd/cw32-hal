@@ -200,7 +200,7 @@ impl Motor {
         let first = !self.fault_published;
         self.control.trip(fault);
         self.armed = false;
-        RUN_STATUS.store(2, Ordering::Release);
+        RUN_STATUS.store((self.control.fault() as u32) << 8, Ordering::Release);
         self.pending = Plan::off();
         self.pending_ready = true;
         // 故障时刻立即关断 MOE；不等待下一次 update，也不自动复位错误旗标。
@@ -312,9 +312,10 @@ fn publish(m: &Motor) {
     }
 }
 
-pub fn running_or_fault() -> (bool, bool) {
+/// 同一次原子读取给出解锁状态和首个锁存故障码；0 表示无故障。
+pub fn running_and_fault_code() -> (bool, u8) {
     let status = RUN_STATUS.load(Ordering::Acquire);
-    (status & 1 != 0, status & 2 != 0)
+    (status & 1 != 0, (status >> 8) as u8)
 }
 
 #[embassy_executor::task]
@@ -428,7 +429,6 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             m.staged = m.pending;
             m.pending_ready = false;
             pwm.stage(m.staged.duty(), m.staged.frame.sample);
-            m.update_bus(&mut pwm);
             if pwm.counter() > sampling::UPDATE_DEADLINE || pwm.update_pending() {
                 m.trip(Fault::Timing, &mut pwm);
             }
@@ -444,7 +444,7 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             }
             m.max_update_ticks = m.max_update_ticks.max(pwm.counter().wrapping_sub(start));
             RUN_STATUS.store(
-                m.armed as u32 | ((m.control.state() == State::Fault) as u32) << 1,
+                m.armed as u32 | (m.control.fault() as u32) << 8,
                 Ordering::Release,
             );
         }
@@ -485,6 +485,9 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if index == 0 {
                 return;
             }
+            // 慢速 ADC2 的除法放在第二样本后的控制时隙，不能占用 reload
+            // 后 700 tick 的五路 CCR 预载/解锁预算。仍在本帧控制截止前检查。
+            m.update_bus(&mut pwm);
             m.phase_ma = if m.active.mode == Mode::Foc {
                 m.active
                     .frame

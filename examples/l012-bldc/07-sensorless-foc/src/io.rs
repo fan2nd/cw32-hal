@@ -47,12 +47,25 @@ async fn next_tick(last: &mut u32) {
     .await
 }
 
+/// 故障码对应 control::Fault：200 ms 亮、200 ms 灭，组间额外灭 1600 ms。
+/// 相对首次看到故障的时刻计时，避免开头从一组中间闪起。
+fn fault_led_on(elapsed_ms: u32, code: u8) -> bool {
+    if code == 0 {
+        return false;
+    }
+    let pulses_ms = u32::from(code) * 400;
+    let phase = elapsed_ms % (pulses_ms + 1600);
+    phase < pulses_ms && phase % 400 < 200
+}
+
 #[embassy_executor::task]
 pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, peripherals::PA3>) {
     let mut led = Output::new(led, Level::High);
     let key = Input::new(key, Pull::Up);
     let mut previous = 0;
     let mut held = 0u16;
+    let mut previous_fault = 0u8;
+    let mut fault_since = 0u32;
     let mut released = false; // PA3 是 VSR/ESC 接口，不是图上的板载按键。
     let mut release_count = 0u16; // 手动开关模式必须先连续释放 60 ms。
     loop {
@@ -77,8 +90,16 @@ pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, p
                 released = true;
             }
         }
-        let (running, fault) = crate::hardware::running_or_fault();
-        let on = if fault { previous % 200 < 100 } else { running };
+        let (running, fault) = crate::hardware::running_and_fault_code();
+        if fault != previous_fault {
+            previous_fault = fault;
+            fault_since = previous;
+        }
+        let on = if fault != 0 {
+            fault_led_on(previous.wrapping_sub(fault_since), fault)
+        } else {
+            running
+        };
         if on {
             led.set_low();
         } else {
