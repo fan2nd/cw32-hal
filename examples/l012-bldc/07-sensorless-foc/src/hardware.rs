@@ -24,6 +24,7 @@ use embassy_cw32::{
 /// 字段用于独占保留单例，避免其他驱动复用电机引脚和外设。
 #[allow(dead_code)]
 pub struct MotorResources {
+    pub flash: Peri<'static, peripherals::FLASH>,
     pub eau: Peri<'static, peripherals::EAU>,
     pub atim: Peri<'static, peripherals::ATIM>,
     pub adc1: Peri<'static, peripherals::ADC1>,
@@ -102,7 +103,8 @@ impl Arithmetic for HardwareMath<'_> {
     fn div(&mut self, n: i32, d: i32) -> i32 {
         self.div_rem(n, d).0
     }
-    #[inline(always)]
+    // 共用一个紧凑入口；HAL 内联到此，避免每个控制调用点复制错误关断代码。
+    #[inline(never)]
     fn div_rem(&mut self, n: i32, d: i32) -> (i32, i32) {
         if self.failed {
             return (0, 0);
@@ -111,7 +113,7 @@ impl Arithmetic for HardwareMath<'_> {
         self.accept(result)
             .map_or((0, 0), |r| (r.quotient, r.remainder))
     }
-    #[inline(always)]
+    #[inline(never)]
     fn rem_unsigned(&mut self, n: u32, d: u32) -> u32 {
         if self.failed {
             return 0;
@@ -119,7 +121,7 @@ impl Arithmetic for HardwareMath<'_> {
         let result = self.eau.divide_unsigned(n, d, 64);
         self.accept(result).map_or(0, |r| r.remainder)
     }
-    #[inline(always)]
+    #[inline(never)]
     fn sqrt(&mut self, value: u32) -> u32 {
         if self.failed {
             return 0;
@@ -604,7 +606,7 @@ pub fn report_fault() {
     );
     defmt::error!("CONTROL stages supply/reconstruct/interval/control/modulate: last={:?} max={:?} ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true", d.stage_ticks, d.max_stage_ticks);
     defmt::error!(
-        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (6000..=18000); 96 ticks/us"
+        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us"
     );
 }
 
@@ -887,6 +889,25 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if m.control.state() == State::Fault {
                 return;
             }
+            // 加权 RL 运算只接受已验证的供电范围；在相电流预测前拦截异常母线。
+            // Off/Calibrating 仍允许未接母线，启动/运行沿用原欠压和过压门限。
+            if matches!(
+                m.control.state(),
+                State::Bootstrap
+                    | State::Align
+                    | State::OpenLoop
+                    | State::Blend
+                    | State::ClosedLoop
+            ) {
+                if m.bus_mv > BUS_MAX_MV {
+                    m.trip(Fault::OverVoltage, math.pwm);
+                    return;
+                }
+                if m.bus_mv < BUS_MIN_MV {
+                    m.trip(Fault::UnderVoltage, math.pwm);
+                    return;
+                }
+            }
             if !m.checkpoint_control(math.pwm, start, 0) {
                 return;
             }
@@ -906,7 +927,7 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if !m.checkpoint_control(math.pwm, start, 1) {
                 return;
             }
-            let (applied, interval_ticks) = m.active.frame.interval_voltage(
+            let interval = m.active.frame.interval_rl(
                 &m.previous.frame,
                 if m.previous.mode == Mode::Foc {
                     m.previous.frame.duty
@@ -932,14 +953,9 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             // 同级 ISR 不嵌套，漏采样时 ATIM 会先关断并返回，绝不晋升半成品。
             m.previous = m.active;
             m.previous_bus_mv = m.bus_mv;
-            let requested = m.control.on_frame_timed(
-                m.phase_ma,
-                applied,
-                m.bus_mv,
-                true,
-                interval_ticks,
-                &mut math,
-            );
+            let requested = m
+                .control
+                .on_frame_timed(m.phase_ma, interval, m.bus_mv, true, &mut math);
             if !m.check_arithmetic(&mut math) {
                 return;
             }
@@ -948,8 +964,8 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                     m.trip_timing(
                         5,
                         0,
-                        interval_ticks,
-                        PWM_TICKS * 3 / 2,
+                        interval.dt_ticks,
+                        PWM_TICKS + PWM_TICKS / 2,
                         math.pwm.update_pending(),
                         math.pwm,
                     );

@@ -1,10 +1,11 @@
 #![deny(unsafe_code)]
-//! 8 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
-//! 输入电压是两个电流保持时刻间按实际 PWM 开关状态积分的平均 αβ 电压。
-//! 板级将首样本运输到第二保持时刻，并传入真实 dt，不能回填未限幅指令。
-//! R/L 电压模型假定两次电流为同一时刻的相电流；错位采样及 PWM 纹波是误差源。
+//! 4 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
+//! 输入为两个电流保持时刻间、按实际 PWM 开关边沿指数加权的 RL 电压响应。
+//! 板级将首样本运输到第二保持时刻，并传入真实 RL 区间，不能回填未限幅指令。
+//! 每组相电流对齐至各自第二保持时刻；RL 逆解假定区间内反电势近似恒定。
 //! CCR 重建不包含死区、管压降或 ADC 延迟误差，观测器不能代替实板标定。
 
+use crate::sampling::RlInterval;
 use crate::{arithmetic::Arithmetic, config::*};
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -196,12 +197,12 @@ impl Control {
     pub fn on_frame_timed(
         &mut self,
         phase_ma: [i32; 3],
-        actual_voltage_mv: [i32; 2],
+        interval: RlInterval,
         bus_mv: i32,
         sample_valid: bool,
-        dt_ticks: u16,
         math: &mut impl Arithmetic,
     ) -> [i32; 2] {
+        let dt_ticks = interval.dt_ticks;
         // 必须先复位再消费任何控制输入；启动时首个物理帧仍是 Off，
         // 新 Bootstrap 计划仅在本次计算之后产生，下一次真实 reload 才能预载。
         if self.reset_pending {
@@ -215,7 +216,7 @@ impl Control {
         }
         let fault = if !sample_valid {
             Fault::SampleInvalid
-        } else if !(PWM_TICKS / 2..=PWM_TICKS * 3 / 2).contains(&dt_ticks) {
+        } else if !(PWM_TICKS / 2..=(PWM_TICKS + PWM_TICKS / 2)).contains(&dt_ticks) {
             Fault::Timing
         } else if phase_ma
             .iter()
@@ -227,9 +228,7 @@ impl Control {
         } else if bus_mv < BUS_MIN_MV {
             Fault::UnderVoltage
         } else if (phase_ma[0] + phase_ma[1] + phase_ma[2]).abs() > CURRENT_SUM_LIMIT_MA
-            || actual_voltage_mv
-                .iter()
-                .any(|&v| !(-BUS_MAX_MV..=BUS_MAX_MV).contains(&v))
+            || !interval.valid()
         {
             Fault::SampleInvalid
         } else {
@@ -255,8 +254,7 @@ impl Control {
             self.state,
             State::OpenLoop | State::Blend | State::ClosedLoop
         ) {
-            self.observer
-                .update(current, actual_voltage_mv, dt_ticks, math);
+            self.observer.update(current, interval, math);
         }
 
         if math.failed() {
@@ -444,10 +442,15 @@ impl Pi {
         dt_ticks: u16,
         math: &mut impl Arithmetic,
     ) -> (i32, i32) {
-        let ki = math.div(
-            self.ki * i32::from(dt_ticks) + i32::from(PWM_TICKS) / 2,
-            i32::from(PWM_TICKS),
-        );
+        // 标称间隔的缩放恒等于 ki；避开两轴及慢速速度环的重复 EAU 调用。
+        let ki = if dt_ticks == PWM_TICKS {
+            self.ki
+        } else {
+            math.div(
+                self.ki * i32::from(dt_ticks) + i32::from(PWM_TICKS) / 2,
+                i32::from(PWM_TICKS),
+            )
+        };
         let integral = self
             .integral
             .saturating_add(error * ki)
@@ -500,24 +503,24 @@ impl Observer {
         self.previous_current = current;
     }
 
-    fn update(
-        &mut self,
-        current: [i32; 2],
-        applied: [i32; 2],
-        dt_ticks: u16,
-        math: &mut impl Arithmetic,
-    ) {
+    fn update(&mut self, current: [i32; 2], interval: RlInterval, math: &mut impl Arithmetic) {
+        let dt_ticks = interval.dt_ticks;
+        let decay = i32::from(interval.decay_q15);
         for axis in 0..2 {
-            let average = (current[axis] + self.previous_current[axis]) / 2;
-            let resistive = math.div(MODEL_PHASE_R_MILLIOHM * average, 1000);
-            // μH·ΔmA·96 / ATIMticks = mV；商/余数分解避免 M0+ 的 64 位除法。
-            let inductive = mul_div(
-                MODEL_PHASE_L_UH * (current[axis] - self.previous_current[axis]),
-                (CPU_HZ / 1_000_000) as i32,
-                i32::from(dt_ticks),
-                math,
+            // i1=a*i0+Vresponse/R-e*(1-a)/R；不可使用端点电流平均代替 PWM 电流积分。
+            // 先把预测电流量化到 mA，再计算 R·Δi，避免 Q15·R 的中间乘积溢出。
+            let old_predicted = (decay * self.previous_current[axis]) / 32768;
+            let resistive = math.div(
+                MODEL_PHASE_R_MILLIOHM * (current[axis] - old_predicted),
+                1000,
             );
-            let emf = (applied[axis] - resistive - inductive).clamp(-BUS_MAX_MV, BUS_MAX_MV);
+            let emf = mul_div(
+                interval.voltage_response_mv[axis] - resistive,
+                32768,
+                32768 - decay,
+                math,
+            )
+            .clamp(-BUS_MAX_MV, BUS_MAX_MV);
             self.emf_q8[axis] +=
                 (((emf << 8) - self.emf_q8[axis]) * BEMF_FILTER_NUMERATOR) >> BEMF_FILTER_SHIFT;
         }
@@ -529,7 +532,7 @@ impl Observer {
         if self.magnitude < BEMF_MIN_MV / 4 {
             self.phase = self.phase.wrapping_add(increment as u32);
             self.error = 32767;
-            self.correct_angle(dt_ticks, math);
+            self.correct_angle(interval, math);
             return;
         }
         // 正转时 eα=-E sinθ，eβ=E cosθ；仅测得的反电势可修正 PLL。
@@ -545,17 +548,23 @@ impl Observer {
             const { speed_step_const(PLL_MAX_MILLIHZ) },
         );
         self.phase = predicted.wrapping_add((self.error * PLL_KP_Q16) as u32);
-        self.correct_angle(dt_ticks, math);
+        self.correct_angle(interval, math);
     }
 
-    fn correct_angle(&mut self, dt_ticks: u16, math: &mut impl Arithmetic) {
-        // 滤波低频群延迟 + 当前差分区间的半个 dt；校正值只计算一次。
+    fn correct_angle(&mut self, interval: RlInterval, math: &mut impl Arithmetic) {
+        // 反电势逆解是指数加权区间平均，其质心年龄为 L/R-T*a/(1-a)。
+        // τ 的编译期截断误差不足 1 tick；质心另含 Q15 衰减系数量化误差。
+        const TAU_TICKS: i32 = (CPU_HZ / 1000) as i32 * MODEL_PHASE_L_UH / MODEL_PHASE_R_MILLIOHM;
+        let decay = i32::from(interval.decay_q15);
+        let dt_ticks = i32::from(interval.dt_ticks);
+        let emf_age_ticks =
+            (TAU_TICKS - math.div(dt_ticks * decay, 32768 - decay)).clamp(0, dt_ticks) as u16;
         let advance = mul_div(
             self.speed,
             (1 << BEMF_FILTER_SHIFT) - BEMF_FILTER_NUMERATOR,
             BEMF_FILTER_NUMERATOR,
             math,
-        ) + scale_dt(self.speed, dt_ticks, math) / 2;
+        ) + scale_dt(self.speed, emf_age_ticks, math);
         self.corrected_angle = (self.phase.wrapping_add(advance as u32) >> 16) as u16;
     }
 
@@ -574,7 +583,12 @@ impl Observer {
 
 fn clarke(i: [i32; 3], math: &mut impl Arithmetic) -> [i32; 2] {
     [
-        math.div(2 * i[0] - i[1] - i[2], 3),
+        // 单电阻重建已满足 KCL；保留非零电流和输入的原始精确除法。
+        if i[0] + i[1] + i[2] == 0 {
+            i[0]
+        } else {
+            math.div(2 * i[0] - i[1] - i[2], 3)
+        },
         (i[1] - i[2]) * 18919 >> 15,
     ]
 }
@@ -623,7 +637,11 @@ fn slew(value: i32, target: i32, amount: i32) -> i32 {
 
 // 定点整数运算；没有浮点或运行时三角函数。
 fn scale_dt(value: i32, dt_ticks: u16, math: &mut impl Arithmetic) -> i32 {
-    mul_div(value, i32::from(dt_ticks), i32::from(PWM_TICKS), math)
+    if dt_ticks == PWM_TICKS {
+        value
+    } else {
+        mul_div(value, i32::from(dt_ticks), i32::from(PWM_TICKS), math)
+    }
 }
 
 // divisor > 0；有效参数保证两个小乘积不溢出，正负输入均等于向零截断。
@@ -633,10 +651,10 @@ fn mul_div(value: i32, multiplier: i32, divisor: i32, math: &mut impl Arithmetic
 }
 
 const fn speed_step_const(millihz: i32) -> i32 {
-    // 8 kHz：2^32/8e6 = 536 + 13608/15625；|mHz| <= 100000 时
-    // 最大分数乘积 1,360,800,000，避免 M0+ 的 64 位除法并保持精确截断。
+    // 4 kHz：2^32/4e6 = 1073 + 11591/15625；|mHz| <= 100000 时
+    // 最大分数乘积 1,159,100,000，避免 M0+ 的 64 位除法并保持精确截断。
     let magnitude = millihz.unsigned_abs();
-    let step = magnitude * 536 + magnitude * 13_608 / 15_625;
+    let step = magnitude * 1073 + magnitude * 11_591 / 15_625;
     if millihz < 0 {
         -(step as i32)
     } else {
@@ -650,7 +668,7 @@ fn speed_millihz(step: i32) -> i32 {
 
 fn speed_step(millihz: i32, math: &mut impl Arithmetic) -> i32 {
     let magnitude = millihz.abs();
-    let step = magnitude * 536 + math.div(magnitude * 13_608, 15_625);
+    let step = magnitude * 1073 + math.div(magnitude * 11_591, 15_625);
     if millihz < 0 {
         -step
     } else {

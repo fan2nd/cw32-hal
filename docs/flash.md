@@ -216,3 +216,20 @@ Primary hardware sources:
 No erase/program operation on a physical device was performed for this release.
 Compile/API checks and external protocol probes cannot establish voltage,
 endurance, power-loss behavior or silicon timing.
+
+
+## L012 read acceleration
+
+`flash::enable_read_acceleration(&mut p.FLASH)` is a narrow L012-only startup
+operation. It enables instruction prefetch and read caching with a keyed CR2
+read-modify-write, preserving the RCC-selected wait states. It rejects busy,
+non-read-mode or active-invalidation states and verifies readback. The return
+value reports the wait-state count and previous prefetch/cache enables.
+It does not reset, erase, program, unlock or change protection. Borrowing the
+singleton prevents concurrent use by `Flash` through safe HAL ownership.
+The temporary AHB clock guard controls the configuration interface only.
+
+Example 07 invokes this before PWM, preserves three wait states at 96 MHz,
+performs DSB/ISB and retains the singleton without Flash mutations. Examples
+01–06 do not opt in. Cache/prefetch do not establish a real-time execution bound;
+Flash mutation still requires the full cache and concurrency rules above.

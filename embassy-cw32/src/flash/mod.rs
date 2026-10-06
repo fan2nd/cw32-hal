@@ -25,6 +25,53 @@ pub const WRITE_SIZE: usize = 1;
 /// Erase page size, in bytes.
 pub const ERASE_SIZE: usize = 512;
 
+/// 已验证的 L012 读加速配置及配置前状态，供启动诊断使用。
+#[cfg(flash_l012)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ReadAcceleration {
+    pub wait_states: u8,
+    pub prefetch_was_enabled: bool,
+    pub cache_was_enabled: bool,
+}
+
+/// 启用 L012 指令预取和读缓存；保持 RCC 已配置的等待周期，不执行擦写或复位。
+/// 借用 FLASH 单例，禁止与擦写驱动同时配置。调用者仍须满足芯片频率/供电限制。
+#[cfg(flash_l012)]
+pub fn enable_read_acceleration(
+    _peripheral: &mut Peri<'_, FLASH>,
+) -> Result<ReadAcceleration, Error> {
+    let mut clock = FLASH::acquire_no_reset();
+    critical_section::with(|_| {
+        if busy() {
+            clock.pin();
+            return Err(Error::Busy);
+        }
+        let before = pac::FLASH.cr2().read();
+        if pac::FLASH.cr1().read().mode() != 0 || before.cacheinvalid() {
+            return Err(Error::Configuration);
+        }
+        // RM1.4 §7.10.2；沿用官方 SDK 的带 KEY 读改写，绝不减少 WAIT。
+        let mut control = before;
+        control.set_key(0x5a5a);
+        control.set_fetch(true);
+        control.set_cache(true);
+        pac::FLASH.cr2().write_value(control);
+        let actual = pac::FLASH.cr2().read();
+        if actual.wait() != before.wait()
+            || !actual.fetch()
+            || !actual.cache()
+            || actual.cacheinvalid()
+        {
+            return Err(Error::Configuration);
+        }
+        Ok(ReadAcceleration {
+            wait_states: actual.wait(),
+            prefetch_was_enabled: before.fetch(),
+            cache_was_enabled: before.cache(),
+        })
+    })
+}
+
 /// Flash operation error. A write/erase error may leave a partial result.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]

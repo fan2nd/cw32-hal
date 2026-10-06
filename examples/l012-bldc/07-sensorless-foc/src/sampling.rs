@@ -1,7 +1,7 @@
 //! 单电阻采样重建与可测量 PWM。时间单位为 96 MHz ATIM 计数。
 //! 边沿对齐 PWM1：两桥上管导通时 Idc=-I首降相，一桥上管时 Idc=I末降相。
 use crate::arithmetic::Arithmetic;
-use crate::config::{CPU_HZ, MODEL_PHASE_L_UH, MODEL_PHASE_R_MILLIOHM, PWM_TICKS};
+use crate::config::{BUS_MAX_MV, CPU_HZ, MODEL_PHASE_L_UH, MODEL_PHASE_R_MILLIOHM, PWM_TICKS};
 
 pub const DEAD_TICKS: u16 = 96; // 外加 1 us；不能代替示波器测量驱动传播与 MOS 管关断。
 pub const BLANK_TICKS: u16 = 240; // 开关沿后等待 2.5 us，包含死区和模拟建立预算。
@@ -23,8 +23,15 @@ pub struct Frame {
 impl Frame {
     pub const fn initial() -> Self {
         Self {
-            duty: [2640, 3600, 4560],
-            sample: [2640 + BLANK_TICKS, 3600 + BLANK_TICKS],
+            duty: [
+                DUTY_MIN,
+                DUTY_MIN + WINDOW_TICKS,
+                DUTY_MIN + 2 * WINDOW_TICKS,
+            ],
+            sample: [
+                DUTY_MIN + BLANK_TICKS,
+                DUTY_MIN + WINDOW_TICKS + BLANK_TICKS,
+            ],
             order: [0, 1, 2],
         }
     }
@@ -87,28 +94,26 @@ impl Frame {
         math: &mut impl Arithmetic,
     ) -> [i32; 3] {
         let mut phase = self.reconstruct(dc_ma);
-        let start = i32::from(self.hold_tick(0));
-        let end = i32::from(self.hold_tick(1));
-        let dt = end - start;
-        let high_ticks = self.duty.map(|d| (i32::from(d) - start).clamp(0, dt));
+        let dt = self.hold_tick(1) - self.hold_tick(0);
         let first = self.order[0];
-        let sum = high_ticks.iter().sum::<i32>();
-        let volt_ticks = math.div((3 * high_ticks[first] - sum) * bus_mv, 3);
         let [ea, eb] = emf_ab_mv;
         let e_b = (-ea + eb + ((eb * 23_988) >> 15)) / 2;
         let emf = [ea, e_b, -ea - e_b][first];
-        let resistance_mv = math.div(phase[first] * MODEL_PHASE_R_MILLIOHM, 1_000);
-        let delta = math.div(
-            volt_ticks - (resistance_mv + emf) * dt,
-            (CPU_HZ / 1_000_000) as i32 * MODEL_PHASE_L_UH,
-        );
-        phase[first] += delta;
+        let decay = decay_q15(dt);
+        // 首降相在中间桥臂下降前为 -2Vbus/3，之后为 -Vbus/3。
+        let tail_decay = decay_q15(self.hold_tick(1) - self.duty[self.order[1]]);
+        let voltage_q15 =
+            -math.div(bus_mv * (32768 + tail_decay - 2 * decay), 3) - emf * (32768 - decay);
+        // 先除 R 再乘 1000；配置 R>=1Ω、Vbus<=16V、|Idc|<=2A 保证 i32 范围。
+        let response_ma_q15 = math.div(voltage_q15, MODEL_PHASE_R_MILLIOHM) * 1000;
+        phase[first] = (decay * phase[first] + response_ma_q15) / 32768;
         phase[self.order[1]] = -phase[first] - phase[self.order[2]];
         phase
     }
-    /// 第二保持时刻之间的理想 PWM 电压积分，包含前帧尾部与本帧头部。
-    /// bus 可分别取两帧实测值。Off/Bootstrap 传全零占空比（相电压为零）。
-    pub fn interval_voltage(
+    /// 两个第二保持时刻间的 RL 电压响应，包含前帧尾部与本帧头部。
+    /// 每个导通区间 [s,e] 的权重为 exp(-R(T-e)/L)-exp(-R(T-s)/L)。
+    /// Off/Bootstrap 传全零占空比；两帧分别使用对应实测 Vbus。
+    pub fn interval_rl(
         &self,
         previous: &Frame,
         previous_duty: [u16; 3],
@@ -116,25 +121,28 @@ impl Frame {
         previous_bus_mv: i32,
         bus_mv: i32,
         math: &mut impl Arithmetic,
-    ) -> ([i32; 2], u16) {
+    ) -> RlInterval {
         let old_t = previous.hold_tick(1);
         let now_t = self.hold_tick(1);
-        let dt = PWM_TICKS - old_t + now_t;
-        let mut volt_ticks = [0i32; 3];
+        let dt_ticks = PWM_TICKS - old_t + now_t;
+        let decay = decay_q15(dt_ticks);
+        let now_decay = decay_q15(now_t);
+        let mut pole_q15 = [0i32; 3];
         for phase in 0..3 {
             let old_high = previous_duty[phase].saturating_sub(old_t);
             let new_high = duty[phase].min(now_t);
-            volt_ticks[phase] =
-                i32::from(old_high) * previous_bus_mv + i32::from(new_high) * bus_mv;
+            pole_q15[phase] = previous_bus_mv * (decay_q15(dt_ticks - old_high) - decay)
+                + bus_mv * (decay_q15(now_t - new_high) - now_decay);
         }
-        let [a, b, c] = volt_ticks;
-        (
-            [
-                math.div(2 * a - b - c, 3 * i32::from(dt)),
-                (math.div(b - c, i32::from(dt)) * 18_919) >> 15,
+        let [a, b, c] = pole_q15;
+        RlInterval {
+            dt_ticks,
+            decay_q15: decay as u16,
+            voltage_response_mv: [
+                math.div(2 * a - b - c, 3 * 32768),
+                (((b - c) / 32768) * 18_919) >> 15,
             ],
-            dt,
-        )
+        }
     }
 }
 
@@ -158,7 +166,7 @@ impl Modulator {
         bus_mv: i32,
         math: &mut impl Arithmetic,
     ) -> Option<Frame> {
-        if !(1_000..=55_000).contains(&bus_mv) {
+        if !(1_000..=BUS_MAX_MV).contains(&bus_mv) {
             return None;
         }
         let [alpha, beta] = voltage_mv;
@@ -197,7 +205,8 @@ impl Modulator {
         let high = demand[c].max(demand[b] + w);
         low = low.max(high - available);
         let mid = demand[b].clamp(low + w, high - w);
-        let common = (i32::from(DUTY_MIN + DUTY_MAX) - low - high) / 2;
+        // 公共模平移不改变相间电压，将两次采样提前以增加计算余量。
+        let common = i32::from(DUTY_MIN) - low;
         let mut duty = [0; 3];
         duty[a] = (low + common) as u16;
         duty[b] = (mid + common) as u16;
@@ -220,4 +229,66 @@ impl Modulator {
         }
         Some(frame)
     }
+}
+
+/// 指数加权 RL 电压响应；不是平均电压，禁止混入普通 PWM 占空比平均值。
+#[derive(Clone, Copy, Debug)]
+pub struct RlInterval {
+    pub dt_ticks: u16,
+    pub decay_q15: u16,
+    pub voltage_response_mv: [i32; 2],
+}
+
+impl RlInterval {
+    pub fn valid(&self) -> bool {
+        (PWM_TICKS / 2..=PWM_TICKS + PWM_TICKS / 2).contains(&self.dt_ticks)
+            && i32::from(self.decay_q15) == decay_q15(self.dt_ticks)
+            && self.decay_q15 < 32768
+            && self
+                .voltage_response_mv
+                .iter()
+                .all(|v| (-BUS_MAX_MV..=BUS_MAX_MV).contains(v))
+    }
+}
+
+/// 256 tick 网格的线性插值；所有表项从配置 R/L 在编译期计算。
+/// 运行时只有查表、i32 乘法和移位，无浮点、幂函数或宽整数除法。
+pub fn decay_q15(ticks: u16) -> i32 {
+    let index = usize::from(ticks >> 8);
+    let fraction = i32::from(ticks & 255);
+    let a = i32::from(RL_DECAY_Q15[index]);
+    let b = i32::from(RL_DECAY_Q15[index + 1]);
+    a - (((a - b) * fraction + 128) >> 8)
+}
+
+const RL_DECAY_Q15: [u16; 257] = build_decay_table();
+const fn build_decay_table() -> [u16; 257] {
+    // 只在编译期使用 i128。先算 exp(-x/16)，再平方四次。
+    // 配置范围内 x/16<=1.71；24 项 Q48 Taylor 的误差远小于 Q15 量化。
+    assert!(MODEL_PHASE_R_MILLIOHM >= 1000 && MODEL_PHASE_R_MILLIOHM <= 4000);
+    assert!(MODEL_PHASE_L_UH >= 100 && MODEL_PHASE_L_UH <= 5000);
+    assert!(CPU_HZ == 96_000_000);
+    const ONE: i128 = 1i128 << 48;
+    let mut table = [0u16; 257];
+    let mut index = 0usize;
+    while index < table.len() {
+        let x = index as i128 * 256 * MODEL_PHASE_R_MILLIOHM as i128 * ONE
+            / ((CPU_HZ / 1000) as i128 * MODEL_PHASE_L_UH as i128 * 16);
+        let mut term = ONE;
+        let mut sum = ONE;
+        let mut order = 1i128;
+        while order <= 24 {
+            term = -term * x / ONE / order;
+            sum += term;
+            order += 1;
+        }
+        let mut square = 0;
+        while square < 4 {
+            sum = (sum * sum + ONE / 2) / ONE;
+            square += 1;
+        }
+        table[index] = ((sum * 32768 + ONE / 2) / ONE) as u16;
+        index += 1;
+    }
+    table
 }

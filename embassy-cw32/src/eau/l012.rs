@@ -69,6 +69,7 @@ impl<'d, T: Instance> Eau<'d, T> {
         // SAFETY: exclusive clocked peripheral; status reads have no side effects.
         T::regs().csr().read().busy()
     }
+    #[inline(always)]
     pub fn divide_unsigned(
         &mut self,
         dividend: u32,
@@ -81,6 +82,7 @@ impl<'d, T: Instance> Eau<'d, T> {
             poll_budget,
         )
     }
+    #[inline(always)]
     pub fn divide_signed(
         &mut self,
         dividend: i32,
@@ -97,6 +99,7 @@ impl<'d, T: Instance> Eau<'d, T> {
             remainder: result.remainder as i32,
         })
     }
+    #[inline(always)]
     pub fn sqrt(&mut self, value: u32, poll_budget: u32) -> Result<SquareRoot, Error> {
         let result = run(
             &mut Hardware::<T>(PhantomData),
@@ -198,6 +201,9 @@ fn status_error(mode: Mode, status: u32) -> Result<(), Error> {
     }
     Ok(())
 }
+// 将操作描述折叠进各个有类型入口，避免 Cortex-M0+ 热路径重复搬运 Operation/Result。
+// 不改变寄存器顺序、错误检查或有限轮询预算。
+#[inline(always)]
 fn run(
     backend: &mut impl Backend,
     op: Operation,

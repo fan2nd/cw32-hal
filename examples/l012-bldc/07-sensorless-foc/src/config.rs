@@ -5,7 +5,7 @@
 // 已采用用户线间测量值的等效模型，仍需限流、空载台架验证。
 
 pub const CPU_HZ: u32 = 96_000_000;
-pub const PWM_HZ: u32 = 8_000;
+pub const PWM_HZ: u32 = 4000;
 pub const CONTROL_HZ: u32 = PWM_HZ;
 pub const PWM_TICKS: u16 = (CPU_HZ / PWM_HZ) as u16;
 pub const ADC_NOMINAL_VDDA_MV: i32 = 5000;
@@ -27,7 +27,7 @@ pub const BUS_MAX_MV: i32 = 16000;
 pub const ALIGN_ID_MA: i32 = 150;
 pub const STARTUP_CURRENT_MA: i32 = 200;
 pub const RUN_IQ_MAX_MA: i32 = 250;
-pub const CURRENT_SLEW_MA_PER_FRAME: i32 = 1; // 8 A/s，比原 10 A/s 略慢，保留每帧 1 mA 的低电流起步。
+pub const CURRENT_SLEW_MA_PER_FRAME: i32 = 2; // 4 kHz × 2 mA = 8 A/s，保留原物理爬升速率。
 
 // 用户测得任意两根电机引线之间 6.7 Ω、静态 1.75 mH；不是独立相绕组测量。
 pub const LINE_TO_LINE_R_MILLIOHM: i32 = 6700;
@@ -36,10 +36,10 @@ pub const LINE_TO_LINE_L_UH: i32 = 1750;
 // 静态电感随转子位置、测试频率、互感及凸极性变化，必须动态校核。
 pub const MODEL_PHASE_R_MILLIOHM: i32 = LINE_TO_LINE_R_MILLIOHM / 2;
 pub const MODEL_PHASE_L_UH: i32 = LINE_TO_LINE_L_UH / 2;
-// 50 Hz 电流环起点：Kp=L·2π50≈0.27489 Ω；Ki=R·2π50/8000≈0.13155。
+// 50 Hz 电流环起点：Kp=L·2π50≈0.27489 Ω；Ki=R·2π50/4000≈0.26310。
 // mV/mA 与 Ω 等价；Ki 已包含 nominal 1/CONTROL_HZ，实时再按实际 dt 缩放。
 pub const CURRENT_KP_Q15: i32 = 9008;
-pub const CURRENT_KI_Q15: i32 = 4311;
+pub const CURRENT_KI_Q15: i32 = 8622;
 // 保留双低侧采样窗：电压矢量半径最多约 0.198 Vbus，不使用全 SVPWM 线性区。
 pub const VOLTAGE_LIMIT_Q15: i32 = 6500;
 
@@ -55,13 +55,13 @@ pub const HANDOFF_MIN_MILLIHZ: i32 = 8000;
 pub const STALL_MIN_MILLIHZ: i32 = 4000;
 pub const OVERSPEED_MILLIHZ: i32 = 80000;
 
-// 8 kHz 的 alpha=10/64，近似保持原 10 kHz、alpha=1/8 的物理时间常数。
-pub const BEMF_FILTER_NUMERATOR: i32 = 10;
+// 4 kHz alpha=18/64，近似 1-(1-10/64)^2，保持原 8 kHz 滤波时间常数。
+pub const BEMF_FILTER_NUMERATOR: i32 = 18;
 pub const BEMF_FILTER_SHIFT: u32 = 6;
 pub const BEMF_MIN_MV: i32 = 500;
 // PLL 单位：一电角周为 65536；速度为每帧角度的 Q16。
-pub const PLL_KP_Q16: i32 = 5120;
-pub const PLL_KI_Q16: i32 = 25;
+pub const PLL_KP_Q16: i32 = 10240;
+pub const PLL_KI_Q16: i32 = 100;
 pub const PLL_MAX_MILLIHZ: i32 = 100000;
 pub const PLL_ERROR_LIMIT: i32 = 1820; // 10 电角度
 pub const HANDOFF_ANGLE_LIMIT: i32 = 5461; // 30 电角度
@@ -83,7 +83,7 @@ pub const DIAGNOSTIC_DIVIDER: u32 = CONTROL_HZ / 20;
 
 /// 同时约束物理范围和定点乘法范围；参数错误不得解锁输出。
 pub fn valid() -> bool {
-    CONTROL_HZ == 8_000
+    CONTROL_HZ == 4_000
         && PWM_HZ == CONTROL_HZ
         && CPU_HZ / PWM_HZ == PWM_TICKS as u32
         && ADC_NOMINAL_VDDA_MV == 5000
@@ -91,12 +91,12 @@ pub fn valid() -> bool {
         && SHUNT_MILLIOHM == 10
         && CURRENT_GAIN == 10
         && BUS_DIVIDER == 11
-        && (500..=8000).contains(&CURRENT_TRIP_MA)
+        && (500..=2000).contains(&CURRENT_TRIP_MA)
         && (1..=CURRENT_TRIP_MA).contains(&CURRENT_SUM_LIMIT_MA)
         && matches!(BATTERY_SERIES_CELLS, 2 | 3)
         && CELL_UNDERVOLTAGE_MV > 0
-        && (1000..=50000).contains(&BUS_MIN_MV)
-        && (BUS_MIN_MV + 1000..=50000).contains(&BUS_MAX_MV)
+        && (1000..=15000).contains(&BUS_MIN_MV)
+        && (BUS_MIN_MV + 1000..=16000).contains(&BUS_MAX_MV)
         && (1..CURRENT_TRIP_MA).contains(&ALIGN_ID_MA)
         && (1..CURRENT_TRIP_MA).contains(&STARTUP_CURRENT_MA)
         && (STARTUP_CURRENT_MA..CURRENT_TRIP_MA).contains(&RUN_IQ_MAX_MA)
@@ -105,10 +105,10 @@ pub fn valid() -> bool {
         && LINE_TO_LINE_L_UH > 0
         && LINE_TO_LINE_R_MILLIOHM % 2 == 0
         && LINE_TO_LINE_L_UH % 2 == 0
-        && (1..=4000).contains(&MODEL_PHASE_R_MILLIOHM)
-        && (1..=5000).contains(&MODEL_PHASE_L_UH)
+        && (1000..=4000).contains(&MODEL_PHASE_R_MILLIOHM)
+        && (100..=5000).contains(&MODEL_PHASE_L_UH)
         && (1..=32768).contains(&CURRENT_KP_Q15)
-        && (1..=8192).contains(&CURRENT_KI_Q15)
+        && (1..=16384).contains(&CURRENT_KI_Q15)
         && (1024..=6500).contains(&VOLTAGE_LIMIT_Q15)
         && (1..=CONTROL_HZ / 10).contains(&BOOTSTRAP_FRAMES)
         && (CONTROL_HZ / 20..=CONTROL_HZ).contains(&ALIGN_FRAMES)
@@ -125,10 +125,10 @@ pub fn valid() -> bool {
         && (OPEN_END_MILLIHZ as i64 - OPEN_START_MILLIHZ as i64) * (OPEN_RAMP_FRAMES as i64)
             <= i32::MAX as i64
         && BEMF_FILTER_SHIFT == 6
-        && BEMF_FILTER_NUMERATOR == 10
+        && BEMF_FILTER_NUMERATOR == 18
         && (100..BUS_MIN_MV / 4).contains(&BEMF_MIN_MV)
-        && (1..=8192).contains(&PLL_KP_Q16)
-        && (1..=64).contains(&PLL_KI_Q16)
+        && (1..=16384).contains(&PLL_KP_Q16)
+        && (1..=256).contains(&PLL_KI_Q16)
         && (100..=2730).contains(&PLL_ERROR_LIMIT)
         && (PLL_ERROR_LIMIT..=8192).contains(&HANDOFF_ANGLE_LIMIT)
         && (100..HANDOFF_MIN_MILLIHZ).contains(&HANDOFF_SPEED_ERROR_MILLIHZ)

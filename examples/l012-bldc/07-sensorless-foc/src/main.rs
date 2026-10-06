@@ -21,15 +21,26 @@ async fn main(spawner: embassy_executor::Spawner) {
     let mut config = embassy_cw32::Config::default();
     config.rcc.hsi_divider = embassy_cw32::rcc::HsiDivider::Div1;
     config.rcc.pclk_divider = embassy_cw32::rcc::PclkDivider::Div1;
-    let p = embassy_cw32::init(config);
+    let mut p = embassy_cw32::init(config);
     let clocks = embassy_cw32::rcc::clocks();
     assert_eq!(clocks.hclk_hz(), config::CPU_HZ);
     assert_eq!(clocks.pclk_hz(), config::CPU_HZ);
+    // 96 MHz 的三等待周期仍由 RCC 保持；07 不做 Flash 擦写，单例永久留给电机任务。
+    let flash = embassy_cw32::flash::enable_read_acceleration(&mut p.FLASH).unwrap();
+    cortex_m::asm::dsb();
+    cortex_m::asm::isb();
+    assert_eq!(flash.wait_states, 3);
     // 此时电机定时器尚未启动；实时采样期间不输出日志。
     defmt::info!(
         "07-sensorless-foc: boot HCLK={}Hz PCLK={}Hz RTT=nonblocking",
         clocks.hclk_hz(),
         clocks.pclk_hz()
+    );
+    defmt::info!(
+        "Flash wait={} prefetch={}->true cache={}->true (readback verified)",
+        flash.wait_states,
+        flash.prefetch_was_enabled,
+        flash.cache_was_enabled
     );
     defmt::info!(
         "PWM={}Hz ADC1={}Hz ADC2={}Hz; outputs off, calibrate then wait for PA3 key",
@@ -46,6 +57,7 @@ async fn main(spawner: embassy_executor::Spawner) {
     );
     spawner.spawn(
         hardware::motor_task(hardware::MotorResources {
+            flash: p.FLASH,
             atim: p.ATIM,
             eau: p.EAU,
             adc1: p.ADC1,
