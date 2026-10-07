@@ -92,6 +92,47 @@ impl SingleShuntPwm {
             }
         });
     }
+    /// 配置中心对齐PWM1和单个上升半周ADC采样，更新周期为整载波的整数倍。
+    /// # Safety
+    /// 仅限CEN=0、栅极保持低且ADC触发断开。sample_compare是向上计数时
+    /// OC4REF上升沿对应的CCR；调用者按底部更新建立帧身份并验证更新相位。
+    pub unsafe fn configure_center_aligned(
+        &mut self,
+        half_period: u16,
+        dead_ticks: u8,
+        duty: [u16; 3],
+        sample_compare: u16,
+        carriers_per_update: u8,
+    ) {
+        assert!(half_period < u16::MAX && carriers_per_update > 0 && carriers_per_update <= 127);
+        // 本方法安全契约要求停止、栅极低、ADC断开，与底层初始化一致。
+        unsafe { self.configure(half_period + 1, dead_ticks, duty, [sample_compare, 0]); }
+        let r = pac::ATIM;
+        // RM1.4 §17.3.1.3: 中心对齐完整周期为2*ARR，不是2*(ARR+1)。
+        // DIR已由configure清零，不能与CMS同次改变方向。
+        r.cr1().modify(|v| v.set_cms(pac::atim::vals::Cr1Cms::CENTER_BOTH));
+        r.ccmr_cmp(1).modify(|v| v.set_ocm(1, pac::atim::vals::CcmrCmpOcm::PWM2));
+        // §17.10.2: 10011=OC4REFC，仅上升半周PWM2的上升沿触发ADC。
+        r.cr2().modify(|v| v.set_mms2(19));
+        // 每载波顶部/底部两次溢出。UG同步重复计数后，实板UEV在底部；
+        // 调用者每次IRQ校验方向、相位和周期，不依赖首次启动相位猜测。
+        unsafe { self.configure_update_divider(carriers_per_update * 2); }
+    }
+    /// 将真实更新/预载传送分频；divider计数的是溢出事件，中心对齐每载波两次。
+    /// # Safety
+    /// 仅限CEN=0、ADC外部触发未连接时配置。调用者必须同步分频采样与
+    /// 软件帧身份；CNT仍每个载波回绕，不能再用CNT单独计算控制帧耗时。
+    pub unsafe fn configure_update_divider(&mut self, divider: u8) {
+        let r = pac::ATIM;
+        assert!(divider > 0 && !r.cr1().read().cen());
+        r.rcr().write(|v| v.0 = u32::from(divider - 1));
+        let routing = r.cr2().read();
+        r.cr2().modify(|v| { v.set_mms(1); v.set_mms2(1); });
+        // UG装入重复计数器；初始化时清除标志，运行期禁止UG。
+        r.egr().write(|v| v.set_ug(true));
+        r.icr().write_value(pac::atim::regs::Icr(0));
+        r.cr2().write_value(routing);
+    }
     /// 写下一次真实 reload 才装载的五个预载寄存器。
     /// 调用者必须保证整批写入不会跨越 reload，并维护相同延迟的软件帧身份。
     pub fn stage(&mut self, duty: [u16; 3], sample: [u16; 2]) {

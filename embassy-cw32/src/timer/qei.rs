@@ -1,5 +1,5 @@
 //! Quadrature decoding with an owned timer and a metadata-proved input pair.
-//! The fixed range 0..=65535 respects the F030 GTIM encoder ARR requirement.
+//! L012 supports a configurable count range; F030 keeps its required full range.
 pub use super::input_capture::Error;
 use super::{
     input_capture::{CaptureChannel, CaptureInput, CapturePin, Filter},
@@ -34,6 +34,9 @@ pub enum Direction {
 }
 #[derive(Clone, Copy, Debug)]
 pub struct Config {
+    /// Inclusive reload value. L012 only; default preserves the full 16-bit range.
+    #[cfg(any(atim_l012, gtim_l012))]
+    pub max_count: u16,
     pub mode: QeiMode,
     pub first_pull: Pull,
     pub second_pull: Pull,
@@ -45,6 +48,8 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
+            #[cfg(any(atim_l012, gtim_l012))]
+            max_count: u16::MAX,
             mode: QeiMode::Mode3,
             first_pull: Pull::None,
             second_pull: Pull::None,
@@ -58,7 +63,7 @@ impl Default for Config {
 /// A hardware quadrature decoder. Construction starts counting external edges.
 /// No capture/DMA/IRQ, index reset, or output is enabled. Reading count and
 /// direction are separate observations; they are not an atomic combined sample.
-/// Keep the count delta within half the 16-bit range to infer a signed movement.
+/// Keep the count delta within half the configured range to infer signed movement.
 pub struct Qei<'d, T: Instance> {
     timer: Timer<'d, T>,
     first: CaptureInput<'d, T, T::First>,
@@ -80,6 +85,9 @@ impl<'d, T: Instance> Qei<'d, T> {
         let first = CaptureInput::from_pin(first, config.first_pull);
         let second = CaptureInput::from_pin(second, config.second_pull);
         let mut timer = Timer::new(timer);
+        // Configure while stopped, before selecting external quadrature clocks.
+        #[cfg(any(atim_l012, gtim_l012))]
+        timer.set_period_ticks(u32::from(config.max_count) + 1).map_err(Error::Timer)?;
         critical_section::with(|_| {
             T::select_external_input(T::First::INDEX);
             T::select_external_input(T::Second::INDEX);
@@ -101,6 +109,12 @@ impl<'d, T: Instance> Qei<'d, T> {
     pub fn count(&self) -> u16 {
         self.timer.counter()
     }
+    /// Read the owned A/B pads without changing their alternate function.
+    /// Reads are sequential, not an atomic quadrature state capture; useful for
+    /// stationary wiring diagnostics, not for software edge decoding.
+    pub fn input_levels(&self) -> [bool; 2] {
+        [self.first.pin.is_high(), self.second.pin.is_high()]
+    }
     pub fn read_direction(&self) -> Direction {
         if T::regs().encoder_downcounting() {
             Direction::Downcounting
@@ -118,12 +132,13 @@ impl<'d, T: Instance> Qei<'d, T> {
     pub fn is_running(&self) -> bool {
         self.timer.is_running()
     }
-    /// Set count without an update event; stops briefly, preserving run state.
+    /// Set count modulo the configured period without an update event.
+    /// Stops briefly, preserving run state.
     /// Transitions while stopped are lost. No capture, ADC, or DMA is triggered.
     pub fn set_count(&mut self, count: u16) {
         let running = self.timer.is_running();
         self.timer.stop();
-        // The fixed full 16-bit range accepts every u16.
+        let count = (u32::from(count) % self.timer.period_ticks()) as u16;
         let _ = self.timer.set_counter(count);
         if running {
             self.timer.start();

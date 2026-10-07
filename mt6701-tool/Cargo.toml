@@ -1,0 +1,16 @@
+[package]
+name = "mt6701-tool"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[[bin]]
+name = "mt6701-tool"
+path = "main.rs"
+
+[dependencies]
+anyhow = "1"
+clap = { version = "4", features = ["derive"] }
+hidapi = "2.6"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"

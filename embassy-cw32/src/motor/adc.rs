@@ -115,6 +115,11 @@ impl<T: Instance> AdcScan<T> {
     pub fn trigger_from_atim_trgo2(&mut self) {
         self.regs.trigger().write(|w| w.set_atimtrgo2(true));
     }
+    /// 断开所有外部转换触发；不终止已启动的转换，也不清除EOS/看门狗。
+    /// 分频采样必须在末次EOS后调用，并在下个采样窗口前重接触发。
+    pub fn disable_external_triggers(&mut self) {
+        self.regs.trigger().write(|_| {});
+    }
     /// 设置离散采样模拟看门狗；这不是连续、异步的硬件功率关断。
     pub fn configure_watchdog(&mut self, channel: u8, low: u16, high: u16) {
         assert!(channel < 16 && low < high && high <= 4095);

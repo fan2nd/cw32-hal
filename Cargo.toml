@@ -1,9 +1,13 @@
 [workspace]
 resolver = "2"
-members = ["cw32-gen", "cw32-metapac", "embassy-cw32", "xtask", "examples/l012-bldc/01-gpio", "examples/l012-bldc/02-sampling", "examples/l012-bldc/03-six-step", "examples/l012-bldc/04-sensorless", "examples/l012-bldc/05-startup", "examples/l012-bldc/06-application", "examples/l012-bldc/07-sensorless-foc"]
+members = ["cw32-gen", "cw32-metapac", "embassy-cw32", "xtask", "mt6701-tool", "examples/l012-bldc/01-gpio", "examples/l012-bldc/02-sampling", "examples/l012-bldc/03-six-step", "examples/l012-bldc/04-sensorless", "examples/l012-bldc/05-startup", "examples/l012-bldc/06-application", "examples/l012-bldc/07-sensorless-foc", "examples/l012-bldc/08-encoder-foc"]
 
 [profile.release]
 codegen-units = 1
 lto = true
 opt-level = "s"
 debug = 2
+
+# 08 的 10 kHz 编码器电压控制环优先执行时间；其余例程保持原有体积优化。
+[profile.release.package.cw32-bldc-08-encoder-foc]
+opt-level = 3
