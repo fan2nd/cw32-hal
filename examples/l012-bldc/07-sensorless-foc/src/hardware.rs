@@ -64,7 +64,7 @@ pub static mut FOC_CONTROL_FAULT: ControlFaultTrace = ControlFaultTrace::new();
 
 // 不放进 Motor::new，避免初始化大对象时占用 8 KiB SRAM 中的栈空间。
 // 仅 ADC1 P0 写入；首故障停桥、停计数器、关闭 P0 中断并 Release 后，线程才读。
-static mut PLATEAU_TRACE: crate::trace::Trace = crate::trace::Trace::new();
+static mut ALIGN_TRACE: crate::trace::Trace = crate::trace::Trace::new();
 // 仅 report_fault 所在线程访问，不由中断写入。
 static mut TRACE_DUMP: Option<(usize, u32)> = None;
 
@@ -475,7 +475,7 @@ impl Motor {
         // 若新启动尚未消费首个完整ADC帧就故障，先废弃上一启动的记录。
         if self.control.trace_reset_pending() {
             unsafe {
-                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
+                (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).reset();
             }
         }
         self.control.trip(fault);
@@ -757,7 +757,7 @@ pub fn report_fault() {
     );
     if d.fault == Fault::StartupTimeout as u32
         || d.fault == Fault::ObserverLost as u32
-        || unsafe { (&*core::ptr::addr_of!(PLATEAU_TRACE)).len != 0 }
+        || unsafe { (&*core::ptr::addr_of!(ALIGN_TRACE)).len != 0 }
     {
         // 原故障日志先排出；随后每 20 ms 一行，仍为非阻塞 RTT，序号可检查丢行。
         unsafe {
@@ -775,10 +775,10 @@ fn report_trace_row() {
     if now.wrapping_sub(last_ms) < if row == 0 { 100 } else { 20 } {
         return;
     }
-    let trace = unsafe { &*core::ptr::addr_of!(PLATEAU_TRACE) };
+    let trace = unsafe { &*core::ptr::addr_of!(ALIGN_TRACE) };
     if trace.len == 0 {
         defmt::error!(
-            "REPLAY_UNAVAILABLE requested_start_age={}; no successful input frame from this start",
+            "REPLAY_UNAVAILABLE version=3 phase=Align requested_start_age={}; no captured Align input from this start",
             crate::trace::START_AGE
         );
         unsafe {
@@ -787,7 +787,7 @@ fn report_trace_row() {
         return;
     }
     if row == 0 {
-        defmt::error!("REPLAY_BEGIN version=2 model={} start_age={} records={} complete={} period_frames=1 nominal_period_us=250; fixed plateau window, not final fault frames", crate::trace::MODEL_TAG, trace.seed.age, trace.len, trace.complete);
+        defmt::error!("REPLAY_BEGIN version=3 model={} phase=Align observer_updates=0 age_stage=post_control start_age={} seed_age={} nominal_start_us={} records={} complete={} period_frames=1 nominal_period_us=250; electrical input diagnostic, not OpenLoop observer replay or proof of stationary rotor", crate::trace::MODEL_TAG, trace.seed.age, trace.seed.age - 1, u32::from(trace.seed.age) * 250, trace.len, trace.complete);
     } else if row == 1 {
         defmt::error!("REPLAY_MOTOR previous_duty={:?} previous_bus={} offset={}; duties active, vdda before ADC2 update, bus after update", trace.seed.previous_duty, trace.seed.previous_bus_mv, trace.seed.offset);
     } else if row == 2 || row == 3 {
@@ -795,12 +795,12 @@ fn report_trace_row() {
     } else if row < 4 + usize::from(trace.len) {
         let index = row - 4;
         if let Some(r) = trace.record(index) {
-            defmt::error!("REPLAY_ROW n={} raw={:?} duty={:?} vdda={} bus={} forced={} observed={} pll={} first_ma={}", index, r.raw, r.duty, r.vdda_mv, r.bus_mv, r.forced_angle, r.observer_angle, r.pll_error, r.first_phase_ma);
+            defmt::error!("REPLAY_ROW n={} age={} raw={:?} duty={:?} vdda={} bus={} forced={} observed={} pll={} first_ma={}", index, trace.seed.age + index as u16, r.raw, r.duty, r.vdda_mv, r.bus_mv, r.forced_angle, r.observer_angle, r.pll_error, r.first_phase_ma);
         }
     } else if trace.complete && row < 6 + usize::from(trace.len) {
         report_replay_state(1, row == 5 + usize::from(trace.len), &trace.terminal);
     } else {
-        defmt::error!("REPLAY_END records={} complete={}; seed before first input, end after last observer update; angles65536/turn, duty96ticks/us, currentsmA, voltagemV", trace.len, trace.complete);
+        defmt::error!("REPLAY_END records={} complete={}; seed before first captured Align input, terminal after last captured control step; observer inactive, observed/pll are unchanged state checks; angles65536/turn, duty96ticks/us, currentsmA, voltagemV", trace.len, trace.complete);
         unsafe {
             TRACE_DUMP = None;
         }
@@ -1079,7 +1079,7 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             m.checkpoint = start;
             m.stage_ticks = [0; 5];
             if m.control.trace_reset_pending() {
-                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
+                (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).reset();
             }
             let mut math = HardwareMath {
                 eau: &mut runtime.eau,
@@ -1087,7 +1087,7 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 failed: false,
                 error: 0,
             };
-            // 连续重放记录保留本次换算真正使用的旧 VDDA，不能记录更新后的比例。
+            // 电气诊断保留本次换算真正使用的旧 VDDA，不能记录更新后的比例。
             let sample_vdda_mv = m.vdda_mv as u16;
             // 两个样本共用采样时的 VDDA；必须先换算，再允许 ADC2 更新比例。
             m.dc_ma = if m.armed {
@@ -1132,15 +1132,15 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if !m.checkpoint_control(math.pwm, start, 0) {
                 return;
             }
-            // 首帧种子必须早于首样本运输及 observer.update，previous 尚未晋升。
-            // 固定平台窗口：完整 Foc 前后帧才可用 duty 还原全部真实边沿与保持时刻。
+            // 首帧种子早于首样本运输，previous 尚未晋升；Align 不运行 observer.update。
+            // 只取原 Align 最后 80 帧；Foc 前后帧的 duty 可还原真实边沿与保持时刻。
             let capture_age = m.control.trace_next_age().filter(|&age| {
                 m.active.mode == Mode::Foc
                     && m.previous.mode == Mode::Foc
-                    && (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).wants_input(age)
+                    && (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).wants_input(age)
             });
             if let Some(age) = capture_age {
-                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
+                let trace = &mut *core::ptr::addr_of_mut!(ALIGN_TRACE);
                 if trace.needs_seed() {
                     trace.begin(crate::trace::Seed {
                         state: m.control.replay_state(),
@@ -1214,10 +1214,11 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 }
                 return;
             }
-            // 故障分支已优先关桥返回；只提交完整成功帧，80 帧后永久冻结至再启动。
-            if let Some(age) = capture_age.filter(|_| m.control.state() == State::OpenLoop) {
+            // 故障分支已优先关桥返回；只提交已完成控制计算的 Align 输入。
+            // 后续调制/截止检查仍可关断；complete 仅表示 80 项输入，不是整帧/实板通过。
+            if let Some(age) = capture_age.filter(|_| m.control.state() == State::Align) {
                 let (forced_angle, observer_angle, pll_error) = m.control.trace_output();
-                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
+                let trace = &mut *core::ptr::addr_of_mut!(ALIGN_TRACE);
                 if trace.push(
                     age,
                     crate::trace::Record {

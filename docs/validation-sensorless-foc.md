@@ -1,7 +1,31 @@
-# 第 7 例程验证记录（2026-10-06）
+# 第 7 例程验证记录（2026-10-07）
+
+## 当前诊断：复用 80 帧缓冲捕获原 Align 末段
+
+以已发布 B `d065a403cb3328a51694b16802287b32e71bb0e0` 的审核源码包为基线；包 SHA256 为 `b3d8e446fcc8abc6ffe1fcf5ce2c271e0e2df3dc8e5a54c5d80872c084d88856`，编辑前本地 07 文件与其逐字节相同。B 的 12 V 实板仍 StartupTimeout、best99/1000，未报告 ADC/Timing 故障；80 行与完整末态可精确重放，但直接同相原始采样 RL 逆解绕过上一 EMF、错时运输与 PLL 后仍有约565mV同相估计跳变。它没有唯一确定模拟、物理模型或机械根因。
+
+只改变 trace 触发阶段及停机日志语义：原 OpenLoop age14000..14079 改为原有 Align 的**控制计算后 age720..799**。进入 Align 的首次计算为 age0；首捕获前的控制状态为 Align age719，末捕获后为 age799。下一次控制尝试 age800 会转入 OpenLoop age0并更新观察器，明确排除在捕获外。不延长200ms Align，不改变150mA/强制角0、B采样延迟5/2.5µs、4kHz、PI/观察器/接管/保护/超时；没有其他通电步骤。
+
+日志 v3 明示 `phase=Align observer_updates=0 age_stage=post_control`，`start_age=720 seed_age=719 nominal_start_us=180000`。行中新增 age，由连续成功提交的首龄+n计算，未增加ISR数据字段。名义首末19.75ms；含前一输入区间约20ms。保持时刻随duty变化，名义age时间不是实测绝对时间。完整80行仍输出原 seed/raw/active duty/旧VDDA/更新后bus/first_ma及完整末态，足以核对换算/零EMF运输，并另行做原始同相端点RL审计；seed不含前一raw，不能把未更新的previous_current零值当成真实电流端点。
+
+Align中不调用observer.update，observer及open_phase均保持复位状态；end=1是最后一次捕获控制计算后的状态，不能描述成观察器成功更新。forced/observed/pll均应为0，后两项只作未更新状态检查。Align也不证明转子静止或真实EMF为零。全部80项写入发生在原stage3截止/调制检查之前；complete仅指捕获控制输入，不证明后续整帧通过。partial无末态；新启动先废弃旧header，不补帧或拼接。沿用原转储条件：窗口前或首行提交前的普通早期故障可能没有REPLAY行，只有已安排的空转储才输出UNAVAILABLE。RTT仍只在原故障停桥/停源后由普通线程延后100ms、每20ms输出一行。
+
+模型标记更新为`0123a2e83e35c2340c64d48de5b83f420938df701e7590e7fd8fe8c6b9dfb756`，仍是按文件名+NUL+原文累计arithmetic/config/control/sampling的手工SHA256常量；control中仅trace谓词变化也会改变标记。它不覆盖hardware/trace，不自动认证固件/寄存器/提交。仓库2S默认保持；12V/3S台架应在本地采用适当3S保护，重建匹配源码标记，不能据打印的旧tag断言配置无误。
+
+软件验证（外部工具，不加入项目/CI）：
+
+- 实际ARM thumbv6m-none-eabi release及汇编构建`-D warnings`通过，修改Rust文件rustfmt检查通过；原proc-macro-error2未来兼容提示仍存在。text29528→29624B（+96），data1016B、bss/uninit3248B不变，静态RAM4264B。Trace仍1872B（Record22B×80、Seed60B、末态48B及header），无新大缓冲。
+- 独立9项实际Control测试覆盖Align0..799、种子719、窗口720..799、转换800、部分捕获/首行失败/停止重启/尺寸及B非对称保持时刻。与修改前Control连续30000帧对照，驱动命令、快照、观察状态及超时均相同。
+- 5项连续输入测试覆盖64组×80=5120帧实际Control Align路径、六种相序/可变duty/VDDA/母线、运输检查、全零未更新观察状态及完整末态；输入/检查点/种子变异被拒绝。未把每帧期望输出回灌，也没有离线调用observer.update来制造成功。
+- 从实际停机打印函数抽取并生成87行v3日志，严格解析/源码标记核对/运输与未更新末态校验通过。80行完整、30行partial均通过；14项缺行/重排/重复/错误age/错误seed_age/错误stage或phase/伪造observer更新/非零seed或检查点/错误末态/partial伪末态/旧标记或v2日志负例均拒绝。行序依靠显式n/age验证；不变观察状态不能检测被重新编号的数据重排。
+- 实际转储函数节奏测试通过：complete/partial/unavailable、100ms起始延迟、20ms行间隔及u32毫秒回绕。没有新增运行中RTT；只多输出停机header元数据和每行age。
+- ARM汇编：ADC1仍1356个静态指令位置，其自身栈为156+20=176B；除trace符号重命名外，主体只把两处State比较4改3。ATIM仍294个指令位置、自身栈36+20=56B且主体相同。窗口筛选仍在原第二样本后的控制时隙；不增加首样本路径工作。静态指令/栈检查不是包含所有调用、异常入退、Flash/cache等待的实板WCET测量。
+
+只修改07的control.rs/trace.rs/hardware.rs/README.md和本记录。无Python、测试目录、生成数据、CI或二进制进入源码交付；尚未烧录，没有宣称电气安全、静止转子、接管改善或根因确认。
 
 
-## 当前诊断 B：只延后首样本，第二保持与控制时隙不变
+
+## 历史诊断 B：只延后首样本，第二保持与控制时隙不变
 
 基线`1833167a0302c71c2515b06f76a8ad9da8deadcc`。新实板REPLAY version2、模型fe0f9382…共80帧完整；从唯一种子到完整末态均位精确通过，每帧first_ma/forced/observed/pll共320项一致。窗口20.013ms，只覆盖约129.7电角度。原始EMF相对强制角峰峰40.39°、滤后27.50°、最终观察角18.64°；n13..16为−2.50/−25.08/+0.82/−24.98°，扰动与采样相序切换相伴且先于PLL。它不提供独立真实角度/电流，也不证明动态L。
 

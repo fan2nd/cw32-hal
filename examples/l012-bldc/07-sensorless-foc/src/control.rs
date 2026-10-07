@@ -270,9 +270,10 @@ impl Control {
         self.reset_pending
     }
 
-    /// 下一个尚未处理的物理输入帧龄；诊断只在稳定的 OpenLoop 状态取种子。
+    /// 下一个输入处理后的 Align 帧龄；age=ALIGN_FRAMES 会先转入 OpenLoop，不能采入。
+    /// 种子在 age=START_AGE-1 时取得；这不改变 age 或控制状态。
     pub fn trace_next_age(&self) -> Option<u16> {
-        if self.state == State::OpenLoop && !self.reset_pending {
+        if self.state == State::Align && !self.reset_pending {
             Some((self.age + 1) as u16)
         } else {
             None
