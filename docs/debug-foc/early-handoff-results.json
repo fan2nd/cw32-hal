@@ -1,0 +1,406 @@
+[
+  {
+    "fault": 8,
+    "state": 5,
+    "state_age": 251,
+    "speed_millihz": 4454,
+    "emf_mv": 114,
+    "log": "2026-10-07-early20-01.log",
+    "state_duration_s": 0.06275,
+    "replay_records": 0,
+    "run_rows": 0,
+    "log_sha256": "7d25fbb4b63cbe138fbfb8fee6b1c71a8b4bf001bc35834e1e90f7a962a2f40e"
+  },
+  {
+    "fault": 8,
+    "state": 5,
+    "state_age": 239,
+    "speed_millihz": 5539,
+    "emf_mv": 100,
+    "log": "2026-10-07-early20-pllhalf-01.log",
+    "state_duration_s": 0.05975,
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "d698a199cd1895b04573696e4a5051106b15667518d2e723f6c7776a5b358ec6",
+    "log_sha256": "4f864813e4220406d00deb50fc416217cf4ea045542cfb52649d0ca7c83b8a41"
+  },
+  {
+    "fault": 9,
+    "state": 4,
+    "state_age": 20000,
+    "speed_millihz": 15426,
+    "emf_mv": 742,
+    "log": "2026-10-07-early20-emf750-01.log",
+    "state_duration_s": 5.0,
+    "replay_records": 0,
+    "run_rows": 0,
+    "log_sha256": "4a95579c71160d41c30f5e7b081eae7a9b404a4b2c5889bf48500aa0eec9f82a"
+  },
+  {
+    "fault": 8,
+    "state": 5,
+    "state_age": 1504,
+    "speed_millihz": 13939,
+    "emf_mv": 136,
+    "log": "2026-10-07-early20-filter8-01.log",
+    "state_duration_s": 0.376,
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "b3bcc60094ba887465cba9b6d6a04176e30886fcd78d69b25fd65b23f787f679",
+    "log_sha256": "e6b2ed0a38aae9e59827de309da3e9038ac1c80b91fcf30d473576f5cb00bc68"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 24137,
+    "speed_millihz": 16239,
+    "emf_mv": 250,
+    "log": "2026-10-07-early20-iqhold-01.log",
+    "state_duration_s": 6.03425,
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "106fc3c829b7eb3f7033fe2c6ad9e01bdb1b4efaa395b75fd79ac959dab4320e",
+    "log_sha256": "6c70c74b0f6bfb2c28291d689fd3edf7b851b028a386d942a6084c7342eae075"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 23149,
+    "speed_millihz": 38885,
+    "emf_mv": 1646,
+    "log": "2026-10-07-early20-iqhold-02.log",
+    "state_duration_s": 5.78725,
+    "history": {
+      "samples": 32,
+      "min": [
+        14149,
+        256,
+        0,
+        -1680
+      ],
+      "max": [
+        39984,
+        1790,
+        250,
+        2947
+      ],
+      "mean": [
+        28404,
+        1149,
+        96,
+        189
+      ],
+      "low_emf": 5
+    },
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "147f77cc8d2fa65a1fb2f0bf5e86e35c17972c2c3d6d315990d3ab2b7636ce2d",
+    "log_sha256": "d800b653599e4b9e6126af251f4b9c1d3770c85e869013415ae4a1773dfa973d"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 22484,
+    "speed_millihz": 29505,
+    "emf_mv": 692,
+    "log": "2026-10-07-early20-speedhalf-01.log",
+    "state_duration_s": 5.621,
+    "history": {
+      "samples": 32,
+      "min": [
+        16788,
+        424,
+        0,
+        -1966
+      ],
+      "max": [
+        37110,
+        1810,
+        212,
+        2369
+      ],
+      "mean": [
+        28507,
+        1157,
+        86,
+        -3
+      ],
+      "low_emf": 2
+    },
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "58282d8c477478ac89dcc2b53e620953a13027e57fdbb54612b6a40196203dc1",
+    "log_sha256": "82dd6576238f39494e430aa657495683d32ad18d4e8c5d413cd48085d0baf4aa"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 22809,
+    "speed_millihz": 35898,
+    "emf_mv": 1516,
+    "log": "2026-10-07-early20-speedki6-01.log",
+    "state_duration_s": 5.70225,
+    "history": {
+      "samples": 32,
+      "min": [
+        18186,
+        616,
+        0,
+        -1441
+      ],
+      "max": [
+        36447,
+        1638,
+        192,
+        1246
+      ],
+      "mean": [
+        27627,
+        1092,
+        83,
+        -197
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "ab770b8aae5a8ddfc2ec07b24095c2a5eb1e5ad36d4704862dbae96480aff0d3",
+    "log_sha256": "b980ce1cf1f26058af2b0dbd37a015dd9b6f8eddeaa12b83f91b2990beeb360f"
+  },
+  {
+    "fault": 8,
+    "state": 6,
+    "state_age": 13878,
+    "speed_millihz": 5209,
+    "emf_mv": 850,
+    "log": "2026-10-07-early20-speedfilter-01.log",
+    "state_duration_s": 3.4695,
+    "history": {
+      "samples": 32,
+      "min": [
+        12686,
+        96,
+        0,
+        -2019
+      ],
+      "max": [
+        40653,
+        1830,
+        250,
+        32767
+      ],
+      "mean": [
+        27446,
+        1099,
+        101,
+        2278
+      ],
+      "low_emf": 10
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "d0a8943537b7d160fedf79a014713152b1df7637da324b431b5a382926bdd1c3",
+    "log_sha256": "6a77afaf441bcbf6267d81080afb8dcab0046563d90eb2f95e1c31dfbb29d1b2"
+  },
+  {
+    "fault": 8,
+    "state": 5,
+    "state_age": 250,
+    "speed_millihz": -11761,
+    "emf_mv": 346,
+    "log": "2026-10-07-early20-speedslow-01.log",
+    "state_duration_s": 0.0625,
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "191ab737d95fb8af1fe8c47fb92da7a31730f85a7595cae407c99d73fef26add",
+    "log_sha256": "e9cd91e4da48abbd86669629ebcc5619f68830ce13d73360813d8a1d9fd11b83"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 22181,
+    "speed_millihz": 25379,
+    "emf_mv": 1094,
+    "log": "2026-10-07-early20-min12-01.log",
+    "state_duration_s": 5.54525,
+    "history": {
+      "samples": 32,
+      "min": [
+        24398,
+        940,
+        70,
+        24885
+      ],
+      "max": [
+        26339,
+        1146,
+        76,
+        25963
+      ],
+      "mean": [
+        25421,
+        1048,
+        73,
+        25431
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "ecef147d72bcb9153f193a2f40685e3b1e6c94d91987a10c928c31f102e8495c",
+    "log_sha256": "e365aa1a3929a2c8b3548af762da18b2eeb886cccb17e46d5eead8755ea249bb"
+  },
+  {
+    "fault": 8,
+    "state": 5,
+    "state_age": 246,
+    "speed_millihz": 4623,
+    "emf_mv": 106,
+    "log": "2026-10-07-early20-final-01.log",
+    "state_duration_s": 0.0615,
+    "replay_records": 80,
+    "run_rows": 0,
+    "model_tag": "2e8ff963826c1583d0375b52b129e883e0f5af9998323b3a3c414d66b037baf6",
+    "log_sha256": "6464a0b78a67c7cb172a601350855cb2f67b322ba01663852b7c145e37d1886f"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 21583,
+    "speed_millihz": 24819,
+    "emf_mv": 1062,
+    "log": "2026-10-07-early20-torque100-01.log",
+    "state_duration_s": 5.39575,
+    "history": {
+      "samples": 32,
+      "min": [
+        24446,
+        936,
+        71,
+        24644
+      ],
+      "max": [
+        26414,
+        1152,
+        76,
+        26050
+      ],
+      "mean": [
+        25437,
+        1051,
+        73,
+        25461
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "7581429a4b66d8e55c37bd4ba34ff72a6179692fcd26e3ad09a44b1044fb8987",
+    "log_sha256": "6bc7dd7ba1de0f710d69252138bf43bdaa7fe2e27005fe2f6b8d9f33269c039a"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 21582,
+    "speed_millihz": 24619,
+    "emf_mv": 1076,
+    "log": "2026-10-07-early20-torque100-02.log",
+    "state_duration_s": 5.3955,
+    "history": {
+      "samples": 32,
+      "min": [
+        24498,
+        968,
+        73,
+        25063
+      ],
+      "max": [
+        26251,
+        1142,
+        78,
+        26231
+      ],
+      "mean": [
+        25494,
+        1050,
+        75,
+        25550
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "7581429a4b66d8e55c37bd4ba34ff72a6179692fcd26e3ad09a44b1044fb8987",
+    "log_sha256": "e82557454073d6a66bba2901c0ac073b7cfd108fd26b1a1f7940d92087a49ba3"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 70807,
+    "speed_millihz": 24808,
+    "emf_mv": 998,
+    "log": "2026-10-07-early20-long20s-01.log",
+    "state_duration_s": 17.70175,
+    "history": {
+      "samples": 32,
+      "min": [
+        23801,
+        902,
+        70,
+        24413
+      ],
+      "max": [
+        25770,
+        1116,
+        75,
+        25538
+      ],
+      "mean": [
+        24888,
+        1025,
+        72,
+        24894
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "7581429a4b66d8e55c37bd4ba34ff72a6179692fcd26e3ad09a44b1044fb8987",
+    "log_sha256": "a99bbdbf45899d3770113bcfa92316432ac2464b26e8392e8dc9777c5e351a62"
+  },
+  {
+    "fault": 0,
+    "state": 6,
+    "state_age": 69870,
+    "speed_millihz": 25698,
+    "emf_mv": 1008,
+    "log": "2026-10-07-early20-long20s-final.log",
+    "state_duration_s": 17.4675,
+    "history": {
+      "samples": 32,
+      "min": [
+        24064,
+        926,
+        71,
+        23978
+      ],
+      "max": [
+        25919,
+        1136,
+        77,
+        25724
+      ],
+      "mean": [
+        24991,
+        1023,
+        73,
+        24966
+      ],
+      "low_emf": 0
+    },
+    "replay_records": 80,
+    "run_rows": 32,
+    "model_tag": "2ee9afd91c605dd442528146e4c228677e29dedc3e43b4791eced5424ea6cb5b",
+    "log_sha256": "a88c344b5974badfa8d5c5e8b81b27d5ff60e68c9df067d0943816322cf0b512"
+  }
+]

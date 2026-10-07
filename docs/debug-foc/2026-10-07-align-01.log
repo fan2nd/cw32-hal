@@ -1,0 +1,5 @@
+[INFO ] 07-sensorless-foc: boot HCLK=96000000Hz PCLK=96000000Hz RTT=nonblocking
+[INFO ] Flash wait=3 prefetch=false->true cache=false->true (readback verified)
+[INFO ] BGR factory @0x001007D2 u16 mV: before_accel=1192 after_accel=17969 selected=before_accel
+[INFO ] PWM=4000Hz ADC1=48000000Hz ADC2=12000000Hz; outputs off, calibrate then wait for PA3 key
+[INFO ] Battery=3S cell_uv=3300mV bus_uv=9900mV bus_ov=16000mV (configured, no auto-detect)

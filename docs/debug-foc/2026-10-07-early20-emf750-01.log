@@ -1,0 +1,18 @@
+[INFO ] 07-sensorless-foc: boot HCLK=96000000Hz PCLK=96000000Hz RTT=nonblocking
+[INFO ] Flash wait=3 prefetch=false->true cache=false->true (readback verified)
+[INFO ] BGR factory @0x001007D2 u16 mV: before_accel=1192 after_accel=17969 selected=before_accel
+[INFO ] PWM=4000Hz ADC1=48000000Hz ADC2=12000000Hz; bench auto-start once at 3s, stop at 11s; PA3 cancels pending auto-start
+[INFO ] Battery=3S cell_uv=3300mV bus_uv=9900mV bus_ov=16000mV (configured, no auto-detect)
+[ERROR] 07 fault=9 state=7 frame=32820 armed=false bus=11887mV vdda=4847mV offset=2135 raw=[2139, 2156]; PWM/ADC triggers stopped
+[INFO ] RUN_RESULT fault=9 state_before=4 state_age=20000 speed=15426mHz emf=742mV dq=[247, 22] target=[250, 0]; state 4=OpenLoop 5=Blend 6=ClosedLoop, outputs stopped
+[ERROR] HANDOFF state_before=4 age=20000 reject=2 good=0/80 best=69 forced=18000mHz pll=15426mHz angle_forced=100 observer=57557 delta=-8079 pll_error=794; angle units=65536/turn
+[ERROR] HANDOFF_HISTORY eligible_frames=16251 reject_counts_bits1_to128=[0, 7834, 699, 121, 0, 538, 519, 1077] last_reject=2 age=20000 delta=-8079 pll_error=794; counts overlap, OpenLoop forced speed >= handoff minimum, including ramp
+[ERROR] HANDOFF_COHERENCE plateau_delta_min_max=[-32740, 32622] mean=-3816 pll_peak=32767 over10deg=974 window_delta=[0, 0] pll_mean_square=0 last_window_frames=1 delta=[-8079, -8079] pll_mean_square=630272 outliers=0; angle units65536/turn, mean_square units angle_squared
+[ERROR] OBSERVER raw_unclamped_ab=[491, 595] filtered_ab=[519, 532] magnitude=742mV min=500mV; phase=[248, -98, -150]mA previous_dq=[247, 22] previous_target=[250, 0]mA previous_vdq=[1473, 560]mV vlimit=2357mV
+[ERROR] HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_peak_rms_burst_count 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=load_angle_spread_entry 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM
+[ERROR] ADC sample=0 reason=0 entry=0 read=0 raw=0 expected=0..=0 trigger=[0, 0] received=[3122, 4612] previous_end=7173 max_first=281 ticks
+[ERROR] ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us
+[ERROR] TIMING site=0 start=0 observed=0 limit=0 reload=false samples=0 state_before=4 armed_before=true max_update=419 max_control=12265 ticks elapsed_min=0 stage=3
+[ERROR] CONTROL stages supply/reconstruct/interval/control/modulate: last=[779, 895, 887, 0, 0] max=[1456, 900, 935, 6595, 3154] ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true
+[ERROR] TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us
+[ERROR] REPLAY_UNAVAILABLE version=5 phase=Blend requested_start_age=1; no captured Blend input from this start

@@ -1,0 +1,103 @@
+[INFO ] 07-sensorless-foc: boot HCLK=96000000Hz PCLK=96000000Hz RTT=nonblocking
+[INFO ] Flash wait=3 prefetch=false->true cache=false->true (readback verified)
+[INFO ] BGR factory @0x001007D2 u16 mV: before_accel=1192 after_accel=57907 selected=before_accel
+[INFO ] PWM=4000Hz ADC1=48000000Hz ADC2=12000000Hz; bench auto-start once at 3s, stop at 11s; PA3 cancels pending auto-start
+[INFO ] Battery=3S cell_uv=3300mV bus_uv=9900mV bus_ov=16000mV (configured, no auto-detect)
+[ERROR] 07 fault=9 state=7 frame=32820 armed=false bus=11887mV vdda=4847mV offset=2135 raw=[2139, 2161]; PWM/ADC triggers stopped
+[ERROR] HANDOFF state_before=4 age=20000 reject=0 good=16/1000 best=74 forced=18000mHz pll=17521mHz angle_forced=106 observer=60675 delta=-4967 pll_error=1065; angle units=65536/turn
+[ERROR] HANDOFF_HISTORY plateau_frames=10000 reject_counts_bits1_to128=[0, 0, 72, 0, 0, 0, 198, 0] last_reject=64 age=19984 delta=-5784 pll_error=-936; counts overlap, OpenLoop only
+[ERROR] HANDOFF_COHERENCE plateau_delta_min_max=[-7798, -207] mean=-3648 pll_peak=2454 over10deg=331 window_delta=[-6152, -4967] pll_mean_square=614656 last_window_frames=46 delta=[-5784, -1984] pll_mean_square=492032 outliers=0; angle units65536/turn, mean_square units angle_squared
+[ERROR] OBSERVER raw_unclamped_ab=[301, 698] filtered_ab=[358, 719] magnitude=802mV min=500mV; phase=[307, -119, -188]mA previous_dq=[306, 13] previous_target=[250, 0]mA previous_vdq=[1278, 682]mV vlimit=2357mV
+[ERROR] HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_peak_rms_burst_count 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=load_angle_spread_entry 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM
+[ERROR] ADC sample=0 reason=0 entry=0 read=0 raw=0 expected=0..=0 trigger=[0, 0] received=[3122, 5278] previous_end=7926 max_first=297 ticks
+[ERROR] ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us
+[ERROR] TIMING site=0 start=0 observed=0 limit=0 reload=false samples=0 state_before=4 armed_before=true max_update=419 max_control=12410 ticks elapsed_min=0 stage=3
+[ERROR] CONTROL stages supply/reconstruct/interval/control/modulate: last=[783, 940, 925, 0, 0] max=[1472, 1235, 936, 7226, 3179] ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true
+[ERROR] TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us
+[ERROR] REPLAY_BEGIN version=4 model=331e7a2eefc05e1ace2cc3d6036bb17d05940ecc746bbb67c1e017305df6c572 phase=OpenLoop observer_updates=80 age_stage=post_control start_age=10001 seed_age=10000 nominal_start_us=2500250 records=80 complete=true period_frames=1 nominal_period_us=250; fixed plateau observer replay, not final fault frames
+[ERROR] REPLAY_MOTOR previous_duty=[7455, 4716, 2400] previous_bus=11887 offset=2135; duties active, vdda before ADC2 update, bus after update
+[ERROR] REPLAY_STATE_A end=0 previous_current=[331, 39] emf_q8=[76354, 198744] raw_emf=[195, 760]
+[ERROR] REPLAY_STATE_B end=0 phase=3974940170 speed=19174241 magnitude=830 error=1257 open_phase=7138375 corrected=61524 tracking=1
+[ERROR] REPLAY_ROW n=0 age=10001 raw=[2137, 2166] duty=[7392, 4839, 2400] vdda=4847 bus=11912 forced=405 observed=62131 pll=1949 first_ma=-188
+[ERROR] REPLAY_ROW n=1 age=10002 raw=[2139, 2165] duty=[7291, 4909, 2400] vdda=4852 bus=11912 forced=701 observed=62681 pll=1576 first_ma=-215
+[ERROR] REPLAY_ROW n=2 age=10003 raw=[2138, 2166] duty=[7178, 5067, 2400] vdda=4852 bus=11912 forced=997 observed=63242 pll=1623 first_ma=-216
+[ERROR] REPLAY_ROW n=3 age=10004 raw=[2140, 2166] duty=[7064, 5127, 2400] vdda=4852 bus=11912 forced=1293 observed=63779 pll=1465 first_ma=-242
+[ERROR] REPLAY_ROW n=4 age=10005 raw=[2140, 2168] duty=[6947, 5238, 2400] vdda=4852 bus=11900 forced=1589 observed=64360 pll=1723 first_ma=-251
+[ERROR] REPLAY_ROW n=5 age=10006 raw=[2139, 2168] duty=[6803, 5290, 2400] vdda=4847 bus=11900 forced=1885 observed=64928 pll=1633 first_ma=-244
+[ERROR] REPLAY_ROW n=6 age=10007 raw=[2140, 2169] duty=[6643, 5380, 2400] vdda=4847 bus=11900 forced=2181 observed=65507 pll=1673 first_ma=-261
+[ERROR] REPLAY_ROW n=7 age=10008 raw=[2140, 2169] duty=[6501, 5472, 2400] vdda=4847 bus=11900 forced=2477 observed=531 pll=1547 first_ma=-269
+[ERROR] REPLAY_ROW n=8 age=10009 raw=[2140, 2170] duty=[6501, 5541, 2400] vdda=4847 bus=11900 forced=2773 observed=1099 pll=1581 first_ma=-274
+[ERROR] REPLAY_ROW n=9 age=10010 raw=[2140, 2170] duty=[6560, 5600, 2400] vdda=4847 bus=11900 forced=3068 observed=1631 pll=1344 first_ma=-279
+[ERROR] REPLAY_ROW n=10 age=10011 raw=[2140, 2136] duty=[5357, 6317, 2400] vdda=4847 bus=11900 forced=3360 observed=1945 pll=8 first_ma=-261
+[ERROR] REPLAY_ROW n=11 age=10012 raw=[2140, 2165] duty=[6046, 5086, 2400] vdda=4847 bus=11900 forced=3652 observed=2389 pll=813 first_ma=-241
+[ERROR] REPLAY_ROW n=12 age=10013 raw=[2140, 2136] duty=[5480, 6440, 2400] vdda=4847 bus=11900 forced=3952 observed=2718 pll=12 first_ma=-271
+[ERROR] REPLAY_ROW n=13 age=10014 raw=[2140, 2166] duty=[5982, 5022, 2400] vdda=4847 bus=11900 forced=4241 observed=3135 pll=675 first_ma=-238
+[ERROR] REPLAY_ROW n=14 age=10015 raw=[2140, 2135] duty=[5091, 6051, 2400] vdda=4847 bus=11900 forced=4537 observed=3405 pll=-326 first_ma=-243
+[ERROR] REPLAY_ROW n=15 age=10016 raw=[2141, 2137] duty=[5307, 6267, 2400] vdda=4847 bus=11900 forced=4834 observed=3709 pll=-117 first_ma=-270
+[ERROR] REPLAY_ROW n=16 age=10017 raw=[2141, 2168] duty=[6086, 5126, 2400] vdda=4847 bus=11900 forced=5127 observed=4123 pll=619 first_ma=-258
+[ERROR] REPLAY_ROW n=17 age=10018 raw=[2141, 2133] duty=[4351, 5804, 2400] vdda=4847 bus=11900 forced=5412 observed=4335 pll=-588 first_ma=-199
+[ERROR] REPLAY_ROW n=18 age=10019 raw=[2140, 2137] duty=[4899, 5972, 2400] vdda=4847 bus=11900 forced=5714 observed=4572 pll=-597 first_ma=-230
+[ERROR] REPLAY_ROW n=19 age=10020 raw=[2141, 2138] duty=[4967, 6003, 2400] vdda=4847 bus=11900 forced=6010 observed=4786 pll=-636 first_ma=-247
+[ERROR] REPLAY_ROW n=20 age=10021 raw=[2141, 2138] duty=[4873, 5974, 2400] vdda=4847 bus=11900 forced=6304 observed=4967 pll=-832 first_ma=-240
+[ERROR] REPLAY_ROW n=21 age=10022 raw=[2142, 2138] duty=[4769, 5959, 2400] vdda=4847 bus=11900 forced=6597 observed=5153 pll=-799 first_ma=-242
+[ERROR] REPLAY_ROW n=22 age=10023 raw=[2142, 2138] duty=[4692, 5975, 2400] vdda=4847 bus=11900 forced=6891 observed=5335 pll=-819 first_ma=-237
+[ERROR] REPLAY_ROW n=23 age=10024 raw=[2142, 2140] duty=[4600, 5983, 2400] vdda=4847 bus=11900 forced=7185 observed=5453 pll=-1208 first_ma=-230
+[ERROR] REPLAY_ROW n=24 age=10025 raw=[2144, 2139] duty=[4518, 6003, 2400] vdda=4847 bus=11900 forced=7479 observed=5659 pll=-649 first_ma=-246
+[ERROR] REPLAY_ROW n=25 age=10026 raw=[2144, 2139] duty=[4470, 6003, 2400] vdda=4847 bus=11900 forced=7773 observed=5881 pll=-549 first_ma=-244
+[ERROR] REPLAY_ROW n=26 age=10027 raw=[2144, 2139] duty=[4345, 6007, 2400] vdda=4847 bus=11900 forced=8066 observed=6098 pll=-561 first_ma=-235
+[ERROR] REPLAY_ROW n=27 age=10028 raw=[2144, 2140] duty=[4253, 6021, 2400] vdda=4847 bus=11900 forced=8360 observed=6289 pll=-726 first_ma=-228
+[ERROR] REPLAY_ROW n=28 age=10029 raw=[2144, 2140] duty=[4173, 6042, 2400] vdda=4847 bus=11913 forced=8654 observed=6473 pll=-763 first_ma=-222
+[ERROR] REPLAY_ROW n=29 age=10030 raw=[2144, 2140] duty=[4106, 6053, 2400] vdda=4847 bus=11913 forced=8948 observed=6649 pll=-808 first_ma=-217
+[ERROR] REPLAY_ROW n=30 age=10031 raw=[2145, 2140] duty=[4032, 6073, 2400] vdda=4847 bus=11913 forced=9242 observed=6858 pll=-592 first_ma=-222
+[ERROR] REPLAY_ROW n=31 age=10032 raw=[2145, 2140] duty=[3961, 6102, 2400] vdda=4847 bus=11913 forced=9536 observed=7069 pll=-577 first_ma=-217
+[ERROR] REPLAY_ROW n=32 age=10033 raw=[2146, 2141] duty=[3871, 6120, 2400] vdda=4847 bus=11900 forced=9830 observed=7297 pll=-459 first_ma=-222
+[ERROR] REPLAY_ROW n=33 age=10034 raw=[2146, 2141] duty=[3788, 6148, 2400] vdda=4847 bus=11900 forced=10124 observed=7520 pll=-490 first_ma=-215
+[ERROR] REPLAY_ROW n=34 age=10035 raw=[2147, 2142] duty=[3701, 6163, 2400] vdda=4847 bus=11900 forced=10418 observed=7765 pll=-353 first_ma=-220
+[ERROR] REPLAY_ROW n=35 age=10036 raw=[2147, 2142] duty=[3626, 6194, 2400] vdda=4847 bus=11900 forced=10712 observed=8009 pll=-348 first_ma=-215
+[ERROR] REPLAY_ROW n=36 age=10037 raw=[2147, 2142] duty=[3531, 6192, 2400] vdda=4847 bus=11900 forced=11006 observed=8245 pll=-400 first_ma=-207
+[ERROR] REPLAY_ROW n=37 age=10038 raw=[2147, 2142] duty=[3447, 6217, 2400] vdda=4847 bus=11900 forced=11299 observed=8470 pll=-460 first_ma=-200
+[ERROR] REPLAY_ROW n=38 age=10039 raw=[2148, 2142] duty=[3370, 6239, 2400] vdda=4847 bus=11900 forced=11593 observed=8730 pll=-242 first_ma=-205
+[ERROR] REPLAY_ROW n=39 age=10040 raw=[2149, 2144] duty=[3360, 6338, 2400] vdda=4847 bus=11900 forced=11888 observed=9008 pll=-133 first_ma=-216
+[ERROR] REPLAY_ROW n=40 age=10041 raw=[2149, 2144] duty=[3360, 6463, 2400] vdda=4847 bus=11912 forced=12183 observed=9271 pll=-225 first_ma=-216
+[ERROR] REPLAY_ROW n=41 age=10042 raw=[2149, 2144] duty=[3360, 6545, 2400] vdda=4852 bus=11912 forced=12478 observed=9511 pll=-365 first_ma=-216
+[ERROR] REPLAY_ROW n=42 age=10043 raw=[2150, 2144] duty=[3360, 6651, 2400] vdda=4852 bus=11912 forced=12773 observed=9767 pll=-261 first_ma=-228
+[ERROR] REPLAY_ROW n=43 age=10044 raw=[2132, 2141] duty=[2400, 6345, 3360] vdda=4852 bus=11912 forced=13068 observed=9863 pll=-1257 first_ma=-20
+[ERROR] REPLAY_ROW n=44 age=10045 raw=[2147, 2145] duty=[3360, 6358, 2400] vdda=4852 bus=11900 forced=13363 observed=10108 pll=-316 first_ma=-194
+[ERROR] REPLAY_ROW n=45 age=10046 raw=[2150, 2145] duty=[3360, 6911, 2400] vdda=4847 bus=11900 forced=13658 observed=10374 pll=-184 first_ma=-228
+[ERROR] REPLAY_ROW n=46 age=10047 raw=[2131, 2142] duty=[2400, 6816, 3360] vdda=4847 bus=11900 forced=13953 observed=10508 pll=-1003 first_ma=-8
+[ERROR] REPLAY_ROW n=47 age=10048 raw=[2149, 2147] duty=[3360, 6477, 2400] vdda=4847 bus=11900 forced=14248 observed=10761 pll=-252 first_ma=-216
+[ERROR] REPLAY_ROW n=48 age=10049 raw=[2152, 2147] duty=[3360, 7244, 2400] vdda=4847 bus=11900 forced=14542 observed=11047 pll=-46 first_ma=-252
+[ERROR] REPLAY_ROW n=49 age=10050 raw=[2131, 2144] duty=[2400, 6528, 3360] vdda=4847 bus=11900 forced=14837 observed=11184 pll=-972 first_ma=-7
+[ERROR] REPLAY_ROW n=50 age=10051 raw=[2134, 2144] duty=[2400, 7294, 3360] vdda=4847 bus=11900 forced=15132 observed=11334 pll=-878 first_ma=-42
+[ERROR] REPLAY_ROW n=51 age=10052 raw=[2150, 2151] duty=[3360, 6697, 2400] vdda=4847 bus=11900 forced=15427 observed=11586 pll=-236 first_ma=-229
+[ERROR] REPLAY_ROW n=52 age=10053 raw=[2133, 2145] duty=[2400, 7325, 3360] vdda=4847 bus=11900 forced=15722 observed=11697 pll=-1118 first_ma=-30
+[ERROR] REPLAY_ROW n=53 age=10054 raw=[2151, 2152] duty=[3360, 7036, 2400] vdda=4847 bus=11900 forced=16017 observed=11917 pll=-424 first_ma=-241
+[ERROR] REPLAY_ROW n=54 age=10055 raw=[2131, 2147] duty=[2400, 6832, 3367] vdda=4847 bus=11900 forced=16312 observed=12107 pll=-607 first_ma=-8
+[ERROR] REPLAY_ROW n=55 age=10056 raw=[2134, 2146] duty=[2400, 7278, 3360] vdda=4847 bus=11900 forced=16607 observed=12265 pll=-801 first_ma=-41
+[ERROR] REPLAY_ROW n=56 age=10057 raw=[2136, 2148] duty=[2400, 7368, 3360] vdda=4847 bus=11900 forced=16902 observed=12427 pll=-767 first_ma=-62
+[ERROR] REPLAY_ROW n=57 age=10058 raw=[2152, 2156] duty=[3360, 7328, 2400] vdda=4847 bus=11900 forced=17197 observed=12698 pll=-79 first_ma=-253
+[ERROR] REPLAY_ROW n=58 age=10059 raw=[2132, 2151] duty=[2400, 7130, 3922] vdda=4847 bus=11900 forced=17498 observed=12900 pll=-570 first_ma=-66
+[ERROR] REPLAY_ROW n=59 age=10060 raw=[2136, 2149] duty=[2400, 7172, 3374] vdda=4847 bus=11900 forced=17787 observed=13080 pll=-570 first_ma=-64
+[ERROR] REPLAY_ROW n=60 age=10061 raw=[2136, 2152] duty=[2400, 7228, 3360] vdda=4847 bus=11900 forced=18081 observed=13388 pll=145 first_ma=-62
+[ERROR] REPLAY_ROW n=61 age=10062 raw=[2136, 2152] duty=[2400, 7294, 3413] vdda=4847 bus=11900 forced=18377 observed=13683 pll=70 first_ma=-66
+[ERROR] REPLAY_ROW n=62 age=10063 raw=[2136, 2153] duty=[2400, 7340, 3551] vdda=4847 bus=11900 forced=18674 observed=13986 pll=113 first_ma=-78
+[ERROR] REPLAY_ROW n=63 age=10064 raw=[2136, 2155] duty=[2400, 7391, 3653] vdda=4847 bus=11900 forced=18970 observed=14354 pll=524 first_ma=-86
+[ERROR] REPLAY_ROW n=64 age=10065 raw=[2137, 2156] duty=[2400, 7423, 3759] vdda=4847 bus=11887 forced=19266 observed=14729 pll=561 first_ma=-105
+[ERROR] REPLAY_ROW n=65 age=10066 raw=[2137, 2158] duty=[2400, 7433, 3877] vdda=4847 bus=11887 forced=19562 observed=15174 pll=987 first_ma=-115
+[ERROR] REPLAY_ROW n=66 age=10067 raw=[2137, 2158] duty=[2400, 7436, 3977] vdda=4847 bus=11887 forced=19858 observed=15612 pll=936 first_ma=-123
+[ERROR] REPLAY_ROW n=67 age=10068 raw=[2138, 2159] duty=[2400, 7419, 4098] vdda=4847 bus=11887 forced=20155 observed=16051 pll=930 first_ma=-143
+[ERROR] REPLAY_ROW n=68 age=10069 raw=[2137, 2161] duty=[2400, 7406, 4201] vdda=4847 bus=11912 forced=20451 observed=16574 pll=1449 first_ma=-140
+[ERROR] REPLAY_ROW n=69 age=10070 raw=[2139, 2161] duty=[2400, 7366, 4290] vdda=4852 bus=11912 forced=20747 observed=17055 pll=1177 first_ma=-169
+[ERROR] REPLAY_ROW n=70 age=10071 raw=[2138, 2162] duty=[2400, 7309, 4422] vdda=4852 bus=11912 forced=21044 observed=17558 pll=1294 first_ma=-169
+[ERROR] REPLAY_ROW n=71 age=10072 raw=[2140, 2163] duty=[2400, 7240, 4485] vdda=4852 bus=11912 forced=21339 observed=18066 pll=1320 first_ma=-195
+[ERROR] REPLAY_ROW n=72 age=10073 raw=[2139, 2163] duty=[2400, 7180, 4601] vdda=4852 bus=11900 forced=21636 observed=18565 pll=1247 first_ma=-194
+[ERROR] REPLAY_ROW n=73 age=10074 raw=[2140, 2163] duty=[2400, 7081, 4662] vdda=4847 bus=11900 forced=21931 observed=19033 pll=1047 first_ma=-209
+[ERROR] REPLAY_ROW n=74 age=10075 raw=[2139, 2164] duty=[2400, 7012, 4757] vdda=4847 bus=11900 forced=22227 observed=19530 pll=1216 first_ma=-206
+[ERROR] REPLAY_ROW n=75 age=10076 raw=[2140, 2165] duty=[2400, 6921, 4817] vdda=4847 bus=11900 forced=22523 observed=20046 pll=1323 first_ma=-221
+[ERROR] REPLAY_ROW n=76 age=10077 raw=[2140, 2166] duty=[2400, 6818, 4914] vdda=4847 bus=11900 forced=22819 observed=20584 pll=1444 first_ma=-229
+[ERROR] REPLAY_ROW n=77 age=10078 raw=[2140, 2165] duty=[2400, 6699, 4985] vdda=4847 bus=11900 forced=23115 observed=21070 pll=1109 first_ma=-234
+[ERROR] REPLAY_ROW n=78 age=10079 raw=[2140, 2168] duty=[2400, 6567, 5061] vdda=4847 bus=11900 forced=23411 observed=21640 pll=1620 first_ma=-240
+[ERROR] REPLAY_ROW n=79 age=10080 raw=[2140, 2167] duty=[2400, 6456, 5117] vdda=4847 bus=11900 forced=23706 observed=22172 pll=1372 first_ma=-245
+[ERROR] REPLAY_STATE_A end=1 previous_current=[-245, 295] emf_q8=[-183012, -118901] raw_emf=[-698, -530]
+[ERROR] REPLAY_STATE_B end=1 phase=1392010667 speed=20505495 magnitude=850 error=1372 open_phase=1553649434 corrected=22172 tracking=1
+[ERROR] REPLAY_END records=80 complete=true; seed before first captured OpenLoop input, terminal after last observer update; angles65536/turn, duty96ticks/us, currentsmA, voltagemV

@@ -52,7 +52,8 @@ const GATES: [PinId; 6] = [
     PinId::new(Port::B, 7),
 ];
 static INITIALIZED: AtomicBool = AtomicBool::new(false);
-pub static RUN_REQUEST: AtomicBool = AtomicBool::new(false);
+// 单个原子命令同时表达停机和目标电气频率，避免运行标志与档位不一致。
+pub static SPEED_REQUEST_MILLIHZ: AtomicU32 = AtomicU32::new(0);
 pub static MILLISECONDS: AtomicU32 = AtomicU32::new(0);
 // 全部实时状态只有 P0 中断访问；线程只读独立原子状态字。
 static mut MOTOR: Option<Runtime> = None;
@@ -64,9 +65,13 @@ pub static mut FOC_CONTROL_FAULT: ControlFaultTrace = ControlFaultTrace::new();
 
 // 不放进 Motor::new，避免初始化大对象时占用 8 KiB SRAM 中的栈空间。
 // 仅 ADC1 P0 写入；首故障停桥、停计数器、关闭 P0 中断并 Release 后，线程才读。
-static mut ALIGN_TRACE: crate::trace::Trace = crate::trace::Trace::new();
+static mut PLATEAU_TRACE: crate::trace::Trace = crate::trace::Trace::new();
 // 仅 report_fault 所在线程访问，不由中断写入。
 static mut TRACE_DUMP: Option<(usize, u32)> = None;
+// 复用50 ms诊断节拍，保留最近1.6 s闭环估计；P0写、停源后线程读。
+static mut RUN_HISTORY: [[i32; 4]; 32] = [[0; 4]; 32];
+static mut RUN_HISTORY_NEXT: usize = 0;
+static mut RUN_HISTORY_LEN: usize = 0;
 
 // EAU 单例与实时状态共同保留；只有不嵌套的 ADC1 P0 路径借用它。
 struct Runtime {
@@ -475,10 +480,13 @@ impl Motor {
         // 若新启动尚未消费首个完整ADC帧就故障，先废弃上一启动的记录。
         if self.control.trace_reset_pending() {
             unsafe {
-                (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).reset();
+                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
             }
         }
-        self.control.trip(fault);
+        // None是正常台架结束，先冻结运行态，再转Off；不能伪记Driver故障。
+        if fault != Fault::None {
+            self.control.trip(fault);
+        }
         if first {
             let trace = self.control.fault_trace();
             // 控制器可先锁存 Fault；使用它在覆盖状态之前保留的来源。
@@ -495,6 +503,9 @@ impl Motor {
         if first {
             self.fault_published = true;
             publish(self);
+            if fault == Fault::None {
+                self.control.request_speed(0);
+            }
             FAULT_LOG_READY.store(true, Ordering::Release);
         }
     }
@@ -642,6 +653,18 @@ impl Motor {
 /// 仅 ISR 写入；普通线程只在高频源停止、首故障已冻结之后读取。
 fn publish(m: &Motor) {
     let s = m.control.snapshot();
+    if m.armed && s.state == State::ClosedLoop {
+        unsafe {
+            RUN_HISTORY[RUN_HISTORY_NEXT] = [
+                s.speed_millihz,
+                s.bemf_mv,
+                s.target_dq_ma[1],
+                s.speed_feedback_millihz,
+            ];
+            RUN_HISTORY_NEXT = (RUN_HISTORY_NEXT + 1) & 31;
+            RUN_HISTORY_LEN = (RUN_HISTORY_LEN + 1).min(32);
+        }
+    }
     let value = Diagnostics {
         state: s.state as u32,
         fault: s.fault as u32,
@@ -705,7 +728,33 @@ pub fn report_fault() {
         "07 fault={} state={} frame={} armed={} bus={}mV vdda={}mV offset={} raw={:?}; PWM/ADC triggers stopped",
         d.fault, d.state, d.frames, d.armed, d.bus_mv, d.vdda_mv, d.offset_adc, d.raw_adc,
     );
-    if d.fault == Fault::StartupTimeout as u32 || d.fault == Fault::ObserverLost as u32 {
+    let result = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FOC_CONTROL_FAULT)) };
+    defmt::info!("RUN_RESULT fault={} state_before={} state_age={} speed={}mHz emf={}mV dq={:?} target={:?}; state 4=OpenLoop 5=Blend 6=ClosedLoop, outputs stopped", d.fault, result.state_before, result.age_frames, result.speed_millihz, result.magnitude_mv, d.current_dq_ma, result.previous_target_dq_ma);
+    // ISR已停止；统计值只描述估计量，不冒充独立测速。
+    let count = unsafe { RUN_HISTORY_LEN };
+    if count != 0 {
+        let history = unsafe { &*core::ptr::addr_of!(RUN_HISTORY) };
+        let mut minimum = [i32::MAX; 4];
+        let mut maximum = [i32::MIN; 4];
+        let mut sum = [0i32; 4];
+        let mut low_emf = 0;
+        for row in &history[..count] {
+            for axis in 0..4 {
+                minimum[axis] = minimum[axis].min(row[axis]);
+                maximum[axis] = maximum[axis].max(row[axis]);
+                sum[axis] += row[axis];
+            }
+            if row[1] < BEMF_MIN_MV {
+                low_emf += 1;
+            }
+        }
+        let mean = sum.map(|v| v / count as i32);
+        defmt::info!("RUN_HISTORY samples={} period_ms=50 min={:?} max={:?} mean={:?} low_emf={}; axes raw_speed_mHz/emf_mV/Iq_mA/filtered_speed_mHz; last up to 1.6s, estimator only", count, minimum, maximum, mean, low_emf);
+    }
+    if d.fault == Fault::None as u32
+        || d.fault == Fault::StartupTimeout as u32
+        || d.fault == Fault::ObserverLost as u32
+    {
         let c = unsafe { core::ptr::read_volatile(core::ptr::addr_of!(FOC_CONTROL_FAULT)) };
         defmt::error!(
             "HANDOFF state_before={} age={} reject={} good={}/{} best={} forced={}mHz pll={}mHz angle_forced={} observer={} delta={} pll_error={}; angle units=65536/turn",
@@ -714,7 +763,7 @@ pub fn report_fault() {
             c.observer_angle, c.angle_error, c.pll_error,
         );
         defmt::error!(
-            "HANDOFF_HISTORY plateau_frames={} reject_counts_bits1_to128={:?} last_reject={} age={} delta={} pll_error={}; counts overlap, OpenLoop only",
+            "HANDOFF_HISTORY eligible_frames={} reject_counts_bits1_to128={:?} last_reject={} age={} delta={} pll_error={}; counts overlap, OpenLoop forced speed >= handoff minimum, including ramp",
             c.plateau_frames, c.plateau_reject_counts, c.last_reject_mask, c.last_reject_age,
             c.last_reject_angle_error, c.last_reject_pll_error,
         );
@@ -753,11 +802,11 @@ pub fn report_fault() {
     );
     defmt::error!("CONTROL stages supply/reconstruct/interval/control/modulate: last={:?} max={:?} ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true", d.stage_ticks, d.max_stage_ticks);
     defmt::error!(
-        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (12000..=36000); 96 ticks/us"
+        "TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (19200..=57600); 96 ticks/us"
     );
     if d.fault == Fault::StartupTimeout as u32
         || d.fault == Fault::ObserverLost as u32
-        || unsafe { (&*core::ptr::addr_of!(ALIGN_TRACE)).len != 0 }
+        || unsafe { (&*core::ptr::addr_of!(PLATEAU_TRACE)).len != 0 }
     {
         // 原故障日志先排出；随后每 20 ms 一行，仍为非阻塞 RTT，序号可检查丢行。
         unsafe {
@@ -775,10 +824,10 @@ fn report_trace_row() {
     if now.wrapping_sub(last_ms) < if row == 0 { 100 } else { 20 } {
         return;
     }
-    let trace = unsafe { &*core::ptr::addr_of!(ALIGN_TRACE) };
+    let trace = unsafe { &*core::ptr::addr_of!(PLATEAU_TRACE) };
     if trace.len == 0 {
         defmt::error!(
-            "REPLAY_UNAVAILABLE version=3 phase=Align requested_start_age={}; no captured Align input from this start",
+            "REPLAY_UNAVAILABLE version=5 phase=Blend requested_start_age={}; no captured Blend input from this start",
             crate::trace::START_AGE
         );
         unsafe {
@@ -787,7 +836,7 @@ fn report_trace_row() {
         return;
     }
     if row == 0 {
-        defmt::error!("REPLAY_BEGIN version=3 model={} phase=Align observer_updates=0 age_stage=post_control start_age={} seed_age={} nominal_start_us={} records={} complete={} period_frames=1 nominal_period_us=250; electrical input diagnostic, not OpenLoop observer replay or proof of stationary rotor", crate::trace::MODEL_TAG, trace.seed.age, trace.seed.age - 1, u32::from(trace.seed.age) * 250, trace.len, trace.complete);
+        defmt::error!("REPLAY_BEGIN version=5 model={} phase=Blend observer_updates={} age_stage=post_control start_age={} seed_age={} nominal_start_us={} records={} complete={} period_frames=1 nominal_period_us=250; first Blend frames after handoff", crate::trace::MODEL_TAG, trace.len, trace.seed.age, trace.seed.age - 1, u32::from(trace.seed.age) * 250, trace.len, trace.complete);
     } else if row == 1 {
         defmt::error!("REPLAY_MOTOR previous_duty={:?} previous_bus={} offset={}; duties active, vdda before ADC2 update, bus after update", trace.seed.previous_duty, trace.seed.previous_bus_mv, trace.seed.offset);
     } else if row == 2 || row == 3 {
@@ -799,8 +848,23 @@ fn report_trace_row() {
         }
     } else if trace.complete && row < 6 + usize::from(trace.len) {
         report_replay_state(1, row == 5 + usize::from(trace.len), &trace.terminal);
+    } else if row
+        < 4 + usize::from(trace.len)
+            + if trace.complete { 2 } else { 0 }
+            + unsafe { RUN_HISTORY_LEN }
+    {
+        let index = row - 4 - usize::from(trace.len) - if trace.complete { 2 } else { 0 };
+        let values = unsafe { RUN_HISTORY[(RUN_HISTORY_NEXT + 32 - RUN_HISTORY_LEN + index) & 31] };
+        defmt::info!(
+            "RUN_ROW n={} speed={} emf={} iq={} filtered_speed={}; chronological, 50ms",
+            index,
+            values[0],
+            values[1],
+            values[2],
+            values[3]
+        );
     } else {
-        defmt::error!("REPLAY_END records={} complete={}; seed before first captured Align input, terminal after last captured control step; observer inactive, observed/pll are unchanged state checks; angles65536/turn, duty96ticks/us, currentsmA, voltagemV", trace.len, trace.complete);
+        defmt::error!("REPLAY_END records={} complete={}; seed before first captured Blend input, terminal after last observer update; angles65536/turn, duty96ticks/us, currentsmA, voltagemV", trace.len, trace.complete);
         unsafe {
             TRACE_DUMP = None;
         }
@@ -953,7 +1017,8 @@ impl Handler<typelevel::ATIM> for PwmHandler {
             m.active = m.staged;
             m.samples = 0;
             m.frames = m.frames.wrapping_add(1);
-            m.control.request_run(RUN_REQUEST.load(Ordering::Acquire));
+            let requested = SPEED_REQUEST_MILLIHZ.load(Ordering::Acquire) as i32;
+            m.control.request_speed(requested);
             if matches!(
                 m.control.state(),
                 State::Off | State::Calibrating | State::Fault
@@ -1079,7 +1144,9 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             m.checkpoint = start;
             m.stage_ticks = [0; 5];
             if m.control.trace_reset_pending() {
-                (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).reset();
+                (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).reset();
+                RUN_HISTORY_NEXT = 0;
+                RUN_HISTORY_LEN = 0;
             }
             let mut math = HardwareMath {
                 eau: &mut runtime.eau,
@@ -1132,15 +1199,15 @@ impl Handler<typelevel::ADC1> for AdcHandler {
             if !m.checkpoint_control(math.pwm, start, 0) {
                 return;
             }
-            // 首帧种子早于首样本运输，previous 尚未晋升；Align 不运行 observer.update。
-            // 只取原 Align 最后 80 帧；Foc 前后帧的 duty 可还原真实边沿与保持时刻。
+            // 首帧种子早于首样本运输和 observer.update，previous 尚未晋升。
+            // 只取Blend起始80帧；Foc 前后帧的 duty 可还原真实边沿与保持时刻。
             let capture_age = m.control.trace_next_age().filter(|&age| {
                 m.active.mode == Mode::Foc
                     && m.previous.mode == Mode::Foc
-                    && (&mut *core::ptr::addr_of_mut!(ALIGN_TRACE)).wants_input(age)
+                    && (&mut *core::ptr::addr_of_mut!(PLATEAU_TRACE)).wants_input(age)
             });
             if let Some(age) = capture_age {
-                let trace = &mut *core::ptr::addr_of_mut!(ALIGN_TRACE);
+                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
                 if trace.needs_seed() {
                     trace.begin(crate::trace::Seed {
                         state: m.control.replay_state(),
@@ -1214,11 +1281,11 @@ impl Handler<typelevel::ADC1> for AdcHandler {
                 }
                 return;
             }
-            // 故障分支已优先关桥返回；只提交已完成控制计算的 Align 输入。
+            // 故障分支已优先关桥返回；只提交已完成控制计算的Blend输入。
             // 后续调制/截止检查仍可关断；complete 仅表示 80 项输入，不是整帧/实板通过。
-            if let Some(age) = capture_age.filter(|_| m.control.state() == State::Align) {
+            if let Some(age) = capture_age.filter(|_| m.control.state() == State::Blend) {
                 let (forced_angle, observer_angle, pll_error) = m.control.trace_output();
-                let trace = &mut *core::ptr::addr_of_mut!(ALIGN_TRACE);
+                let trace = &mut *core::ptr::addr_of_mut!(PLATEAU_TRACE);
                 if trace.push(
                     age,
                     crate::trace::Record {

@@ -1,0 +1,2 @@
+# Preserve raw capture bytes for the SHA256 values recorded in audit reports.
+*.log -text

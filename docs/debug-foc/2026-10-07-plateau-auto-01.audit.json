@@ -1,0 +1,1134 @@
+{
+  "summary": {
+    "records": 80,
+    "intervals": 157,
+    "first_blank": 480,
+    "second_blank": 240,
+    "resistance": 3.35,
+    "inductance_uh": 875,
+    "phase_0": {
+      "count": 46,
+      "mean_mv": -579.5290186641512,
+      "min_mv": -878.2613870022327,
+      "max_mv": 286.3083128540563,
+      "rms_mv": 672.8721140801608
+    },
+    "phase_1": {
+      "count": 64,
+      "mean_mv": 609.7826308814336,
+      "min_mv": -208.29688270775648,
+      "max_mv": 1051.354513815738,
+      "rms_mv": 702.8942497381604
+    },
+    "phase_2": {
+      "count": 47,
+      "mean_mv": -499.1984318958139,
+      "min_mv": -990.5853722594571,
+      "max_mv": 165.8964982709146,
+      "rms_mv": 590.5376506381207
+    },
+    "adjacent_jump_rms_mv": 133.54514004791886,
+    "adjacent_jump_max_mv": 524.3578015520561
+  },
+  "intervals": [
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 5176,
+      "end_ticks": 29305,
+      "emf_mv": 286.3083128540563
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 29305,
+      "end_ticks": 53413,
+      "emf_mv": 166.18087048453228
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 53413,
+      "end_ticks": 77529,
+      "emf_mv": 140.07754299215637
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 77529,
+      "end_ticks": 101687,
+      "emf_mv": 91.91055554372348
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 101687,
+      "end_ticks": 125772,
+      "emf_mv": -39.32171219362183
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 125772,
+      "end_ticks": 149855,
+      "emf_mv": -16.323765638317347
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 149855,
+      "end_ticks": 173988,
+      "emf_mv": -35.7299504034673
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 173988,
+      "end_ticks": 198097,
+      "emf_mv": -68.20853543735925
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 198097,
+      "end_ticks": 222182,
+      "emf_mv": -164.91549103995166
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 222182,
+      "end_ticks": 246237,
+      "emf_mv": -240.71239526779712
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 246237,
+      "end_ticks": 270336,
+      "emf_mv": -307.2814503601572
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 270336,
+      "end_ticks": 294411,
+      "emf_mv": -329.77470816715925
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 294411,
+      "end_ticks": 342316,
+      "emf_mv": -379.7420393815361
+    },
+    {
+      "phase": 0,
+      "channels": "1->1",
+      "start_ticks": 342316,
+      "end_ticks": 437891,
+      "emf_mv": -565.0856422465157
+    },
+    {
+      "phase": 0,
+      "channels": "1->0",
+      "start_ticks": 437891,
+      "end_ticks": 987020,
+      "emf_mv": -647.975535093183
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 987020,
+      "end_ticks": 1059020,
+      "emf_mv": -689.4882586004702
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1059020,
+      "end_ticks": 1131020,
+      "emf_mv": -730.0240946856321
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1131020,
+      "end_ticks": 1155020,
+      "emf_mv": -745.553642073283
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1155020,
+      "end_ticks": 1203020,
+      "emf_mv": -780.6060243088554
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1203020,
+      "end_ticks": 1251020,
+      "emf_mv": -796.3677062862804
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1251020,
+      "end_ticks": 1275020,
+      "emf_mv": -792.0477556624986
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1275020,
+      "end_ticks": 1299020,
+      "emf_mv": -763.3842436765113
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1299020,
+      "end_ticks": 1323020,
+      "emf_mv": -828.7561943069923
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1323020,
+      "end_ticks": 1371020,
+      "emf_mv": -809.0649415434646
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1371020,
+      "end_ticks": 1395020,
+      "emf_mv": -794.541729871396
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1395020,
+      "end_ticks": 1419020,
+      "emf_mv": -852.4303533532832
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1419020,
+      "end_ticks": 1443020,
+      "emf_mv": -847.826922618458
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1443020,
+      "end_ticks": 1467020,
+      "emf_mv": -862.9234921828477
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1467020,
+      "end_ticks": 1491020,
+      "emf_mv": -815.9177654585006
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1491020,
+      "end_ticks": 1515020,
+      "emf_mv": -854.9806505442364
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1515020,
+      "end_ticks": 1539020,
+      "emf_mv": -868.3961334090816
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1539020,
+      "end_ticks": 1563020,
+      "emf_mv": -878.2613870022327
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1563020,
+      "end_ticks": 1587020,
+      "emf_mv": -757.5870043808297
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1587020,
+      "end_ticks": 1611020,
+      "emf_mv": -815.2457441341523
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1611020,
+      "end_ticks": 1635020,
+      "emf_mv": -822.3157994376569
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1635020,
+      "end_ticks": 1659020,
+      "emf_mv": -755.6502676644019
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1659020,
+      "end_ticks": 1683020,
+      "emf_mv": -780.5947724814222
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1683020,
+      "end_ticks": 1707020,
+      "emf_mv": -783.9442013023106
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1707020,
+      "end_ticks": 1731020,
+      "emf_mv": -844.4773097076481
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1731020,
+      "end_ticks": 1755020,
+      "emf_mv": -752.4066429617532
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1755020,
+      "end_ticks": 1779020,
+      "emf_mv": -772.6254171530943
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1779020,
+      "end_ticks": 1803020,
+      "emf_mv": -772.2135457441639
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1803020,
+      "end_ticks": 1827020,
+      "emf_mv": -766.5664595950998
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1827020,
+      "end_ticks": 1851020,
+      "emf_mv": -760.0905235211204
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1851020,
+      "end_ticks": 1875020,
+      "emf_mv": -687.3831142856892
+    },
+    {
+      "phase": 0,
+      "channels": "0->0",
+      "start_ticks": 1875020,
+      "end_ticks": 1899020,
+      "emf_mv": -766.0688172429926
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 317760,
+      "end_ticks": 365457,
+      "emf_mv": 925.5957952040789
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 365457,
+      "end_ticks": 390074,
+      "emf_mv": 966.7193597643495
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 390074,
+      "end_ticks": 414048,
+      "emf_mv": 982.3788944114355
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 414048,
+      "end_ticks": 460839,
+      "emf_mv": 886.1683772416088
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 460839,
+      "end_ticks": 485465,
+      "emf_mv": 937.7659149930033
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 485465,
+      "end_ticks": 509497,
+      "emf_mv": 922.5619173770738
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 509497,
+      "end_ticks": 533371,
+      "emf_mv": 934.2018195104763
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 533371,
+      "end_ticks": 557260,
+      "emf_mv": 928.1100788889306
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 557260,
+      "end_ticks": 581140,
+      "emf_mv": 860.9375931630334
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 581140,
+      "end_ticks": 605014,
+      "emf_mv": 885.0900977291789
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 605014,
+      "end_ticks": 628893,
+      "emf_mv": 885.9535057582535
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 628893,
+      "end_ticks": 652786,
+      "emf_mv": 885.9592180146888
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 652786,
+      "end_ticks": 676680,
+      "emf_mv": 889.1141502033856
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 676680,
+      "end_ticks": 700583,
+      "emf_mv": 829.0328281929787
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 700583,
+      "end_ticks": 724483,
+      "emf_mv": 793.039868720442
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 724483,
+      "end_ticks": 748377,
+      "emf_mv": 820.7629647305699
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 748377,
+      "end_ticks": 772269,
+      "emf_mv": 820.2212681687978
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 772269,
+      "end_ticks": 796172,
+      "emf_mv": 819.4715716636978
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 796172,
+      "end_ticks": 820057,
+      "emf_mv": 819.041289186415
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 820057,
+      "end_ticks": 843954,
+      "emf_mv": 758.4760714904972
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 843954,
+      "end_ticks": 867859,
+      "emf_mv": 789.1330374965793
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 867859,
+      "end_ticks": 891740,
+      "emf_mv": 789.1494928745406
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 891740,
+      "end_ticks": 915740,
+      "emf_mv": 875.8217902027399
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 915740,
+      "end_ticks": 939740,
+      "emf_mv": 811.5895832571955
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 939740,
+      "end_ticks": 963740,
+      "emf_mv": 797.8403937604918
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 963740,
+      "end_ticks": 987740,
+      "emf_mv": 1051.354513815738
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 987740,
+      "end_ticks": 1011939,
+      "emf_mv": 624.9507519828849
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1011939,
+      "end_ticks": 1035740,
+      "emf_mv": 695.2009791520408
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1035740,
+      "end_ticks": 1059740,
+      "emf_mv": 1042.1280984867558
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1059740,
+      "end_ticks": 1083740,
+      "emf_mv": 574.315057671583
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1083740,
+      "end_ticks": 1107740,
+      "emf_mv": 669.4099348575817
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1107740,
+      "end_ticks": 1131740,
+      "emf_mv": 971.4521287691769
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1131740,
+      "end_ticks": 1155740,
+      "emf_mv": 903.1352993749578
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1155740,
+      "end_ticks": 1179740,
+      "emf_mv": 431.031879210658
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1179740,
+      "end_ticks": 1203740,
+      "emf_mv": 955.3896807627141
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1203740,
+      "end_ticks": 1227740,
+      "emf_mv": 493.4360608327234
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1227740,
+      "end_ticks": 1251894,
+      "emf_mv": 1010.1181968808306
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1251894,
+      "end_ticks": 1275740,
+      "emf_mv": 769.3687871517795
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1275740,
+      "end_ticks": 1299740,
+      "emf_mv": 746.9396938514324
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1299740,
+      "end_ticks": 1323740,
+      "emf_mv": 698.6101003223135
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1323740,
+      "end_ticks": 1347740,
+      "emf_mv": 435.94252563308254
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1347740,
+      "end_ticks": 1372516,
+      "emf_mv": 799.7364817053401
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1372516,
+      "end_ticks": 1395989,
+      "emf_mv": 580.9644662521974
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1395989,
+      "end_ticks": 1419947,
+      "emf_mv": 597.2005766880253
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1419947,
+      "end_ticks": 1444030,
+      "emf_mv": 578.4074506882721
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1444030,
+      "end_ticks": 1468147,
+      "emf_mv": 494.01707288789277
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1468147,
+      "end_ticks": 1492262,
+      "emf_mv": 490.2641052894767
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1492262,
+      "end_ticks": 1516383,
+      "emf_mv": 393.6572296735585
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1516383,
+      "end_ticks": 1540481,
+      "emf_mv": 377.72042910599566
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1540481,
+      "end_ticks": 1564597,
+      "emf_mv": 404.1896689127243
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1564597,
+      "end_ticks": 1588715,
+      "emf_mv": 270.6644419023561
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1588715,
+      "end_ticks": 1612819,
+      "emf_mv": 311.0085326610998
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1612819,
+      "end_ticks": 1636898,
+      "emf_mv": 236.21494125485123
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1636898,
+      "end_ticks": 1660976,
+      "emf_mv": 180.3613794428658
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1660976,
+      "end_ticks": 1685080,
+      "emf_mv": 195.29691817505528
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1685080,
+      "end_ticks": 1709150,
+      "emf_mv": 112.40616716613451
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1709150,
+      "end_ticks": 1733223,
+      "emf_mv": 53.648943106849806
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1733223,
+      "end_ticks": 1757301,
+      "emf_mv": -3.651772207090589
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1757301,
+      "end_ticks": 1781410,
+      "emf_mv": 4.4121099979276925
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1781410,
+      "end_ticks": 1805489,
+      "emf_mv": -85.36140615853353
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1805489,
+      "end_ticks": 1829556,
+      "emf_mv": -86.53661039702891
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1829556,
+      "end_ticks": 1853632,
+      "emf_mv": -175.97012448995972
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1853632,
+      "end_ticks": 1877696,
+      "emf_mv": -181.18631329919367
+    },
+    {
+      "phase": 1,
+      "channels": "1->1",
+      "start_ticks": 1877696,
+      "end_ticks": 1901775,
+      "emf_mv": -208.29688270775648
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 3020,
+      "end_ticks": 27020,
+      "emf_mv": -920.0193079217577
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 27020,
+      "end_ticks": 51020,
+      "emf_mv": -990.5853722594571
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 51020,
+      "end_ticks": 75020,
+      "emf_mv": -841.0659619747261
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 75020,
+      "end_ticks": 99020,
+      "emf_mv": -829.2667059036465
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 99020,
+      "end_ticks": 123020,
+      "emf_mv": -924.9789299627654
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 123020,
+      "end_ticks": 147020,
+      "emf_mv": -894.7469021144725
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 147020,
+      "end_ticks": 171020,
+      "emf_mv": -887.2438734913077
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 171020,
+      "end_ticks": 195020,
+      "emf_mv": -820.3702202784917
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 195020,
+      "end_ticks": 219020,
+      "emf_mv": -904.4894621669392
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 219020,
+      "end_ticks": 243020,
+      "emf_mv": -806.5544542378293
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 243020,
+      "end_ticks": 267020,
+      "emf_mv": -816.7273703776801
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 267020,
+      "end_ticks": 291020,
+      "emf_mv": -839.0617338236565
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 291020,
+      "end_ticks": 315020,
+      "emf_mv": -856.0405096562481
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 315020,
+      "end_ticks": 339020,
+      "emf_mv": -710.3437299765932
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 339020,
+      "end_ticks": 363020,
+      "emf_mv": -770.1738842571506
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 363020,
+      "end_ticks": 387020,
+      "emf_mv": -685.6033947899704
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 387020,
+      "end_ticks": 411020,
+      "emf_mv": -716.8463047109401
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 411020,
+      "end_ticks": 435020,
+      "emf_mv": -671.3749885347518
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 435020,
+      "end_ticks": 459020,
+      "emf_mv": -661.0794183410258
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 459020,
+      "end_ticks": 483020,
+      "emf_mv": -585.4968957914708
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 483020,
+      "end_ticks": 507020,
+      "emf_mv": -642.7482715157875
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 507020,
+      "end_ticks": 531020,
+      "emf_mv": -591.1795995818864
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 531020,
+      "end_ticks": 555020,
+      "emf_mv": -534.6620930407387
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 555020,
+      "end_ticks": 579020,
+      "emf_mv": -484.0993971934969
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 579020,
+      "end_ticks": 603020,
+      "emf_mv": -497.7978340464454
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 603020,
+      "end_ticks": 627020,
+      "emf_mv": -485.98380372149717
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 627020,
+      "end_ticks": 651020,
+      "emf_mv": -473.28937886010226
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 651020,
+      "end_ticks": 675020,
+      "emf_mv": -464.9480738294992
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 675020,
+      "end_ticks": 699020,
+      "emf_mv": -392.5924354677496
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 699020,
+      "end_ticks": 723020,
+      "emf_mv": -346.2883180967363
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 723020,
+      "end_ticks": 747020,
+      "emf_mv": -363.97289786224667
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 747020,
+      "end_ticks": 771020,
+      "emf_mv": -289.83633900483335
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 771020,
+      "end_ticks": 795020,
+      "emf_mv": -302.9847267893725
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 795020,
+      "end_ticks": 819020,
+      "emf_mv": -295.83025241683976
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 819020,
+      "end_ticks": 843020,
+      "emf_mv": -157.58703000737134
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 843020,
+      "end_ticks": 867020,
+      "emf_mv": -264.49269084044687
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 867020,
+      "end_ticks": 891020,
+      "emf_mv": -233.34289613822682
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 891020,
+      "end_ticks": 915020,
+      "emf_mv": -158.0914627129391
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 915020,
+      "end_ticks": 939020,
+      "emf_mv": -195.66979376853138
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 939020,
+      "end_ticks": 963020,
+      "emf_mv": -144.39047178776082
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 963020,
+      "end_ticks": 1011020,
+      "emf_mv": -121.44244491353089
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1011020,
+      "end_ticks": 1035020,
+      "emf_mv": -95.22418900055187
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1035020,
+      "end_ticks": 1083020,
+      "emf_mv": -16.985716026201352
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1083020,
+      "end_ticks": 1107020,
+      "emf_mv": -30.501053280142223
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1107020,
+      "end_ticks": 1179020,
+      "emf_mv": 47.14706883487437
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1179020,
+      "end_ticks": 1227020,
+      "emf_mv": 40.64072426477369
+    },
+    {
+      "phase": 2,
+      "channels": "0->0",
+      "start_ticks": 1227020,
+      "end_ticks": 1347020,
+      "emf_mv": 165.8964982709146
+    }
+  ]
+}

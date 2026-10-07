@@ -1,5 +1,5 @@
 #![deny(unsafe_code)]
-//! 4 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
+//! 2.5 kHz 定点无感 FOC：三相电流 → Clarke/Park → Id/Iq PI → 电压矢量。
 //! 输入为两个电流保持时刻间、按实际 PWM 开关边沿指数加权的 RL 电压响应。
 //! 板级将首样本运输到第二保持时刻，并传入真实 RL 区间，不能回填未限幅指令。
 //! 每组相电流对齐至各自第二保持时刻；RL 逆解假定区间内反电势近似恒定。
@@ -53,6 +53,7 @@ pub struct Snapshot {
     pub angle: u16,
     pub observer_angle: u16,
     pub speed_millihz: i32,
+    pub speed_feedback_millihz: i32,
     pub bemf_mv: i32,
     pub pll_error: i32,
     pub qualified_frames: u32,
@@ -76,7 +77,7 @@ pub struct ControlFaultTrace {
     pub reject_mask: u32,
     pub good_frames: u32,
     pub best_good_frames: u32,
-    // 仅统计强制加速结束后的平台，避免低速必然拒绝淹没接管诊断。
+    // 统计强制速度达到接管下限后的帧，包含加速段；字段名保留兼容。
     pub plateau_frames: u32,
     pub plateau_reject_counts: [u32; 8],
     pub last_reject_mask: u32,
@@ -143,7 +144,7 @@ pub struct Control {
     age_before_fault: u32,
     previous_target_dq_ma: [i32; 2],
     previous_voltage_dq_mv: [i32; 2],
-    requested: bool,
+    requested_speed: i32,
     reset_pending: bool,
     age: u32,
     good: u32,
@@ -168,6 +169,7 @@ pub struct Control {
     open_phase: u32,
     blend_d_reference: i32,
     speed_reference: i32,
+    speed_feedback_q8: i32,
     iq_reference: i32,
     d_pi: Pi,
     q_pi: Pi,
@@ -185,7 +187,7 @@ impl Control {
             age_before_fault: 0,
             previous_target_dq_ma: [0; 2],
             previous_voltage_dq_mv: [0; 2],
-            requested: false,
+            requested_speed: 0,
             reset_pending: false,
             age: 0,
             good: 0,
@@ -210,6 +212,7 @@ impl Control {
             open_phase: 0,
             blend_d_reference: 0,
             speed_reference: 0,
+            speed_feedback_q8: 0,
             iq_reference: 0,
             d_pi: Pi::new(CURRENT_KP_Q15, CURRENT_KI_Q15),
             q_pi: Pi::new(CURRENT_KP_Q15, CURRENT_KI_Q15),
@@ -226,6 +229,7 @@ impl Control {
                 angle: 0,
                 observer_angle: 0,
                 speed_millihz: 0,
+                speed_feedback_millihz: 0,
                 bemf_mv: 0,
                 pll_error: 0,
                 qualified_frames: 0,
@@ -244,11 +248,12 @@ impl Control {
         }
     }
 
-    /// 停止优先；故障锁存到复位，持续为 true 也不会重新启动。
+    /// 0表示停止；非零换档只更新目标，不重启对齐或清空PI。故障锁存到复位。
     /// reload 只切换状态并标记复位；PI/观测器批量清零留给第二样本后的控制时隙。
-    pub fn request_run(&mut self, run: bool) {
-        let rising = run && !self.requested;
-        self.requested = run;
+    pub fn request_speed(&mut self, target_millihz: i32) {
+        let run = target_millihz > 0;
+        let rising = run && self.requested_speed == 0;
+        self.requested_speed = target_millihz;
         if !run && self.energized() {
             self.reset_pending = true;
             self.enter(State::Off);
@@ -270,10 +275,10 @@ impl Control {
         self.reset_pending
     }
 
-    /// 下一个输入处理后的 Align 帧龄；age=ALIGN_FRAMES 会先转入 OpenLoop，不能采入。
+    /// 下一个输入处理后的Blend帧龄；记录实际接管后的连续输入。
     /// 种子在 age=START_AGE-1 时取得；这不改变 age 或控制状态。
     pub fn trace_next_age(&self) -> Option<u16> {
-        if self.state == State::Align && !self.reset_pending {
+        if self.state == State::Blend && !self.reset_pending {
             Some((self.age + 1) as u16)
         } else {
             None
@@ -312,9 +317,11 @@ impl Control {
         let mut s = self.snapshot;
         s.state = self.state;
         s.fault = self.fault;
+        s.speed_feedback_millihz = self.speed_feedback_q8 >> 8;
         // 命令边沿之后、下一帧计算之前也报告复位后的命令/估计量；
         // 诊断按需合成，不把整块清零搬回 reload 的紧时隙。
         if self.reset_pending {
+            s.speed_feedback_millihz = 0;
             s.target_dq_ma = [0; 2];
             s.voltage_dq_mv = [0; 2];
             s.observer_angle = 0;
@@ -332,20 +339,31 @@ impl Control {
         s
     }
 
-    /// 仅供已关桥、已停止触发后的首故障发布使用。
+    /// 仅供已关桥、已停止触发后的故障或正常台架停机发布使用。
     pub fn fault_trace(&self) -> ControlFaultTrace {
         let forced_angle = (self.open_phase >> 16) as u16;
         let speed = speed_millihz(self.observer.speed);
         let angle_error = angle_error(self.observer.angle(), forced_angle);
+        // 强制角在接管后停止推进，不能再拿它计算运行态的接管拒绝位。
         let reject_mask =
             if self.state == State::Fault && self.state_before_fault == State::OpenLoop {
                 self.handoff_reject
-            } else {
+            } else if self.state == State::OpenLoop {
                 self.handoff_reject_mask(forced_angle, self.open_speed_millihz)
+            } else {
+                0
             };
         ControlFaultTrace {
-            state_before: self.state_before_fault as u32,
-            age_frames: self.age_before_fault,
+            state_before: if self.state == State::Fault {
+                self.state_before_fault as u32
+            } else {
+                self.state as u32
+            },
+            age_frames: if self.state == State::Fault {
+                self.age_before_fault
+            } else {
+                self.age
+            },
             raw_emf_mv: self.observer.raw_emf_mv,
             filtered_emf_mv: self.estimated_emf_mv(),
             magnitude_mv: self.observer.magnitude,
@@ -386,8 +404,16 @@ impl Control {
                 self.last_reject_window.pll_square_sum / self.last_reject_window_frames * 256
             },
             last_reject_window_outliers: self.last_reject_window.pll_outlier_frames,
-            previous_target_dq_ma: self.previous_target_dq_ma,
-            previous_voltage_dq_mv: self.previous_voltage_dq_mv,
+            previous_target_dq_ma: if self.state == State::Fault {
+                self.previous_target_dq_ma
+            } else {
+                self.snapshot.target_dq_ma
+            },
+            previous_voltage_dq_mv: if self.state == State::Fault {
+                self.previous_voltage_dq_mv
+            } else {
+                self.snapshot.voltage_dq_mv
+            },
         }
     }
 
@@ -425,7 +451,7 @@ impl Control {
 
     fn record_handoff(&mut self, mut reject_mask: u32, forced_angle: u16) {
         let delta = angle_error(self.observer.angle(), forced_angle);
-        if self.age > OPEN_RAMP_FRAMES {
+        if self.open_speed_millihz >= HANDOFF_MIN_MILLIHZ {
             self.plateau_frames += 1;
             if self.plateau_frames == 1 {
                 self.plateau_angle_range = [delta; 2];
@@ -458,12 +484,12 @@ impl Control {
             self.last_reject_age = self.age;
             self.last_reject_angle_error = delta;
             self.last_reject_pll_error = self.observer.error;
-            if self.age > OPEN_RAMP_FRAMES {
+            if self.open_speed_millihz >= HANDOFF_MIN_MILLIHZ {
                 self.last_reject_window_frames = self.good + 1;
                 self.last_reject_window = self.handoff_window;
             }
         }
-        if reject_mask == 0 && self.age > OPEN_RAMP_FRAMES {
+        if reject_mask == 0 && self.open_speed_millihz >= HANDOFF_MIN_MILLIHZ {
             self.good = self.good.saturating_add(1).min(HANDOFF_GOOD_FRAMES);
         } else {
             self.good = 0;
@@ -600,6 +626,9 @@ impl Control {
             }
             State::Blend | State::ClosedLoop => {
                 let speed = speed_millihz(self.observer.speed);
+                // 2.5 kHz先低通再给100 Hz速度环，避免直接抽取PLL速度纹波。
+                // alpha=1/40，约10 Hz；Q8保留小误差。保护仍检查原始speed。
+                self.speed_feedback_q8 += math.div((speed << 8) - self.speed_feedback_q8, 40);
                 self.bad = if self.observer.qualified() {
                     0
                 } else {
@@ -636,29 +665,28 @@ impl Control {
                         BLEND_FRAMES as i32,
                     )
                 };
-                if math.rem_unsigned(self.age, SPEED_LOOP_DIVIDER) == 0 {
-                    // 先在接管速度稳定并淡出 Id，再向 25 Hz 加速，避免两种瞬态叠加。
-                    if self.state == State::ClosedLoop {
-                        self.speed_reference = slew(
-                            self.speed_reference,
-                            RUN_TARGET_MILLIHZ,
-                            SPEED_REF_SLEW_MILLIHZ,
-                        );
-                    }
-                    let q_limit = if d_reference == 0 {
-                        RUN_IQ_MAX_MA
-                    } else {
-                        math.sqrt(
-                            (RUN_IQ_MAX_MA * RUN_IQ_MAX_MA - d_reference * d_reference).max(0)
-                                as u32,
-                        ) as i32
-                    };
-                    self.iq_reference =
-                        self.speed_pi
-                            .scalar(self.speed_reference - speed, 0, q_limit, math);
+                // Blend仅淡出Id并保持接管Iq，避免速度PI与磁链电流过渡同时动作。
+                if self.state == State::ClosedLoop
+                    && math.rem_unsigned(self.age, SPEED_LOOP_DIVIDER) == 0
+                {
+                    self.speed_reference = slew(
+                        self.speed_reference,
+                        self.requested_speed,
+                        SPEED_REF_SLEW_MILLIHZ,
+                    );
+                    // 到此已完成Id淡出，速度环可使用完整Iq额度。
+                    self.iq_reference = self.speed_pi.scalar(
+                        self.speed_reference - (self.speed_feedback_q8 >> 8),
+                        0,
+                        RUN_IQ_MAX_MA,
+                        math,
+                    );
                 }
                 target = [d_reference, self.iq_reference];
                 if self.state == State::Blend && remaining == 0 {
+                    // 速度环从当前速度及已施加Iq开始；随后参考再向运行目标爬升。
+                    self.speed_reference = self.speed_feedback_q8 >> 8;
+                    self.speed_pi.integral = self.iq_reference << 15;
                     self.enter(State::ClosedLoop);
                 }
                 self.observer.angle()
@@ -674,8 +702,9 @@ impl Control {
             *command = slew(*command, desired, CURRENT_SLEW_MA_PER_FRAME);
         }
         if self.state == State::Blend {
+            // 接管使用独立的启动电流圆，避免直接使用更大的闭环Iq额度。
             self.snapshot.target_dq_ma =
-                limit_vector(self.snapshot.target_dq_ma, RUN_IQ_MAX_MA, math);
+                limit_vector(self.snapshot.target_dq_ma, STARTUP_CURRENT_MA, math);
         }
         let errors = [
             self.snapshot.target_dq_ma[0] - dq[0],
@@ -711,10 +740,12 @@ impl Control {
             self.snapshot.target_dq_ma = reference;
             self.snapshot.voltage_dq_mv = voltage;
             self.blend_d_reference = reference[0].max(0);
-            self.iq_reference = reference[1].max(0);
+            // 接管帧仍原样保留reference，下一帧起由slew和电流圆逐步补足转矩。
+            self.iq_reference = reference[1].max(BLEND_MIN_IQ_MA);
             self.speed_reference =
                 speed_millihz(self.observer.speed).clamp(HANDOFF_MIN_MILLIHZ, RUN_TARGET_MILLIHZ);
             // 速度参考等于当前估计，所以 P 项为零；当前正向 Iq 是速度 PI 的初值。
+            self.speed_feedback_q8 = self.speed_reference << 8;
             self.speed_pi.integral = self.iq_reference << 15;
         }
         applied_ab
@@ -755,6 +786,7 @@ impl Control {
         self.open_phase = 0;
         self.blend_d_reference = 0;
         self.speed_reference = 0;
+        self.speed_feedback_q8 = 0;
         self.iq_reference = 0;
         self.d_pi.integral = 0;
         self.q_pi.integral = 0;
@@ -768,7 +800,7 @@ impl Control {
     }
 }
 
-// PLL 均方累计先降 8 位：120000 帧内仍不溢出 u32；实际窗口最多 1000 帧。
+// PLL 均方累计先降8位；窗口长度由HANDOFF_GOOD_FRAMES限定。
 // 每次失败全部清零；不删掉坏样本、不跨窗口拼接合格帧。
 #[derive(Clone, Copy)]
 struct HandoffWindow {
@@ -792,7 +824,7 @@ impl HandoffWindow {
         }
         self.angle_range[0] = self.angle_range[0].min(delta);
         self.angle_range[1] = self.angle_range[1].max(delta);
-        // 完整 250 ms 后若本帧负载角仍为轻微领先，则继续等正 Iq 入口；
+        // 完整资格窗口后若本帧负载角仍为轻微领先，则继续等正 Iq 入口；
         // 冻结方差分母会错误累积，因此完整窗口需要重新开始。
         if good >= HANDOFF_GOOD_FRAMES {
             return 64;
@@ -1068,6 +1100,15 @@ fn slew(value: i32, target: i32, amount: i32) -> i32 {
 fn scale_dt(value: i32, dt_ticks: u16, math: &mut impl Arithmetic) -> i32 {
     if dt_ticks == PWM_TICKS {
         value
+    } else if dt_ticks > PWM_TICKS {
+        // 长于一帧时先提取整数1，余数乘积最多38400*19200，避免i32溢出。
+        value
+            + mul_div(
+                value,
+                i32::from(dt_ticks - PWM_TICKS),
+                i32::from(PWM_TICKS),
+                math,
+            )
     } else {
         mul_div(value, i32::from(dt_ticks), i32::from(PWM_TICKS), math)
     }
@@ -1080,15 +1121,8 @@ fn mul_div(value: i32, multiplier: i32, divisor: i32, math: &mut impl Arithmetic
 }
 
 const fn speed_step_const(millihz: i32) -> i32 {
-    // 4 kHz：2^32/4e6 = 1073 + 11591/15625；|mHz| <= 100000 时
-    // 最大分数乘积 1,159,100,000，避免 M0+ 的 64 位除法并保持精确截断。
-    let magnitude = millihz.unsigned_abs();
-    let step = magnitude * 1073 + magnitude * 11_591 / 15_625;
-    if millihz < 0 {
-        -(step as i32)
-    } else {
-        step as i32
-    }
+    // 宽整数仅编译期常量求值；运行时版本使用下方等价的32位分解。
+    (millihz as i64 * (1i64 << 32) / (CONTROL_HZ as i64 * 1000)) as i32
 }
 
 fn speed_millihz(step: i32) -> i32 {
@@ -1097,7 +1131,9 @@ fn speed_millihz(step: i32) -> i32 {
 
 fn speed_step(millihz: i32, math: &mut impl Arithmetic) -> i32 {
     let magnitude = millihz.abs();
-    let step = magnitude * 1073 + math.div(magnitude * 11_591, 15_625);
+    // 2^32/2500000 = 1718 - 1022/78125；向上取分数保证整体向零截断。
+    // ±180000 mHz下分数乘积184038124和总乘积309240000均不溢出。
+    let step = magnitude * 1718 - math.div(magnitude * 1022 + 78124, 78125);
     if millihz < 0 {
         -step
     } else {

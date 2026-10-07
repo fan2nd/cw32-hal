@@ -1,5 +1,8 @@
 //! 普通 Embassy 线程任务处理按键、LED，并在停机后输出一次锁存故障。
-use crate::hardware::{MILLISECONDS, RUN_REQUEST};
+use crate::{
+    config::SPEED_LEVELS_MILLIHZ,
+    hardware::{MILLISECONDS, SPEED_REQUEST_MILLIHZ},
+};
 use core::{
     cell::RefCell,
     sync::atomic::Ordering,
@@ -68,6 +71,9 @@ pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, p
     let mut fault_since = 0u32;
     let mut released = false; // PA3 是 VSR/ESC 接口，不是图上的板载按键。
     let mut release_count = 0u16; // 手动开关模式必须先连续释放 60 ms。
+
+    // 上电0档；必须先释放再按下，长按和上电已按住均不自行启动。
+    let mut speed_level = 0usize;
     loop {
         let before = previous;
         next_tick(&mut previous).await;
@@ -81,7 +87,9 @@ pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, p
             release_count = 0;
             held = held.saturating_add(1);
             if held == 60 && released {
-                RUN_REQUEST.store(!RUN_REQUEST.load(Ordering::Acquire), Ordering::Release);
+                speed_level = (speed_level + 1) % SPEED_LEVELS_MILLIHZ.len();
+                SPEED_REQUEST_MILLIHZ
+                    .store(SPEED_LEVELS_MILLIHZ[speed_level] as u32, Ordering::Release);
                 released = false;
             }
         } else {
@@ -92,6 +100,10 @@ pub async fn io_task(led: Peri<'static, peripherals::PC13>, key: Peri<'static, p
             }
         }
         let (running, fault) = crate::hardware::running_and_fault_code();
+        if fault != 0 {
+            speed_level = 0;
+            SPEED_REQUEST_MILLIHZ.store(0, Ordering::Release);
+        }
         if fault != previous_fault {
             previous_fault = fault;
             fault_since = previous;

@@ -1,0 +1,19 @@
+[INFO ] 07-sensorless-foc: boot HCLK=96000000Hz PCLK=96000000Hz RTT=nonblocking
+[INFO ] Flash wait=3 prefetch=false->true cache=false->true (readback verified)
+[INFO ] BGR factory @0x001007D2 u16 mV: before_accel=1192 after_accel=20023 selected=before_accel
+[INFO ] PWM=2500Hz ADC1=48000000Hz ADC2=12000000Hz; manual PA3 levels: stop/30/60/90/120/150 electrical Hz; power-on stopped
+[INFO ] Battery=3S cell_uv=3300mV bus_uv=9900mV bus_ov=16000mV (configured, no auto-detect)
+[INFO ] MYH-4621F 11 pole-pairs: align=300mA startup=500mA run_iq_max=1100mA trip=1800mA voltage_q15=10240 duty_max=24960ticks
+[ERROR] 07 fault=9 state=7 frame=110122 armed=false bus=11887mV vdda=4847mV offset=2135 raw=[2141, 2159]; PWM/ADC triggers stopped
+[INFO ] RUN_RESULT fault=9 state_before=4 state_age=12500 speed=14335mHz emf=420mV dq=[298, -87] target=[500, 0]; state 4=OpenLoop 5=Blend 6=ClosedLoop, outputs stopped
+[ERROR] HANDOFF state_before=4 age=12500 reject=70 good=0/50 best=33 forced=18000mHz pll=14335mHz angle_forced=165 observer=49752 delta=-15949 pll_error=4916; angle units=65536/turn
+[ERROR] HANDOFF_HISTORY eligible_frames=8594 reject_counts_bits1_to128=[0, 2600, 3954, 58, 0, 817, 1585, 1551] last_reject=70 age=12500 delta=-15949 pll_error=4916; counts overlap, OpenLoop forced speed >= handoff minimum, including ramp
+[ERROR] HANDOFF_COHERENCE plateau_delta_min_max=[-32765, 32747] mean=-5492 pll_peak=32767 over10deg=4174 window_delta=[0, 0] pll_mean_square=0 last_window_frames=1 delta=[-15949, -15949] pll_mean_square=24166912 outliers=1; angle units65536/turn, mean_square units angle_squared
+[ERROR] OBSERVER raw_unclamped_ab=[668, 254] filtered_ab=[409, 107] magnitude=420mV min=500mV; phase=[284, -62, -222]mA previous_dq=[298, -87] previous_target=[500, 0]mA previous_vdq=[2449, 493]mV vlimit=3714mV
+[ERROR] HANDOFF reject bits: 1=no_track 2=low_emf 4=pll_peak_rms_burst_count 8=reverse_or_zero 16=overspeed 32=below_handoff_speed 64=load_angle_spread_entry 128=speed_mismatch; applies at OpenLoop timeout, previous_dq/target/vdq are last completed control, not applied PWM
+[ERROR] ADC sample=0 reason=0 entry=0 read=0 raw=0 expected=0..=0 trigger=[0, 0] received=[4561, 6553] previous_end=9125 max_first=297 ticks
+[ERROR] ADC reason: 0=other 1=reload_pending 2=extra_sample 3=early 4=late; 96 ticks/us
+[ERROR] TIMING site=0 start=0 observed=0 limit=0 reload=false samples=0 state_before=4 armed_before=true max_update=394 max_control=12802 ticks elapsed_min=0 stage=3
+[ERROR] CONTROL stages supply/reconstruct/interval/control/modulate: last=[763, 907, 902, 0, 0] max=[1750, 912, 946, 6644, 3162] ticks; max excludes wrapping/late stage; elapsed_min is a lower bound when reload=true
+[ERROR] TIMING site: 0=none 1=reload_entry 2=preload_end 3=arm_end 4=control_checkpoint 5=control_dt (19200..=57600); 96 ticks/us
+[ERROR] REPLAY_UNAVAILABLE version=5 phase=Blend requested_start_age=1; no captured Blend input from this start

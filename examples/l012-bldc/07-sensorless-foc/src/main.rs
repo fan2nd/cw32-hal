@@ -57,7 +57,7 @@ async fn main(spawner: embassy_executor::Spawner) {
     // 不允许使用来源不明的值启动，也不静默回退到标称 1.2 V。
     assert!(!flash.prefetch_was_enabled && !flash.cache_was_enabled);
     defmt::info!(
-        "PWM={}Hz ADC1={}Hz ADC2={}Hz; outputs off, calibrate then wait for PA3 key",
+        "PWM={}Hz ADC1={}Hz ADC2={}Hz; manual PA3 levels: stop/30/60/90/120/150 electrical Hz; power-on stopped",
         config::PWM_HZ,
         clocks.pclk_hz() / 2,
         clocks.pclk_hz() / 8
@@ -68,6 +68,11 @@ async fn main(spawner: embassy_executor::Spawner) {
         config::CELL_UNDERVOLTAGE_MV,
         config::BUS_MIN_MV,
         config::BUS_MAX_MV
+    );
+    defmt::info!(
+        "MYH-4621F 11 pole-pairs: align={}mA startup={}mA run_iq_max={}mA trip={}mA voltage_q15={} duty_max={}ticks",
+        config::ALIGN_ID_MA, config::STARTUP_CURRENT_MA, config::RUN_IQ_MAX_MA,
+        config::CURRENT_TRIP_MA, config::VOLTAGE_LIMIT_Q15, sampling::DUTY_MAX
     );
     spawner.spawn(
         hardware::motor_task(

@@ -1,13 +1,13 @@
 #![deny(unsafe_code)]
-//! Align 末 80 帧的电气输入诊断；观察器不更新，不是 OpenLoop 观察器重放。
-//! 复用原 20 ms 缓冲；不打印、不分配、不延长 Align 或改变控制/资格。
-//! Align 是控制状态，不证明物理转子静止或真实反电势为零。
+//! Blend 起始80帧的观察器重放输入诊断。
+//! 复用原 20 ms 缓冲；不打印、不分配、不改变控制/资格。
+//! Blend是控制状态，不证明观察器角度等于真实转子角度。
 
-pub const MODEL_TAG: &str = "0123a2e83e35c2340c64d48de5b83f420938df701e7590e7fd8fe8c6b9dfb756";
+pub const MODEL_TAG: &str = "5a62df7d63f1a6208d002c6b10722d380f653242baf152db8955422a84313c9f";
 pub const RECORDS: usize = 80;
-pub const START_AGE: u16 = (crate::config::ALIGN_FRAMES - RECORDS as u32) as u16;
+pub const START_AGE: u16 = 1;
 
-/// 首帧处理前、末帧控制处理后的完整观察状态。Align 中保持复位值，不伪造更新。
+/// 首帧处理前、末帧控制处理后的完整观察状态。Blend中保留递推初末状态。
 /// 保留原布局及 Q8/Q16 小数位，供验证运输用的上一 EMF 和未更新状态。
 #[repr(C)]
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -157,8 +157,8 @@ impl Trace {
         }
     }
 }
-const _: () = assert!(crate::config::ALIGN_FRAMES > RECORDS as u32);
-const _: () = assert!(crate::config::ALIGN_FRAMES <= u16::MAX as u32);
+const _: () = assert!(crate::config::STARTUP_TIMEOUT_FRAMES > START_AGE as u32 + RECORDS as u32);
+const _: () = assert!(crate::config::STARTUP_TIMEOUT_FRAMES <= u16::MAX as u32);
 const _: () = assert!(core::mem::size_of::<Record>() == 22);
 const _: () = assert!(core::mem::size_of::<ReplayState>() == 48);
 const _: () = assert!(core::mem::size_of::<Trace>() <= 1920);

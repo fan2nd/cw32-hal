@@ -4,15 +4,17 @@ use crate::arithmetic::Arithmetic;
 use crate::config::{BUS_MAX_MV, CPU_HZ, MODEL_PHASE_L_UH, MODEL_PHASE_R_MILLIOHM, PWM_TICKS};
 
 pub const DEAD_TICKS: u16 = 96; // 外加 1 us；不能代替示波器测量驱动传播与 MOS 管关断。
-                                // 诊断 B：只将首样本推迟到下降沿后 5 us；第二样本和控制起点不变。
+                                // 诊断 B：首样本在下降沿后 5 us，第二样本在 2.5 us。
                                 // 这用于辨别首样本的建立/运输敏感性，不是已验证的物理模型修复。
 pub const FIRST_BLANK_TICKS: u16 = 480;
-pub const BLANK_TICKS: u16 = 240; // 第二样本仍在下降沿后 2.5 us。
+pub const BLANK_TICKS: u16 = 240; // 第二样本 2.5 us；5 us 对照未改善，已恢复。
 pub const ACQUISITION_TICKS: u16 = 140; // 70 个 ADC 时钟结束时的保持时刻。
 pub const CONVERSION_TICKS: u16 = 170; // 70+15 个 ADC 时钟，ADC=PCLK/2。
 pub const WINDOW_TICKS: u16 = 960; // 每个有效矢量至少 10 us；两次 EOS 间留出完整首样本 ISR。
 pub const DUTY_MIN: u16 = PWM_TICKS / 10;
-pub const DUTY_MAX: u16 = PWM_TICKS / 2; // 预留第二次采样后的控制计算时间，不追求满调制度。
+// 2.5 kHz时最大24960 tick；最晚第二EOS含容差24538，距37800截止仍13262 tick。
+// 旧4 kHz实测控制峰值12275 tick，只作预算依据，新版仍由运行期deadline验证。
+pub const DUTY_MAX: u16 = (PWM_TICKS as u32 * 65 / 100) as u16;
 pub const UPDATE_DEADLINE: u16 = 700;
 pub const CONTROL_DEADLINE: u16 = PWM_TICKS - 600;
 pub const SAMPLE_IRQ_SLACK: u16 = 128; // 到达过迟即停机，绝不猜测 RESULT0 属于哪一帧。
