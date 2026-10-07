@@ -1,0 +1,2 @@
+# Preserve PDF byte offsets and original line endings.
+*.pdf binary
