@@ -24,8 +24,11 @@ The bridge is held off for ADC offset calibration and at power-on. The firmware
 will not align or enable the bridge until the speed potentiometer on ADC2 PA10
 has stayed at zero for 100 ms. After that arming step, the potentiometer maps to
 0..800 rpm and a 1 kHz speed PI generates the torque-current command; returning
-the potentiometer to zero commands a stop. The ADC current scale and amplifier
-gain must be calibrated for the actual shunt/OPA circuit before applying power.
+the potentiometer to zero commands a stop. Immediately after alignment, the
+firmware applies a short, low-current positive-Iq probe and uses the encoder
+angle delta to compensate motor/encoder direction automatically. The ADC
+current scale and amplifier gain must be calibrated for the actual shunt/OPA
+circuit before applying power.
 
 Build without flashing or executing hardware:
 

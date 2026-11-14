@@ -28,6 +28,9 @@ const READY_ZERO_SAMPLES: u32 = 1_600; // 100 ms at the 16 kHz control tick.
 const POT_ZERO_COUNTS: u16 = 40;
 const POT_MAX_RPM: i32 = 800; // 68 rpm/V * 12 V, with headroom.
 const SPEED_LOOP_DIV: u32 = 16; // 1 kHz speed loop from the 16 kHz current loop.
+const DIRECTION_TEST_PERIODS: u32 = PWM_HZ / 50; // 20 ms, low-current point test.
+const DIRECTION_TEST_IQ_Q15: i16 = 2_500; // About 8% of the normalized current.
+const DIRECTION_MIN_DELTA_COUNTS: i32 = 4;
 const BUS_MIN_MV: u32 = 8_000;
 const BUS_MAX_MV: u32 = 16_000;
 
@@ -206,8 +209,59 @@ fn main() -> ! {
     }
     let encoder_offset = encoder.read_angle().unwrap_or(0);
     let mut foc = FocController::new(JD4631);
+
+    // Probe the sign of the motor/encoder combination with a small positive
+    // torque request. The encoder delta tells us whether positive Iq produces
+    // positive or negative mechanical motion. A stationary rotor falls back to
+    // the board's nominal sign and can be retried after reducing friction/load.
+    foc.iq_reference = DIRECTION_TEST_IQ_Q15;
+    let mut probe_angle = encoder_offset;
+    let mut probe_delta = 0i32;
+    for _ in 0..DIRECTION_TEST_PERIODS {
+        wait_period(&mut tick);
+        let ia = adc1
+            .blocking_read(&mut ia_pin, SampleTime::Cycles30)
+            .unwrap();
+        let ib = adc1
+            .blocking_read(&mut ib_pin, SampleTime::Cycles30)
+            .unwrap();
+        let bus = adc2
+            .blocking_read(&mut bus_pin, SampleTime::Cycles54)
+            .unwrap();
+        let bus_mv = u32::from(bus) * 3_300 * 11 / 4_095;
+        if !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv) {
+            pwm.set_master_output_enable(false);
+            loop {
+                cortex_m::asm::wfi();
+            }
+        }
+        let mechanical_angle = encoder.read_angle().unwrap_or(probe_angle);
+        probe_delta += angle_delta(mechanical_angle, probe_angle);
+        probe_angle = mechanical_angle;
+        let angle = electrical_angle(mechanical_angle, encoder_offset);
+        let (sin, cos) = sin_cos_q15(&mut cordic, angle);
+        let duty = foc.update(
+            PhaseCurrent {
+                a: q15_from_adc(ia, offset_a),
+                b: q15_from_adc(ib, offset_b),
+            },
+            sin,
+            cos,
+        );
+        apply_duty(&mut pwm, duty);
+    }
+    let direction_sign = if probe_delta >= DIRECTION_MIN_DELTA_COUNTS {
+        1i16
+    } else if probe_delta <= -DIRECTION_MIN_DELTA_COUNTS {
+        -1i16
+    } else {
+        1i16
+    };
+    foc.iq_reference = 0;
+    foc.reset();
+
     let mut speed = SpeedController::new(POT_MAX_RPM, 18_000);
-    let mut last_angle = encoder_offset;
+    let mut last_angle = probe_angle;
     let mut speed_delta_sum = 0i32;
     let mut speed_tick = 0u32;
 
@@ -247,7 +301,7 @@ fn main() -> ! {
                 foc.iq_reference = 0;
             } else {
                 let target_rpm = i32::from(pot) * POT_MAX_RPM / 4_095;
-                foc.iq_reference = speed.update(target_rpm, feedback_rpm);
+                foc.iq_reference = speed.update(target_rpm, feedback_rpm) * direction_sign;
             }
             speed_delta_sum = 0;
             speed_tick = 0;
