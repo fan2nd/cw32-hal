@@ -1,0 +1,72 @@
+block/LVD:
+  description: desc LVD.
+  items:
+  - name: CR0
+    description: Control register0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: Control register1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: SR
+    description: status register.
+    byte_offset: 8
+    fieldset: SR
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: ACTION
+    description: desc ACTION.
+    bit_offset: 1
+    bit_size: 1
+  - name: SOURCE
+    description: desc SOURCE.
+    bit_offset: 2
+    bit_size: 1
+  - name: VTH
+    description: desc VTH.
+    bit_offset: 4
+    bit_size: 3
+  - name: FLTCLK
+    description: desc FLTCLK.
+    bit_offset: 8
+    bit_size: 1
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: IE
+    description: desc IE.
+    bit_offset: 0
+    bit_size: 1
+  - name: LEVEL
+    description: desc LEVEL.
+    bit_offset: 1
+    bit_size: 1
+  - name: RISE
+    description: desc RISE.
+    bit_offset: 2
+    bit_size: 1
+  - name: FALL
+    description: desc FALL.
+    bit_offset: 3
+    bit_size: 1
+  - name: FLTTIME
+    description: desc FLTTIME.
+    bit_offset: 4
+    bit_size: 4
+fieldset/SR:
+  description: status register.
+  fields:
+  - name: INTF
+    description: desc INTF.
+    bit_offset: 0
+    bit_size: 1
+  - name: FLTV
+    description: desc FLTV.
+    bit_offset: 1
+    bit_size: 1

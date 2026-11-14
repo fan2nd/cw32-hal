@@ -1,0 +1,222 @@
+block/I2C:
+  description: desc I2C1.
+  items:
+  - name: BRREN
+    description: desc BRREN.
+    byte_offset: 0
+    fieldset: BRREN
+  - name: BRR
+    description: desc BRR.
+    byte_offset: 4
+    fieldset: BRR
+  - name: CR
+    description: Control register.
+    byte_offset: 8
+    fieldset: CR
+  - name: DR
+    description: Data register.
+    byte_offset: 12
+    fieldset: DR
+  - name: ADDR0
+    description: Slave Addrress0.
+    byte_offset: 16
+    fieldset: ADDR0
+  - name: STAT
+    description: Status register.
+    byte_offset: 20
+    access: Read
+    fieldset: STAT
+  - name: ADDR1
+    description: Slave Addrress1.
+    byte_offset: 32
+    fieldset: ADDR1
+  - name: ADDR2
+    description: Slave Addrress2.
+    byte_offset: 36
+    fieldset: ADDR2
+  - name: MATCH
+    description: Slave Addrress match flag.
+    byte_offset: 40
+    access: Read
+    fieldset: MATCH
+fieldset/ADDR0:
+  description: Slave Addrress0.
+  fields:
+  - name: GC
+    description: desc GC.
+    bit_offset: 0
+    bit_size: 1
+  - name: ADDR0
+    description: desc ADDR0.
+    bit_offset: 1
+    bit_size: 7
+fieldset/ADDR1:
+  description: Slave Addrress1.
+  fields:
+  - name: ADDR1
+    description: desc ADDR1.
+    bit_offset: 1
+    bit_size: 7
+fieldset/ADDR2:
+  description: Slave Addrress2.
+  fields:
+  - name: ADDR2
+    description: desc ADDR2.
+    bit_offset: 1
+    bit_size: 7
+fieldset/BRR:
+  description: desc BRR.
+  fields:
+  - name: BRR
+    description: fSCL = fPCLK / 8 / (BRR+1).
+    bit_offset: 0
+    bit_size: 8
+fieldset/BRREN:
+  description: desc BRREN.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+fieldset/CR:
+  description: Control register.
+  fields:
+  - name: FLT
+    description: desc FLT.
+    bit_offset: 0
+    bit_size: 1
+  - name: AA
+    description: desc AA.
+    bit_offset: 2
+    bit_size: 1
+  - name: SI
+    description: desc SI.
+    bit_offset: 3
+    bit_size: 1
+  - name: STO
+    description: desc STO.
+    bit_offset: 4
+    bit_size: 1
+  - name: STA
+    description: desc STA.
+    bit_offset: 5
+    bit_size: 1
+  - name: EN
+    description: desc EN.
+    bit_offset: 6
+    bit_size: 1
+fieldset/DR:
+  description: Data register.
+  fields:
+  - name: DR
+    description: desc DR.
+    bit_offset: 0
+    bit_size: 8
+fieldset/MATCH:
+  description: Slave Addrress match flag.
+  fields:
+  - name: ADDR0
+    description: desc ADDR0.
+    bit_offset: 0
+    bit_size: 1
+  - name: ADDR1
+    description: desc ADDR1.
+    bit_offset: 1
+    bit_size: 1
+  - name: ADDR2
+    description: desc ADDR2.
+    bit_offset: 2
+    bit_size: 1
+fieldset/STAT:
+  description: Status register.
+  fields:
+  - name: STAT
+    description: desc STAT.
+    bit_offset: 0
+    bit_size: 8
+    enum: Status
+enum/Status:
+  description: I2C STAT encodings verified in every own-family manual; see docs/i2c-typed-register-evidence.json.
+  bit_size: 8
+  variants:
+  - name: BUS_ERROR
+    description: Bus error or an undefined state caused by interference.
+    value: 0
+  - name: START
+    description: START transmitted.
+    value: 8
+  - name: REPEATED_START
+    description: Repeated START transmitted.
+    value: 16
+  - name: WRITE_ADDRESS_ACK
+    description: SLA+W transmitted; ACK received.
+    value: 24
+  - name: WRITE_ADDRESS_NACK
+    description: SLA+W transmitted; NACK received.
+    value: 32
+  - name: WRITE_DATA_ACK
+    description: Data byte transmitted; ACK received.
+    value: 40
+  - name: WRITE_DATA_NACK
+    description: Data byte transmitted; NACK received.
+    value: 48
+  - name: ARBITRATION_LOST
+    description: Arbitration lost while transmitting an address, data, or NACK.
+    value: 56
+  - name: READ_ADDRESS_ACK
+    description: SLA+R transmitted; ACK received.
+    value: 64
+  - name: READ_ADDRESS_NACK
+    description: SLA+R transmitted; NACK received.
+    value: 72
+  - name: READ_DATA_ACK
+    description: Data byte received; ACK returned.
+    value: 80
+  - name: READ_DATA_NACK
+    description: Data byte received; NACK returned.
+    value: 88
+  - name: SLAVE_WRITE_ADDRESS
+    description: Own SLA+W received; ACK returned.
+    value: 96
+  - name: ARBITRATION_LOST_SLAVE_WRITE
+    description: Arbitration lost; own SLA+W received; ACK returned.
+    value: 104
+  - name: GENERAL_CALL_ADDRESS
+    description: General-call address received; ACK returned.
+    value: 112
+  - name: ARBITRATION_LOST_GENERAL_CALL
+    description: Arbitration lost; general-call address received; ACK returned.
+    value: 120
+  - name: SLAVE_WRITE_DATA_ACK
+    description: Own-address data byte received; ACK returned.
+    value: 128
+  - name: SLAVE_WRITE_DATA_NACK
+    description: Own-address data byte received; NACK returned.
+    value: 136
+  - name: GENERAL_CALL_DATA_ACK
+    description: General-call data byte received; ACK returned.
+    value: 144
+  - name: GENERAL_CALL_DATA_NACK
+    description: General-call data byte received; NACK returned.
+    value: 152
+  - name: SLAVE_STOP_OR_RESTART
+    description: STOP or repeated START received while addressed as a slave.
+    value: 160
+  - name: SLAVE_READ_ADDRESS
+    description: Own SLA+R received; ACK returned.
+    value: 168
+  - name: ARBITRATION_LOST_SLAVE_READ
+    description: Arbitration lost; own SLA+R received; ACK returned.
+    value: 176
+  - name: SLAVE_READ_DATA_ACK
+    description: Slave data byte transmitted; ACK received.
+    value: 184
+  - name: SLAVE_READ_DATA_NACK
+    description: Slave data byte transmitted; NACK received.
+    value: 192
+  - name: SLAVE_READ_LAST_DATA_ACK
+    description: Last slave data byte transmitted; ACK received.
+    value: 200
+  - name: NO_INFORMATION
+    description: No relevant status information; SI is clear.
+    value: 248

@@ -1,0 +1,3044 @@
+{
+  "cores": [
+    {
+      "dma_channels": [
+        {
+          "channel": 0,
+          "dma": "DMA",
+          "name": "DMA_CH1"
+        },
+        {
+          "channel": 1,
+          "dma": "DMA",
+          "name": "DMA_CH2"
+        },
+        {
+          "channel": 2,
+          "dma": "DMA",
+          "name": "DMA_CH3"
+        },
+        {
+          "channel": 3,
+          "dma": "DMA",
+          "name": "DMA_CH4"
+        },
+        {
+          "channel": 4,
+          "dma": "DMA",
+          "name": "DMA_CH5"
+        }
+      ],
+      "interrupts": [
+        {
+          "name": "WDT",
+          "number": 0
+        },
+        {
+          "name": "LVD",
+          "number": 1
+        },
+        {
+          "name": "RTC",
+          "number": 2
+        },
+        {
+          "name": "FLASHRAM",
+          "number": 3
+        },
+        {
+          "name": "RCC",
+          "number": 4
+        },
+        {
+          "name": "GPIOA",
+          "number": 5
+        },
+        {
+          "name": "GPIOB",
+          "number": 6
+        },
+        {
+          "name": "GPIOC",
+          "number": 7
+        },
+        {
+          "name": "GPIOF",
+          "number": 8
+        },
+        {
+          "name": "DMACH1",
+          "number": 9
+        },
+        {
+          "name": "DMACH23",
+          "number": 10
+        },
+        {
+          "name": "DMACH45",
+          "number": 11
+        },
+        {
+          "name": "ADC",
+          "number": 12
+        },
+        {
+          "name": "ATIM",
+          "number": 13
+        },
+        {
+          "name": "VC1",
+          "number": 14
+        },
+        {
+          "name": "VC2",
+          "number": 15
+        },
+        {
+          "name": "GTIM1",
+          "number": 16
+        },
+        {
+          "name": "GTIM2",
+          "number": 17
+        },
+        {
+          "name": "GTIM3",
+          "number": 18
+        },
+        {
+          "name": "GTIM4",
+          "number": 19
+        },
+        {
+          "name": "BTIM1",
+          "number": 20
+        },
+        {
+          "name": "BTIM2",
+          "number": 21
+        },
+        {
+          "name": "BTIM3",
+          "number": 22
+        },
+        {
+          "name": "I2C1",
+          "number": 23
+        },
+        {
+          "name": "I2C2",
+          "number": 24
+        },
+        {
+          "name": "SPI1",
+          "number": 25
+        },
+        {
+          "name": "SPI2",
+          "number": 26
+        },
+        {
+          "name": "UART1",
+          "number": 27
+        },
+        {
+          "name": "UART2",
+          "number": 28
+        },
+        {
+          "name": "UART3",
+          "number": 29
+        },
+        {
+          "name": "AWT",
+          "number": 30
+        },
+        {
+          "name": "FAULT",
+          "number": 31
+        }
+      ],
+      "name": "cm0p",
+      "nvic_priority_bits": 2,
+      "peripherals": [
+        {
+          "adc_limits": {
+            "classic_scan": {
+              "bandgap_channel": 15,
+              "bandgap_startup_us": 25,
+              "buffered_requires_single_channel": true,
+              "first_internal_channel": 13,
+              "internal_requires_single_channel": true,
+              "slots_per_sequence_register": 4,
+              "supply_channel": 13,
+              "temperature_channel": 14,
+              "temperature_startup_us": 50
+            },
+            "comparison_cycles": 19,
+            "input_follower_maximum_rate_hz": 200000,
+            "internal_1v5_bands": [
+              {
+                "maximum_clock_hz": 2000000,
+                "maximum_sample_rate_hz": 100000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 1800
+              },
+              {
+                "maximum_clock_hz": 4000000,
+                "maximum_sample_rate_hz": 200000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 2000
+              }
+            ],
+            "internal_2v5_bands": [
+              {
+                "maximum_clock_hz": 4000000,
+                "maximum_sample_rate_hz": 200000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 2800
+              }
+            ],
+            "internal_acquisition_ps": 0,
+            "minimum_clock_hz": 0,
+            "sample_cycles": [
+              5,
+              6,
+              8,
+              10
+            ],
+            "sequence": {
+              "maximum_length": 4,
+              "per_slot_result": true,
+              "per_slot_sample_time": false,
+              "programmable_order": true
+            },
+            "supply_bands": [
+              {
+                "maximum_clock_hz": 500000,
+                "maximum_sample_rate_hz": 25000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 1650
+              },
+              {
+                "maximum_clock_hz": 2000000,
+                "maximum_sample_rate_hz": 100000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 1800
+              },
+              {
+                "maximum_clock_hz": 4000000,
+                "maximum_sample_rate_hz": 200000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 2000
+              },
+              {
+                "maximum_clock_hz": 12000000,
+                "maximum_sample_rate_hz": 500000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 2400
+              },
+              {
+                "maximum_clock_hz": 24000000,
+                "maximum_sample_rate_hz": 1000000,
+                "minimum_acquisition_ps": 0,
+                "supply_min_mv": 2700
+              }
+            ],
+            "supply_mv": [
+              1650,
+              5500
+            ],
+            "temperature_acquisition_maximum_rate_hz": 200000
+          },
+          "address": 1073816576,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 10,
+              "signal": "COMPLETE"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "ADC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "ADC",
+          "pins": [
+            {
+              "adc_mux": 0,
+              "pin": "PA0",
+              "signal": "IN0"
+            },
+            {
+              "adc_mux": 1,
+              "pin": "PA1",
+              "signal": "IN1"
+            },
+            {
+              "adc_mux": 2,
+              "pin": "PA2",
+              "signal": "IN2"
+            },
+            {
+              "adc_mux": 3,
+              "pin": "PA3",
+              "signal": "IN3"
+            },
+            {
+              "adc_mux": 4,
+              "pin": "PA4",
+              "signal": "IN4"
+            },
+            {
+              "adc_mux": 5,
+              "pin": "PA5",
+              "signal": "IN5"
+            },
+            {
+              "adc_mux": 6,
+              "pin": "PA6",
+              "signal": "IN6"
+            },
+            {
+              "adc_mux": 7,
+              "pin": "PA7",
+              "signal": "IN7"
+            },
+            {
+              "adc_mux": 9,
+              "pin": "PB1",
+              "signal": "IN9"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "ADC",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "ADC",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "ADC",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "ADC",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "ADC",
+            "kind": "adc",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073818624,
+          "atim_complementary": {
+            "break_inputs": 0,
+            "channels": 3,
+            "dead_time_max_ticks": 1010
+          },
+          "classic_atim_input": "ClassicPairedV1",
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 17,
+              "signal": "CH1A2A3A4_UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 18,
+              "signal": "CH1B2B3B_UP"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "ATIM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "ATIM",
+          "pins": [
+            {
+              "af": 7,
+              "pin": "PA3",
+              "signal": "CAP3A"
+            },
+            {
+              "af": 7,
+              "pin": "PA3",
+              "signal": "CH3A"
+            },
+            {
+              "af": 7,
+              "pin": "PA4",
+              "signal": "CAP2A"
+            },
+            {
+              "af": 7,
+              "pin": "PA4",
+              "signal": "CH2A"
+            },
+            {
+              "af": 7,
+              "pin": "PA5",
+              "signal": "CAP1A"
+            },
+            {
+              "af": 7,
+              "pin": "PA5",
+              "signal": "CH1A"
+            },
+            {
+              "af": 7,
+              "pin": "PA6",
+              "signal": "BK"
+            },
+            {
+              "af": 7,
+              "pin": "PA7",
+              "signal": "CAP1B"
+            },
+            {
+              "af": 7,
+              "pin": "PA7",
+              "signal": "CH1B"
+            },
+            {
+              "af": 7,
+              "pin": "PB1",
+              "signal": "CAP3B"
+            },
+            {
+              "af": 7,
+              "pin": "PB1",
+              "signal": "CH3B"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "ATIM",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "ATIM",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "ATIM",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "ATIM",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "ATIM",
+            "kind": "atim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073826816,
+          "interrupts": [
+            {
+              "interrupt": "AWT",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "AWT",
+          "pins": [
+            {
+              "af": 7,
+              "pin": "PA2",
+              "signal": "ETR"
+            },
+            {
+              "af": 1,
+              "pin": "PF0",
+              "signal": "ETR"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "AWT",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "AWT",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "AWT",
+            "kind": "awt",
+            "version": "cw32f030_v1"
+          }
+        },
+        {
+          "address": 1073825792,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 11,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 12,
+              "signal": "TRIG"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "BTIM1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM1",
+          "pins": [
+            {
+              "af": 4,
+              "pin": "PA7",
+              "signal": "TOGP"
+            },
+            {
+              "af": 4,
+              "pin": "PF0",
+              "signal": "TOGP"
+            },
+            {
+              "af": 4,
+              "pin": "PF1",
+              "signal": "TOGN"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073826048,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 13,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 14,
+              "signal": "TRIG"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "BTIM2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM2",
+          "pins": [
+            {
+              "af": 4,
+              "pin": "PA5",
+              "signal": "TOGP"
+            },
+            {
+              "af": 4,
+              "pin": "PA6",
+              "signal": "TOGN"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073826304,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 15,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 16,
+              "signal": "TRIG"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "BTIM3",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM3",
+          "pins": [
+            {
+              "af": 5,
+              "pin": "PB1",
+              "signal": "TOGP"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "BTIM",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073885184,
+          "name": "CRC",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "CRC",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "CRC",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "CRC",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "CRC",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "CRC",
+            "kind": "crc",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073872896,
+          "interrupts": [
+            {
+              "interrupt": "DMACH1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMA",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMA",
+            "kind": "dma",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073872928,
+          "interrupts": [
+            {
+              "interrupt": "DMACH1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMACHANNEL1",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMACHANNEL",
+            "kind": "dmachannel",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073872960,
+          "interrupts": [
+            {
+              "interrupt": "DMACH23",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMACHANNEL2",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMACHANNEL",
+            "kind": "dmachannel",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073872992,
+          "interrupts": [
+            {
+              "interrupt": "DMACH23",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMACHANNEL3",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMACHANNEL",
+            "kind": "dmachannel",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073873024,
+          "interrupts": [
+            {
+              "interrupt": "DMACH45",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMACHANNEL4",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMACHANNEL",
+            "kind": "dmachannel",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073873056,
+          "interrupts": [
+            {
+              "interrupt": "DMACH45",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "DMACHANNEL5",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "DMA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "DMA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5",
+            "shared_reset_group": "DMA-DMACHANNEL1-DMACHANNEL2-DMACHANNEL3-DMACHANNEL4-DMACHANNEL5"
+          },
+          "registers": {
+            "block": "DMACHANNEL",
+            "kind": "dmachannel",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073881088,
+          "flash_limits": {
+            "has_cache_control": true,
+            "lock_group_bytes": 4096,
+            "lock_mask": 65535,
+            "low_voltage_maximum_hclk_hz": 24000000,
+            "low_voltage_threshold_mv": 1800,
+            "maximum_hclk_hz": 64000000,
+            "maximum_wait_states": 2,
+            "supply_mv": [
+              1650,
+              5500
+            ],
+            "wait_step_hz": 24000000
+          },
+          "interrupts": [
+            {
+              "interrupt": "FLASHRAM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "FLASH",
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "FLASH",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "FLASH",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "FLASH",
+            "kind": "flash",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1207959552,
+          "gpio": {
+            "output_mask": 65535,
+            "pull_down_mask": 65535
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": true,
+            "serviced_mask": 65535
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOA",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOA",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GPIOA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIO",
+            "kind": "gpio",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1207960576,
+          "gpio": {
+            "output_mask": 65535,
+            "pull_down_mask": 65535
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": true,
+            "serviced_mask": 65535
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOB",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOB",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOB",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOB",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOB",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GPIOB",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIO",
+            "kind": "gpio",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1207961600,
+          "gpio": {
+            "output_mask": 57344,
+            "pull_down_mask": 57344
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": true,
+            "serviced_mask": 57344
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOC",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOC",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOC",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOC",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GPIOC",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIOC",
+            "kind": "gpioc",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1207964672,
+          "gpio": {
+            "output_mask": 195,
+            "pull_down_mask": 195
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": true,
+            "serviced_mask": 203
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOF",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOF",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOF",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOF",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOF",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GPIOF",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIOF",
+            "kind": "gpiof",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073742848,
+          "classic_timer_input": {
+            "capture_mux": "GTIM1CAP",
+            "encoder_fixed_reload": 65535
+          },
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 19,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 20,
+              "signal": "TRIG"
+            },
+            {
+              "dma": "DMA",
+              "request": 21,
+              "signal": "CH1"
+            },
+            {
+              "dma": "DMA",
+              "request": 22,
+              "signal": "CH2"
+            },
+            {
+              "dma": "DMA",
+              "request": 23,
+              "signal": "CH3"
+            },
+            {
+              "dma": "DMA",
+              "request": 24,
+              "signal": "CH4"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "GTIM1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GTIM1",
+          "pins": [
+            {
+              "af": 6,
+              "pin": "PA6",
+              "signal": "CAP1"
+            },
+            {
+              "af": 6,
+              "pin": "PA6",
+              "signal": "CH1"
+            },
+            {
+              "af": 6,
+              "pin": "PA7",
+              "signal": "CAP2"
+            },
+            {
+              "af": 6,
+              "pin": "PA7",
+              "signal": "CH2"
+            },
+            {
+              "af": 6,
+              "pin": "PB1",
+              "signal": "CAP4"
+            },
+            {
+              "af": 6,
+              "pin": "PB1",
+              "signal": "CH4"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "GTIM1",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "GTIM1",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GTIM1",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GTIM1",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GTIM",
+            "kind": "gtim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073745920,
+          "classic_timer_input": {
+            "capture_mux": "GTIM2CAP",
+            "encoder_fixed_reload": 65535
+          },
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 25,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 26,
+              "signal": "TRIG"
+            },
+            {
+              "dma": "DMA",
+              "request": 27,
+              "signal": "CH1"
+            },
+            {
+              "dma": "DMA",
+              "request": 28,
+              "signal": "CH2"
+            },
+            {
+              "dma": "DMA",
+              "request": 29,
+              "signal": "CH3"
+            },
+            {
+              "dma": "DMA",
+              "request": 30,
+              "signal": "CH4"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "GTIM2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GTIM2",
+          "pins": [
+            {
+              "af": 6,
+              "pin": "PA0",
+              "signal": "CAP1"
+            },
+            {
+              "af": 6,
+              "pin": "PA0",
+              "signal": "CH1"
+            },
+            {
+              "af": 7,
+              "pin": "PA0",
+              "signal": "ETR"
+            },
+            {
+              "af": 6,
+              "pin": "PA1",
+              "signal": "CAP2"
+            },
+            {
+              "af": 6,
+              "pin": "PA1",
+              "signal": "CH2"
+            },
+            {
+              "af": 6,
+              "pin": "PA2",
+              "signal": "CAP3"
+            },
+            {
+              "af": 6,
+              "pin": "PA2",
+              "signal": "CH3"
+            },
+            {
+              "af": 3,
+              "pin": "PA3",
+              "signal": "CAP2"
+            },
+            {
+              "af": 6,
+              "pin": "PA3",
+              "signal": "CAP4"
+            },
+            {
+              "af": 3,
+              "pin": "PA3",
+              "signal": "CH2"
+            },
+            {
+              "af": 6,
+              "pin": "PA3",
+              "signal": "CH4"
+            },
+            {
+              "af": 6,
+              "pin": "PA4",
+              "signal": "ETR"
+            },
+            {
+              "af": 6,
+              "pin": "PA5",
+              "signal": "CAP1"
+            },
+            {
+              "af": 6,
+              "pin": "PA5",
+              "signal": "CH1"
+            },
+            {
+              "af": 1,
+              "pin": "PA5",
+              "signal": "ETR"
+            },
+            {
+              "af": 6,
+              "pin": "PF0",
+              "signal": "TOGN"
+            },
+            {
+              "af": 6,
+              "pin": "PF1",
+              "signal": "TOGP"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "GTIM2",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "GTIM2",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GTIM2",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GTIM2",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GTIM",
+            "kind": "gtim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073823744,
+          "classic_timer_input": {
+            "capture_mux": "GTIM3CAP",
+            "encoder_fixed_reload": 65535
+          },
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 31,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 32,
+              "signal": "TRIG"
+            },
+            {
+              "dma": "DMA",
+              "request": 33,
+              "signal": "CH1"
+            },
+            {
+              "dma": "DMA",
+              "request": 34,
+              "signal": "CH2"
+            },
+            {
+              "dma": "DMA",
+              "request": 35,
+              "signal": "CH3"
+            },
+            {
+              "dma": "DMA",
+              "request": 36,
+              "signal": "CH4"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "GTIM3",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GTIM3",
+          "pins": [
+            {
+              "af": 1,
+              "pin": "PA6",
+              "signal": "CAP1"
+            },
+            {
+              "af": 1,
+              "pin": "PA6",
+              "signal": "CH1"
+            },
+            {
+              "af": 7,
+              "pin": "PF0",
+              "signal": "CAP3"
+            },
+            {
+              "af": 7,
+              "pin": "PF0",
+              "signal": "CH3"
+            },
+            {
+              "af": 7,
+              "pin": "PF1",
+              "signal": "CAP4"
+            },
+            {
+              "af": 7,
+              "pin": "PF1",
+              "signal": "CH4"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "GTIM3",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "GTIM3",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GTIM3",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GTIM3",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GTIM",
+            "kind": "gtim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073824768,
+          "classic_timer_input": {
+            "capture_mux": "GTIM4CAP",
+            "encoder_fixed_reload": 65535
+          },
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 37,
+              "signal": "UP"
+            },
+            {
+              "dma": "DMA",
+              "request": 38,
+              "signal": "TRIG"
+            },
+            {
+              "dma": "DMA",
+              "request": 39,
+              "signal": "CH1"
+            },
+            {
+              "dma": "DMA",
+              "request": 40,
+              "signal": "CH2"
+            },
+            {
+              "dma": "DMA",
+              "request": 41,
+              "signal": "CH3"
+            },
+            {
+              "dma": "DMA",
+              "request": 42,
+              "signal": "CH4"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "GTIM4",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GTIM4",
+          "pins": [
+            {
+              "af": 1,
+              "pin": "PA7",
+              "signal": "CAP1"
+            },
+            {
+              "af": 1,
+              "pin": "PA7",
+              "signal": "CH1"
+            },
+            {
+              "af": 4,
+              "pin": "PB1",
+              "signal": "TOGN"
+            },
+            {
+              "af": 2,
+              "pin": "PF0",
+              "signal": "CAP2"
+            },
+            {
+              "af": 2,
+              "pin": "PF0",
+              "signal": "CH2"
+            },
+            {
+              "af": 2,
+              "pin": "PF1",
+              "signal": "CAP1"
+            },
+            {
+              "af": 2,
+              "pin": "PF1",
+              "signal": "CH1"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "GTIM4",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "GTIM4",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GTIM4",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "GTIM4",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GTIM",
+            "kind": "gtim",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073763328,
+          "i2c_limits": {
+            "maximum_frequency_hz": 1000000,
+            "waveform": null
+          },
+          "interrupts": [
+            {
+              "interrupt": "I2C1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "I2C1",
+          "pins": [
+            {
+              "af": 2,
+              "pin": "PA13",
+              "signal": "SDA"
+            },
+            {
+              "af": 2,
+              "pin": "PA14",
+              "signal": "SCL"
+            },
+            {
+              "af": 3,
+              "pin": "PF0",
+              "signal": "SDA"
+            },
+            {
+              "af": 3,
+              "pin": "PF1",
+              "signal": "SCL"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "I2C1",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "I2C1",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "I2C1",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "I2C1",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "I2C",
+            "kind": "i2c",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073764352,
+          "i2c_limits": {
+            "maximum_frequency_hz": 1000000,
+            "waveform": null
+          },
+          "interrupts": [
+            {
+              "interrupt": "I2C2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "I2C2",
+          "pins": [
+            {
+              "af": 3,
+              "pin": "PA1",
+              "signal": "SCL"
+            },
+            {
+              "af": 5,
+              "pin": "PA13",
+              "signal": "SCL"
+            },
+            {
+              "af": 5,
+              "pin": "PA14",
+              "signal": "SDA"
+            },
+            {
+              "af": 3,
+              "pin": "PA2",
+              "signal": "SDA"
+            },
+            {
+              "af": 3,
+              "pin": "PA4",
+              "signal": "SCL"
+            },
+            {
+              "af": 3,
+              "pin": "PA5",
+              "signal": "SDA"
+            },
+            {
+              "af": 3,
+              "pin": "PB1",
+              "signal": "SDA"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "I2C2",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "I2C2",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "I2C2",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "I2C2",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "I2C",
+            "kind": "i2c",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073754112,
+          "interrupts": [
+            {
+              "interrupt": "WDT",
+              "signal": "GLOBAL"
+            }
+          ],
+          "iwdt_clock": {
+            "maximum_hz": 12000,
+            "minimum_hz": 4000,
+            "typical_hz": 8000,
+            "uses_lsi": false
+          },
+          "name": "IWDT",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "IWDT",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "RC10K",
+            "reset": {
+              "field": "IWDT",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "IWDT",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "IWDT",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "IWDT",
+            "kind": "iwdt",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073818240,
+          "interrupts": [
+            {
+              "interrupt": "LVD",
+              "signal": "GLOBAL"
+            }
+          ],
+          "lvd": {
+            "inputs": [
+              {
+                "pin": "PA0",
+                "selector": 1
+              }
+            ],
+            "supply_name": "VDDA",
+            "thresholds_mv": [
+              2000,
+              2110,
+              2220,
+              2330,
+              2440,
+              2560,
+              2670,
+              2780,
+              2890,
+              3000,
+              3110,
+              3220,
+              3330,
+              3440,
+              3560,
+              3670
+            ]
+          },
+          "name": "LVD",
+          "pins": [
+            {
+              "af": 4,
+              "pin": "PA1",
+              "signal": "OUT"
+            }
+          ],
+          "registers": {
+            "block": "LVD",
+            "kind": "lvd",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073882112,
+          "interrupts": [
+            {
+              "interrupt": "FLASHRAM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "RAM",
+          "ram_parity": {
+            "enable_status": true
+          },
+          "registers": {
+            "block": "RAM",
+            "kind": "ram",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073752064,
+          "interrupts": [
+            {
+              "interrupt": "RTC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "RTC",
+          "pins": [
+            {
+              "af": 3,
+              "pin": "PA0",
+              "signal": "TAMP"
+            },
+            {
+              "af": 7,
+              "pin": "PA1",
+              "signal": "TAMP"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "RTC",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "RTC",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "RTC",
+            "kind": "rtc",
+            "version": "v1"
+          },
+          "rtc_alarms": {
+            "alarm_a_ignore_bit": 1,
+            "alarm_b_configuration_supported": false,
+            "async_wait": false,
+            "direct_register_access": false
+          },
+          "rtc_calendar": {
+            "calendar_divisor": 32768,
+            "factory_trim_address": 75266,
+            "maximum_hz": 33784,
+            "minimum_hz": 31816,
+            "nominal_hz": 32800,
+            "prescaler_first": 0,
+            "prescaler_second": 0,
+            "source": "LSI",
+            "source_encoding": 2,
+            "supply_mv": [
+              1650,
+              5500
+            ],
+            "temperature_c": [
+              -40,
+              105
+            ]
+          }
+        },
+        {
+          "address": 1073819648,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 6,
+              "signal": "RX"
+            },
+            {
+              "dma": "DMA",
+              "request": 7,
+              "signal": "TX"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "SPI1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "SPI1",
+          "pins": [
+            {
+              "af": 5,
+              "pin": "PA4",
+              "signal": "NSS"
+            },
+            {
+              "af": 5,
+              "pin": "PA5",
+              "signal": "SCK"
+            },
+            {
+              "af": 5,
+              "pin": "PA6",
+              "signal": "MISO"
+            },
+            {
+              "af": 5,
+              "pin": "PA7",
+              "signal": "MOSI"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "SPI1",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "SPI1",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "SPI1",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "SPI1",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "SPI",
+            "kind": "spi",
+            "version": "v1"
+          },
+          "spi": {
+            "maximum_frequency": 16000000,
+            "minimum_divisor": 2
+          }
+        },
+        {
+          "address": 1073756160,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 8,
+              "signal": "RX"
+            },
+            {
+              "dma": "DMA",
+              "request": 9,
+              "signal": "TX"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "SPI2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "SPI2",
+          "pins": [
+            {
+              "af": 5,
+              "pin": "PA0",
+              "signal": "MISO"
+            },
+            {
+              "af": 5,
+              "pin": "PA1",
+              "signal": "MOSI"
+            },
+            {
+              "af": 5,
+              "pin": "PA2",
+              "signal": "SCK"
+            },
+            {
+              "af": 5,
+              "pin": "PA3",
+              "signal": "NSS"
+            },
+            {
+              "af": 5,
+              "pin": "PF0",
+              "signal": "SCK"
+            },
+            {
+              "af": 5,
+              "pin": "PF1",
+              "signal": "NSS"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "SPI2",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "SPI2",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "SPI2",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "SPI2",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "SPI",
+            "kind": "spi",
+            "version": "v1"
+          },
+          "spi": {
+            "maximum_frequency": 16000000,
+            "minimum_divisor": 2
+          }
+        },
+        {
+          "address": 1073807360,
+          "clock_limits": {
+            "default_hsi_divisor": 6,
+            "factory_hsi_trim_address": 75264,
+            "flash_wait_step_hz": 24000000,
+            "high_voltage_bus_max_hz": 64000000,
+            "hse": {
+              "bypass": {
+                "maximum_hz": 32000000,
+                "minimum_hz": 4000000,
+                "supply_mv": [
+                  1650,
+                  5500
+                ],
+                "temperature_c": [
+                  -40,
+                  105
+                ]
+              },
+              "bypass_duty_percent": [
+                40,
+                60
+              ],
+              "bypass_maximum_rise_fall_ns": 20,
+              "bypass_minimum_high_low_ns": 15,
+              "ccs_cycle_count": 131072,
+              "ccs_lsi_maximum_hz": 36080,
+              "ccs_lsi_supply_mv": [
+                1650,
+                5500
+              ],
+              "ccs_lsi_temperature_c": [
+                -40,
+                105
+              ],
+              "ccs_maximum_count": 2047,
+              "ccs_numerator_hz": 8000000000,
+              "ccs_requires_lsi": true,
+              "crystal": {
+                "maximum_hz": 32000000,
+                "minimum_hz": 4000000,
+                "supply_mv": [
+                  1650,
+                  5500
+                ],
+                "temperature_c": [
+                  -40,
+                  105
+                ]
+              },
+              "filter_maximum_hz": 8000000,
+              "frequency_ranges_hz": [
+                [
+                  4000000,
+                  8000000
+                ],
+                [
+                  8000000,
+                  16000000
+                ],
+                [
+                  16000000,
+                  24000000
+                ],
+                [
+                  24000000,
+                  32000000
+                ]
+              ],
+              "startup_cycles": [
+                8192,
+                32768,
+                131072,
+                262144
+              ]
+            },
+            "hsi_error_percent": 2,
+            "hsi_frequency_hz": 48000000,
+            "hsi_supply_mv": [
+              1650,
+              5500
+            ],
+            "hsi_temperature_c": [
+              -40,
+              105
+            ],
+            "initial_flash_wait": 2,
+            "low_voltage_bus_max_hz": 24000000,
+            "low_voltage_threshold_mv": 1800,
+            "lse": {
+              "pin_lock": false,
+              "pin_lock_requires_enable_lock": false
+            },
+            "lsi_sysclk": {
+              "awt_allowed_sources": [
+                0,
+                2,
+                3,
+                4
+              ],
+              "factory_trim_address": 75266,
+              "gpio_banks": [
+                "GPIOA",
+                "GPIOB",
+                "GPIOC",
+                "GPIOF"
+              ],
+              "gpio_filter_allowed_sources": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                6
+              ],
+              "lsi_output_allowed_af": [
+                0,
+                2,
+                3,
+                4,
+                5,
+                6,
+                7
+              ],
+              "lsi_output_pin": "PB11",
+              "maximum_hz": 33784,
+              "mco_allowed_sources": [
+                0,
+                1,
+                2,
+                3,
+                5,
+                6,
+                7,
+                8,
+                9
+              ],
+              "minimum_hz": 31816,
+              "nominal_hz": 32800,
+              "rcc_irq": 4,
+              "rtc_allowed_sources": [
+                0,
+                4,
+                5,
+                6,
+                7
+              ],
+              "supply_mv": [
+                1650,
+                5500
+              ],
+              "temperature_c": [
+                -40,
+                105
+              ],
+              "uart_allowed_sources": [
+                0,
+                1,
+                2
+              ],
+              "uarts": [
+                "UART1",
+                "UART2",
+                "UART3"
+              ]
+            },
+            "pll": {
+              "cycle_to_cycle_jitter_ps": 300,
+              "hse_supported": true,
+              "hsi_supported": true,
+              "input_range_hz": [
+                4000000,
+                24000000
+              ],
+              "input_ranges_hz": [
+                [
+                  4000000,
+                  6000000
+                ],
+                [
+                  6000000,
+                  12000000
+                ],
+                [
+                  12000000,
+                  20000000
+                ],
+                [
+                  20000000,
+                  24000000
+                ]
+              ],
+              "multiplier_range": [
+                2,
+                12
+              ],
+              "output_range_hz": [
+                12000000,
+                64000000
+              ],
+              "output_ranges_hz": [
+                [
+                  12000000,
+                  18000000
+                ],
+                [
+                  18000000,
+                  24000000
+                ],
+                [
+                  24000000,
+                  36000000
+                ],
+                [
+                  36000000,
+                  48000000
+                ],
+                [
+                  48000000,
+                  72000000
+                ]
+              ],
+              "reserved_debug_default": 5,
+              "startup_cycles": 16384,
+              "startup_encoding": 7,
+              "supply_mv": [
+                1650,
+                5500
+              ],
+              "temperature_c": [
+                -40,
+                105
+              ]
+            }
+          },
+          "interrupts": [
+            {
+              "interrupt": "RCC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "ir": {
+            "invert": false,
+            "mode_configurable": true,
+            "owner": "IR",
+            "register": "IRMOD",
+            "software_control": false
+          },
+          "name": "SYSCTRL",
+          "pins": [
+            {
+              "af": 6,
+              "pin": "PA13",
+              "signal": "IR_OUT"
+            },
+            {
+              "pin": "PF0",
+              "signal": "HSE_IN"
+            },
+            {
+              "pin": "PF1",
+              "signal": "HSE_OUT"
+            }
+          ],
+          "registers": {
+            "block": "SYSCTRL",
+            "kind": "sysctrl",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073821696,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 0,
+              "signal": "RX"
+            },
+            {
+              "dma": "DMA",
+              "request": 1,
+              "signal": "TX"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "UART1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "UART1",
+          "pins": [
+            {
+              "af": 3,
+              "pin": "PA13",
+              "signal": "RX"
+            },
+            {
+              "af": 3,
+              "pin": "PA14",
+              "signal": "TX"
+            },
+            {
+              "af": 2,
+              "pin": "PB1",
+              "signal": "RTS"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "UART1",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "UART1",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "UART",
+            "kind": "uart",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073759232,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 2,
+              "signal": "RX"
+            },
+            {
+              "dma": "DMA",
+              "request": 3,
+              "signal": "TX"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "UART2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "UART2",
+          "pins": [
+            {
+              "af": 2,
+              "pin": "PA0",
+              "signal": "CTS"
+            },
+            {
+              "af": 2,
+              "pin": "PA1",
+              "signal": "RTS"
+            },
+            {
+              "af": 4,
+              "pin": "PA13",
+              "signal": "RX"
+            },
+            {
+              "af": 4,
+              "pin": "PA14",
+              "signal": "TX"
+            },
+            {
+              "af": 2,
+              "pin": "PA2",
+              "signal": "TX"
+            },
+            {
+              "af": 2,
+              "pin": "PA3",
+              "signal": "RX"
+            },
+            {
+              "af": 2,
+              "pin": "PA4",
+              "signal": "CTS"
+            },
+            {
+              "af": 2,
+              "pin": "PA5",
+              "signal": "RTS"
+            },
+            {
+              "af": 2,
+              "pin": "PA6",
+              "signal": "TX"
+            },
+            {
+              "af": 2,
+              "pin": "PA7",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PB1",
+              "signal": "TX"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "UART2",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "UART2",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "UART",
+            "kind": "uart",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073760256,
+          "dma_channels": [
+            {
+              "dma": "DMA",
+              "request": 4,
+              "signal": "RX"
+            },
+            {
+              "dma": "DMA",
+              "request": 5,
+              "signal": "TX"
+            }
+          ],
+          "interrupts": [
+            {
+              "interrupt": "UART3",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "UART3",
+          "pins": [
+            {
+              "af": 1,
+              "pin": "PA0",
+              "signal": "CTS"
+            },
+            {
+              "af": 1,
+              "pin": "PA1",
+              "signal": "RTS"
+            },
+            {
+              "af": 1,
+              "pin": "PA14",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PA2",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PA3",
+              "signal": "RX"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "UART3",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "UART3",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "UART",
+            "kind": "uart",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073818112,
+          "comparator_limits": {
+            "input_uses_vdda": true,
+            "supply_mv": [
+              1650,
+              5500
+            ]
+          },
+          "interrupts": [
+            {
+              "interrupt": "VC1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "VC1",
+          "pins": [
+            {
+              "comparator_mux": 0,
+              "pin": "PA0",
+              "signal": "INN0"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PA0",
+              "signal": "INP0"
+            },
+            {
+              "af": 4,
+              "pin": "PA0",
+              "signal": "OUT"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA1",
+              "signal": "INN1"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA1",
+              "signal": "INP1"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PA2",
+              "signal": "INN2"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PA2",
+              "signal": "INP2"
+            },
+            {
+              "comparator_mux": 3,
+              "pin": "PA3",
+              "signal": "INN3"
+            },
+            {
+              "comparator_mux": 3,
+              "pin": "PA3",
+              "signal": "INP3"
+            },
+            {
+              "comparator_mux": 4,
+              "pin": "PA4",
+              "signal": "INN4"
+            },
+            {
+              "comparator_mux": 4,
+              "pin": "PA4",
+              "signal": "INP4"
+            },
+            {
+              "comparator_mux": 5,
+              "pin": "PA5",
+              "signal": "INN5"
+            },
+            {
+              "comparator_mux": 5,
+              "pin": "PA5",
+              "signal": "INP5"
+            },
+            {
+              "comparator_mux": 6,
+              "pin": "PA6",
+              "signal": "INN6"
+            },
+            {
+              "comparator_mux": 6,
+              "pin": "PA6",
+              "signal": "INP6"
+            },
+            {
+              "af": 3,
+              "pin": "PA6",
+              "signal": "OUT"
+            },
+            {
+              "comparator_mux": 7,
+              "pin": "PA7",
+              "signal": "INN7"
+            },
+            {
+              "comparator_mux": 7,
+              "pin": "PA7",
+              "signal": "INP7"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "VC",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "VC",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "VC1-VC2",
+            "shared_reset_group": "VC1-VC2"
+          },
+          "registers": {
+            "block": "VC",
+            "kind": "vc",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073818128,
+          "comparator_limits": {
+            "input_uses_vdda": true,
+            "supply_mv": [
+              1650,
+              5500
+            ]
+          },
+          "interrupts": [
+            {
+              "interrupt": "VC2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "VC2",
+          "pins": [
+            {
+              "af": 4,
+              "pin": "PA2",
+              "signal": "OUT"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PA5",
+              "signal": "INN0"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PA5",
+              "signal": "INP0"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA6",
+              "signal": "INN1"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA6",
+              "signal": "INP1"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PA7",
+              "signal": "INN2"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PA7",
+              "signal": "INP2"
+            },
+            {
+              "af": 3,
+              "pin": "PA7",
+              "signal": "OUT"
+            },
+            {
+              "comparator_mux": 4,
+              "pin": "PB1",
+              "signal": "INN4"
+            },
+            {
+              "comparator_mux": 4,
+              "pin": "PB1",
+              "signal": "INP4"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "VC",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "VC",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "VC1-VC2",
+            "shared_reset_group": "VC1-VC2"
+          },
+          "registers": {
+            "block": "VC",
+            "kind": "vc",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073753088,
+          "interrupts": [
+            {
+              "interrupt": "WDT",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "WWDT",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "WWDT",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "WWDT",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "WWDT",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "reset": {
+              "field": "WWDT",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "WWDT",
+            "kind": "wwdt",
+            "version": "v1"
+          }
+        }
+      ],
+      "pins": [
+        {
+          "name": "PA0"
+        },
+        {
+          "name": "PA1"
+        },
+        {
+          "name": "PA13"
+        },
+        {
+          "name": "PA14"
+        },
+        {
+          "name": "PA2"
+        },
+        {
+          "name": "PA3"
+        },
+        {
+          "name": "PA4"
+        },
+        {
+          "name": "PA5"
+        },
+        {
+          "name": "PA6"
+        },
+        {
+          "name": "PA7"
+        },
+        {
+          "name": "PB1"
+        },
+        {
+          "name": "PF0"
+        },
+        {
+          "name": "PF1"
+        },
+        {
+          "name": "PF3"
+        }
+      ]
+    }
+  ],
+  "die": "CW32F030",
+  "docs": [],
+  "family": "CW32F0",
+  "line": "CW32F030",
+  "memory": [],
+  "name": "CW32F030",
+  "packages": []
+}

@@ -1,0 +1,161 @@
+block/AWT:
+  description: desc AWT.
+  items:
+  - name: CR
+    description: desc CR.
+    byte_offset: 0
+    fieldset: CR
+  - name: ARR
+    description: desc ARR.
+    byte_offset: 4
+    fieldset: ARR
+  - name: CNT
+    description: desc CNT.
+    byte_offset: 8
+    access: Read
+    fieldset: CNT
+  - name: IER
+    description: desc IER.
+    byte_offset: 16
+    fieldset: IER
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 20
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 28
+    fieldset: ICR
+fieldset/ARR:
+  description: desc ARR.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CNT:
+  description: desc CNT.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CR:
+  description: desc CR.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MD
+    description: desc MD.
+    bit_offset: 1
+    bit_size: 2
+    enum: Mode
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 4
+    bit_size: 4
+    enum: Prescaler
+  - name: SRC
+    description: desc SRC.
+    bit_offset: 8
+    bit_size: 3
+    enum: Source
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: UD
+    description: desc UD.
+    bit_offset: 3
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: UD
+    description: desc UD.
+    bit_offset: 3
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: UD
+    description: desc UD.
+    bit_offset: 3
+    bit_size: 1
+enum/Mode:
+  description: Reviewed timer encodings; see docs/low-power-timers-evidence.json.
+  bit_size: 2
+  variants:
+  - name: TIMER
+    description: Required timer mode.
+    value: 3
+enum/Prescaler:
+  description: Reviewed timer encodings; see docs/low-power-timers-evidence.json.
+  bit_size: 4
+  variants:
+  - name: DIV2
+    description: Divide by 2.
+    value: 1
+  - name: DIV4
+    description: Divide by 4.
+    value: 2
+  - name: DIV8
+    description: Divide by 8.
+    value: 3
+  - name: DIV16
+    description: Divide by 16.
+    value: 4
+  - name: DIV32
+    description: Divide by 32.
+    value: 5
+  - name: DIV64
+    description: Divide by 64.
+    value: 6
+  - name: DIV128
+    description: Divide by 128.
+    value: 7
+  - name: DIV256
+    description: Divide by 256.
+    value: 8
+  - name: DIV512
+    description: Divide by 512.
+    value: 9
+  - name: DIV1024
+    description: Divide by 1024.
+    value: 10
+  - name: DIV2048
+    description: Divide by 2048.
+    value: 11
+  - name: DIV4096
+    description: Divide by 4096.
+    value: 12
+  - name: DIV8192
+    description: Divide by 8192.
+    value: 13
+  - name: DIV16384
+    description: Divide by 16384.
+    value: 14
+  - name: DIV32768
+    description: Divide by 32768.
+    value: 15
+enum/Source:
+  description: Own L031/R031/W031 AWT_CR sources (RM PDF165/167/166); see cw32-data/hse-qualified.yaml.
+  bit_size: 3
+  variants:
+  - name: HSIOSC
+    description: Undivided HSI oscillator.
+    value: 0
+  - name: LSI
+    description: Low-speed internal oscillator.
+    value: 1
+  - name: HSE
+    description: High-speed external oscillator.
+    value: 2
+  - name: LSE
+    description: Low-speed external oscillator.
+    value: 3
+  - name: ETR
+    description: External timer input.
+    value: 4

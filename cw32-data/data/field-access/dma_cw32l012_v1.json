@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dma_cw32l012_v1": [
+      {
+        "block": "DMA",
+        "register": "CSR1",
+        "fieldset": "CSR1",
+        "field": "TC",
+        "bit_offset": 12,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TC RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR1",
+        "fieldset": "CSR1",
+        "field": "TE",
+        "bit_offset": 13,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TE RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR2",
+        "fieldset": "CSR2",
+        "field": "TC",
+        "bit_offset": 12,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TC RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR2",
+        "fieldset": "CSR2",
+        "field": "TE",
+        "bit_offset": 13,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TE RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR3",
+        "fieldset": "CSR3",
+        "field": "TC",
+        "bit_offset": 12,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TC RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR3",
+        "fieldset": "CSR3",
+        "field": "TE",
+        "bit_offset": 13,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TE RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR4",
+        "fieldset": "CSR4",
+        "field": "TC",
+        "bit_offset": 12,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TC RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      },
+      {
+        "block": "DMA",
+        "register": "CSR4",
+        "fieldset": "CSR4",
+        "field": "TE",
+        "bit_offset": 13,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.3, PDF page 146/printed page 120 marks CSR.TE RO inside the RW register; STATUS remains RW. member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942 already marks this field read-only. Source-preserving field restriction; docs/l012-dma-owned-evidence.json."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dma_cw32f020_v1": [
+      {
+        "block": "DMA",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 4294967295,
+        "write_noop": 4294967295,
+        "zero_to_clear_fields": [
+          "TC1",
+          "TE1",
+          "TC2",
+          "TE2"
+        ],
+        "evidence": [
+          "vendor:CW32F020_UserManual_CN_V1.4.pdf, section 8.8.2, printed p135/PDF page136; SHA-256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed; docs/f020-dma-owned-evidence.json",
+          "docs/f020-dma-owned.md: Native ICR command seed"
+        ]
+      }
+    ]
+  }
+}

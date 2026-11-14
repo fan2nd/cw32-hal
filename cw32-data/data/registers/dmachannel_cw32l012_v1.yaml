@@ -1,0 +1,204 @@
+block/DMACHANNEL:
+  description: DMA Channel 1.
+  items:
+  - name: CSR
+    description: Channel1 control and status register.
+    byte_offset: 0
+    fieldset: CSR
+  - name: CNT
+    description: Channel1 counter register.
+    byte_offset: 4
+    fieldset: CNT
+  - name: SRCADDR
+    description: Channel1 source address register.
+    byte_offset: 8
+    fieldset: SRCADDR
+  - name: DSTADDR
+    description: Channel1 destination address register.
+    byte_offset: 12
+    fieldset: DSTADDR
+  - name: TRIG
+    description: Channel1 trigger register.
+    byte_offset: 16
+    fieldset: TRIG
+  - name: CCNT
+    description: Channel1 trigger register.
+    byte_offset: 20
+    access: Read
+    fieldset: CCNT
+  - name: CSRCADDR
+    description: Channel1 source address register.
+    byte_offset: 24
+    access: Read
+    fieldset: CSRCADDR
+  - name: CDSTADDR
+    description: Channel1 destination address register.
+    byte_offset: 28
+    access: Read
+    fieldset: CDSTADDR
+fieldset/CCNT:
+  description: Channel1 trigger register.
+  fields:
+  - name: CCNT
+    description: desc CCNT.
+    bit_offset: 0
+    bit_size: 16
+  - name: CREPEAT
+    description: desc CREPEAT.
+    bit_offset: 16
+    bit_size: 4
+fieldset/CDSTADDR:
+  description: Channel1 destination address register.
+  fields:
+  - name: CDSTADDR
+    description: desc CDSTADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/CNT:
+  description: Channel1 counter register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+  - name: REPEAT
+    description: desc REPEAT.
+    bit_offset: 16
+    bit_size: 4
+fieldset/CSR:
+  description: Channel1 control and status register.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: TCIE
+    description: desc TCIE.
+    bit_offset: 1
+    bit_size: 1
+  - name: TEIE
+    description: desc TEIE.
+    bit_offset: 2
+    bit_size: 1
+  - name: TRANS
+    description: desc TRANS.
+    bit_offset: 3
+    bit_size: 1
+    enum: TransferMode
+  - name: SRCINC
+    description: desc SRCINC.
+    bit_offset: 4
+    bit_size: 1
+  - name: DSTINC
+    description: desc DSTINC.
+    bit_offset: 5
+    bit_size: 1
+  - name: SIZE
+    description: desc SIZE.
+    bit_offset: 6
+    bit_size: 2
+    enum: Width
+  - name: STATUS
+    description: desc STATUS.
+    bit_offset: 8
+    bit_size: 3
+    enum: Status
+  - name: RESTART
+    description: desc RESTART.
+    bit_offset: 11
+    bit_size: 1
+  - name: TC
+    description: desc TC.
+    bit_offset: 12
+    bit_size: 1
+  - name: TE
+    description: desc TE.
+    bit_offset: 13
+    bit_size: 1
+  - name: SRCLOAD
+    description: desc SRCLOAD.
+    bit_offset: 14
+    bit_size: 1
+  - name: DSTLOAD
+    description: desc DSTLOAD.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CSRCADDR:
+  description: Channel1 source address register.
+  fields:
+  - name: CSRCADDR
+    description: desc CSRCADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DSTADDR:
+  description: Channel1 destination address register.
+  fields:
+  - name: DSTADDR
+    description: desc DSTADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/SRCADDR:
+  description: Channel1 source address register.
+  fields:
+  - name: SRCADDR
+    description: desc SRCADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/TRIG:
+  description: Channel1 trigger register.
+  fields:
+  - name: TYPE
+    description: desc TYPE.
+    bit_offset: 0
+    bit_size: 1
+    enum: Trigger
+  - name: SOFTSRC
+    description: desc SOFTSRC.
+    bit_offset: 1
+    bit_size: 1
+  - name: HARDSRC
+    description: desc HARDSRC.
+    bit_offset: 2
+    bit_size: 6
+enum/Status:
+  description: CW32L012 own manual CN V1.4 section 8.8.3, PDF page 146/printed page 120; see docs/l012-dma-owned-evidence.json.
+  bit_size: 3
+  variants:
+  - name: INITIAL
+    value: 0
+  - name: ADDRESS_OUT_OF_RANGE
+    value: 1
+  - name: STOPPED
+    value: 2
+  - name: SOURCE_ERROR
+    value: 3
+  - name: DESTINATION_ERROR
+    value: 4
+  - name: COMPLETE
+    value: 5
+enum/TransferMode:
+  description: CW32L012 own manual CN V1.4 section 8.8.3, PDF page 146/printed page 120; see docs/l012-dma-owned-evidence.json.
+  bit_size: 1
+  variants:
+  - name: BULK
+    value: 0
+  - name: BLOCK
+    value: 1
+enum/Trigger:
+  description: CW32L012 own manual CN V1.4 section 8.8.4, PDF page 147/printed page 121; see docs/l012-dma-owned-evidence.json.
+  bit_size: 1
+  variants:
+  - name: SOFTWARE
+    value: 0
+  - name: HARDWARE
+    value: 1
+enum/Width:
+  description: CW32L012 own manual CN V1.4 section 8.8.3, PDF page 146/printed page 120; see docs/l012-dma-owned-evidence.json.
+  bit_size: 2
+  variants:
+  - name: BYTE
+    value: 0
+  - name: HALF_WORD
+    value: 1
+  - name: WORD
+    value: 2

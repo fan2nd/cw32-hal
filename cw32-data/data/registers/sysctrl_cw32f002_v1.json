@@ -1,0 +1,928 @@
+{
+  "block/SYSCTRL": {
+    "description": "System Ctrl.",
+    "items": [
+      {
+        "name": "CR0",
+        "description": "Control Reg0.",
+        "byte_offset": 0,
+        "fieldset": "CR0"
+      },
+      {
+        "name": "CR1",
+        "description": "Control Reg1.",
+        "byte_offset": 4,
+        "fieldset": "CR1"
+      },
+      {
+        "name": "CR2",
+        "description": "Control Reg2.",
+        "byte_offset": 8,
+        "fieldset": "CR2"
+      },
+      {
+        "name": "IER",
+        "description": "Interupt Enable Reg.",
+        "byte_offset": 12,
+        "fieldset": "IER"
+      },
+      {
+        "name": "ISR",
+        "description": "Interupt Status Reg.",
+        "byte_offset": 16,
+        "access": "Read",
+        "fieldset": "ISR"
+      },
+      {
+        "name": "ICR",
+        "description": "Interupt Clear Reg.",
+        "byte_offset": 20,
+        "fieldset": "ICR"
+      },
+      {
+        "name": "HSI",
+        "description": "HSI Control Reg.",
+        "byte_offset": 24,
+        "fieldset": "HSI"
+      },
+      {
+        "name": "HEX",
+        "description": "External input HEX control register.",
+        "byte_offset": 28,
+        "fieldset": "HEX"
+      },
+      {
+        "name": "LSI",
+        "description": "LSI Control Reg.",
+        "byte_offset": 32,
+        "fieldset": "LSI"
+      },
+      {
+        "name": "DEBUG",
+        "description": "Debug Control Reg.",
+        "byte_offset": 44,
+        "fieldset": "DEBUG"
+      },
+      {
+        "name": "AHBEN",
+        "description": "AHB Clock Control Reg.",
+        "byte_offset": 48,
+        "fieldset": "AHBEN"
+      },
+      {
+        "name": "APBEN2",
+        "description": "APB Clock Control Reg2.",
+        "byte_offset": 52,
+        "fieldset": "APBEN2"
+      },
+      {
+        "name": "APBEN1",
+        "description": "APB Clock Control Reg1.",
+        "byte_offset": 56,
+        "fieldset": "APBEN1"
+      },
+      {
+        "name": "AHBRST",
+        "description": "AHB Reset Control Reg.",
+        "byte_offset": 64,
+        "fieldset": "AHBRST"
+      },
+      {
+        "name": "APBRST2",
+        "description": "APB Reset Control Reg2.",
+        "byte_offset": 68,
+        "fieldset": "APBRST2"
+      },
+      {
+        "name": "APBRST1",
+        "description": "APB Reset Control Reg1.",
+        "byte_offset": 72,
+        "fieldset": "APBRST1"
+      },
+      {
+        "name": "RESETFLAG",
+        "description": "Reset Status Reg.",
+        "byte_offset": 76,
+        "fieldset": "RESETFLAG"
+      },
+      {
+        "name": "GTIMCAP",
+        "description": "GTIM CAP Control Reg.",
+        "byte_offset": 80,
+        "fieldset": "GTIMCAP"
+      },
+      {
+        "name": "GTIMETR",
+        "description": "GTIM ETR Control Reg.",
+        "byte_offset": 100,
+        "fieldset": "GTIMETR"
+      },
+      {
+        "name": "TIMITR",
+        "description": "BTIMx GTIMx ATIM ITR Control Reg.",
+        "byte_offset": 108,
+        "fieldset": "TIMITR"
+      },
+      {
+        "name": "MCO",
+        "description": "Master Clock Output Control Reg.",
+        "byte_offset": 112,
+        "fieldset": "MCO"
+      },
+      {
+        "name": "IRMOD",
+        "description": "IR MOD Control Reg.",
+        "byte_offset": 116,
+        "fieldset": "IRMOD"
+      }
+    ]
+  },
+  "fieldset/AHBEN": {
+    "description": "AHB Clock Control Reg.",
+    "fields": [
+      {
+        "name": "FLASH",
+        "description": "desc FLASH.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CRC",
+        "description": "desc CRC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOA",
+        "description": "desc GPIOA.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOB",
+        "description": "desc GPIOB.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOC",
+        "description": "desc GPIOC.",
+        "bit_offset": 6,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/AHBRST": {
+    "description": "AHB Reset Control Reg.",
+    "fields": [
+      {
+        "name": "FLASH",
+        "description": "desc FLASH.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CRC",
+        "description": "desc CRC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOA",
+        "description": "desc GPIOA.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOB",
+        "description": "desc GPIOB.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOC",
+        "description": "desc GPIOC.",
+        "bit_offset": 6,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBEN1": {
+    "description": "APB Clock Control Reg1.",
+    "fields": [
+      {
+        "name": "GTIM",
+        "description": "desc GTIM.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "UART2",
+        "description": "desc UART2.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C",
+        "description": "desc I2C.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBEN2": {
+    "description": "APB Clock Control Reg2.",
+    "fields": [
+      {
+        "name": "ADC",
+        "description": "desc ADC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "VC",
+        "description": "desc VC.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI",
+        "description": "desc SPI.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "UART1",
+        "description": "desc UART1.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM",
+        "description": "desc BTIM.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "AWT",
+        "description": "desc AWT.",
+        "bit_offset": 13,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBRST1": {
+    "description": "APB Reset Control Reg1.",
+    "fields": [
+      {
+        "name": "GTIM",
+        "description": "desc GTIM.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "UART2",
+        "description": "desc UART2.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C",
+        "description": "desc I2C.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBRST2": {
+    "description": "APB Reset Control Reg2.",
+    "fields": [
+      {
+        "name": "ADC",
+        "description": "desc ADC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "VC",
+        "description": "desc VC.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI",
+        "description": "desc SPI.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "UART1",
+        "description": "desc UART1.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM",
+        "description": "desc BTIM.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "AWT",
+        "description": "desc AWT.",
+        "bit_offset": 13,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/CR0": {
+    "description": "Control Reg0.",
+    "fields": [
+      {
+        "name": "SYSCLK",
+        "description": "System clock source; codes other than HSI, HEX and LSI are reserved.",
+        "bit_offset": 0,
+        "bit_size": 3,
+        "enum": "Sysclk"
+      },
+      {
+        "name": "PCLKPRS",
+        "description": "desc PCLKPRS.",
+        "bit_offset": 3,
+        "bit_size": 2
+      },
+      {
+        "name": "HCLKPRS",
+        "description": "desc HCLKPRS.",
+        "bit_offset": 5,
+        "bit_size": 3
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR1": {
+    "description": "Control Reg1.",
+    "fields": [
+      {
+        "name": "HSIEN",
+        "description": "desc HSIEN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HEXEN",
+        "description": "desc HEXEN.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIEN",
+        "description": "desc LSIEN.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR2": {
+    "description": "Control Reg2.",
+    "fields": [
+      {
+        "name": "RSTIO",
+        "description": "desc RSTIO.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "SWDIO",
+        "description": "desc SWDIO.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LOCKUP",
+        "description": "desc LOCKUP.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "WAKEUPCLK",
+        "description": "desc WAKEUPCLK.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/DEBUG": {
+    "description": "Debug Control Reg.",
+    "fields": [
+      {
+        "name": "GTIM",
+        "description": "desc GTIM.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM123",
+        "description": "desc BTIM123.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "AWT",
+        "description": "desc AWT.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 10,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/GTIMCAP": {
+    "description": "GTIM CAP Control Reg.",
+    "fields": [
+      {
+        "name": "CH1",
+        "description": "desc CH1.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "CH2",
+        "description": "desc CH2.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "CH3",
+        "description": "desc CH3.",
+        "bit_offset": 8,
+        "bit_size": 3
+      },
+      {
+        "name": "CH4",
+        "description": "desc CH4.",
+        "bit_offset": 12,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/GTIMETR": {
+    "description": "GTIM ETR Control Reg.",
+    "fields": [
+      {
+        "name": "GTIMETR",
+        "description": "desc GTIMETR.",
+        "bit_offset": 0,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/HEX": {
+    "description": "External input HEX control register.",
+    "fields": [
+      {
+        "name": "PINEN",
+        "description": "Enable the selected external clock input into HEX; configure before starting HEX.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "PINMUX",
+        "description": "External clock input pin; configure before starting HEX.",
+        "bit_offset": 7,
+        "bit_size": 1,
+        "enum": "HexInput"
+      },
+      {
+        "name": "STABLE",
+        "description": "Read-only startup stability latch; clears when disabled, not on a subsequent running failure.",
+        "bit_offset": 19,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/HSI": {
+    "description": "HSI Control Reg.",
+    "fields": [
+      {
+        "name": "TRIM",
+        "description": "desc TRIM.",
+        "bit_offset": 0,
+        "bit_size": 11
+      },
+      {
+        "name": "DIV",
+        "description": "desc DIV.",
+        "bit_offset": 11,
+        "bit_size": 4
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ICR": {
+    "description": "Interupt Clear Reg.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HEXRDY",
+        "description": "desc HEXRDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/IER": {
+    "description": "Interupt Enable Reg.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HEXRDY",
+        "description": "desc HEXRDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/IRMOD": {
+    "description": "IR MOD Control Reg.",
+    "fields": [
+      {
+        "name": "MOD",
+        "description": "desc MOD.",
+        "bit_offset": 0,
+        "bit_size": 4,
+        "enum": "IrMode"
+      },
+      {
+        "name": "IRSW",
+        "description": "desc IRSW.",
+        "bit_offset": 4,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ISR": {
+    "description": "Interupt Status Reg.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HEXRDY",
+        "description": "desc HEXRDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "HSISTABLE",
+        "description": "desc HSISTABLE.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "HEXSTABLE",
+        "description": "desc HEXSTABLE.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "LSISTABLE",
+        "description": "desc LSISTABLE.",
+        "bit_offset": 14,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/LSI": {
+    "description": "LSI Control Reg.",
+    "fields": [
+      {
+        "name": "TRIM",
+        "description": "desc TRIM.",
+        "bit_offset": 0,
+        "bit_size": 10
+      },
+      {
+        "name": "WAITCYCLE",
+        "description": "desc WAITCYCLE.",
+        "bit_offset": 10,
+        "bit_size": 2
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/MCO": {
+    "description": "Master Clock Output Control Reg.",
+    "fields": [
+      {
+        "name": "SOURCE",
+        "description": "desc SOURCE.",
+        "bit_offset": 0,
+        "bit_size": 4
+      },
+      {
+        "name": "DIV",
+        "description": "desc DIV.",
+        "bit_offset": 4,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/RESETFLAG": {
+    "description": "Reset Status Reg.",
+    "fields": [
+      {
+        "name": "POR",
+        "description": "desc POR.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "LVD",
+        "description": "desc LVD.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "RSTB",
+        "description": "desc RSTB.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LOCKUP",
+        "description": "desc LOCKUP.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "SYSRESETREQ",
+        "description": "desc SYSRESETREQ.",
+        "bit_offset": 9,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/TIMITR": {
+    "description": "BTIMx GTIMx ATIM ITR Control Reg.",
+    "fields": [
+      {
+        "name": "GTIMITR",
+        "description": "desc GTIMITR.",
+        "bit_offset": 3,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM1ITR",
+        "description": "desc BTIM1ITR.",
+        "bit_offset": 15,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM2ITR",
+        "description": "desc BTIM2ITR.",
+        "bit_offset": 18,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM3ITR",
+        "description": "desc BTIM3ITR.",
+        "bit_offset": 21,
+        "bit_size": 3
+      }
+    ]
+  },
+  "enum/HexInput": {
+    "description": "CW32F002 own RM Rev 1.4 PDF p57; selectable external input pads, neither is a crystal output.",
+    "bit_size": 1,
+    "variants": [
+      {
+        "name": "PB0",
+        "description": "External clock input from PB00.",
+        "value": 0
+      },
+      {
+        "name": "PB1",
+        "description": "External clock input from PB01.",
+        "value": 1
+      }
+    ]
+  },
+  "enum/IrMode": {
+    "description": "Documented infrared modulator inputs and boolean combination; source timers/UARTs are configured independently.",
+    "bit_size": 4,
+    "variants": [
+      {
+        "name": "GTIM_CH1_AND_BTIM2_TOGP",
+        "description": "GTIM_CH1 & BTIM2_TOGP",
+        "value": 0
+      },
+      {
+        "name": "GTIM_CH1_AND_IRSW",
+        "description": "GTIM_CH1 & IRSW",
+        "value": 1
+      },
+      {
+        "name": "GTIM_CH2_AND_BTIM3_TOGP",
+        "description": "GTIM_CH2 & BTIM3_TOGP",
+        "value": 2
+      },
+      {
+        "name": "GTIM_CH2_AND_IRSW",
+        "description": "GTIM_CH2 & IRSW",
+        "value": 3
+      },
+      {
+        "name": "GTIM_CH1_OR_BTIM2_TOGP",
+        "description": "GTIM_CH1 | BTIM2_TOGP",
+        "value": 4
+      },
+      {
+        "name": "GTIM_CH1_OR_IRSW",
+        "description": "GTIM_CH1 | IRSW",
+        "value": 5
+      },
+      {
+        "name": "GTIM_CH2_OR_BTIM3_TOGP",
+        "description": "GTIM_CH2 | BTIM3_TOGP",
+        "value": 6
+      },
+      {
+        "name": "GTIM_CH2_OR_IRSW",
+        "description": "GTIM_CH2 | IRSW",
+        "value": 7
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM_CH1",
+        "description": "UART1_TXD & GTIM_CH1",
+        "value": 8
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM_CH1",
+        "description": "UART1_TXD | GTIM_CH1",
+        "value": 9
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM_CH2",
+        "description": "UART1_TXD & GTIM_CH2",
+        "value": 10
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM_CH2",
+        "description": "UART1_TXD | GTIM_CH2",
+        "value": 11
+      },
+      {
+        "name": "UART2_TXD_AND_BTIM2_TOGP",
+        "description": "UART2_TXD & BTIM2_TOGP",
+        "value": 12
+      },
+      {
+        "name": "UART2_TXD_OR_BTIM2_TOGP",
+        "description": "UART2_TXD | BTIM2_TOGP",
+        "value": 13
+      },
+      {
+        "name": "UART2_TXD_AND_BTIM3_TOGP",
+        "description": "UART2_TXD & BTIM3_TOGP",
+        "value": 14
+      },
+      {
+        "name": "UART2_TXD_OR_BTIM3_TOGP",
+        "description": "UART2_TXD | BTIM3_TOGP",
+        "value": 15
+      }
+    ]
+  },
+  "enum/Sysclk": {
+    "description": "CW32F002 own RM Rev 1.4 PDF p54; direct system sources, other codes reserved. See cw32-data/hex-qualified.yaml.",
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "HSI",
+        "description": "Divided internal high-speed oscillator.",
+        "value": 0
+      },
+      {
+        "name": "HEX",
+        "description": "External clock input selected by HEX.PINMUX.",
+        "value": 1
+      },
+      {
+        "name": "LSI",
+        "description": "Internal low-speed oscillator.",
+        "value": 3
+      }
+    ]
+  }
+}

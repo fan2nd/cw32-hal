@@ -1,0 +1,82 @@
+{
+  "profile": "CW32F020",
+  "source_device": "CW32F020",
+  "shared_map_evidence": null,
+  "source_sha256": "e2e0bd198e6c39aa0807ad10080a26b9bccc4a4718eea5dd0d54a13630101f98",
+  "source_url": "https://www.whxy.com/uploads/files/20240115/CW32F020_StandardPeripheralLib_V1.2.zip",
+  "peripherals": 33,
+  "register_blocks": 21,
+  "registers": 233,
+  "fieldsets": 233,
+  "fields": 1176,
+  "interrupts": 30,
+  "die_pins": 0,
+  "pinouts": {
+    "exact_parts": 3,
+    "physical_pin_entries": 101,
+    "alias_policy": "common-package-intersection: GPIO labels common to every reviewed package for the family or matching family_part; no physical package is assigned to an alias"
+  },
+  "dma": {
+    "physical_channels": 2,
+    "hardware_requests": 41,
+    "excluded_sdk_requests": 0,
+    "unresolved_semantics": 0
+  },
+  "clocks": {
+    "peripheral_records": 33,
+    "supported_records": 22,
+    "control_records": 30,
+    "partial_records": 11,
+    "shared_enable_groups": 3,
+    "shared_reset_groups": 3,
+    "limitations": [
+      "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+      "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+      "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+      "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+      "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+      "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+      "Clock metadata: 22 complete identities, 30 independently verified controls; 11 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+    ]
+  },
+  "applied_errata": [
+    "nvicPrioBits 3 -> 2: Official CW32F020 SDK Libraries/inc header __NVIC_PRIO_BITS=2; SHA256 6ec6fad0aaa2e6811c372bec0956d83425352640db9c6b415ed11cb0ed41502f",
+    "Corrected field CRC.RESULT32.RESULT32 at bit 0: width 32 -> 16: CW32F020 User Manual CN V1.4 section10.6.3 p161 reserves CRC_RESULT[31:16] and exposes only RESULT16[15:0]; sections10.2/10.6.1 pp156/161 and current CW32F020 DataSheet CN V1.3 section4.4 p9 document only eight CRC16 modes. Preserve the 32-bit bus-access alias but correct its valid data field. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf SHA256279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed; https://www.whxy.com/uploads/files/20251230/CW32F020_DataSheet_CN_V1.3.pdf SHA2561e330d800f10114c654b97cbd45b64d56a99c3cb39138d4ef20de3c12968dab0",
+    "GPIO.IDR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.18 page154: GPIOx_IDR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GPIO.ISR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.14 page153: GPIOx_ISR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GPIOC.IDR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.18 page154: GPIOx_IDR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GPIOC.ISR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.14 page153: GPIOx_ISR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GPIOF.IDR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.18 page154: GPIOx_IDR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GPIOF.ISR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section9.6.14 page153: GPIOx_ISR is read-only for x=A/B/C/F. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "GTIM.ISR ReadWrite -> Read: CW32F020 User Manual CN V1.4 section 14.8.12, printed page 246/PDF page 247: GTIM ISR at offset 0x318 marks every defined status field RO; flags clear through the separate ICR. Access-only correction; widths, offsets and fields unchanged. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "RTC.TAMPDATE ReadWrite -> Read: Own CW32F020 User Manual CN V1.4 section 12.5.10, printed page 188/PDF page 189: every defined RTC_TAMPDATE field is RO. Access-only correction; offsets and fields unchanged. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "RTC.TAMPTIME ReadWrite -> Read: Own CW32F020 User Manual CN V1.4 section 12.5.11, printed page 189/PDF page 190: every defined RTC_TAMPTIME field is RO. Access-only correction; offsets and fields unchanged. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field COMPEN.FREQ at bits 16+4: Own CW32F020 User Manual CN V1.4 section 12.5.5, printed page 186/PDF page 187: RTC_COMPEN bits31:16 are reserved. Remove obsolete SVD FREQ bits19:16 only; lower sixteen bits and SOURCE HSE dividers remain valid. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK10 at bits 10+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK11 at bits 11+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK12 at bits 12+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK13 at bits 13+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK14 at bits 14+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK15 at bits 15+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK8 at bits 8+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "Removed reserved field PAGELOCK.LOCK9 at bits 9+1: Own CW32F020 User Manual CN V1.4 section 7.9.3, printed page 119/PDF page 120: FLASH_PAGELOCK bits15:8 are reserved; only LOCK0..7 are writable, KEY remains31:16. Vendor CMSIS/SVD exposes extra lock fields. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed. https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf",
+    "IRQ FAULT:31 owners [\"CRC\"] -> [\"SYSCTRL\"]: CW32F020 User Manual CN V1.4 section4.7.9 SYSCTRL_IER printed p75 and section5.4 IRQ table/footnote4 p94 assign FAULT31 to HSE/LSE run failures, not CRC; CRC chapter10 has no interrupt controls. PDF SHA256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed"
+  ],
+  "limitations": [
+    "SVD-imported registers are not silicon-tested or a guarantee the vendor SVD is error-free.",
+    "Generic family features have no memory-size assertion; exact part features source memory separately.",
+    "Exact-part core pins and physical package pins come only from reviewed package tables; package-less aliases use an explicitly documented common-package GPIO intersection when configured. Input-only/output capability remains in pinout sidecars.",
+    "Only configured reviewed clock and DMA projections are imported. Verified reset polarity, write keys and shared controls are transported independently in rcc_control; unresolved kernel identities are withheld.",
+    "Digital alternate-function routes are imported only for explicitly reviewed profiles and filtered by package pins. Analog/special routes and flash geometry remain incomplete.",
+    "Read-clear, write-one-clear and reset-value semantics are not represented by chiptool IR.",
+    "SVD correctly exposes two DMA channels. Vendor header erroneously defines channels3-5. CW32F020 User Manual CN V1.4 section8.2 p122 and section8.7 p134 confirm only two.",
+    "F020 CRC has eight CRC16 modes only (0-7), unlike copied SDK/SVD CRC32 declarations. The CRC32-named result register is retained solely as a 32-bit bus view with a corrected 16-bit valid field; see docs/f020-serial-compatibility.md. CR.MODE retains its documented 4-bit layout; values8-15 remain unsupported. DR8/DR16/DR32 input widths are all documented.",
+    "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+    "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+    "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+    "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+    "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+    "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+    "Clock metadata: 22 complete identities, 30 independently verified controls; 11 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+  ]
+}

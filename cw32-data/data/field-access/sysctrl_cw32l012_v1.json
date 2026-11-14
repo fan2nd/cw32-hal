@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l012_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L012: CW32L012_UserManual_CN_V1.4.pdf CN V1.4 section 4.7.4, printed page 48/PDF page 74; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd, SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L012: CW32L012_UserManual_CN_V1.4.pdf CN V1.4 section 4.7.5, printed page 49/PDF page 75; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd, SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L012: CW32L012_UserManual_CN_V1.4.pdf CN V1.4 section 4.7.6, printed page 50/PDF page 76; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd, SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 18,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L012: CW32L012_UserManual_CN_V1.4.pdf CN V1.4 section 4.7.7, printed page 51/PDF page 77; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l012/IDEsupport/MDK/WHXY.CW32L012_DFP.1.0.2/SVD/CW32L012.svd, SHA-256 fda08355c30ed60204cd53b2c1ca33e6ee2233530e6cb2448522158dfc302942, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      }
+    ]
+  }
+}

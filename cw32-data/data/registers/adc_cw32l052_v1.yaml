@@ -1,0 +1,490 @@
+block/ADC:
+  description: desc ADC.
+  items:
+  - name: CR0
+    description: desc CR0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: desc CR1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: START
+    description: desc START.
+    byte_offset: 8
+    fieldset: START
+  - name: CR2
+    description: desc CR2.
+    byte_offset: 16
+    fieldset: CR2
+  - name: VTH
+    description: desc VTH.
+    byte_offset: 20
+    fieldset: VTH
+  - name: VTL
+    description: desc VTL.
+    byte_offset: 24
+    fieldset: VTL
+  - name: TRIGGER
+    description: desc TRIGGER.
+    byte_offset: 28
+    fieldset: TRIGGER
+  - name: RESULT
+    description: Ordered scan conversion results, indexed by sequence slot.
+    array:
+      len: 8
+      stride: 4
+    byte_offset: 32
+    access: Read
+    fieldset: RESULT
+  - name: RESULTACC
+    description: desc RESULTACC.
+    byte_offset: 64
+    access: Read
+    fieldset: RESULTACC
+  - name: IER
+    description: desc IER.
+    byte_offset: 68
+    fieldset: IER
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 72
+    fieldset: ICR
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 76
+    access: Read
+    fieldset: ISR
+  - name: SQR0
+    description: desc SQR0.
+    byte_offset: 80
+    fieldset: SQR0
+  - name: SQR1
+    description: desc SQR1.
+    byte_offset: 84
+    fieldset: SQR1
+  - name: ALTR
+    description: desc ALTR.
+    byte_offset: 88
+    fieldset: ALTR
+  - name: COMMONRESULT
+    description: Common conversion result.
+    byte_offset: 92
+    access: Read
+    fieldset: COMMONRESULT
+fieldset/ALTR:
+  description: desc ALTR.
+  fields:
+  - name: CH0
+    description: desc CH0.
+    bit_offset: 0
+    bit_size: 1
+  - name: CH1
+    description: desc CH1.
+    bit_offset: 1
+    bit_size: 1
+  - name: CH2
+    description: desc CH2.
+    bit_offset: 2
+    bit_size: 1
+  - name: CH3
+    description: desc CH3.
+    bit_offset: 3
+    bit_size: 1
+  - name: CH4
+    description: desc CH4.
+    bit_offset: 4
+    bit_size: 1
+  - name: CH5
+    description: desc CH5.
+    bit_offset: 5
+    bit_size: 1
+  - name: CH6
+    description: desc CH6.
+    bit_offset: 6
+    bit_size: 1
+  - name: CH7
+    description: desc CH7.
+    bit_offset: 7
+    bit_size: 1
+  - name: CH8
+    description: desc CH8.
+    bit_offset: 8
+    bit_size: 1
+  - name: CH9
+    description: desc CH9.
+    bit_offset: 9
+    bit_size: 1
+  - name: CH10
+    description: desc CH10.
+    bit_offset: 10
+    bit_size: 1
+  - name: CH11
+    description: desc CH11.
+    bit_offset: 11
+    bit_size: 1
+  - name: CH12
+    description: desc CH12.
+    bit_offset: 12
+    bit_size: 1
+  - name: CH13
+    description: desc CH13.
+    bit_offset: 13
+    bit_size: 1
+  - name: CH14
+    description: desc CH14.
+    bit_offset: 14
+    bit_size: 1
+  - name: CH15
+    description: desc CH15.
+    bit_offset: 15
+    bit_size: 1
+  - name: REPEAT
+    description: desc REPEAT.
+    bit_offset: 16
+    bit_size: 1
+fieldset/COMMONRESULT:
+  description: desc RESULT.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CR0:
+  description: desc CR0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MODE
+    description: Conversion mode.
+    bit_offset: 1
+    bit_size: 3
+    enum: Mode
+  - name: TSEN
+    description: desc TSEN.
+    bit_offset: 5
+    bit_size: 1
+  - name: REF
+    description: desc REF.
+    bit_offset: 6
+    bit_size: 2
+  - name: CLK
+    description: desc CLK.
+    bit_offset: 8
+    bit_size: 3
+  - name: SAM
+    description: desc SAM.
+    bit_offset: 11
+    bit_size: 2
+  - name: BUF
+    description: desc BUF.
+    bit_offset: 13
+    bit_size: 1
+  - name: BIAS
+    description: desc BIAS.
+    bit_offset: 14
+    bit_size: 2
+fieldset/CR1:
+  description: desc CR1.
+  fields:
+  - name: CHMUX
+    description: desc CHMUX.
+    bit_offset: 0
+    bit_size: 4
+  - name: DISCARD
+    description: desc DISCARD.
+    bit_offset: 5
+    bit_size: 1
+  - name: ALIGN
+    description: desc ALIGN.
+    bit_offset: 6
+    bit_size: 1
+  - name: WDTCH
+    description: desc WDTCH.
+    bit_offset: 8
+    bit_size: 4
+  - name: WDTALL
+    description: desc WDTALL.
+    bit_offset: 13
+    bit_size: 1
+  - name: DMASOFEN
+    description: desc DMASOFEN.
+    bit_offset: 14
+    bit_size: 1
+  - name: DMASOCEN
+    description: desc DMASOCEN.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CR2:
+  description: desc CR2.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 8
+  - name: ACCEN
+    description: desc ACCEN.
+    bit_offset: 8
+    bit_size: 1
+  - name: ACCRST
+    description: desc ACCRST.
+    bit_offset: 9
+    bit_size: 1
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+  - name: READY
+    description: desc READY.
+    bit_offset: 7
+    bit_size: 1
+fieldset/RESULT:
+  description: Ordered scan conversion result, right-aligned when CR1.ALIGN is zero.
+  fields:
+  - name: RESULT
+    description: Twelve-bit conversion result.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULTACC:
+  description: desc RESULTACC.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 24
+fieldset/SQR0:
+  description: desc SQR0.
+  fields:
+  - name: SQR
+    description: Hardware input mux for this ordered scan slot.
+    bit_offset: 0
+    bit_size: 4
+    array:
+      len: 4
+      stride: 4
+  - name: ENS
+    description: desc ENS.
+    bit_offset: 16
+    bit_size: 3
+fieldset/SQR1:
+  description: desc SQR1.
+  fields:
+  - name: SQR
+    description: Hardware input mux for this ordered scan slot.
+    bit_offset: 0
+    bit_size: 4
+    array:
+      len: 4
+      stride: 4
+fieldset/START:
+  description: desc START.
+  fields:
+  - name: START
+    description: desc START.
+    bit_offset: 0
+    bit_size: 1
+  - name: AUTOSTOP
+    description: desc AUTOSTOP.
+    bit_offset: 1
+    bit_size: 1
+fieldset/TRIGGER:
+  description: desc TRIGGER.
+  fields:
+  - name: ATIM
+    description: desc ATIM.
+    bit_offset: 0
+    bit_size: 1
+  - name: GTIM1
+    description: desc GTIM1.
+    bit_offset: 1
+    bit_size: 1
+  - name: GTIM2
+    description: desc GTIM2.
+    bit_offset: 2
+    bit_size: 1
+  - name: GTIM3
+    description: desc GTIM3.
+    bit_offset: 3
+    bit_size: 1
+  - name: BTIM1
+    description: desc BTIM1.
+    bit_offset: 5
+    bit_size: 1
+  - name: BTIM2
+    description: desc BTIM2.
+    bit_offset: 6
+    bit_size: 1
+  - name: BTIM3
+    description: desc BTIM3.
+    bit_offset: 7
+    bit_size: 1
+  - name: UART1
+    description: desc UART1.
+    bit_offset: 8
+    bit_size: 1
+  - name: UART2
+    description: desc UART2.
+    bit_offset: 9
+    bit_size: 1
+  - name: UART3
+    description: desc UART3.
+    bit_offset: 10
+    bit_size: 1
+  - name: SPI1
+    description: desc SPI1.
+    bit_offset: 11
+    bit_size: 1
+  - name: SPI2
+    description: desc SPI2.
+    bit_offset: 12
+    bit_size: 1
+  - name: I2C1
+    description: desc I2C1.
+    bit_offset: 13
+    bit_size: 1
+  - name: I2C2
+    description: desc I2C2.
+    bit_offset: 14
+    bit_size: 1
+  - name: DMA
+    description: desc DMA.
+    bit_offset: 15
+    bit_size: 1
+  - name: GPIOA
+    description: desc GPIOA.
+    bit_offset: 19
+    bit_size: 1
+  - name: GPIOB
+    description: desc GPIOB.
+    bit_offset: 20
+    bit_size: 1
+  - name: GPIOC
+    description: desc GPIOC.
+    bit_offset: 21
+    bit_size: 1
+  - name: GPIOD
+    description: desc GPIOD.
+    bit_offset: 22
+    bit_size: 1
+  - name: GPIOF
+    description: desc GPIOF.
+    bit_offset: 24
+    bit_size: 1
+fieldset/VTH:
+  description: desc VTH.
+  fields:
+  - name: VTH
+    description: desc VTH.
+    bit_offset: 0
+    bit_size: 12
+fieldset/VTL:
+  description: desc VTL.
+  fields:
+  - name: VTL
+    description: desc VTL.
+    bit_offset: 0
+    bit_size: 12
+enum/Mode:
+  description: Source-qualified software-triggered modes; other conversion modes are outside this subset.
+  bit_size: 3
+  variants:
+  - name: SINGLE
+    description: One conversion of CR1.CHMUX, stored in RESULT0.
+    value: 0
+  - name: CONTINUOUS
+    description: Repeated CHMUX conversions into RESULT0 until START is cleared; own-family evidence in docs/adc-classic-continuous.md.
+    value: 2
+  - name: SCAN
+    description: One pass through SQR slots, with EOS and automatic START clear after the final result.
+    value: 4

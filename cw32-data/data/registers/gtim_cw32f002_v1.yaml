@@ -1,0 +1,370 @@
+block/GTIM:
+  description: General Timer.
+  items:
+  - name: ARR
+    description: Auto Reload Register.
+    byte_offset: 768
+    fieldset: ARR
+  - name: CNT
+    description: Counter Register.
+    byte_offset: 772
+    fieldset: CNT
+  - name: CMMR
+    description: Capture compare control Register.
+    byte_offset: 776
+    fieldset: CMMR
+  - name: ETR
+    description: ETR Control register.
+    byte_offset: 780
+    fieldset: ETR
+  - name: CR0
+    description: Control register0.
+    byte_offset: 784
+    fieldset: CR0
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 788
+    fieldset: IER
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 792
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 796
+    fieldset: ICR
+  - name: CCR1
+    description: capture compare register.
+    byte_offset: 800
+    fieldset: CCR1
+  - name: CCR2
+    description: capture compare register.
+    byte_offset: 804
+    fieldset: CCR2
+  - name: CCR3
+    description: capture compare register.
+    byte_offset: 808
+    fieldset: CCR3
+  - name: CCR4
+    description: capture compare register.
+    byte_offset: 812
+    fieldset: CCR4
+  - name: CR1
+    description: Control register1.
+    byte_offset: 816
+    fieldset: CR1
+fieldset/ARR:
+  description: Auto Reload Register.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR1:
+  description: capture compare register.
+  fields:
+  - name: CCR
+    description: desc CCR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR2:
+  description: capture compare register.
+  fields:
+  - name: CCR
+    description: desc CCR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR3:
+  description: capture compare register.
+  fields:
+  - name: CCR
+    description: desc CCR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR4:
+  description: capture compare register.
+  fields:
+  - name: CCR
+    description: desc CCR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CMMR:
+  description: Capture compare control Register.
+  fields:
+  - name: CC1M
+    description: desc CC1M.
+    bit_offset: 0
+    bit_size: 4
+    enum: CcMode
+  - name: CC2M
+    description: desc CC2M.
+    bit_offset: 4
+    bit_size: 4
+    enum: CcMode
+  - name: CC3M
+    description: desc CC3M.
+    bit_offset: 8
+    bit_size: 4
+    enum: CcMode
+  - name: CC4M
+    description: desc CC4M.
+    bit_offset: 12
+    bit_size: 4
+    enum: CcMode
+fieldset/CNT:
+  description: Counter Register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 1
+    bit_size: 2
+    enum: Mode
+  - name: TRS
+    description: desc TRS.
+    bit_offset: 3
+    bit_size: 1
+  - name: POL
+    description: desc POL.
+    bit_offset: 4
+    bit_size: 1
+  - name: ONESHOT
+    description: desc ONESHOT.
+    bit_offset: 5
+    bit_size: 1
+  - name: TOGEN
+    description: desc TOGEN.
+    bit_offset: 6
+    bit_size: 1
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 7
+    bit_size: 4
+  - name: PRSSTATUS
+    description: desc PRSSTATUS.
+    bit_offset: 11
+    bit_size: 4
+  - name: ENCMODE
+    description: desc ENCMODE.
+    bit_offset: 15
+    bit_size: 2
+  - name: ENCRESET
+    description: desc ENCRESET.
+    bit_offset: 17
+    bit_size: 2
+  - name: ENCRELOAD
+    description: desc ENCRELOAD.
+    bit_offset: 19
+    bit_size: 2
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: CH1FLT
+    description: desc CH1FLT.
+    bit_offset: 0
+    bit_size: 3
+  - name: CH1POL
+    description: desc CH1POL.
+    bit_offset: 3
+    bit_size: 1
+  - name: CH2FLT
+    description: desc CH2FLT.
+    bit_offset: 4
+    bit_size: 3
+  - name: CH2POL
+    description: desc CH2POL.
+    bit_offset: 7
+    bit_size: 1
+  - name: CH3FLT
+    description: desc CH3FLT.
+    bit_offset: 8
+    bit_size: 3
+  - name: CH3POL
+    description: desc CH3POL.
+    bit_offset: 11
+    bit_size: 1
+  - name: CH4FLT
+    description: desc CH4FLT.
+    bit_offset: 12
+    bit_size: 3
+  - name: CH4POL
+    description: desc CH4POL.
+    bit_offset: 15
+    bit_size: 1
+fieldset/ETR:
+  description: ETR Control register.
+  fields:
+  - name: ETRFLT
+    description: desc ETRFLT.
+    bit_offset: 4
+    bit_size: 3
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC1
+    description: desc CC1.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC2
+    description: desc CC2.
+    bit_offset: 4
+    bit_size: 1
+  - name: CC3
+    description: desc CC3.
+    bit_offset: 5
+    bit_size: 1
+  - name: CC4
+    description: desc CC4.
+    bit_offset: 6
+    bit_size: 1
+  - name: DIRCHANGE
+    description: desc DIRCHANGE.
+    bit_offset: 9
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC1
+    description: desc CC1.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC2
+    description: desc CC2.
+    bit_offset: 4
+    bit_size: 1
+  - name: CC3
+    description: desc CC3.
+    bit_offset: 5
+    bit_size: 1
+  - name: CC4
+    description: desc CC4.
+    bit_offset: 6
+    bit_size: 1
+  - name: DIRCHANGE
+    description: desc DIRCHANGE.
+    bit_offset: 9
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC1
+    description: desc CC1.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC2
+    description: desc CC2.
+    bit_offset: 4
+    bit_size: 1
+  - name: CC3
+    description: desc CC3.
+    bit_offset: 5
+    bit_size: 1
+  - name: CC4
+    description: desc CC4.
+    bit_offset: 6
+    bit_size: 1
+  - name: DIRCHANGE
+    description: desc DIRCHANGE.
+    bit_offset: 9
+    bit_size: 1
+  - name: DIR
+    description: desc DIR.
+    bit_offset: 10
+    bit_size: 1
+enum/CcMode:
+  description: Classic capture/compare modes; own-manual evidence in docs/classic-gtim-modes-evidence.json.
+  bit_size: 4
+  variants:
+  - name: DISABLED
+    description: No capture or compare function.
+    value: 0
+  - name: CAPTURE_RISING
+    description: Capture on rising edges.
+    value: 1
+  - name: CAPTURE_FALLING
+    description: Capture on falling edges.
+    value: 2
+  - name: CAPTURE_BOTH
+    description: Capture on both rising and falling edges.
+    value: 3
+  - name: FORCE_LOW
+    description: Force the output low.
+    value: 8
+  - name: FORCE_HIGH
+    description: Force the output high.
+    value: 9
+  - name: COMPARE_LOW
+    description: Drive the output low on a compare match.
+    value: 10
+  - name: COMPARE_HIGH
+    description: Drive the output high on a compare match.
+    value: 11
+  - name: PWM_HIGH_AT_OR_ABOVE
+    description: PWM output high when CNT is greater than or equal to CCR.
+    value: 14
+  - name: PWM_HIGH_BELOW
+    description: PWM output high when CNT is less than CCR.
+    value: 15
+enum/Mode:
+  description: Basic timer mode when ENCMODE is zero; own-manual evidence in docs/classic-gtim-modes-evidence.json.
+  bit_size: 2
+  variants:
+  - name: TIMER
+    description: Count PCLK ticks.
+    value: 0
+  - name: COUNTER
+    description: Count TRS input events.
+    value: 1
+  - name: TRIGGER_START
+    description: Count PCLK ticks; a valid TRS event can start the timer.
+    value: 2
+  - name: GATED
+    description: Count PCLK ticks while enabled and ETR is at the active level selected by POL.
+    value: 3

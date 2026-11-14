@@ -1,0 +1,37 @@
+block/CRC:
+  description: desc CRC.
+  items:
+  - name: CR
+    description: Control register.
+    byte_offset: 0
+    fieldset: CR
+  - name: DR
+    description: Data register.
+    byte_offset: 8
+    fieldset: DR
+  - name: RESULT
+    description: Result register.
+    byte_offset: 12
+    access: Read
+    fieldset: RESULT
+fieldset/CR:
+  description: Control register.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 4
+fieldset/DR:
+  description: Data register.
+  fields:
+  - name: DR
+    description: desc DR.
+    bit_offset: 0
+    bit_size: 8
+fieldset/RESULT:
+  description: Result register.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16

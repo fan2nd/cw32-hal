@@ -1,0 +1,351 @@
+block/ADC:
+  description: desc ADC.
+  items:
+  - name: CR
+    description: desc CR.
+    byte_offset: 0
+    fieldset: CR
+  - name: START
+    description: desc START.
+    byte_offset: 8
+    fieldset: START
+  - name: AWDTR
+    description: desc AWDTR.
+    byte_offset: 16
+    fieldset: AWDTR
+  - name: TRIGGER
+    description: desc TRIGGER.
+    byte_offset: 24
+    fieldset: TRIGGER
+  - name: AWDCR
+    description: desc AWDCR.
+    byte_offset: 32
+    fieldset: AWDCR
+  - name: SAMPLE
+    description: desc SAMPLE.
+    byte_offset: 40
+    fieldset: SAMPLE
+  - name: SQRCFR
+    description: desc SQRCFR.
+    byte_offset: 44
+    fieldset: SQRCFR
+  - name: RESULT
+    description: Right-aligned conversion result for sequence slot n.
+    array:
+      len: 8
+      stride: 4
+    byte_offset: 64
+    access: Read
+    fieldset: RESULT
+  - name: IER
+    description: desc IER.
+    byte_offset: 116
+    fieldset: IER
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 120
+    fieldset: ICR
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 124
+    access: Read
+    fieldset: ISR
+fieldset/AWDCR:
+  description: desc AWDCR.
+  fields:
+  - name: IN0
+    description: desc IN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: IN1
+    description: desc IN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: IN2
+    description: desc IN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: IN3
+    description: desc IN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: IN4
+    description: desc IN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: IN5
+    description: desc IN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: IN6
+    description: desc IN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: IN7
+    description: desc IN7.
+    bit_offset: 7
+    bit_size: 1
+  - name: IN8
+    description: desc IN8.
+    bit_offset: 8
+    bit_size: 1
+  - name: IN9
+    description: desc IN9.
+    bit_offset: 9
+    bit_size: 1
+  - name: IN10
+    description: desc IN10.
+    bit_offset: 10
+    bit_size: 1
+  - name: IN11
+    description: desc IN11.
+    bit_offset: 11
+    bit_size: 1
+  - name: IN12
+    description: desc IN12.
+    bit_offset: 12
+    bit_size: 1
+  - name: IN13
+    description: desc IN13.
+    bit_offset: 13
+    bit_size: 1
+  - name: IN14
+    description: desc IN14.
+    bit_offset: 14
+    bit_size: 1
+  - name: IN15
+    description: desc IN15.
+    bit_offset: 15
+    bit_size: 1
+fieldset/AWDTR:
+  description: desc AWDTR.
+  fields:
+  - name: VTL
+    description: desc VTL.
+    bit_offset: 0
+    bit_size: 12
+  - name: VTH
+    description: desc VTH.
+    bit_offset: 16
+    bit_size: 12
+fieldset/CR:
+  description: desc CR.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: BGREN
+    description: desc BGREN.
+    bit_offset: 1
+    bit_size: 1
+  - name: TSEN
+    description: desc TSEN.
+    bit_offset: 2
+    bit_size: 1
+  - name: CONT
+    description: desc CONT.
+    bit_offset: 3
+    bit_size: 1
+  - name: CLK
+    description: desc CLK.
+    bit_offset: 4
+    bit_size: 2
+  - name: ENS
+    description: desc ENS.
+    bit_offset: 6
+    bit_size: 3
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWDL
+    description: desc AWDL.
+    bit_offset: 2
+    bit_size: 1
+  - name: AWDH
+    description: desc AWDH.
+    bit_offset: 3
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWDL
+    description: desc AWDL.
+    bit_offset: 2
+    bit_size: 1
+  - name: AWDH
+    description: desc AWDH.
+    bit_offset: 3
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWDL
+    description: desc AWDL.
+    bit_offset: 2
+    bit_size: 1
+  - name: AWDH
+    description: desc AWDH.
+    bit_offset: 3
+    bit_size: 1
+fieldset/RESULT:
+  description: Right-aligned 12-bit sample in a 16-bit result field.
+  fields:
+  - name: RESULT
+    description: Conversion result for the corresponding sequence slot.
+    bit_offset: 0
+    bit_size: 16
+fieldset/SAMPLE:
+  description: desc SAMPLE.
+  fields:
+  - name: SQRCH
+    description: Per-slot acquisition time encoding.
+    bit_offset: 0
+    bit_size: 4
+    array:
+      len: 8
+      stride: 4
+fieldset/SQRCFR:
+  description: desc SQRCFR.
+  fields:
+  - name: SQRCH
+    description: Per-slot input mux; slots execute in ascending slot order.
+    bit_offset: 0
+    bit_size: 4
+    array:
+      len: 8
+      stride: 4
+fieldset/START:
+  description: desc START.
+  fields:
+  - name: START
+    description: desc START.
+    bit_offset: 0
+    bit_size: 1
+fieldset/TRIGGER:
+  description: desc TRIGGER.
+  fields:
+  - name: ATIMTRGO
+    description: desc ATIMTRGO.
+    bit_offset: 0
+    bit_size: 1
+  - name: ATIMTRGO2
+    description: desc ATIMTRGO2.
+    bit_offset: 1
+    bit_size: 1
+  - name: ATIMCC1
+    description: desc ATIMCC1.
+    bit_offset: 2
+    bit_size: 1
+  - name: ATIMCC2
+    description: desc ATIMCC2.
+    bit_offset: 3
+    bit_size: 1
+  - name: ATIMCC3
+    description: desc ATIMCC3.
+    bit_offset: 4
+    bit_size: 1
+  - name: ATIMCC4
+    description: desc ATIMCC4.
+    bit_offset: 5
+    bit_size: 1
+  - name: ATIMCC5
+    description: desc ATIMCC5.
+    bit_offset: 6
+    bit_size: 1
+  - name: ATIMCC6
+    description: desc ATIMCC6.
+    bit_offset: 7
+    bit_size: 1
+  - name: GTIM1TRGO
+    description: desc GTIM1TRGO.
+    bit_offset: 8
+    bit_size: 1
+  - name: GTIM1CC1
+    description: desc GTIM1CC1.
+    bit_offset: 9
+    bit_size: 1
+  - name: GTIM1CC2
+    description: desc GTIM1CC2.
+    bit_offset: 10
+    bit_size: 1
+  - name: GTIM1CC3
+    description: desc GTIM1CC3.
+    bit_offset: 11
+    bit_size: 1
+  - name: GTIM1CC4
+    description: desc GTIM1CC4.
+    bit_offset: 12
+    bit_size: 1
+  - name: BTIM1TRGO
+    description: desc BTIM1TRGO.
+    bit_offset: 13
+    bit_size: 1
+  - name: BTIM2TRGO
+    description: desc BTIM2TRGO.
+    bit_offset: 14
+    bit_size: 1
+  - name: BTIM3TRGO
+    description: desc BTIM3TRGO.
+    bit_offset: 15
+    bit_size: 1
+  - name: SPI1
+    description: desc SPI1.
+    bit_offset: 16
+    bit_size: 1
+  - name: UART1
+    description: desc UART1.
+    bit_offset: 17
+    bit_size: 1
+  - name: UART2
+    description: desc UART2.
+    bit_offset: 18
+    bit_size: 1
+  - name: UART3
+    description: desc UART3.
+    bit_offset: 19
+    bit_size: 1
+  - name: GTIM2TRGO
+    description: desc GTIM2TRGO.
+    bit_offset: 20
+    bit_size: 1
+  - name: GTIM2CC1
+    description: desc GTIM2CC1.
+    bit_offset: 21
+    bit_size: 1
+  - name: GTIM2CC2
+    description: desc GTIM2CC2.
+    bit_offset: 22
+    bit_size: 1
+  - name: GTIM2CC3
+    description: desc GTIM2CC3.
+    bit_offset: 23
+    bit_size: 1
+  - name: GTIM2CC4
+    description: desc GTIM2CC4.
+    bit_offset: 24
+    bit_size: 1

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l011_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L011_UserManual_CN_V1.1.pdf SHA-256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f; section 4.7.6 PDF71/printed70 marks SYSCTRL_HSE bit19 STABLE RO; cw32-data/hse-qualified.yaml."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 18,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L011: CW32L011_UserManual_CN_V1.1.pdf CN V1.1 section 4.7.7, printed page 71/PDF page 72; https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf; SHA-256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l011/IDEsupport/MDK/WHXY.CW32L011_DFP.1.0.1/SVD/CW32L011.svd, SHA-256 b814843fcea7ed61b11f49ba3a8c00289b98c4dfb36b051ec87671446013ca47, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/14: source-correct captured RO and independently reviewed own-manual RO for CW32L011; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/15: source-correct captured RO and independently reviewed own-manual RO for CW32L011; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

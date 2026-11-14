@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32x030_UserManual_CN_V2.5.pdf SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2; SYSCTRL_HSE bit19 STABLE is RO; cw32-data/hse-qualified.yaml."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32A030: CW32x030_UserManual_CN_V2.5.pdf CN V2.5 section 4.7.7, printed page 75/PDF page 76; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32f030/IdeSupport/EWARM/arm/config/debugger/CW/CW32F030.svd, SHA-256 c59bdc211510db5a8117d4d7610c2ef9b7ba328d9221c166354766f07e079aaa, already marks this field read-only; docs/oscillator-status-access-evidence.json.",
+          "CW32F030: CW32x030_UserManual_CN_V2.5.pdf CN V2.5 section 4.7.7, printed page 75/PDF page 76; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32f030/IdeSupport/EWARM/arm/config/debugger/CW/CW32F030.svd, SHA-256 c59bdc211510db5a8117d4d7610c2ef9b7ba328d9221c166354766f07e079aaa, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/0: source-correct captured RO and independently reviewed own-manual RO for CW32A030, CW32F030; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/1: source-correct captured RO and independently reviewed own-manual RO for CW32A030, CW32F030; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "PLL",
+        "fieldset": "PLL",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32x030_UserManual_CN_V2.5.pdf SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2; section4.7.8 PDF77/printed76 marks PLL.STABLE RO; reset0x00053483 and debug-default preservation are recorded in sources/x030-f020-hsi-pll-source-receipt.json.",
+          "docs/reviewed-status-access-selection.json#/fields/2: source-correct captured RO and independently reviewed own-manual RO for CW32A030, CW32F030; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

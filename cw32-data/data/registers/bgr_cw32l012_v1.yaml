@@ -1,0 +1,18 @@
+block/BGR:
+  description: BGR.
+  items:
+  - name: CR
+    description: Control register1.
+    byte_offset: 0
+    fieldset: CR
+fieldset/CR:
+  description: Control register1.
+  fields:
+  - name: BGREN
+    description: desc BGREN.
+    bit_offset: 0
+    bit_size: 1
+  - name: TSEN
+    description: desc TSEN.
+    bit_offset: 1
+    bit_size: 1

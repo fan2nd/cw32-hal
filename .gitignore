@@ -17,9 +17,7 @@ __pycache__/
 # Only the inspected, unchanged Apache-2.0 headers and their notices are bundled.
 !/sources/approved-sdk-members/
 
-# Regenerate with ./d gen-all; keep cw32-metapac-gen/res as authored templates.
-/cw32-data/data/
-/cw32-metapac/
+# Generated data and PAC are checked in for standalone consumers; regenerate with ./d gen-all.
 /cw32-data/coverage.json
 /cw32-data/source-audit.json
 /cw32-data/source-lock.json

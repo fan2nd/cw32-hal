@@ -1,0 +1,184 @@
+block/CORDIC:
+  description: desc CORDIC.
+  items:
+  - name: CSR
+    description: Control and State register.
+    byte_offset: 0
+    fieldset: CSR
+  - name: X
+    description: Data register X.
+    byte_offset: 4
+    fieldset: X
+  - name: Y
+    description: Data register Y.
+    byte_offset: 8
+    fieldset: Y
+  - name: Z
+    description: desc Z.
+    byte_offset: 12
+    fieldset: Z
+fieldset/CSR:
+  description: Control and State register.
+  fields:
+  - name: FUNC
+    description: desc FUNC.
+    bit_offset: 0
+    bit_size: 4
+    enum: Func
+  - name: SCALE
+    description: desc SCALE.
+    bit_offset: 4
+    bit_size: 3
+    enum: Scale
+  - name: FORMAT
+    description: desc FORMAT.
+    bit_offset: 7
+    bit_size: 1
+    enum: Format
+  - name: ITER
+    description: desc ITER.
+    bit_offset: 8
+    bit_size: 4
+    enum: Iter
+  - name: COMP
+    description: desc COMP.
+    bit_offset: 12
+    bit_size: 1
+    enum: Comp
+  - name: IE
+    description: desc IE.
+    bit_offset: 13
+    bit_size: 1
+  - name: DMAEOC
+    description: desc DMAEOC.
+    bit_offset: 14
+    bit_size: 1
+  - name: DMAIDLE
+    description: desc DMAIDLE.
+    bit_offset: 15
+    bit_size: 1
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 16
+    bit_size: 1
+  - name: BUSY
+    description: desc BUSY.
+    bit_offset: 17
+    bit_size: 1
+fieldset/X:
+  description: Data register X.
+  fields:
+  - name: X
+    description: desc X.
+    bit_offset: 0
+    bit_size: 32
+fieldset/Y:
+  description: Data register Y.
+  fields:
+  - name: Y
+    description: desc Y.
+    bit_offset: 0
+    bit_size: 32
+fieldset/Z:
+  description: desc Z.
+  fields:
+  - name: Z
+    description: desc Z.
+    bit_offset: 0
+    bit_size: 32
+enum/Comp:
+  description: L012 CORDIC Comp encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 1
+  variants:
+  - name: COMPENSATED
+    value: 0
+  - name: UNCOMPENSATED
+    value: 1
+enum/Format:
+  description: L012 CORDIC Format encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 1
+  variants:
+  - name: Q1_15
+    value: 0
+  - name: Q1_31
+    value: 1
+enum/Func:
+  description: L012 CORDIC Func encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 4
+  variants:
+  - name: COS
+    value: 0
+  - name: SIN
+    value: 1
+  - name: ATAN2
+    value: 2
+  - name: HYPOT
+    value: 3
+  - name: ATAN
+    value: 4
+  - name: COSH
+    value: 5
+  - name: SINH
+    value: 6
+  - name: ATANH
+    value: 7
+  - name: LN
+    value: 8
+  - name: SQRT
+    value: 9
+enum/Iter:
+  description: L012 CORDIC Iter encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 4
+  variants:
+  - name: ITER2
+    value: 0
+  - name: ITER4
+    value: 1
+  - name: ITER6
+    value: 2
+  - name: ITER8
+    value: 3
+  - name: ITER10
+    value: 4
+  - name: ITER12
+    value: 5
+  - name: ITER14
+    value: 6
+  - name: ITER16
+    value: 7
+  - name: ITER18
+    value: 8
+  - name: ITER20
+    value: 9
+  - name: ITER22
+    value: 10
+  - name: ITER24
+    value: 11
+  - name: ITER26
+    value: 12
+  - name: ITER28
+    value: 13
+  - name: ITER30
+    value: 14
+  - name: ITER32
+    value: 15
+enum/Scale:
+  description: L012 CORDIC Scale encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 3
+  variants:
+  - name: SCALE0
+    value: 0
+  - name: SCALE1
+    value: 1
+  - name: SCALE2
+    value: 2
+  - name: SCALE3
+    value: 3
+  - name: SCALE4
+    value: 4
+  - name: SCALE5
+    value: 5
+  - name: SCALE6
+    value: 6
+  - name: SCALE7
+    value: 7

@@ -1,0 +1,2166 @@
+{
+  "cores": [
+    {
+      "dma_channels": [],
+      "interrupts": [
+        {
+          "name": "WDT",
+          "number": 0
+        },
+        {
+          "name": "LVD",
+          "number": 1
+        },
+        {
+          "name": "RTC",
+          "number": 2
+        },
+        {
+          "name": "FLASHRAM",
+          "number": 3
+        },
+        {
+          "name": "SYSCTRL",
+          "number": 4
+        },
+        {
+          "name": "GPIOA",
+          "number": 5
+        },
+        {
+          "name": "GPIOB",
+          "number": 6
+        },
+        {
+          "name": "ADC",
+          "number": 12
+        },
+        {
+          "name": "ATIM",
+          "number": 13
+        },
+        {
+          "name": "VC1",
+          "number": 14
+        },
+        {
+          "name": "VC2",
+          "number": 15
+        },
+        {
+          "name": "GTIM1",
+          "number": 16
+        },
+        {
+          "name": "LPTIM",
+          "number": 19
+        },
+        {
+          "name": "BTIM1",
+          "number": 20
+        },
+        {
+          "name": "BTIM2",
+          "number": 21
+        },
+        {
+          "name": "BTIM3",
+          "number": 22
+        },
+        {
+          "name": "I2C1",
+          "number": 23
+        },
+        {
+          "name": "SPI",
+          "number": 25
+        },
+        {
+          "name": "UART1",
+          "number": 27
+        },
+        {
+          "name": "UART2",
+          "number": 28
+        },
+        {
+          "name": "CLKFAULT",
+          "number": 31
+        }
+      ],
+      "name": "cm0p",
+      "nvic_priority_bits": 2,
+      "peripherals": [
+        {
+          "adc_limits": {
+            "comparison_cycles": 15,
+            "input_follower_maximum_rate_hz": 0,
+            "internal_1v5_bands": [],
+            "internal_2v5_bands": [],
+            "internal_acquisition_ps": 40000000,
+            "minimum_clock_hz": 0,
+            "sample_cycles": [
+              6,
+              7,
+              9,
+              12,
+              18,
+              24,
+              30,
+              42,
+              54,
+              70,
+              102,
+              134,
+              166,
+              198,
+              262,
+              390
+            ],
+            "sequence": {
+              "maximum_length": 8,
+              "per_slot_result": true,
+              "per_slot_sample_time": true,
+              "programmable_order": true
+            },
+            "supply_bands": [
+              {
+                "maximum_clock_hz": 4000000,
+                "maximum_sample_rate_hz": 200000,
+                "minimum_acquisition_ps": 1250000,
+                "supply_min_mv": 1620
+              },
+              {
+                "maximum_clock_hz": 12000000,
+                "maximum_sample_rate_hz": 500000,
+                "minimum_acquisition_ps": 750000,
+                "supply_min_mv": 1800
+              },
+              {
+                "maximum_clock_hz": 24000000,
+                "maximum_sample_rate_hz": 1000000,
+                "minimum_acquisition_ps": 375000,
+                "supply_min_mv": 2800
+              },
+              {
+                "maximum_clock_hz": 48000000,
+                "maximum_sample_rate_hz": 2000000,
+                "minimum_acquisition_ps": 187500,
+                "supply_min_mv": 3300
+              }
+            ],
+            "supply_mv": [
+              1620,
+              5500
+            ],
+            "temperature_acquisition_maximum_rate_hz": 0
+          },
+          "address": 1073741824,
+          "interrupts": [
+            {
+              "interrupt": "ADC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "ADC",
+          "pins": [
+            {
+              "adc_mux": 0,
+              "pin": "PA0",
+              "signal": "IN0"
+            },
+            {
+              "adc_mux": 1,
+              "pin": "PA1",
+              "signal": "IN1"
+            },
+            {
+              "adc_mux": 2,
+              "pin": "PA2",
+              "signal": "IN2"
+            },
+            {
+              "adc_mux": 3,
+              "pin": "PA3",
+              "signal": "IN3"
+            },
+            {
+              "adc_mux": 4,
+              "pin": "PA4",
+              "signal": "IN4"
+            },
+            {
+              "adc_mux": 5,
+              "pin": "PA5",
+              "signal": "IN5"
+            },
+            {
+              "adc_mux": 6,
+              "pin": "PA6",
+              "signal": "IN6"
+            },
+            {
+              "adc_mux": 7,
+              "pin": "PB0",
+              "signal": "IN7"
+            },
+            {
+              "adc_mux": 8,
+              "pin": "PB1",
+              "signal": "IN8"
+            },
+            {
+              "adc_mux": 9,
+              "pin": "PB2",
+              "signal": "IN9"
+            },
+            {
+              "adc_mux": 10,
+              "pin": "PB3",
+              "signal": "IN10"
+            },
+            {
+              "adc_mux": 11,
+              "pin": "PB4",
+              "signal": "IN11"
+            },
+            {
+              "adc_mux": 12,
+              "pin": "PB5",
+              "signal": "IN12"
+            },
+            {
+              "adc_mux": 13,
+              "pin": "PB6",
+              "signal": "IN13"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "ADC",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "ADC",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "ADC",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "ADC",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "ADC",
+            "kind": "adc",
+            "version": "cw32l010_v1"
+          },
+          "triggers": [
+            {
+              "registers": [
+                {
+                  "bit_offset": 4,
+                  "bit_size": 3,
+                  "field": "MMS",
+                  "peripheral": "BTIM1",
+                  "register": "CR2",
+                  "role": "source_event",
+                  "value": 2
+                },
+                {
+                  "bit_offset": 13,
+                  "bit_size": 1,
+                  "field": "BTIM1TRGO",
+                  "peripheral": "ADC",
+                  "register": "TRIGGER",
+                  "role": "independent_enable",
+                  "value": 1
+                }
+              ],
+              "signal": "START_CONVERSION",
+              "source": "BTIM1_TRGO"
+            }
+          ]
+        },
+        {
+          "address": 1073746944,
+          "atim_complementary": {
+            "break_inputs": 1,
+            "channels": 4,
+            "dead_time_max_ticks": 1008
+          },
+          "interrupts": [
+            {
+              "interrupt": "ATIM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "ATIM",
+          "pins": [
+            {
+              "af": 7,
+              "pin": "PA2",
+              "signal": "CH1N"
+            },
+            {
+              "af": 7,
+              "pin": "PA3",
+              "signal": "CH3"
+            },
+            {
+              "af": 7,
+              "pin": "PA4",
+              "signal": "CH1N"
+            },
+            {
+              "af": 7,
+              "pin": "PA5",
+              "signal": "CH2N"
+            },
+            {
+              "af": 7,
+              "pin": "PA6",
+              "signal": "CH3N"
+            },
+            {
+              "af": 7,
+              "pin": "PB2",
+              "signal": "CH2"
+            },
+            {
+              "af": 7,
+              "pin": "PB3",
+              "signal": "CH2N"
+            },
+            {
+              "af": 7,
+              "pin": "PB4",
+              "signal": "CH1"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "ATIM",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "ATIM",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "ATIM",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "ATIM",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "ATIM",
+            "kind": "atim",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073760256,
+          "interrupts": [
+            {
+              "interrupt": "BTIM1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM1",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073760320,
+          "interrupts": [
+            {
+              "interrupt": "BTIM2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM2",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "cw32l010_v1"
+          },
+          "triggers": [
+            {
+              "registers": [
+                {
+                  "bit_offset": 4,
+                  "bit_size": 3,
+                  "field": "MMS",
+                  "peripheral": "BTIM1",
+                  "register": "CR2",
+                  "role": "source_event",
+                  "value": 2
+                },
+                {
+                  "bit_offset": 7,
+                  "bit_size": 4,
+                  "field": "TRGISRC",
+                  "peripheral": "BTIM2",
+                  "register": "SMCR",
+                  "role": "selector",
+                  "value": 8
+                }
+              ],
+              "signal": "TRGI",
+              "source": "BTIM1_TRGO"
+            }
+          ]
+        },
+        {
+          "address": 1073760384,
+          "interrupts": [
+            {
+              "interrupt": "BTIM3",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "BTIM3",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "BTIM123",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "BTIM123",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "BTIM1-BTIM2-BTIM3",
+            "shared_reset_group": "BTIM1-BTIM2-BTIM3"
+          },
+          "registers": {
+            "block": "BTIM",
+            "kind": "btim",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073885184,
+          "name": "CRC",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "CRC",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "CRC",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "CRC",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "AHBEN"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "CRC",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "CRC",
+            "kind": "crc",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073881088,
+          "flash_limits": {
+            "has_cache_control": false,
+            "lock_group_bytes": 4096,
+            "lock_mask": 65535,
+            "low_voltage_maximum_hclk_hz": 24000000,
+            "low_voltage_threshold_mv": 1800,
+            "maximum_hclk_hz": 48000000,
+            "maximum_wait_states": 1,
+            "supply_mv": [
+              1620,
+              5500
+            ],
+            "wait_step_hz": 24000000
+          },
+          "interrupts": [
+            {
+              "interrupt": "FLASHRAM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "FLASH",
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "FLASH",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "AHBEN"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "FLASH",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "FLASH",
+            "kind": "flash",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1207959552,
+          "gpio": {
+            "output_mask": 511,
+            "pull_down_mask": 0
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": false,
+            "serviced_mask": 511
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOA",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOA",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOA",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOA",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOA",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "AHBEN"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "GPIOA",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIO",
+            "kind": "gpio",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1207959808,
+          "gpio": {
+            "output_mask": 127,
+            "pull_down_mask": 0
+          },
+          "gpio_interrupt": {
+            "clear_noop_mask": 65535,
+            "level_trigger": false,
+            "serviced_mask": 255
+          },
+          "interrupts": [
+            {
+              "interrupt": "GPIOB",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GPIOB",
+          "rcc": {
+            "bus_clock": "HCLK",
+            "enable": {
+              "field": "GPIOB",
+              "register": "AHBEN"
+            },
+            "kernel_clock": "HCLK",
+            "reset": {
+              "field": "GPIOB",
+              "register": "AHBRST"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "HCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GPIOB",
+              "register": "AHBEN"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "AHBEN"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "GPIOB",
+              "register": "AHBRST"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GPIOB",
+            "kind": "gpiob",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073747968,
+          "interrupts": [
+            {
+              "interrupt": "GTIM1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "GTIM1",
+          "pins": [
+            {
+              "af": 6,
+              "pin": "PA3",
+              "signal": "CH4"
+            },
+            {
+              "af": 6,
+              "pin": "PA4",
+              "signal": "CH3"
+            },
+            {
+              "af": 6,
+              "pin": "PA5",
+              "signal": "CH2"
+            },
+            {
+              "af": 6,
+              "pin": "PA6",
+              "signal": "CH1"
+            },
+            {
+              "af": 6,
+              "pin": "PB3",
+              "signal": "CH4"
+            },
+            {
+              "af": 6,
+              "pin": "PB4",
+              "signal": "CH3"
+            },
+            {
+              "af": 6,
+              "pin": "PB5",
+              "signal": "CH2"
+            },
+            {
+              "af": 6,
+              "pin": "PB6",
+              "signal": "CH1"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "GTIM1",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "GTIM1",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "GTIM1",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "GTIM1",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "GTIM",
+            "kind": "gtim",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073764352,
+          "i2c_limits": {
+            "maximum_frequency_hz": 1000000,
+            "waveform": null
+          },
+          "interrupts": [
+            {
+              "interrupt": "I2C1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "I2C1",
+          "pins": [
+            {
+              "af": 2,
+              "pin": "PA0",
+              "signal": "SDA"
+            },
+            {
+              "af": 2,
+              "pin": "PA1",
+              "signal": "SCL"
+            },
+            {
+              "af": 4,
+              "pin": "PA5",
+              "signal": "SDA"
+            },
+            {
+              "af": 4,
+              "pin": "PA6",
+              "signal": "SCL"
+            },
+            {
+              "af": 2,
+              "pin": "PA7",
+              "signal": "SDA"
+            },
+            {
+              "af": 2,
+              "pin": "PA8",
+              "signal": "SCL"
+            },
+            {
+              "af": 4,
+              "pin": "PB0",
+              "signal": "SDA"
+            },
+            {
+              "af": 4,
+              "pin": "PB1",
+              "signal": "SCL"
+            },
+            {
+              "af": 4,
+              "pin": "PB5",
+              "signal": "SDA"
+            },
+            {
+              "af": 4,
+              "pin": "PB6",
+              "signal": "SCL"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "I2C1",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "I2C1",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "I2C1",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "I2C1",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "I2C",
+            "kind": "i2c",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073758336,
+          "ir": {
+            "invert": true,
+            "mode_configurable": true,
+            "owner": "IRMOD",
+            "register": "CR",
+            "software_control": true
+          },
+          "name": "IRMOD",
+          "pins": [
+            {
+              "af": 5,
+              "pin": "PA2",
+              "signal": "IR_OUT"
+            },
+            {
+              "af": 5,
+              "pin": "PA3",
+              "signal": "IR_OUT"
+            }
+          ],
+          "registers": {
+            "block": "IRMOD",
+            "kind": "irmod",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073762304,
+          "interrupts": [
+            {
+              "interrupt": "WDT",
+              "signal": "GLOBAL"
+            }
+          ],
+          "iwdt_clock": {
+            "maximum_hz": 33784,
+            "minimum_hz": 31816,
+            "typical_hz": 32800,
+            "uses_lsi": true
+          },
+          "name": "IWDT",
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "IWDT",
+              "register": "APBEN2"
+            },
+            "kernel_clock": "LSI",
+            "reset": {
+              "field": "IWDT",
+              "register": "APBRST2"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "IWDT",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "IWDT",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "IWDT",
+            "kind": "iwdt",
+            "version": "v1"
+          }
+        },
+        {
+          "address": 1073766400,
+          "interrupts": [
+            {
+              "interrupt": "LPTIM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "LPTIM",
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "LPTIM",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "LPTIM",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "LPTIM",
+            "kind": "lptim",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073742032,
+          "interrupts": [
+            {
+              "interrupt": "LVD",
+              "signal": "GLOBAL"
+            }
+          ],
+          "lvd": {
+            "inputs": [
+              {
+                "pin": "PA3",
+                "selector": 1
+              }
+            ],
+            "supply_name": "VDD",
+            "thresholds_mv": [
+              1800,
+              2200,
+              2600,
+              3000,
+              3400,
+              3800,
+              4200,
+              4600
+            ]
+          },
+          "name": "LVD",
+          "registers": {
+            "block": "LVD",
+            "kind": "lvd",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073882112,
+          "interrupts": [
+            {
+              "interrupt": "FLASHRAM",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "RAM",
+          "ram_parity": {
+            "enable_status": false
+          },
+          "registers": {
+            "block": "RAM",
+            "kind": "ram",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073759232,
+          "interrupts": [
+            {
+              "interrupt": "RTC",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "RTC",
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "RTC",
+              "register": "APBEN2"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN2"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "RTC",
+              "register": "APBRST2"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "RTC",
+            "kind": "rtc",
+            "version": "cw32l010_v1"
+          },
+          "rtc_alarms": {
+            "alarm_a_ignore_bit": 1,
+            "alarm_b_configuration_supported": false,
+            "async_wait": true,
+            "direct_register_access": true
+          },
+          "rtc_calendar": {
+            "calendar_divisor": 48000000,
+            "factory_trim_address": 1050560,
+            "maximum_hz": 48960000,
+            "minimum_hz": 47040000,
+            "nominal_hz": 48000000,
+            "prescaler_first": 60,
+            "prescaler_second": 400000,
+            "source": "HSIOSC",
+            "source_encoding": 3,
+            "supply_mv": [
+              1620,
+              5500
+            ],
+            "temperature_c": [
+              -40,
+              85
+            ]
+          }
+        },
+        {
+          "address": 1073743872,
+          "interrupts": [
+            {
+              "interrupt": "SPI",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "SPI",
+          "pins": [
+            {
+              "af": 3,
+              "pin": "PA0",
+              "signal": "SCK"
+            },
+            {
+              "af": 3,
+              "pin": "PA1",
+              "signal": "NSS"
+            },
+            {
+              "af": 3,
+              "pin": "PA2",
+              "signal": "NSS"
+            },
+            {
+              "af": 3,
+              "pin": "PA3",
+              "signal": "MISO"
+            },
+            {
+              "af": 3,
+              "pin": "PA4",
+              "signal": "MOSI"
+            },
+            {
+              "af": 3,
+              "pin": "PA5",
+              "signal": "SCK"
+            },
+            {
+              "af": 3,
+              "pin": "PA6",
+              "signal": "MOSI"
+            },
+            {
+              "af": 3,
+              "pin": "PA7",
+              "signal": "MISO"
+            },
+            {
+              "af": 3,
+              "pin": "PB0",
+              "signal": "SCK"
+            },
+            {
+              "af": 3,
+              "pin": "PB1",
+              "signal": "NSS"
+            },
+            {
+              "af": 3,
+              "pin": "PB2",
+              "signal": "MISO"
+            },
+            {
+              "af": 3,
+              "pin": "PB3",
+              "signal": "MOSI"
+            },
+            {
+              "af": 3,
+              "pin": "PB5",
+              "signal": "MISO"
+            },
+            {
+              "af": 3,
+              "pin": "PB6",
+              "signal": "MOSI"
+            }
+          ],
+          "rcc": {
+            "bus_clock": "PCLK",
+            "enable": {
+              "field": "SPI1",
+              "register": "APBEN1"
+            },
+            "kernel_clock": "PCLK",
+            "reset": {
+              "field": "SPI1",
+              "register": "APBRST1"
+            }
+          },
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "SPI1",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "SPI1",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "SPI",
+            "kind": "spi",
+            "version": "cw32l010_v1"
+          },
+          "spi": {
+            "maximum_frequency": 24000000,
+            "minimum_divisor": 2
+          }
+        },
+        {
+          "address": 1073758208,
+          "clock_limits": {
+            "default_hsi_divisor": 12,
+            "factory_hsi_trim_address": 1050560,
+            "flash_wait_step_hz": 24000000,
+            "high_voltage_bus_max_hz": 48000000,
+            "hse": {
+              "bypass": {
+                "maximum_hz": 32000000,
+                "minimum_hz": 3908159,
+                "supply_mv": [
+                  1620,
+                  5500
+                ],
+                "temperature_c": [
+                  -40,
+                  85
+                ]
+              },
+              "bypass_duty_percent": [
+                40,
+                60
+              ],
+              "bypass_maximum_rise_fall_ns": 20,
+              "bypass_minimum_high_low_ns": 15,
+              "ccs_cycle_count": 131072,
+              "ccs_lsi_maximum_hz": 36080,
+              "ccs_lsi_supply_mv": [
+                1620,
+                5500
+              ],
+              "ccs_lsi_temperature_c": [
+                -40,
+                85
+              ],
+              "ccs_maximum_count": 2047,
+              "ccs_numerator_hz": 8000000000,
+              "ccs_requires_lsi": true,
+              "crystal": {
+                "maximum_hz": 32000000,
+                "minimum_hz": 4000000,
+                "supply_mv": [
+                  1620,
+                  5500
+                ],
+                "temperature_c": [
+                  -40,
+                  85
+                ]
+              },
+              "filter_maximum_hz": 8000000,
+              "fixed_ccs_hsi_divisor": 12,
+              "startup_cycles": [
+                8192,
+                32768,
+                131072,
+                262144
+              ]
+            },
+            "hsi_error_percent": 2,
+            "hsi_frequency_hz": 48000000,
+            "hsi_supply_mv": [
+              1620,
+              5500
+            ],
+            "hsi_temperature_c": [
+              -40,
+              85
+            ],
+            "initial_flash_wait": 1,
+            "low_voltage_bus_max_hz": 24000000,
+            "low_voltage_threshold_mv": 1800,
+            "lse": {
+              "pin_lock": true,
+              "pin_lock_requires_enable_lock": false
+            },
+            "lse_configuration": {
+              "awt_source": null,
+              "configurable_ccs": true,
+              "gpio_dir_offset": 0,
+              "gpio_speed_offset": null,
+              "maximum_hz": 100000,
+              "mco_source": 6,
+              "native_low_power": {
+                "detector_lse_edges": 128,
+                "detector_lsi_cycles": 256,
+                "detector_margin_lse_edges": 1,
+                "drive_bits": 4,
+                "lsi_factory_trim_address": null,
+                "monitor_reference": "inherited_legal",
+                "monitored_lsi_maximum_hz": 36080,
+                "rtc_calendar_divisor": 32768,
+                "rtc_first_divisor": 1,
+                "rtc_output_routes": [
+                  {
+                    "af": 2,
+                    "pin": "PB4"
+                  },
+                  {
+                    "af": 2,
+                    "pin": "PB6"
+                  }
+                ],
+                "rtc_second_divisor": 16384,
+                "startup_drive_bits": 4
+              },
+              "nominal_hz": 32768,
+              "output_routes": [],
+              "rtc_reset": [
+                {
+                  "byte_offset": 4,
+                  "mask": 231,
+                  "register": "CR0",
+                  "value": 0
+                },
+                {
+                  "byte_offset": 8,
+                  "mask": 1797,
+                  "register": "CR1",
+                  "value": 0
+                },
+                {
+                  "byte_offset": 12,
+                  "mask": 1791,
+                  "register": "CR2",
+                  "value": 0
+                },
+                {
+                  "byte_offset": 16,
+                  "mask": 65535,
+                  "register": "COMPCFR1",
+                  "value": 0
+                },
+                {
+                  "byte_offset": 48,
+                  "mask": 95,
+                  "register": "IER",
+                  "value": 0
+                },
+                {
+                  "byte_offset": 52,
+                  "mask": 95,
+                  "register": "ISR",
+                  "value": 0
+                }
+              ],
+              "rtc_source": 0,
+              "startup_cycles": [
+                256,
+                1024,
+                4096,
+                16384
+              ],
+              "supply_mv": [
+                1620,
+                5500
+              ],
+              "sysclk_detector": {
+                "lse_edges": 128,
+                "lsi_cycles": 256,
+                "margin_lse_edges": 1
+              },
+              "temperature_c": [
+                -40,
+                85
+              ],
+              "uart_source": 2
+            },
+            "lsi_sysclk": {
+              "awt_allowed_sources": [
+                0,
+                1
+              ],
+              "factory_trim_address": 1050562,
+              "gpio_banks": [
+                "GPIOA",
+                "GPIOB"
+              ],
+              "gpio_filter_allowed_sources": [
+                0,
+                1,
+                2,
+                3,
+                5,
+                7
+              ],
+              "lsi_output_allowed_af": [],
+              "lsi_output_pin": null,
+              "maximum_hz": 33784,
+              "mco_allowed_sources": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5,
+                6
+              ],
+              "minimum_hz": 31816,
+              "nominal_hz": 32800,
+              "rcc_irq": 4,
+              "rtc_allowed_sources": [
+                0,
+                1,
+                2,
+                3
+              ],
+              "supply_mv": [
+                1620,
+                5500
+              ],
+              "temperature_c": [
+                -40,
+                85
+              ],
+              "uart_allowed_sources": [
+                0,
+                1,
+                2,
+                3
+              ],
+              "uarts": [
+                "UART1",
+                "UART2"
+              ]
+            }
+          },
+          "interrupts": [
+            {
+              "interrupt": "SYSCTRL",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "SYSCTRL",
+          "pins": [
+            {
+              "pin": "PA0",
+              "signal": "HSE_IN"
+            },
+            {
+              "pin": "PA1",
+              "signal": "HSE_OUT"
+            },
+            {
+              "pin": "PB0",
+              "signal": "LSE_OUT"
+            },
+            {
+              "pin": "PB1",
+              "signal": "LSE_IN"
+            }
+          ],
+          "registers": {
+            "block": "SYSCTRL",
+            "kind": "sysctrl",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073744896,
+          "interrupts": [
+            {
+              "interrupt": "UART1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "UART1",
+          "pins": [
+            {
+              "af": 1,
+              "pin": "PA0",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PA1",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PA5",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PA6",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PA7",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PA8",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PB0",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PB1",
+              "signal": "TX"
+            },
+            {
+              "af": 2,
+              "pin": "PB2",
+              "signal": "CTS"
+            },
+            {
+              "af": 2,
+              "pin": "PB3",
+              "signal": "RTS"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "UART1",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "UART1",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "UART",
+            "kind": "uart",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073745920,
+          "interrupts": [
+            {
+              "interrupt": "UART2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "UART2",
+          "pins": [
+            {
+              "af": 1,
+              "pin": "PA3",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PA4",
+              "signal": "RX"
+            },
+            {
+              "af": 2,
+              "pin": "PB0",
+              "signal": "CTS"
+            },
+            {
+              "af": 2,
+              "pin": "PB1",
+              "signal": "RTS"
+            },
+            {
+              "af": 1,
+              "pin": "PB2",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PB3",
+              "signal": "RX"
+            },
+            {
+              "af": 1,
+              "pin": "PB4",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PB5",
+              "signal": "TX"
+            },
+            {
+              "af": 1,
+              "pin": "PB6",
+              "signal": "RX"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "UART2",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "UART2",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false
+          },
+          "registers": {
+            "block": "UART",
+            "kind": "uart",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073741988,
+          "comparator_limits": {
+            "input_uses_vdda": false,
+            "supply_mv": [
+              1620,
+              5500
+            ]
+          },
+          "interrupts": [
+            {
+              "interrupt": "VC1",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "VC1",
+          "pins": [
+            {
+              "comparator_mux": 1,
+              "pin": "PA0",
+              "signal": "INN1"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA0",
+              "signal": "INP1"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PA3",
+              "signal": "INP2"
+            },
+            {
+              "comparator_mux": 3,
+              "pin": "PB3",
+              "signal": "INP3"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PB5",
+              "signal": "INN0"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PB5",
+              "signal": "INP0"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "VC",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "VC",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "VC1-VC2",
+            "shared_reset_group": "VC1-VC2"
+          },
+          "registers": {
+            "block": "VC",
+            "kind": "vc",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073742004,
+          "comparator_limits": {
+            "input_uses_vdda": false,
+            "supply_mv": [
+              1620,
+              5500
+            ]
+          },
+          "interrupts": [
+            {
+              "interrupt": "VC2",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "VC2",
+          "pins": [
+            {
+              "comparator_mux": 1,
+              "pin": "PA5",
+              "signal": "INN1"
+            },
+            {
+              "comparator_mux": 1,
+              "pin": "PA5",
+              "signal": "INP1"
+            },
+            {
+              "comparator_mux": 2,
+              "pin": "PB2",
+              "signal": "INP2"
+            },
+            {
+              "comparator_mux": 3,
+              "pin": "PB4",
+              "signal": "INP3"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PB6",
+              "signal": "INN0"
+            },
+            {
+              "comparator_mux": 0,
+              "pin": "PB6",
+              "signal": "INP0"
+            }
+          ],
+          "rcc_control": {
+            "bus_clock": "PCLK",
+            "controller": "SYSCTRL",
+            "enable": {
+              "field": "VC",
+              "register": "APBEN1"
+            },
+            "enable_active_value": true,
+            "enable_write_key": {
+              "field": {
+                "field": "KEY",
+                "register": "APBEN1"
+              },
+              "value": 23130
+            },
+            "reset": {
+              "field": "VC",
+              "register": "APBRST1"
+            },
+            "reset_asserted_value": false,
+            "shared_enable_group": "VC1-VC2",
+            "shared_reset_group": "VC1-VC2"
+          },
+          "registers": {
+            "block": "VC",
+            "kind": "vc",
+            "version": "cw32l010_v1"
+          }
+        },
+        {
+          "address": 1073741984,
+          "interrupts": [
+            {
+              "interrupt": "CLKFAULT",
+              "signal": "GLOBAL"
+            }
+          ],
+          "name": "VCDIV",
+          "reference_divider": {
+            "clock_owner": "VC1",
+            "consumers": [
+              "VC1",
+              "VC2"
+            ],
+            "input_uses_vdda": false,
+            "negative_mux": 3,
+            "supply_mv": [
+              1620,
+              5500
+            ]
+          },
+          "registers": {
+            "block": "VCDIV",
+            "kind": "vcdiv",
+            "version": "cw32l010_v1"
+          }
+        }
+      ],
+      "pins": [
+        {
+          "name": "PA0"
+        },
+        {
+          "name": "PA1"
+        },
+        {
+          "name": "PA2"
+        },
+        {
+          "name": "PA3"
+        },
+        {
+          "name": "PA4"
+        },
+        {
+          "name": "PA5"
+        },
+        {
+          "name": "PA6"
+        },
+        {
+          "name": "PA7"
+        },
+        {
+          "name": "PA8"
+        },
+        {
+          "name": "PB0"
+        },
+        {
+          "name": "PB1"
+        },
+        {
+          "name": "PB2"
+        },
+        {
+          "name": "PB3"
+        },
+        {
+          "name": "PB4"
+        },
+        {
+          "name": "PB5"
+        },
+        {
+          "name": "PB6"
+        },
+        {
+          "name": "PB7"
+        }
+      ]
+    }
+  ],
+  "die": "CW32L010",
+  "docs": [
+    {
+      "name": "CW32L010_datasheet",
+      "title": "CW32L010_datasheet",
+      "type": "datasheet",
+      "url": "https://www.whxy.com/uploads/files/20260416/CW32L010_DataSheet_CN_V1.3.pdf"
+    },
+    {
+      "name": "CW32L010_dfp",
+      "title": "CW32L010_dfp",
+      "type": "vendor-source",
+      "url": "https://www.whxy.com/uploads/files/20260806/CW32L010_StandardPeripheralLib_V1.0.9.zip"
+    }
+  ],
+  "family": "CW32L0",
+  "line": "CW32L010",
+  "memory": [
+    [
+      {
+        "address": 0,
+        "kind": "flash",
+        "name": "FLASH",
+        "size": 65536
+      },
+      {
+        "address": 536870912,
+        "kind": "ram",
+        "name": "RAM",
+        "size": 4096
+      }
+    ]
+  ],
+  "name": "CW32L010F8P6",
+  "packages": [
+    {
+      "name": "CW32L010F8P6",
+      "package": "TSSOP20",
+      "pins": [
+        {
+          "position": "1",
+          "signals": [
+            "PB4"
+          ]
+        },
+        {
+          "position": "2",
+          "signals": [
+            "PB5"
+          ]
+        },
+        {
+          "position": "3",
+          "signals": [
+            "PB6"
+          ]
+        },
+        {
+          "position": "4",
+          "signals": [
+            "PB7",
+            "NRST"
+          ]
+        },
+        {
+          "position": "5",
+          "signals": [
+            "PA0",
+            "OSC_IN"
+          ]
+        },
+        {
+          "position": "6",
+          "signals": [
+            "PA1",
+            "OSC_OUT"
+          ]
+        },
+        {
+          "position": "7",
+          "signals": [
+            "VSS"
+          ]
+        },
+        {
+          "position": "8",
+          "signals": [
+            "Vcore"
+          ]
+        },
+        {
+          "position": "9",
+          "signals": [
+            "VDD"
+          ]
+        },
+        {
+          "position": "10",
+          "signals": [
+            "PA2"
+          ]
+        },
+        {
+          "position": "11",
+          "signals": [
+            "PB0",
+            "OSC32_OUT"
+          ]
+        },
+        {
+          "position": "12",
+          "signals": [
+            "PB1",
+            "OSC32_IN"
+          ]
+        },
+        {
+          "position": "13",
+          "signals": [
+            "PA3"
+          ]
+        },
+        {
+          "position": "14",
+          "signals": [
+            "PA4"
+          ]
+        },
+        {
+          "position": "15",
+          "signals": [
+            "PA5"
+          ]
+        },
+        {
+          "position": "16",
+          "signals": [
+            "PA6"
+          ]
+        },
+        {
+          "position": "17",
+          "signals": [
+            "PA7",
+            "SWDIO"
+          ]
+        },
+        {
+          "position": "18",
+          "signals": [
+            "PA8",
+            "SWCLK"
+          ]
+        },
+        {
+          "position": "19",
+          "signals": [
+            "PB2"
+          ]
+        },
+        {
+          "position": "20",
+          "signals": [
+            "PB3"
+          ]
+        }
+      ]
+    }
+  ]
+}

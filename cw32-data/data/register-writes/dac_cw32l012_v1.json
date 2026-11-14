@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dac_cw32l012_v1": [
+      {
+        "block": "DAC",
+        "register": "DOR1",
+        "fieldset": "DOR1",
+        "reset_value": 0,
+        "write_noop": 32768,
+        "zero_to_clear_fields": [
+          "DMAUDR"
+        ],
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4 §26.8 p607; §26.10.12–13 pp615–616",
+          "docs/dac-opa.md"
+        ]
+      },
+      {
+        "block": "DAC",
+        "register": "DOR2",
+        "fieldset": "DOR2",
+        "reset_value": 0,
+        "write_noop": 32768,
+        "zero_to_clear_fields": [
+          "DMAUDR"
+        ],
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4 §26.8 p607; §26.10.12–13 pp615–616",
+          "docs/dac-opa.md"
+        ]
+      }
+    ]
+  }
+}

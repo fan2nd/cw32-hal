@@ -1,0 +1,48 @@
+block/WWDT:
+  description: desc WWDT.
+  items:
+  - name: CR0
+    description: Control register0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: Control register1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: SR
+    description: status register.
+    byte_offset: 8
+    fieldset: SR
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: WCNT
+    description: desc WCNT.
+    bit_offset: 0
+    bit_size: 7
+  - name: EN
+    description: desc EN.
+    bit_offset: 7
+    bit_size: 1
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: WINR
+    description: desc WINR.
+    bit_offset: 0
+    bit_size: 7
+  - name: PRS
+    description: desc PRESCALE.
+    bit_offset: 7
+    bit_size: 3
+  - name: IE
+    description: desc IE.
+    bit_offset: 10
+    bit_size: 1
+fieldset/SR:
+  description: status register.
+  fields:
+  - name: POV
+    description: desc POV.
+    bit_offset: 0
+    bit_size: 1

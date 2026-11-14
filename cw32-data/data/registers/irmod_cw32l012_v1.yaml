@@ -1,0 +1,22 @@
+block/IRMOD:
+  description: desc IRMOD.
+  items:
+  - name: CR
+    description: Input selection register.
+    byte_offset: 0
+    fieldset: CR
+fieldset/CR:
+  description: Input selection register.
+  fields:
+  - name: MOD
+    description: desc MOD.
+    bit_offset: 0
+    bit_size: 4
+  - name: IRSW
+    description: desc IRSW.
+    bit_offset: 4
+    bit_size: 1
+  - name: INV
+    description: desc INV.
+    bit_offset: 5
+    bit_size: 1

@@ -1,0 +1,221 @@
+block/SPI:
+  description: desc SPI1.
+  items:
+  - name: CR1
+    description: Control register1.
+    byte_offset: 0
+    fieldset: CR1
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 4
+    fieldset: IER
+  - name: CR2
+    description: Control register2.
+    byte_offset: 8
+    fieldset: CR2
+  - name: SSI
+    description: Slave slect register.
+    byte_offset: 12
+    fieldset: SSI
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 16
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 20
+    fieldset: ICR
+  - name: DR
+    description: Data register.
+    byte_offset: 24
+    fieldset: DR
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: CPHA
+    description: desc CPHA.
+    bit_offset: 0
+    bit_size: 1
+  - name: CPOL
+    description: desc CPOL.
+    bit_offset: 1
+    bit_size: 1
+  - name: MSTR
+    description: desc MSTR.
+    bit_offset: 2
+    bit_size: 1
+  - name: BR
+    description: desc BR.
+    bit_offset: 3
+    bit_size: 3
+  - name: EN
+    description: desc EN.
+    bit_offset: 6
+    bit_size: 1
+  - name: LSBF
+    description: desc LSBF.
+    bit_offset: 7
+    bit_size: 1
+  - name: SMP
+    description: desc SMP.
+    bit_offset: 8
+    bit_size: 1
+  - name: SSM
+    description: desc SSM.
+    bit_offset: 9
+    bit_size: 1
+  - name: WIDTH
+    description: desc WIDTH.
+    bit_offset: 10
+    bit_size: 4
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 14
+    bit_size: 2
+  - name: DMARX
+    description: desc DMARX.
+    bit_offset: 16
+    bit_size: 1
+  - name: DMATX
+    description: desc DMATX.
+    bit_offset: 17
+    bit_size: 1
+  - name: MISOHD
+    description: desc MISOHD.
+    bit_offset: 18
+    bit_size: 1
+fieldset/CR2:
+  description: Control register2.
+  fields:
+  - name: HDOE
+    description: desc HDOE.
+    bit_offset: 0
+    bit_size: 1
+fieldset/DR:
+  description: Data register.
+  fields:
+  - name: DR
+    description: desc DR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: FLUSH
+    description: desc FLUSH.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: SSF
+    description: desc SSF.
+    bit_offset: 2
+    bit_size: 1
+  - name: SSR
+    description: desc SSR.
+    bit_offset: 3
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 4
+    bit_size: 1
+  - name: OV
+    description: desc OV.
+    bit_offset: 5
+    bit_size: 1
+  - name: SSERR
+    description: desc SSERR.
+    bit_offset: 6
+    bit_size: 1
+  - name: MODF
+    description: desc MODF.
+    bit_offset: 7
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: SSF
+    description: desc SSF.
+    bit_offset: 2
+    bit_size: 1
+  - name: SSR
+    description: desc SSR.
+    bit_offset: 3
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 4
+    bit_size: 1
+  - name: OV
+    description: desc OV.
+    bit_offset: 5
+    bit_size: 1
+  - name: SSERR
+    description: desc SSERR.
+    bit_offset: 6
+    bit_size: 1
+  - name: MODF
+    description: desc MODF.
+    bit_offset: 7
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: SSF
+    description: desc SSF.
+    bit_offset: 2
+    bit_size: 1
+  - name: SSR
+    description: desc SSR.
+    bit_offset: 3
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 4
+    bit_size: 1
+  - name: OV
+    description: desc OV.
+    bit_offset: 5
+    bit_size: 1
+  - name: SSERR
+    description: desc SSERR.
+    bit_offset: 6
+    bit_size: 1
+  - name: MODF
+    description: desc MODF.
+    bit_offset: 7
+    bit_size: 1
+  - name: BUSY
+    description: desc BUSY.
+    bit_offset: 8
+    bit_size: 1
+  - name: SSLVL
+    description: desc SSLVL.
+    bit_offset: 9
+    bit_size: 1
+fieldset/SSI:
+  description: Slave slect register.
+  fields:
+  - name: SSI
+    description: desc SSI.
+    bit_offset: 0
+    bit_size: 1

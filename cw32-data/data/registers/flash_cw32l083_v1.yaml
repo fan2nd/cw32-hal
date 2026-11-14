@@ -1,0 +1,420 @@
+block/FLASH:
+  description: desc FLASH.
+  items:
+  - name: CR1
+    description: desc CR1.
+    byte_offset: 0
+    fieldset: CR1
+  - name: CR2
+    description: desc CR2.
+    byte_offset: 4
+    fieldset: CR2
+  - name: PAGELOCK1
+    description: desc PAGELOCK1.
+    byte_offset: 8
+    fieldset: PAGELOCK1
+  - name: PAGELOCK2
+    description: desc PAGELOCK2.
+    byte_offset: 12
+    fieldset: PAGELOCK2
+  - name: PAGELOCK3
+    description: desc PAGELOCK3.
+    byte_offset: 16
+    fieldset: PAGELOCK3
+  - name: PAGELOCK4
+    description: desc PAGELOCK4.
+    byte_offset: 20
+    fieldset: PAGELOCK4
+  - name: IER
+    description: desc IER.
+    byte_offset: 32
+    fieldset: IER
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 36
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 40
+    fieldset: ICR
+fieldset/CR1:
+  description: desc CR1.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 2
+    enum: Mode
+  - name: STANDBY
+    description: desc STANDBY.
+    bit_offset: 4
+    bit_size: 1
+  - name: BUSY
+    description: desc BUSY.
+    bit_offset: 5
+    bit_size: 1
+  - name: SECURITY
+    description: desc SECURITY.
+    bit_offset: 6
+    bit_size: 2
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/CR2:
+  description: desc CR2.
+  fields:
+  - name: WAIT
+    description: desc WAIT.
+    bit_offset: 0
+    bit_size: 3
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/PAGELOCK1:
+  description: desc PAGELOCK1.
+  fields:
+  - name: LOCK0
+    description: Page0 - 7.
+    bit_offset: 0
+    bit_size: 1
+  - name: LOCK1
+    description: Page8 - 15.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCK2
+    description: Page16 - 23.
+    bit_offset: 2
+    bit_size: 1
+  - name: LOCK3
+    description: Page24 - 31.
+    bit_offset: 3
+    bit_size: 1
+  - name: LOCK4
+    description: Page32 - 39.
+    bit_offset: 4
+    bit_size: 1
+  - name: LOCK5
+    description: Page40 - 47.
+    bit_offset: 5
+    bit_size: 1
+  - name: LOCK6
+    description: Page48 - 55.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCK7
+    description: Page56 - 63.
+    bit_offset: 7
+    bit_size: 1
+  - name: LOCK8
+    description: Page64 - 71.
+    bit_offset: 8
+    bit_size: 1
+  - name: LOCK9
+    description: Page72 - 79.
+    bit_offset: 9
+    bit_size: 1
+  - name: LOCK10
+    description: Page80 - 87.
+    bit_offset: 10
+    bit_size: 1
+  - name: LOCK11
+    description: Page88 - 95.
+    bit_offset: 11
+    bit_size: 1
+  - name: LOCK12
+    description: Page96 - 103.
+    bit_offset: 12
+    bit_size: 1
+  - name: LOCK13
+    description: Page104 - 111.
+    bit_offset: 13
+    bit_size: 1
+  - name: LOCK14
+    description: Page112 - 119.
+    bit_offset: 14
+    bit_size: 1
+  - name: LOCK15
+    description: Page120 - 127.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/PAGELOCK2:
+  description: desc PAGELOCK2.
+  fields:
+  - name: LOCK16
+    description: Page128 - 135.
+    bit_offset: 0
+    bit_size: 1
+  - name: LOCK17
+    description: Page136 - 143.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCK18
+    description: Page144 - 151.
+    bit_offset: 2
+    bit_size: 1
+  - name: LOCK19
+    description: Page152 - 159.
+    bit_offset: 3
+    bit_size: 1
+  - name: LOCK20
+    description: Page160 - 167.
+    bit_offset: 4
+    bit_size: 1
+  - name: LOCK21
+    description: Page168 - 175.
+    bit_offset: 5
+    bit_size: 1
+  - name: LOCK22
+    description: Page176 - 183.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCK23
+    description: Page184 - 191.
+    bit_offset: 7
+    bit_size: 1
+  - name: LOCK24
+    description: Page192 - 199.
+    bit_offset: 8
+    bit_size: 1
+  - name: LOCK25
+    description: Page200 - 207.
+    bit_offset: 9
+    bit_size: 1
+  - name: LOCK26
+    description: Page208 - 215.
+    bit_offset: 10
+    bit_size: 1
+  - name: LOCK27
+    description: Page216 - 223.
+    bit_offset: 11
+    bit_size: 1
+  - name: LOCK28
+    description: Page224 - 231.
+    bit_offset: 12
+    bit_size: 1
+  - name: LOCK29
+    description: Page232 - 239.
+    bit_offset: 13
+    bit_size: 1
+  - name: LOCK30
+    description: Page240 - 247.
+    bit_offset: 14
+    bit_size: 1
+  - name: LOCK31
+    description: Page248 - 255.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/PAGELOCK3:
+  description: desc PAGELOCK3.
+  fields:
+  - name: LOCK32
+    description: Page256 - 263.
+    bit_offset: 0
+    bit_size: 1
+  - name: LOCK33
+    description: Page264 - 271.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCK34
+    description: Page272 - 279.
+    bit_offset: 2
+    bit_size: 1
+  - name: LOCK35
+    description: Page280 - 287.
+    bit_offset: 3
+    bit_size: 1
+  - name: LOCK36
+    description: Page288 - 295.
+    bit_offset: 4
+    bit_size: 1
+  - name: LOCK37
+    description: Page296 - 303.
+    bit_offset: 5
+    bit_size: 1
+  - name: LOCK38
+    description: Page304 - 311.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCK39
+    description: Page312 - 319.
+    bit_offset: 7
+    bit_size: 1
+  - name: LOCK40
+    description: Page320 - 327.
+    bit_offset: 8
+    bit_size: 1
+  - name: LOCK41
+    description: Page328 - 335.
+    bit_offset: 9
+    bit_size: 1
+  - name: LOCK42
+    description: Page336 - 343.
+    bit_offset: 10
+    bit_size: 1
+  - name: LOCK43
+    description: Page344 - 351.
+    bit_offset: 11
+    bit_size: 1
+  - name: LOCK44
+    description: Page352 - 359.
+    bit_offset: 12
+    bit_size: 1
+  - name: LOCK45
+    description: Page360 - 367.
+    bit_offset: 13
+    bit_size: 1
+  - name: LOCK46
+    description: Page368 - 375.
+    bit_offset: 14
+    bit_size: 1
+  - name: LOCK47
+    description: Page376 - 383.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/PAGELOCK4:
+  description: desc PAGELOCK4.
+  fields:
+  - name: LOCK48
+    description: Page384 - 391.
+    bit_offset: 0
+    bit_size: 1
+  - name: LOCK49
+    description: Page392 - 399.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCK50
+    description: Page400 - 407.
+    bit_offset: 2
+    bit_size: 1
+  - name: LOCK51
+    description: Page408 - 415.
+    bit_offset: 3
+    bit_size: 1
+  - name: LOCK52
+    description: Page416 - 423.
+    bit_offset: 4
+    bit_size: 1
+  - name: LOCK53
+    description: Page424 - 431.
+    bit_offset: 5
+    bit_size: 1
+  - name: LOCK54
+    description: Page432 - 439.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCK55
+    description: Page440 - 447.
+    bit_offset: 7
+    bit_size: 1
+  - name: LOCK56
+    description: Page448 - 455.
+    bit_offset: 8
+    bit_size: 1
+  - name: LOCK57
+    description: Page456 - 463.
+    bit_offset: 9
+    bit_size: 1
+  - name: LOCK58
+    description: Page464 - 471.
+    bit_offset: 10
+    bit_size: 1
+  - name: LOCK59
+    description: Page472 - 479.
+    bit_offset: 11
+    bit_size: 1
+  - name: LOCK60
+    description: Page480 - 487.
+    bit_offset: 12
+    bit_size: 1
+  - name: LOCK61
+    description: Page488 - 495.
+    bit_offset: 13
+    bit_size: 1
+  - name: LOCK62
+    description: Page496 - 503.
+    bit_offset: 14
+    bit_size: 1
+  - name: LOCK63
+    description: Page504 - 511.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+enum/Mode:
+  description: Main FLASH operation, qualified by the own FLASH control chapter; see docs/flash-next-batch-audit.json.
+  bit_size: 2
+  variants:
+  - name: READ
+    description: Read operation.
+    value: 0
+  - name: PROGRAM
+    description: Program an erased byte, halfword or word.
+    value: 1
+  - name: PAGE_ERASE
+    description: Erase the page selected by the triggering store.
+    value: 2
+  - name: CHIP_ERASE
+    description: Erase the whole main array. Not exposed by the reserved-region HAL storage API.
+    value: 3

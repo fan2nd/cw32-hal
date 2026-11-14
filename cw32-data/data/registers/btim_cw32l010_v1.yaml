@@ -1,0 +1,179 @@
+block/BTIM:
+  description: Base Timer 1.
+  items:
+  - name: CR1
+    description: Control register1.
+    byte_offset: 0
+    fieldset: CR1
+  - name: CR2
+    description: Control register2.
+    byte_offset: 4
+    fieldset: CR2
+  - name: SMCR
+    description: Slave Mode Control register.
+    byte_offset: 8
+    fieldset: SMCR
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 12
+    fieldset: IER
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 16
+    access: Read
+    fieldset: ISR
+  - name: EGR
+    description: Event Generate register.
+    byte_offset: 20
+    access: Write
+    fieldset: EGR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 24
+    fieldset: ICR
+  - name: CNT
+    description: Counter Register.
+    byte_offset: 36
+    fieldset: CNT
+  - name: PSC
+    description: Prescaler Control Register.
+    byte_offset: 40
+    fieldset: PSC
+  - name: ARR
+    description: Auto Reload Register.
+    byte_offset: 44
+    fieldset: ARR
+fieldset/ARR:
+  description: Auto Reload Register.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CNT:
+  description: Counter Register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+  - name: UIFCPY
+    description: desc UIFCPY.
+    bit_offset: 31
+    bit_size: 1
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: UDIS
+    description: desc UDIS.
+    bit_offset: 1
+    bit_size: 1
+  - name: URS
+    description: desc URS.
+    bit_offset: 2
+    bit_size: 1
+  - name: ONESHOT
+    description: desc ONESHOT.
+    bit_offset: 3
+    bit_size: 1
+  - name: UIFREMAP
+    description: desc UIFREMAP.
+    bit_offset: 11
+    bit_size: 1
+  - name: TOGEN
+    description: desc TOGEN.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CR2:
+  description: Control register2.
+  fields:
+  - name: MMS
+    description: desc MMS.
+    bit_offset: 4
+    bit_size: 3
+fieldset/EGR:
+  description: Event Generate register.
+  fields:
+  - name: UG
+    description: desc UG.
+    bit_offset: 0
+    bit_size: 1
+  - name: TG
+    description: desc TG.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 6
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: UIE
+    description: desc UIE.
+    bit_offset: 0
+    bit_size: 1
+  - name: TIE
+    description: desc TIE.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 6
+    bit_size: 1
+fieldset/PSC:
+  description: Prescaler Control Register.
+  fields:
+  - name: PSC
+    description: desc PSC.
+    bit_offset: 0
+    bit_size: 16
+fieldset/SMCR:
+  description: Slave Mode Control register.
+  fields:
+  - name: SMS
+    description: desc SMS.
+    bit_offset: 0
+    bit_size: 3
+  - name: RSTISRC
+    description: desc RSTISRC.
+    bit_offset: 3
+    bit_size: 4
+  - name: TRGISRC
+    description: desc TRGISRC.
+    bit_offset: 7
+    bit_size: 4
+  - name: MSM
+    description: desc MSM.
+    bit_offset: 11
+    bit_size: 1
+  - name: TRGIFLT
+    description: desc TRGIFLT.
+    bit_offset: 12
+    bit_size: 3
+  - name: RSTIPOL
+    description: desc RSTIPOL.
+    bit_offset: 16
+    bit_size: 1
+  - name: TRGIPOL
+    description: desc TRGIPOL.
+    bit_offset: 17
+    bit_size: 1

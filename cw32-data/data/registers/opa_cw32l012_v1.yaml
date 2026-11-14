@@ -1,0 +1,230 @@
+block/OPA:
+  description: desc OPA1.
+  items:
+  - name: CR
+    description: desc CR.
+    byte_offset: 0
+    fieldset: CR
+  - name: CAL
+    description: desc CAL.
+    byte_offset: 4
+    fieldset: CAL
+fieldset/CAL:
+  description: 'Mixed configuration/status/command: AZRUN read-only; SOFTTRIG write-one command. Full configuration writes must set SOFTTRIG=0 unless explicitly triggering.'
+  fields:
+  - name: CALEN
+    description: desc CALEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: CALMODE
+    description: desc CALMODE.
+    bit_offset: 1
+    bit_size: 1
+    enum: CalibrationMode
+  - name: START
+    description: desc START.
+    bit_offset: 2
+    bit_size: 1
+  - name: SOFTTRIG
+    description: desc SOFTTRIG.
+    bit_offset: 3
+    bit_size: 1
+  - name: CALPERIOD
+    description: desc CALPERIOD.
+    bit_offset: 4
+    bit_size: 4
+  - name: AZRUN
+    description: desc AZRUN.
+    bit_offset: 10
+    bit_size: 1
+  - name: CLKDIV
+    description: desc CLKDIV.
+    bit_offset: 11
+    bit_size: 3
+  - name: ADC1START1
+    description: desc ADC1START1.
+    bit_offset: 14
+    bit_size: 1
+  - name: ADC2START1
+    description: desc ADC2START1.
+    bit_offset: 15
+    bit_size: 1
+  - name: ATIM1TRGO
+    description: desc ATIM1TRGO.
+    bit_offset: 16
+    bit_size: 1
+  - name: ATIM1OC4
+    description: desc ATIM1OC4.
+    bit_offset: 17
+    bit_size: 1
+  - name: ATIM1OC5
+    description: desc ATIM1OC5.
+    bit_offset: 18
+    bit_size: 1
+  - name: ATIM1OC6
+    description: desc ATIM1OC6.
+    bit_offset: 19
+    bit_size: 1
+  - name: GTIM1TRGO
+    description: desc GTIM1TRGO.
+    bit_offset: 20
+    bit_size: 1
+  - name: GTIM1OC1
+    description: desc GTIM1OC1.
+    bit_offset: 21
+    bit_size: 1
+  - name: GTIM1OC2
+    description: desc GTIM1OC2.
+    bit_offset: 22
+    bit_size: 1
+  - name: GTIM2TRGO
+    description: desc GTIM2TRGO.
+    bit_offset: 23
+    bit_size: 1
+  - name: GTIM2OC1
+    description: desc GTIM2OC1.
+    bit_offset: 24
+    bit_size: 1
+  - name: GTIM2OC2
+    description: desc GTIM2OC2.
+    bit_offset: 25
+    bit_size: 1
+  - name: GTIM3TRGO
+    description: desc GTIM3TRGO.
+    bit_offset: 26
+    bit_size: 1
+  - name: GTIM3OC1
+    description: desc GTIM3OC1.
+    bit_offset: 27
+    bit_size: 1
+  - name: GTIM3OC2
+    description: desc GTIM3OC2.
+    bit_offset: 28
+    bit_size: 1
+  - name: GTIM4TRGO
+    description: desc GTIM4TRGO.
+    bit_offset: 29
+    bit_size: 1
+  - name: GTIM4OC1
+    description: desc GTIM4OC1.
+    bit_offset: 30
+    bit_size: 1
+  - name: GTIM4OC2
+    description: desc GTIM4OC2.
+    bit_offset: 31
+    bit_size: 1
+fieldset/CR:
+  description: Operational amplifier control; reset 0x0000E000 per CN manual V1.4 §29.6.1.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 1
+    bit_size: 2
+    enum: Mode
+  - name: INP1EN
+    description: desc INP1EN.
+    bit_offset: 4
+    bit_size: 1
+  - name: INP2EN
+    description: desc INP2EN.
+    bit_offset: 5
+    bit_size: 1
+  - name: INP3EN
+    description: desc INP3EN.
+    bit_offset: 6
+    bit_size: 1
+  - name: INP4EN
+    description: desc INP4EN.
+    bit_offset: 7
+    bit_size: 1
+  - name: INN1EN
+    description: desc INN1EN.
+    bit_offset: 8
+    bit_size: 1
+  - name: INN2EN
+    description: desc INN2EN.
+    bit_offset: 9
+    bit_size: 1
+  - name: AMP
+    description: desc AMP.
+    bit_offset: 10
+    bit_size: 3
+    enum: Gain
+  - name: BIAS
+    description: desc BIAS.
+    bit_offset: 13
+    bit_size: 3
+    enum: Bias
+enum/Bias:
+  bit_size: 3
+  variants:
+  - name: Ua1
+    description: 1 microampere bias current.
+    value: 0
+  - name: Ua2
+    description: 2 microampere bias current.
+    value: 1
+  - name: Ua3
+    description: 3 microampere bias current.
+    value: 2
+  - name: Ua4
+    description: 4 microampere bias current.
+    value: 3
+  - name: Ua5
+    description: 5 microampere bias current.
+    value: 4
+  - name: Ua6
+    description: 6 microampere bias current.
+    value: 5
+  - name: Ua7
+    description: 7 microampere bias current.
+    value: 6
+  - name: Ua8
+    description: 8 microampere bias current.
+    value: 7
+enum/CalibrationMode:
+  bit_size: 1
+  variants:
+  - name: Triggered
+    description: Software or hardware triggered calibration.
+    value: 0
+  - name: Level
+    description: Level calibration controlled by START.
+    value: 1
+enum/Gain:
+  bit_size: 3
+  variants:
+  - name: Mul2
+    description: Gain 2.
+    value: 0
+  - name: Mul4
+    description: Gain 4.
+    value: 1
+  - name: Mul8
+    description: Gain 8.
+    value: 2
+  - name: Mul16
+    description: Gain 16.
+    value: 3
+  - name: Mul32
+    description: Gain 32.
+    value: 4
+enum/Mode:
+  bit_size: 2
+  variants:
+  - name: External
+    description: External feedback network.
+    value: 0
+  - name: ExternalAlt
+    description: Alternative documented external feedback encoding.
+    value: 1
+  - name: Pga
+    description: Internal positive gain network.
+    value: 2
+  - name: Follower
+    description: Internal voltage follower.
+    value: 3

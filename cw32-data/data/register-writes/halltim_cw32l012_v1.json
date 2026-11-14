@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "halltim_cw32l012_v1": [
+      {
+        "block": "HALLTIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 65535,
+        "write_noop": 65535,
+        "zero_to_clear_fields": [
+          "CAPF",
+          "OVF",
+          "MATCHF"
+        ],
+        "evidence": [
+          "docs/halltim-evidence.json: CW32L012 CN V1.4 section18.8.8 printed424/PDF450; R1W0, reset0x0000FFFF, reserved bits keep default."
+        ]
+      }
+    ]
+  }
+}

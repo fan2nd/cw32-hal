@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l031_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L031_UserManual_CN_V1.6.pdf SHA-256 4288cfd97b56385059c5a283f69972047af4773ef8bbc4d8b51d8155fb17a760; section 4.7.6 PDF72/printed71 marks SYSCTRL_HSE bit19 STABLE RO; cw32-data/hse-qualified.yaml.",
+          "vendor:CW32R031_UserManual_CN_V1.3.pdf SHA-256 fbee9b6942be9fa09f00c946705644d5356c4249f3e2280e3dfe5f0cb342eddb; section 4.7.6 PDF74/printed73 independently marks SYSCTRL_HSE bit19 STABLE RO.",
+          "vendor:CW32W031_UserManual_CN_V1.4.pdf SHA-256 b6973677946a9332b0e5b3e954119768aa40469d44140a73e18648e9419bedc9; section 4.7.6 PDF73/printed72 independently marks SYSCTRL_HSE bit19 STABLE RO."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L031: CW32L031_UserManual_CN_V1.6.pdf CN V1.6 section 4.7.7, printed page 72/PDF page 73; https://www.whxy.com/uploads/files/20240920/CW32L031_UserManual_CN_V1.6.pdf; SHA-256 4288cfd97b56385059c5a283f69972047af4773ef8bbc4d8b51d8155fb17a760. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l031/IdeSupport/EWARM/arm/config/debugger/WHXY/CW32L031.svd, SHA-256 f8044dc562825ce49a32f7cfa19df1b09e0f60daebe61e4c91c7e973670be815, already marks this field read-only; docs/oscillator-status-access-evidence.json.",
+          "CW32R031: CW32R031_UserManual_CN_V1.3.pdf CN V1.3 section 4.7.7, printed page 74/PDF page 75; https://www.whxy.com/uploads/files/20240920/CW32R031_UserManual_CN_V1.3.pdf; SHA-256 fbee9b6942be9fa09f00c946705644d5356c4249f3e2280e3dfe5f0cb342eddb. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32r031/IdeSupport/MDK/WHXY.CW32R031_DFP.1.0.2/SVD/CW32R031.svd, SHA-256 0d9273507521d7f63e7614e9ddd445a315ea3206689c86fad9f45b60a44e656a, already marks this field read-only; docs/oscillator-status-access-evidence.json.",
+          "CW32W031: CW32W031_UserManual_CN_V1.4.pdf CN V1.4 section 4.7.7, printed page 73/PDF page 74; https://www.whxy.com/uploads/files/20240920/CW32W031_UserManual_CN_V1.4.pdf; SHA-256 b6973677946a9332b0e5b3e954119768aa40469d44140a73e18648e9419bedc9. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32w031/IdeSupport/MDK/WHXY.CW32W031_DFP.1.0.2/SVD/CW32W031.svd, SHA-256 7b3f7cd1e1e9b311f8bf6da711b9af0a144040883a231dfcc93b9cd2bafe84d0, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/16: source-correct captured RO and independently reviewed own-manual RO for CW32L031, CW32R031, CW32W031; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/17: source-correct captured RO and independently reviewed own-manual RO for CW32L031, CW32R031, CW32W031; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,1599 @@
+{
+  "block/SYSCTRL": {
+    "description": "desc SYSCTRL.",
+    "items": [
+      {
+        "name": "CR0",
+        "description": "desc CR0.",
+        "byte_offset": 0,
+        "fieldset": "CR0"
+      },
+      {
+        "name": "CR1",
+        "description": "desc CR1.",
+        "byte_offset": 4,
+        "fieldset": "CR1"
+      },
+      {
+        "name": "CR2",
+        "description": "desc CR2.",
+        "byte_offset": 8,
+        "fieldset": "CR2"
+      },
+      {
+        "name": "IER",
+        "description": "desc IER.",
+        "byte_offset": 12,
+        "fieldset": "IER"
+      },
+      {
+        "name": "ISR",
+        "description": "desc ISR.",
+        "byte_offset": 16,
+        "access": "Read",
+        "fieldset": "ISR"
+      },
+      {
+        "name": "ICR",
+        "description": "desc ICR.",
+        "byte_offset": 20,
+        "fieldset": "ICR"
+      },
+      {
+        "name": "HSI",
+        "description": "desc HSI.",
+        "byte_offset": 24,
+        "fieldset": "HSI"
+      },
+      {
+        "name": "HSE",
+        "description": "desc HSE.",
+        "byte_offset": 28,
+        "fieldset": "HSE"
+      },
+      {
+        "name": "LSI",
+        "description": "desc LSI.",
+        "byte_offset": 32,
+        "fieldset": "LSI"
+      },
+      {
+        "name": "LSE",
+        "description": "desc LSE.",
+        "byte_offset": 36,
+        "fieldset": "LSE"
+      },
+      {
+        "name": "DEBUG",
+        "description": "desc DEBUG.",
+        "byte_offset": 44,
+        "fieldset": "DEBUG"
+      },
+      {
+        "name": "AHBEN",
+        "description": "desc AHBEN.",
+        "byte_offset": 48,
+        "fieldset": "AHBEN"
+      },
+      {
+        "name": "APBEN2",
+        "description": "desc APBEN2.",
+        "byte_offset": 52,
+        "fieldset": "APBEN2"
+      },
+      {
+        "name": "APBEN1",
+        "description": "desc APBEN1.",
+        "byte_offset": 56,
+        "fieldset": "APBEN1"
+      },
+      {
+        "name": "AHBRST",
+        "description": "desc AHBRST.",
+        "byte_offset": 64,
+        "fieldset": "AHBRST"
+      },
+      {
+        "name": "APBRST2",
+        "description": "desc APBRST2.",
+        "byte_offset": 68,
+        "fieldset": "APBRST2"
+      },
+      {
+        "name": "APBRST1",
+        "description": "desc APBRST1.",
+        "byte_offset": 72,
+        "fieldset": "APBRST1"
+      },
+      {
+        "name": "RESETFLAG",
+        "description": "desc RESETFLAG.",
+        "byte_offset": 76,
+        "fieldset": "RESETFLAG"
+      },
+      {
+        "name": "GTIM1CAP",
+        "description": "desc GTIM1CAP.",
+        "byte_offset": 80,
+        "fieldset": "GTIM1CAP"
+      },
+      {
+        "name": "GTIM2CAP",
+        "description": "desc GTIM2CAP.",
+        "byte_offset": 84,
+        "fieldset": "GTIM2CAP"
+      },
+      {
+        "name": "GTIM3CAP",
+        "description": "desc GTIM3CAP.",
+        "byte_offset": 88,
+        "fieldset": "GTIM3CAP"
+      },
+      {
+        "name": "ATIMETR",
+        "description": "desc ATIMETR.",
+        "byte_offset": 96,
+        "fieldset": "ATIMETR"
+      },
+      {
+        "name": "GTIMETR",
+        "description": "desc GTIMETR.",
+        "byte_offset": 100,
+        "fieldset": "GTIMETR"
+      },
+      {
+        "name": "ATIMGATE",
+        "description": "desc ATIMGATE.",
+        "byte_offset": 104,
+        "fieldset": "ATIMGATE"
+      },
+      {
+        "name": "TIMITR",
+        "description": "desc TIMITR.",
+        "byte_offset": 108,
+        "fieldset": "TIMITR"
+      },
+      {
+        "name": "MCO",
+        "description": "desc MCO.",
+        "byte_offset": 112,
+        "fieldset": "MCO"
+      },
+      {
+        "name": "IRMOD",
+        "description": "desc IRMOD.",
+        "byte_offset": 116,
+        "fieldset": "IRMOD"
+      }
+    ]
+  },
+  "fieldset/AHBEN": {
+    "description": "desc AHBEN.",
+    "fields": [
+      {
+        "name": "DMA",
+        "description": "desc DMA.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "FLASH",
+        "description": "desc FLASH.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CRC",
+        "description": "desc CRC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOA",
+        "description": "desc GPIOA.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOB",
+        "description": "desc GPIOB.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOC",
+        "description": "desc GPIOC.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOD",
+        "description": "desc GPIOD.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOF",
+        "description": "desc GPIOF.",
+        "bit_offset": 9,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/AHBRST": {
+    "description": "desc AHBRST.",
+    "fields": [
+      {
+        "name": "DMA",
+        "description": "desc DMA.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "FLASH",
+        "description": "desc FLASH.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CRC",
+        "description": "desc CRC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOA",
+        "description": "desc GPIOA.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOB",
+        "description": "desc GPIOB.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOC",
+        "description": "desc GPIOC.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOD",
+        "description": "desc GPIOD.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "GPIOF",
+        "description": "desc GPIOF.",
+        "bit_offset": 9,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBEN1": {
+    "description": "desc APBEN1.",
+    "fields": [
+      {
+        "name": "GTIM1",
+        "description": "desc GTIM1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM2",
+        "description": "desc GTIM2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "RTC",
+        "description": "desc RTC.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI2",
+        "description": "desc SPI2.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "UART2",
+        "description": "desc UART2.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "UART3",
+        "description": "desc UART3.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C1",
+        "description": "desc I2C1.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C2",
+        "description": "desc I2C2.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "LCD",
+        "description": "desc LCD.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "LPTIM",
+        "description": "desc LPTIM.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBEN2": {
+    "description": "desc APBEN2.",
+    "fields": [
+      {
+        "name": "ADC",
+        "description": "desc ADC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "VC",
+        "description": "desc VC.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "ATIM",
+        "description": "desc ATIM.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI1",
+        "description": "desc SPI1.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "UART1",
+        "description": "desc UART1.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM3",
+        "description": "desc GTIM3.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM",
+        "description": "desc BTIM.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "AUTOTRIM",
+        "description": "desc AUTOTRIM.",
+        "bit_offset": 13,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBRST1": {
+    "description": "desc APBRST1.",
+    "fields": [
+      {
+        "name": "GTIM1",
+        "description": "desc GTIM1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM2",
+        "description": "desc GTIM2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "RTC",
+        "description": "desc RTC.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI2",
+        "description": "desc SPI2.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "UART2",
+        "description": "desc UART2.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "UART3",
+        "description": "desc UART3.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C1",
+        "description": "desc I2C1.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "I2C2",
+        "description": "desc I2C2.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "LCD",
+        "description": "desc LCD.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "LPTIM",
+        "description": "desc LPTIM.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/APBRST2": {
+    "description": "desc APBRST2.",
+    "fields": [
+      {
+        "name": "ADC",
+        "description": "desc ADC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "VC",
+        "description": "desc VC.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "ATIM",
+        "description": "desc ATIM.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "SPI1",
+        "description": "desc SPI1.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "UART1",
+        "description": "desc UART1.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM3",
+        "description": "desc GTIM3.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM",
+        "description": "desc BTIM.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "AUTOTRIM",
+        "description": "desc AUTOTRIM.",
+        "bit_offset": 13,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ATIMETR": {
+    "description": "desc ATIMETR.",
+    "fields": [
+      {
+        "name": "ATIMETR",
+        "description": "desc ATIMETR.",
+        "bit_offset": 0,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/ATIMGATE": {
+    "description": "desc ATIMGATE.",
+    "fields": [
+      {
+        "name": "ATIMGATE",
+        "description": "desc ATIMGATE.",
+        "bit_offset": 0,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/CR0": {
+    "description": "desc CR0.",
+    "fields": [
+      {
+        "name": "SYSCLK",
+        "description": "desc SYSCLK.",
+        "bit_offset": 0,
+        "bit_size": 3,
+        "enum": "Sysclk"
+      },
+      {
+        "name": "PCLKPRS",
+        "description": "desc PCLKPRS.",
+        "bit_offset": 3,
+        "bit_size": 2
+      },
+      {
+        "name": "HCLKPRS",
+        "description": "desc HCLKPRS.",
+        "bit_offset": 5,
+        "bit_size": 3
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR1": {
+    "description": "desc CR1.",
+    "fields": [
+      {
+        "name": "HSIEN",
+        "description": "desc HSIEN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEEN",
+        "description": "desc HSEEN.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIEN",
+        "description": "desc LSIEN.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEEN",
+        "description": "desc LSEEN.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "LSELOCK",
+        "description": "desc LSELOCK.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "LSECCS",
+        "description": "desc LSECCS.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "HSECCS",
+        "description": "desc HSECCS.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "CLKCCS",
+        "description": "desc CLKCCS.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR2": {
+    "description": "desc CR2.",
+    "fields": [
+      {
+        "name": "SWDIO",
+        "description": "desc SWDIO.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LOCKUP",
+        "description": "desc LOCKUP.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "WAKEUPCLK",
+        "description": "desc WAKEUPCLK.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "FLASHWAIT",
+        "description": "desc FLASHWAIT.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/DEBUG": {
+    "description": "desc DEBUG.",
+    "fields": [
+      {
+        "name": "ATIM",
+        "description": "desc ATIM.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM1",
+        "description": "desc GTIM1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM2",
+        "description": "desc GTIM2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "GTIM3",
+        "description": "desc GTIM3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "BTIM123",
+        "description": "desc BTIM123.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "AUTOTRIM",
+        "description": "desc AUTOTRIM.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "RTC",
+        "description": "desc RTC.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "LPTIM",
+        "description": "desc LPTIM.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/GTIM1CAP": {
+    "description": "desc GTIM1CAP.",
+    "fields": [
+      {
+        "name": "CH1",
+        "description": "desc CH1.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "CH2",
+        "description": "desc CH2.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "CH3",
+        "description": "desc CH3.",
+        "bit_offset": 8,
+        "bit_size": 3
+      },
+      {
+        "name": "CH4",
+        "description": "desc CH4.",
+        "bit_offset": 12,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/GTIM2CAP": {
+    "description": "desc GTIM2CAP.",
+    "fields": [
+      {
+        "name": "CH1",
+        "description": "desc CH1.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "CH2",
+        "description": "desc CH2.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "CH3",
+        "description": "desc CH3.",
+        "bit_offset": 8,
+        "bit_size": 3
+      },
+      {
+        "name": "CH4",
+        "description": "desc CH4.",
+        "bit_offset": 12,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/GTIM3CAP": {
+    "description": "desc GTIM3CAP.",
+    "fields": [
+      {
+        "name": "CH1",
+        "description": "desc CH1.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "CH2",
+        "description": "desc CH2.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "CH3",
+        "description": "desc CH3.",
+        "bit_offset": 8,
+        "bit_size": 3
+      },
+      {
+        "name": "CH4",
+        "description": "desc CH4.",
+        "bit_offset": 12,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/GTIMETR": {
+    "description": "desc GTIMETR.",
+    "fields": [
+      {
+        "name": "GTIM1ETR",
+        "description": "desc GTIM1ETR.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "GTIM2ETR",
+        "description": "desc GTIM2ETR.",
+        "bit_offset": 4,
+        "bit_size": 3
+      },
+      {
+        "name": "GTIM3ETR",
+        "description": "desc GTIM3ETR.",
+        "bit_offset": 8,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/HSE": {
+    "description": "desc HSE.",
+    "fields": [
+      {
+        "name": "DRIVER",
+        "description": "desc DRIVER.",
+        "bit_offset": 0,
+        "bit_size": 2,
+        "enum": "HseDrive"
+      },
+      {
+        "name": "FREQRANGE",
+        "description": "desc FREQRANGE.",
+        "bit_offset": 2,
+        "bit_size": 2,
+        "enum": "HseRange"
+      },
+      {
+        "name": "WAITCYCLE",
+        "description": "desc WAITCYCLE.",
+        "bit_offset": 4,
+        "bit_size": 2,
+        "enum": "HseWait"
+      },
+      {
+        "name": "MODE",
+        "description": "desc MODE.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "FLT",
+        "description": "desc FLT.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "DETCNT",
+        "description": "desc DETCNT.",
+        "bit_offset": 8,
+        "bit_size": 11
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "PDRIVER",
+        "description": "desc PDRIVER.",
+        "bit_offset": 20,
+        "bit_size": 2,
+        "enum": "HseDrive"
+      },
+      {
+        "name": "PFREQRANGE",
+        "description": "desc PFREQRANGE.",
+        "bit_offset": 22,
+        "bit_size": 2,
+        "enum": "HseRange"
+      }
+    ]
+  },
+  "fieldset/HSI": {
+    "description": "desc HSI.",
+    "fields": [
+      {
+        "name": "TRIM",
+        "description": "desc TRIM.",
+        "bit_offset": 0,
+        "bit_size": 11
+      },
+      {
+        "name": "DIV",
+        "description": "desc DIV.",
+        "bit_offset": 11,
+        "bit_size": 4
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ICR": {
+    "description": "desc ICR.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HSERDY",
+        "description": "desc HSERDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "LSERDY",
+        "description": "desc LSERDY.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAIL",
+        "description": "desc LSEFAIL.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAIL",
+        "description": "desc HSEFAIL.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAULT",
+        "description": "desc LSEFAULT.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAULT",
+        "description": "desc HSEFAULT.",
+        "bit_offset": 8,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/IER": {
+    "description": "desc IER.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HSERDY",
+        "description": "desc HSERDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "LSERDY",
+        "description": "desc LSERDY.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAIL",
+        "description": "desc LSEFAIL.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAIL",
+        "description": "desc HSEFAIL.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAULT",
+        "description": "desc LSEFAULT.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAULT",
+        "description": "desc HSEFAULT.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "KEY",
+        "description": "desc KEY.",
+        "bit_offset": 16,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/IRMOD": {
+    "description": "desc IRMOD.",
+    "fields": [
+      {
+        "name": "MOD",
+        "description": "desc MOD.",
+        "bit_offset": 0,
+        "bit_size": 4,
+        "enum": "IrMode"
+      }
+    ]
+  },
+  "fieldset/ISR": {
+    "description": "desc ISR.",
+    "fields": [
+      {
+        "name": "HSIRDY",
+        "description": "desc HSIRDY.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "HSERDY",
+        "description": "desc HSERDY.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "LSIRDY",
+        "description": "desc LSIRDY.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "LSERDY",
+        "description": "desc LSERDY.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAIL",
+        "description": "desc LSEFAIL.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAIL",
+        "description": "desc HSEFAIL.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LSEFAULT",
+        "description": "desc LSEFAULT.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "HSEFAULT",
+        "description": "desc HSEFAULT.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "HSISTABLE",
+        "description": "desc HSISTABLE.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "HSESTABLE",
+        "description": "desc HSESTABLE.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "LSISTABLE",
+        "description": "desc LSISTABLE.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "LSESTABLE",
+        "description": "desc LSESTABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/LSE": {
+    "description": "desc LSE.",
+    "fields": [
+      {
+        "name": "DRIVER",
+        "description": "desc DRIVER.",
+        "bit_offset": 0,
+        "bit_size": 2,
+        "enum": "LseDrive"
+      },
+      {
+        "name": "AMP",
+        "description": "desc AMP.",
+        "bit_offset": 2,
+        "bit_size": 2,
+        "enum": "LseAmplitude"
+      },
+      {
+        "name": "WAITCYCLE",
+        "description": "desc WAITCYCLE.",
+        "bit_offset": 4,
+        "bit_size": 2,
+        "enum": "LseWait"
+      },
+      {
+        "name": "MODE",
+        "description": "desc MODE.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "PDRIVER",
+        "description": "desc PDRIVER.",
+        "bit_offset": 8,
+        "bit_size": 2,
+        "enum": "LseDrive"
+      },
+      {
+        "name": "PAMP",
+        "description": "desc PAMP.",
+        "bit_offset": 10,
+        "bit_size": 2,
+        "enum": "LseAmplitude"
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/LSI": {
+    "description": "desc LSI.",
+    "fields": [
+      {
+        "name": "TRIM",
+        "description": "desc TRIM.",
+        "bit_offset": 0,
+        "bit_size": 10
+      },
+      {
+        "name": "WAITCYCLE",
+        "description": "desc WAITCYCLE.",
+        "bit_offset": 10,
+        "bit_size": 2
+      },
+      {
+        "name": "STABLE",
+        "description": "desc STABLE.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/MCO": {
+    "description": "desc MCO.",
+    "fields": [
+      {
+        "name": "SOURCE",
+        "description": "desc SOURCE.",
+        "bit_offset": 0,
+        "bit_size": 4
+      },
+      {
+        "name": "DIV",
+        "description": "desc DIV.",
+        "bit_offset": 4,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/RESETFLAG": {
+    "description": "desc RESETFLAG.",
+    "fields": [
+      {
+        "name": "POR",
+        "description": "desc POR.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "LVD",
+        "description": "desc LVD.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "IWDT",
+        "description": "desc IWDT.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "WWDT",
+        "description": "desc WWDT.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "RSTB",
+        "description": "desc RSTB.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LOCKUP",
+        "description": "desc LOCKUP.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "SYSRESETREQ",
+        "description": "desc SYSRESETREQ.",
+        "bit_offset": 9,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/TIMITR": {
+    "description": "desc TIMITR.",
+    "fields": [
+      {
+        "name": "ATIMITR",
+        "description": "desc ATIMITR.",
+        "bit_offset": 0,
+        "bit_size": 3
+      },
+      {
+        "name": "GTIM1ITR",
+        "description": "desc GTIM1ITR.",
+        "bit_offset": 3,
+        "bit_size": 3
+      },
+      {
+        "name": "GTIM2ITR",
+        "description": "desc GTIM2ITR.",
+        "bit_offset": 6,
+        "bit_size": 3
+      },
+      {
+        "name": "GTIM3ITR",
+        "description": "desc GTIM3ITR.",
+        "bit_offset": 9,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM1ITR",
+        "description": "desc BTIM1ITR.",
+        "bit_offset": 15,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM2ITR",
+        "description": "desc BTIM2ITR.",
+        "bit_offset": 18,
+        "bit_size": 3
+      },
+      {
+        "name": "BTIM3ITR",
+        "description": "desc BTIM3ITR.",
+        "bit_offset": 21,
+        "bit_size": 3
+      }
+    ]
+  },
+  "enum/HseDrive": {
+    "description": "Own L052 RM section 4.7.6: pre-start and run crystal drive strengths.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "LEVEL0",
+        "description": "Weakest drive.",
+        "value": 0
+      },
+      {
+        "name": "LEVEL1",
+        "description": "Weak drive.",
+        "value": 1
+      },
+      {
+        "name": "LEVEL2",
+        "description": "Default recommended drive.",
+        "value": 2
+      },
+      {
+        "name": "LEVEL3",
+        "description": "Strongest drive.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/HseRange": {
+    "description": "Own L052 RM Tables 4-3 and section 4.7.6: nominal crystal frequency bins.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "MHZ4_TO_8",
+        "description": "4 to 8 MHz.",
+        "value": 0
+      },
+      {
+        "name": "MHZ8_TO_16",
+        "description": "8 to 16 MHz.",
+        "value": 1
+      },
+      {
+        "name": "MHZ16_TO_24",
+        "description": "16 to 24 MHz.",
+        "value": 2
+      },
+      {
+        "name": "MHZ24_TO_32",
+        "description": "24 to 32 MHz.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/HseWait": {
+    "description": "Own L052 RM Table 4-4: startup stable detection clock counts.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "CYCLES8192",
+        "description": "Wait 8192 HSE cycles.",
+        "value": 0
+      },
+      {
+        "name": "CYCLES32768",
+        "description": "Wait 32768 HSE cycles.",
+        "value": 1
+      },
+      {
+        "name": "CYCLES131072",
+        "description": "Wait 131072 HSE cycles.",
+        "value": 2
+      },
+      {
+        "name": "CYCLES262144",
+        "description": "Wait 262144 HSE cycles.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/IrMode": {
+    "description": "Documented infrared modulator inputs and boolean combination; source timers/UARTs are configured independently.",
+    "bit_size": 4,
+    "variants": [
+      {
+        "name": "GTIM1_CH1_AND_GTIM2_CH1",
+        "description": "GTIM1_CH1 & GTIM2_CH1",
+        "value": 0
+      },
+      {
+        "name": "GTIM1_CH1_AND_GTIM2_CH2",
+        "description": "GTIM1_CH1 & GTIM2_CH2",
+        "value": 1
+      },
+      {
+        "name": "GTIM1_CH2_AND_GTIM2_CH1",
+        "description": "GTIM1_CH2 & GTIM2_CH1",
+        "value": 2
+      },
+      {
+        "name": "GTIM1_CH2_AND_GTIM2_CH2",
+        "description": "GTIM1_CH2 & GTIM2_CH2",
+        "value": 3
+      },
+      {
+        "name": "GTIM1_CH1_OR_GTIM2_CH1",
+        "description": "GTIM1_CH1 | GTIM2_CH1",
+        "value": 4
+      },
+      {
+        "name": "GTIM1_CH1_OR_GTIM2_CH2",
+        "description": "GTIM1_CH1 | GTIM2_CH2",
+        "value": 5
+      },
+      {
+        "name": "GTIM1_CH2_OR_GTIM2_CH1",
+        "description": "GTIM1_CH2 | GTIM2_CH1",
+        "value": 6
+      },
+      {
+        "name": "GTIM1_CH2_OR_GTIM2_CH2",
+        "description": "GTIM1_CH2 | GTIM2_CH2",
+        "value": 7
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM1_CH1",
+        "description": "UART1_TXD & GTIM1_CH1",
+        "value": 8
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM1_CH1",
+        "description": "UART1_TXD | GTIM1_CH1",
+        "value": 9
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM1_CH2",
+        "description": "UART1_TXD & GTIM1_CH2",
+        "value": 10
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM1_CH2",
+        "description": "UART1_TXD | GTIM1_CH2",
+        "value": 11
+      },
+      {
+        "name": "UART2_TXD_AND_GTIM2_CH1",
+        "description": "UART2_TXD & GTIM2_CH1",
+        "value": 12
+      },
+      {
+        "name": "UART2_TXD_OR_GTIM2_CH1",
+        "description": "UART2_TXD | GTIM2_CH1",
+        "value": 13
+      },
+      {
+        "name": "UART2_TXD_AND_GTIM2_CH2",
+        "description": "UART2_TXD & GTIM2_CH2",
+        "value": 14
+      },
+      {
+        "name": "UART2_TXD_OR_GTIM2_CH2",
+        "description": "UART2_TXD | GTIM2_CH2",
+        "value": 15
+      }
+    ]
+  },
+  "enum/LseAmplitude": {
+    "description": "Own CW32L052 CN UM Rev1.5 PDF76-77 / printed75-76; docs/lse-active-l052.json. Startup and run banks remain independent.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "LEAST",
+        "description": "Minimum amplitude.",
+        "value": 0
+      },
+      {
+        "name": "SMALL",
+        "description": "Lower amplitude.",
+        "value": 1
+      },
+      {
+        "name": "NORMAL",
+        "description": "Normal amplitude; manual recommended post-stable value.",
+        "value": 2
+      },
+      {
+        "name": "LARGE",
+        "description": "Higher amplitude.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/LseDrive": {
+    "description": "Own CW32L052 CN UM Rev1.5 PDF76-77 / printed75-76; docs/lse-active-l052.json. Startup and run banks remain independent.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "LEAST",
+        "description": "Minimum crystal drive.",
+        "value": 0
+      },
+      {
+        "name": "SMALL",
+        "description": "Lower crystal drive.",
+        "value": 1
+      },
+      {
+        "name": "NORMAL",
+        "description": "Normal crystal drive.",
+        "value": 2
+      },
+      {
+        "name": "STRONG",
+        "description": "Strong crystal drive; manual recommended post-stable value.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/LseWait": {
+    "description": "Own CW32L052 CN UM Rev1.5 PDF76-77 / printed75-76; docs/lse-active-l052.json. Startup and run banks remain independent.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "CYCLES256",
+        "description": "Wait for 256 LSE cycles.",
+        "value": 0
+      },
+      {
+        "name": "CYCLES1024",
+        "description": "Wait for 1024 LSE cycles.",
+        "value": 1
+      },
+      {
+        "name": "CYCLES4096",
+        "description": "Wait for 4096 LSE cycles.",
+        "value": 2
+      },
+      {
+        "name": "CYCLES16384",
+        "description": "Wait for 16384 LSE cycles.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/Sysclk": {
+    "description": "Own L052 RM section 4.7.1: system clock; codes 2 and 5..7 reserved, no PLL.",
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "HSI",
+        "description": "HSI system clock.",
+        "value": 0
+      },
+      {
+        "name": "HSE",
+        "description": "HSE system clock.",
+        "value": 1
+      },
+      {
+        "name": "LSI",
+        "description": "LSI system clock.",
+        "value": 3
+      },
+      {
+        "name": "LSE",
+        "description": "LSE system clock.",
+        "value": 4
+      }
+    ]
+  }
+}

@@ -1,0 +1,271 @@
+block/VC:
+  description: desc VC1.
+  items:
+  - name: CR0
+    description: Control register0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: Control register1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: CR2
+    description: Control register1.
+    byte_offset: 8
+    fieldset: CR2
+  - name: SR
+    description: Status register.
+    byte_offset: 12
+    fieldset: SR
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: RESP
+    description: desc RESP.
+    bit_offset: 1
+    bit_size: 1
+    enum: ResponseSpeed
+  - name: HYS
+    description: desc HYS.
+    bit_offset: 3
+    bit_size: 1
+    enum: Hysteresis
+  - name: IE
+    description: desc IE.
+    bit_offset: 5
+    bit_size: 1
+  - name: POL
+    description: desc POL.
+    bit_offset: 6
+    bit_size: 1
+    enum: Polarity
+  - name: WINDOW
+    description: desc WINDOW.
+    bit_offset: 7
+    bit_size: 1
+  - name: INN
+    description: desc INN.
+    bit_offset: 8
+    bit_size: 2
+  - name: INP
+    description: desc INP.
+    bit_offset: 12
+    bit_size: 2
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: FLTTIME
+    description: desc FLTTIME.
+    bit_offset: 0
+    bit_size: 4
+  - name: FLTCLK
+    description: desc FLTCLK.
+    bit_offset: 4
+    bit_size: 1
+    enum: FilterClock
+  - name: FALLIE
+    description: desc FALLIE.
+    bit_offset: 5
+    bit_size: 1
+  - name: RISEIE
+    description: desc RISEIE.
+    bit_offset: 6
+    bit_size: 1
+  - name: HIGHIE
+    description: desc HIGHIE.
+    bit_offset: 7
+    bit_size: 1
+  - name: BLANKTIME
+    description: desc BLANKTIME.
+    bit_offset: 8
+    bit_size: 3
+  - name: BLANKLVL
+    description: desc BLANKLVL.
+    bit_offset: 11
+    bit_size: 1
+fieldset/CR2:
+  description: Control register1.
+  fields:
+  - name: ATIMTRGO
+    description: desc ATIMTRGO.
+    bit_offset: 0
+    bit_size: 1
+  - name: ATIMTRGO2
+    description: desc ATIMTRGO2.
+    bit_offset: 1
+    bit_size: 1
+  - name: ATIMOC1REFC
+    description: desc ATIMOC1REFC.
+    bit_offset: 2
+    bit_size: 1
+  - name: ATIMOC2REFC
+    description: desc ATIMOC2REFC.
+    bit_offset: 3
+    bit_size: 1
+  - name: ATIMOC3REFC
+    description: desc ATIMOC3REFC.
+    bit_offset: 4
+    bit_size: 1
+  - name: ATIMOC4REFC
+    description: desc ATIMOC4REFC.
+    bit_offset: 5
+    bit_size: 1
+  - name: ATIMOC5REFC
+    description: desc ATIMOC5REFC.
+    bit_offset: 6
+    bit_size: 1
+  - name: ATIMOC6REFC
+    description: desc ATIMOC6REFC.
+    bit_offset: 7
+    bit_size: 1
+  - name: GTIM1TRGO
+    description: desc GTIM1TRGO.
+    bit_offset: 8
+    bit_size: 1
+  - name: GTIM1OC1REFC
+    description: desc GTIM1OC1REFC.
+    bit_offset: 9
+    bit_size: 1
+  - name: GTIM1OC2REFC
+    description: desc GTIM1OC2REFC.
+    bit_offset: 10
+    bit_size: 1
+  - name: GTIM1OC3REFC
+    description: desc GTIM1OC3REFC.
+    bit_offset: 11
+    bit_size: 1
+  - name: GTIM1OC4REFC
+    description: desc GTIM1OC4REFC.
+    bit_offset: 12
+    bit_size: 1
+  - name: GTIM2TRGO
+    description: desc GTIM2TRGO.
+    bit_offset: 13
+    bit_size: 1
+  - name: GTIM2OC1REFC
+    description: desc GTIM2OC1REFC.
+    bit_offset: 14
+    bit_size: 1
+  - name: GTIM2OC2REFC
+    description: desc GTIM2OC2REFC.
+    bit_offset: 15
+    bit_size: 1
+  - name: GTIM2OC3REFC
+    description: desc GTIM2OC3REFC.
+    bit_offset: 16
+    bit_size: 1
+  - name: GTIM2OC4REFC
+    description: desc GTIM2OC4REFC.
+    bit_offset: 17
+    bit_size: 1
+  - name: GTIM3TRGO
+    description: desc GTIM3TRGO.
+    bit_offset: 18
+    bit_size: 1
+  - name: GTIM3OC1REFC
+    description: desc GTIM3OC1REFC.
+    bit_offset: 19
+    bit_size: 1
+  - name: GTIM3OC2REFC
+    description: desc GTIM3OC2REFC.
+    bit_offset: 20
+    bit_size: 1
+  - name: GTIM3OC3REFC
+    description: desc GTIM3OC3REFC.
+    bit_offset: 21
+    bit_size: 1
+  - name: GTIM3OC4REFC
+    description: desc GTIM3OC4REFC.
+    bit_offset: 22
+    bit_size: 1
+  - name: GTIM4TRGO
+    description: desc GTIM4TRGO.
+    bit_offset: 23
+    bit_size: 1
+  - name: GTIM4OC1REFC
+    description: desc GTIM4OC1REFC.
+    bit_offset: 24
+    bit_size: 1
+  - name: GTIM4OC2REFC
+    description: desc GTIM4OC2REFC.
+    bit_offset: 25
+    bit_size: 1
+  - name: GTIM4OC3REFC
+    description: desc GTIM4OC3REFC.
+    bit_offset: 26
+    bit_size: 1
+  - name: GTIM4OC4REFC
+    description: desc GTIM4OC4REFC.
+    bit_offset: 27
+    bit_size: 1
+  - name: BTIM1TRGO
+    description: desc BTIM1TRGO.
+    bit_offset: 28
+    bit_size: 1
+  - name: BTIM2TRGO
+    description: desc BTIM2TRGO.
+    bit_offset: 29
+    bit_size: 1
+  - name: BTIM3TRGO
+    description: desc BTIM3TRGO.
+    bit_offset: 30
+    bit_size: 1
+  - name: HALLTIMTRGO
+    description: desc HALLTIM1TRGO.
+    bit_offset: 31
+    bit_size: 1
+fieldset/SR:
+  description: Status register.
+  fields:
+  - name: INTF
+    description: desc INTF.
+    bit_offset: 0
+    bit_size: 1
+  - name: FLTV
+    description: desc FLTV.
+    bit_offset: 1
+    bit_size: 1
+enum/FilterClock:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: INTERNAL_RC
+    description: Internal RC filter clock; see the selected own-manual source.
+    value: 0
+  - name: PCLK
+    description: Peripheral bus clock.
+    value: 1
+enum/Hysteresis:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: NONE
+    description: Hysteresis disabled.
+    value: 0
+  - name: ENABLED
+    description: Hysteresis enabled; own datasheet typical value only.
+    value: 1
+enum/Polarity:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: NORMAL
+    description: Non-inverted output.
+    value: 0
+  - name: INVERTED
+    description: Inverted output.
+    value: 1
+enum/ResponseSpeed:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: LOW
+    description: Low speed and power.
+    value: 0
+  - name: HIGH
+    description: High speed and power.
+    value: 1

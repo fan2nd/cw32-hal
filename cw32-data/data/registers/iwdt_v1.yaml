@@ -1,0 +1,103 @@
+block/IWDT:
+  description: desc IWDT.
+  items:
+  - name: KR
+    description: Key register.
+    byte_offset: 0
+    access: Write
+    fieldset: KR
+  - name: CR
+    description: Control register.
+    byte_offset: 4
+    fieldset: CR
+  - name: ARR
+    description: Auto reload register.
+    byte_offset: 8
+    fieldset: ARR
+  - name: SR
+    description: Status register.
+    byte_offset: 12
+    fieldset: SR
+  - name: WINR
+    description: Window register.
+    byte_offset: 16
+    fieldset: WINR
+  - name: CNT
+    description: counter.
+    byte_offset: 36
+    access: Read
+    fieldset: CNT
+fieldset/ARR:
+  description: Auto reload register.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 12
+fieldset/CNT:
+  description: counter.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 12
+fieldset/CR:
+  description: Control register.
+  fields:
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 0
+    bit_size: 3
+  - name: ACTION
+    description: desc ACTION.
+    bit_offset: 3
+    bit_size: 1
+  - name: IE
+    description: desc IE.
+    bit_offset: 4
+    bit_size: 1
+  - name: PAUSE
+    description: desc PAUSE.
+    bit_offset: 5
+    bit_size: 1
+fieldset/KR:
+  description: Key register.
+  fields:
+  - name: KR
+    description: desc KR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/SR:
+  description: Status register.
+  fields:
+  - name: CRF
+    description: desc CRF.
+    bit_offset: 0
+    bit_size: 1
+  - name: ARRF
+    description: desc ARRF.
+    bit_offset: 1
+    bit_size: 1
+  - name: WINRF
+    description: desc WINRF.
+    bit_offset: 2
+    bit_size: 1
+  - name: OV
+    description: desc OV.
+    bit_offset: 3
+    bit_size: 1
+  - name: RUN
+    description: desc RUN.
+    bit_offset: 4
+    bit_size: 1
+  - name: RELOAD
+    description: desc RELOAD.
+    bit_offset: 5
+    bit_size: 1
+fieldset/WINR:
+  description: Window register.
+  fields:
+  - name: WINR
+    description: desc WINR.
+    bit_offset: 0
+    bit_size: 12

@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l083_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L083_UserManual_CN_V2.0.pdf SHA-256 9930bf1755f3bbf8933163c2d0da57fd9a4f3250a358a4c0bfc75ed4eda3a0a3; section 4.7.6 PDF80/printed79 marks SYSCTRL_HSE bit19 STABLE RO; cw32-data/hse-qualified.yaml."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L083: CW32L083_UserManual_CN_V2.0.pdf CN V2.0 section 4.7.7, printed page 80/PDF page 81; https://www.whxy.com/uploads/files/20240920/CW32L083_UserManual_CN_V2.0.pdf; SHA-256 9930bf1755f3bbf8933163c2d0da57fd9a4f3250a358a4c0bfc75ed4eda3a0a3. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l083/IdeSupport/MDK/WHXY.CW32L083_DFP.1.0.9/SVD/CW32L083.svd, SHA-256 ddc840e2c52840ca3687fb78edeffff8ef7a41d6acd33cba32f44ec1b606a334, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "PLL",
+        "fieldset": "PLL",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L083_UserManual_CN_V2.0.pdf SHA-256 9930bf1755f3bbf8933163c2d0da57fd9a4f3250a358a4c0bfc75ed4eda3a0a3; section4.7.8 PDF82/printed81 marks PLL.STABLE RO; cw32-data/pll-qualified.yaml."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/21: source-correct captured RO and independently reviewed own-manual RO for CW32L083; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/22: source-correct captured RO and independently reviewed own-manual RO for CW32L083; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

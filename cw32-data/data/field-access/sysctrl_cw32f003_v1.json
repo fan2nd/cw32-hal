@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32f003_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/6: source-correct captured RO and independently reviewed own-manual RO for CW32F003; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HEX",
+        "fieldset": "HEX",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/7: source-correct captured RO and independently reviewed own-manual RO for CW32F003; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/8: source-correct captured RO and independently reviewed own-manual RO for CW32F003; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

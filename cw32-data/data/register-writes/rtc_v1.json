@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "rtc_v1": [
+      {
+        "block": "RTC",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 127,
+        "write_noop": 127,
+        "zero_to_clear_fields": [
+          "ALARMA",
+          "ALARMB",
+          "AWTIMER",
+          "TAMP",
+          "TAMPOV",
+          "INTERVAL"
+        ],
+        "evidence": [
+          "docs/rtc-alarms-evidence.json: own-family ICR pages for rtc_v1",
+          "docs/rtc-alarms.md: documented R1W0 seed and reserved-bit policy"
+        ]
+      }
+    ]
+  }
+}

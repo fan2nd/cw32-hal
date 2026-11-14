@@ -1,0 +1,74 @@
+{
+  "profile": "CW32L052",
+  "source_device": "CW32L052",
+  "shared_map_evidence": null,
+  "source_sha256": "78920e75111aa9845d9f66a2f305f96ec5577cde8c52543f0fa1d708e53867c7",
+  "source_url": "https://www.whxy.com/uploads/files/20260309/CW32L052_StandardPeripheralLib_V1.4.zip",
+  "peripherals": 38,
+  "register_blocks": 22,
+  "registers": 241,
+  "fieldsets": 241,
+  "fields": 1638,
+  "interrupts": 30,
+  "die_pins": 0,
+  "pinouts": {
+    "exact_parts": 3,
+    "physical_pin_entries": 176,
+    "alias_policy": "common-package-intersection: GPIO labels common to every reviewed package for the family or matching family_part; no physical package is assigned to an alias"
+  },
+  "dma": {
+    "physical_channels": 4,
+    "hardware_requests": 39,
+    "excluded_sdk_requests": 12,
+    "unresolved_semantics": 0
+  },
+  "clocks": {
+    "peripheral_records": 38,
+    "supported_records": 25,
+    "control_records": 35,
+    "partial_records": 13,
+    "shared_enable_groups": 3,
+    "shared_reset_groups": 3,
+    "limitations": [
+      "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+      "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+      "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+      "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+      "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+      "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+      "All APB gate registers use the single PCLK; APBEN1/APBEN2 are register banks, not evidence for distinct PCLK1/PCLK2.",
+      "StopMode is deliberately omitted: Sleep/DeepSleep behavior is clock-source dependent and upstream Stop1 requires explicit conservative build policy.",
+      "Supported indicates bus/kernel upstream source plus gate/reset field identities; sidecar gate-key and active-low reset semantics remain mandatory consumer considerations.",
+      "Clock metadata: 25 complete identities, 35 independently verified controls; 13 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+    ]
+  },
+  "applied_errata": [
+    "nvicPrioBits 3 -> 2: Official CW32L052 SDK Libraries/inc header __NVIC_PRIO_BITS=2; SHA256 7cb4bd657920b5a5d278e3afd3962f3060ea5fd401391225bd7a0c97d8b68ba1",
+    "Corrected field RAM.ADDR.ADDR at bit 0: width 14 -> 32: CW32L052 own 1.5 manual section 6.6.1, printed page 109/PDF page 110: RAM_ADDR is full absolute bits31:0, reset 0x20000000. Correct the source SVD 14-bit truncation only. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf PDF SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41. See docs/ram-parity-evidence.json.",
+    "GPIO.ISR ReadWrite -> Read: CW32L052 User Manual CN V1.5 section 9.6.12, printed page 154/PDF page 155: GPIOx_ISR at offset 0x34 is RO for x=A,B,C,D,F. Access-only correction; existing register width and fieldsets unchanged. PDF SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf",
+    "GTIM.ISR ReadWrite -> Read: CW32L052 User Manual CN V1.5 section 15.8.13, printed page 277/PDF page 278: GTIM ISR at offset 0x318 marks every defined status field RO; flags clear through the separate ICR. Access-only correction; widths, offsets and fields unchanged. PDF SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf",
+    "LCD.RAM10 removed: Own CW32L052 UM V1.5 Table 26-9 printed p550/PDF p551 and §26.7.6–15 pp556–557: only RAM0–8 and RAM13 documented; RAM9–12 are unsupported SVD/SDK copy artifacts. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41",
+    "LCD.RAM11 removed: Own CW32L052 UM V1.5 Table 26-9 printed p550/PDF p551 and §26.7.6–15 pp556–557: only RAM0–8 and RAM13 documented; RAM9–12 are unsupported SVD/SDK copy artifacts. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41",
+    "LCD.RAM12 removed: Own CW32L052 UM V1.5 Table 26-9 printed p550/PDF p551 and §26.7.6–15 pp556–557: only RAM0–8 and RAM13 documented; RAM9–12 are unsupported SVD/SDK copy artifacts. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41",
+    "LCD.RAM9 removed: Own CW32L052 UM V1.5 Table 26-9 printed p550/PDF p551 and §26.7.6–15 pp556–557: only RAM0–8 and RAM13 documented; RAM9–12 are unsupported SVD/SDK copy artifacts. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41",
+    "Removed reserved field COMPEN.FREQ at bits 16+4: Own CW32L052 User Manual CN V1.5 section 12.5.5, printed page 194/PDF page 195: RTC_COMPEN bits31:16 are reserved. Remove obsolete SVD FREQ bits19:16 only; lower sixteen bits and SOURCE HSE dividers remain valid. PDF SHA256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41. https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf"
+  ],
+  "limitations": [
+    "SVD-imported registers are not silicon-tested or a guarantee the vendor SVD is error-free.",
+    "Generic family features have no memory-size assertion; exact part features source memory separately.",
+    "Exact-part core pins and physical package pins come only from reviewed package tables; package-less aliases use an explicitly documented common-package GPIO intersection when configured. Input-only/output capability remains in pinout sidecars.",
+    "Only configured reviewed clock and DMA projections are imported. Verified reset polarity, write keys and shared controls are transported independently in rcc_control; unresolved kernel identities are withheld.",
+    "Digital alternate-function routes are imported only for explicitly reviewed profiles and filtered by package pins. Analog/special routes and flash geometry remain incomplete.",
+    "Read-clear, write-one-clear and reset-value semantics are not represented by chiptool IR.",
+    "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+    "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+    "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+    "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+    "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+    "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+    "All APB gate registers use the single PCLK; APBEN1/APBEN2 are register banks, not evidence for distinct PCLK1/PCLK2.",
+    "StopMode is deliberately omitted: Sleep/DeepSleep behavior is clock-source dependent and upstream Stop1 requires explicit conservative build policy.",
+    "Supported indicates bus/kernel upstream source plus gate/reset field identities; sidecar gate-key and active-low reset semantics remain mandatory consumer considerations.",
+    "Clock metadata: 25 complete identities, 35 independently verified controls; 13 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+  ]
+}

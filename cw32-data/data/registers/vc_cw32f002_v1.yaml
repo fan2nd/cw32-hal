@@ -1,0 +1,167 @@
+block/VC:
+  description: desc VC1.
+  items:
+  - name: DIV
+    description: desc DIV.
+    byte_offset: 0
+    fieldset: DIV
+  - name: CR0
+    description: Control register0.
+    byte_offset: 4
+    fieldset: CR0
+  - name: CR1
+    description: Control register1.
+    byte_offset: 8
+    fieldset: CR1
+  - name: SR
+    description: Status register.
+    byte_offset: 12
+    fieldset: SR
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: RESP
+    description: desc RESP.
+    bit_offset: 1
+    bit_size: 2
+    enum: ResponseSpeed
+  - name: HYS
+    description: desc HYS.
+    bit_offset: 3
+    bit_size: 2
+    enum: Hysteresis
+  - name: IE
+    description: desc IE.
+    bit_offset: 5
+    bit_size: 1
+  - name: POL
+    description: desc POL.
+    bit_offset: 6
+    bit_size: 1
+    enum: Polarity
+  - name: WINDOW
+    description: desc WINDOW.
+    bit_offset: 7
+    bit_size: 1
+  - name: INP
+    description: desc INP.
+    bit_offset: 8
+    bit_size: 4
+  - name: INN
+    description: desc INN.
+    bit_offset: 12
+    bit_size: 4
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: FLTEN
+    description: desc FLTEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: FLTTIME
+    description: desc FLTTIME.
+    bit_offset: 1
+    bit_size: 3
+  - name: FLTCLK
+    description: desc FLTCLK.
+    bit_offset: 4
+    bit_size: 1
+    enum: FilterClock
+  - name: FALLIE
+    description: desc FALLIE.
+    bit_offset: 5
+    bit_size: 1
+  - name: RISEIE
+    description: desc RISEIE.
+    bit_offset: 6
+    bit_size: 1
+  - name: HIGHIE
+    description: desc HIGHIE.
+    bit_offset: 7
+    bit_size: 1
+fieldset/DIV:
+  description: desc DIV.
+  fields:
+  - name: DIV
+    description: desc DIV.
+    bit_offset: 0
+    bit_size: 6
+  - name: EN
+    description: desc EN.
+    bit_offset: 6
+    bit_size: 1
+  - name: VIN
+    description: desc VIN.
+    bit_offset: 7
+    bit_size: 1
+fieldset/SR:
+  description: Status register.
+  fields:
+  - name: INTF
+    description: desc INTF.
+    bit_offset: 0
+    bit_size: 1
+  - name: FLTV
+    description: desc FLTV.
+    bit_offset: 1
+    bit_size: 1
+  - name: READY
+    description: desc READY.
+    bit_offset: 2
+    bit_size: 1
+enum/FilterClock:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: INTERNAL_RC
+    description: Internal RC filter clock; see the selected own-manual source.
+    value: 0
+  - name: PCLK
+    description: Peripheral bus clock.
+    value: 1
+enum/Hysteresis:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 2
+  variants:
+  - name: NONE
+    description: Hysteresis disabled.
+    value: 0
+  - name: LOW
+    description: Approximately 10 mV hysteresis; typical only.
+    value: 1
+  - name: MEDIUM
+    description: Approximately 20 mV hysteresis; typical only.
+    value: 2
+  - name: HIGH
+    description: Approximately 30 mV hysteresis; typical only.
+    value: 3
+enum/Polarity:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 1
+  variants:
+  - name: NORMAL
+    description: Non-inverted output.
+    value: 0
+  - name: INVERTED
+    description: Inverted output.
+    value: 1
+enum/ResponseSpeed:
+  description: Source-qualified comparator control; see docs/comparator.md and own-manual evidence.
+  bit_size: 2
+  variants:
+  - name: ULTRA_LOW
+    description: Ultra-low speed and power.
+    value: 0
+  - name: LOW
+    description: Low speed and power.
+    value: 1
+  - name: MEDIUM
+    description: Medium speed and power.
+    value: 2
+  - name: HIGH
+    description: High speed and power.
+    value: 3

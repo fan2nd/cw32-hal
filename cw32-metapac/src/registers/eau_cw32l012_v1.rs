@@ -1,0 +1,187 @@
+use crate::metadata::ir::*;
+pub(crate) static REGISTERS: IR = IR {
+    blocks: &[Block {
+        name: "Eau",
+        extends: None,
+        description: Some("desc EAU."),
+        items: &[
+            BlockItem {
+                name: "csr",
+                description: Some("desc CSR."),
+                array: None,
+                byte_offset: 0x0,
+                inner: BlockItemInner::Register(Register {
+                    access: Access::ReadWrite,
+                    bit_size: 32,
+                    fieldset: Some("Csr"),
+                }),
+            },
+            BlockItem {
+                name: "dividend",
+                description: Some("desc DIVIDEND."),
+                array: None,
+                byte_offset: 0x4,
+                inner: BlockItemInner::Register(Register {
+                    access: Access::ReadWrite,
+                    bit_size: 32,
+                    fieldset: Some("Dividend"),
+                }),
+            },
+            BlockItem {
+                name: "divisor",
+                description: Some("desc DIVISOR."),
+                array: None,
+                byte_offset: 0x8,
+                inner: BlockItemInner::Register(Register {
+                    access: Access::ReadWrite,
+                    bit_size: 32,
+                    fieldset: Some("Divisor"),
+                }),
+            },
+            BlockItem {
+                name: "quotient",
+                description: Some("desc QUOTIENT."),
+                array: None,
+                byte_offset: 0xc,
+                inner: BlockItemInner::Register(Register {
+                    access: Access::Read,
+                    bit_size: 32,
+                    fieldset: Some("Quotient"),
+                }),
+            },
+            BlockItem {
+                name: "remainder",
+                description: Some("desc REMAINDER."),
+                array: None,
+                byte_offset: 0x10,
+                inner: BlockItemInner::Register(Register {
+                    access: Access::Read,
+                    bit_size: 32,
+                    fieldset: Some("Remainder"),
+                }),
+            },
+        ],
+    }],
+    fieldsets: &[
+        FieldSet {
+            name: "Csr",
+            extends: None,
+            description: Some("desc CSR."),
+            bit_size: 32,
+            fields: &[
+                Field {
+                    name: "mode",
+                    description: Some("desc MODE."),
+                    bit_offset: BitOffset::Regular(RegularBitOffset { offset: 0 }),
+                    bit_size: 2,
+                    array: None,
+                    enumm: Some("Mode"),
+                },
+                Field {
+                    name: "ovr",
+                    description: Some("desc OVR."),
+                    bit_offset: BitOffset::Regular(RegularBitOffset { offset: 2 }),
+                    bit_size: 1,
+                    array: None,
+                    enumm: None,
+                },
+                Field {
+                    name: "zero",
+                    description: Some("desc ZERO."),
+                    bit_offset: BitOffset::Regular(RegularBitOffset { offset: 3 }),
+                    bit_size: 1,
+                    array: None,
+                    enumm: None,
+                },
+                Field {
+                    name: "busy",
+                    description: Some("desc BUSY."),
+                    bit_offset: BitOffset::Regular(RegularBitOffset { offset: 4 }),
+                    bit_size: 1,
+                    array: None,
+                    enumm: None,
+                },
+            ],
+        },
+        FieldSet {
+            name: "Dividend",
+            extends: None,
+            description: Some("desc DIVIDEND."),
+            bit_size: 32,
+            fields: &[Field {
+                name: "dividend",
+                description: Some("desc DIVIDEND."),
+                bit_offset: BitOffset::Regular(RegularBitOffset { offset: 0 }),
+                bit_size: 32,
+                array: None,
+                enumm: None,
+            }],
+        },
+        FieldSet {
+            name: "Divisor",
+            extends: None,
+            description: Some("desc DIVISOR."),
+            bit_size: 32,
+            fields: &[Field {
+                name: "divisor",
+                description: Some("desc DIVISOR."),
+                bit_offset: BitOffset::Regular(RegularBitOffset { offset: 0 }),
+                bit_size: 32,
+                array: None,
+                enumm: None,
+            }],
+        },
+        FieldSet {
+            name: "Quotient",
+            extends: None,
+            description: Some("desc QUOTIENT."),
+            bit_size: 32,
+            fields: &[Field {
+                name: "quotient",
+                description: Some("desc QUOTIENT."),
+                bit_offset: BitOffset::Regular(RegularBitOffset { offset: 0 }),
+                bit_size: 32,
+                array: None,
+                enumm: None,
+            }],
+        },
+        FieldSet {
+            name: "Remainder",
+            extends: None,
+            description: Some("desc REMAINDER."),
+            bit_size: 32,
+            fields: &[Field {
+                name: "remainder",
+                description: Some("desc REMAINDER."),
+                bit_offset: BitOffset::Regular(RegularBitOffset { offset: 0 }),
+                bit_size: 32,
+                array: None,
+                enumm: None,
+            }],
+        },
+    ],
+    enums: &[Enum {
+        name: "Mode",
+        description: Some(
+            "L012 EAU Mode encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.",
+        ),
+        bit_size: 2,
+        variants: &[
+            EnumVariant {
+                name: "SignedDivision",
+                description: None,
+                value: 1,
+            },
+            EnumVariant {
+                name: "SquareRoot",
+                description: None,
+                value: 2,
+            },
+            EnumVariant {
+                name: "UnsignedDivision",
+                description: None,
+                value: 0,
+            },
+        ],
+    }],
+};

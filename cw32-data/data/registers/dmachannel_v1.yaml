@@ -1,0 +1,144 @@
+block/DMACHANNEL:
+  description: DMA Channel 1.
+  items:
+  - name: CSR
+    description: Channel.y control and status register.
+    byte_offset: 0
+    fieldset: CSR
+  - name: CNT
+    description: Channel.y counter register.
+    byte_offset: 4
+    fieldset: CNT
+  - name: SRCADDR
+    description: Channel.y source address register.
+    byte_offset: 8
+    fieldset: SRCADDR
+  - name: DSTADDR
+    description: Channel.y destination address register.
+    byte_offset: 12
+    fieldset: DSTADDR
+  - name: TRIG
+    description: Channel.y trigger register.
+    byte_offset: 16
+    fieldset: TRIG
+fieldset/CNT:
+  description: Channel.y counter register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+  - name: REPEAT
+    description: desc REPEAT.
+    bit_offset: 16
+    bit_size: 4
+fieldset/CSR:
+  description: Channel.y control and status register.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: TCIE
+    description: desc TCIE.
+    bit_offset: 1
+    bit_size: 1
+  - name: TEIE
+    description: desc TEIE.
+    bit_offset: 2
+    bit_size: 1
+  - name: TRANS
+    description: desc TRANS.
+    bit_offset: 3
+    bit_size: 1
+    enum: TransferMode
+  - name: SRCINC
+    description: desc SRCINC.
+    bit_offset: 4
+    bit_size: 1
+  - name: DSTINC
+    description: desc DSTINC.
+    bit_offset: 5
+    bit_size: 1
+  - name: SIZE
+    description: desc SIZE.
+    bit_offset: 6
+    bit_size: 2
+    enum: Width
+  - name: STATUS
+    description: desc STATUS.
+    bit_offset: 8
+    bit_size: 3
+    enum: Status
+fieldset/DSTADDR:
+  description: Channel.y destination address register.
+  fields:
+  - name: DSTADDR
+    description: desc DSTADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/SRCADDR:
+  description: Channel.y source address register.
+  fields:
+  - name: SRCADDR
+    description: desc SRCADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/TRIG:
+  description: Channel.y trigger register.
+  fields:
+  - name: TYPE
+    description: desc TYPE.
+    bit_offset: 0
+    bit_size: 1
+    enum: Trigger
+  - name: SOFTSRC
+    description: desc SOFTSRC.
+    bit_offset: 1
+    bit_size: 1
+  - name: HARDSRC
+    description: desc HARDSRC.
+    bit_offset: 2
+    bit_size: 6
+enum/Status:
+  description: Own-family manuals sections 8.8.3-8.8.4 agree across all canonical users; see docs/dma-owned-copy-evidence.md.
+  bit_size: 3
+  variants:
+  - name: INITIAL
+    value: 0
+  - name: ADDRESS_OUT_OF_RANGE
+    value: 1
+  - name: STOPPED
+    value: 2
+  - name: SOURCE_ERROR
+    value: 3
+  - name: DESTINATION_ERROR
+    value: 4
+  - name: COMPLETE
+    value: 5
+enum/TransferMode:
+  description: Own-family manuals sections 8.8.3-8.8.4 agree across all canonical users; see docs/dma-owned-copy-evidence.md.
+  bit_size: 1
+  variants:
+  - name: BULK
+    value: 0
+  - name: BLOCK
+    value: 1
+enum/Trigger:
+  description: Own-family manuals sections 8.8.3-8.8.4 agree across all canonical users; see docs/dma-owned-copy-evidence.md.
+  bit_size: 1
+  variants:
+  - name: SOFTWARE
+    value: 0
+  - name: HARDWARE
+    value: 1
+enum/Width:
+  description: Own-family manuals sections 8.8.3-8.8.4 agree across all canonical users; see docs/dma-owned-copy-evidence.md.
+  bit_size: 2
+  variants:
+  - name: BYTE
+    value: 0
+  - name: HALF_WORD
+    value: 1
+  - name: WORD
+    value: 2

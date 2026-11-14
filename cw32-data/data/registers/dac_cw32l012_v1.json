@@ -1,0 +1,479 @@
+{
+  "block/DAC": {
+    "description": "desc DAC.",
+    "items": [
+      {
+        "name": "CR0",
+        "description": "Control register.",
+        "byte_offset": 0,
+        "fieldset": "CR0"
+      },
+      {
+        "name": "SWTRGR",
+        "description": "Data register.",
+        "byte_offset": 4,
+        "fieldset": "SWTRGR"
+      },
+      {
+        "name": "DHR12R1",
+        "description": "desc DHR12R1.",
+        "byte_offset": 8,
+        "fieldset": "DHR12R1"
+      },
+      {
+        "name": "DHR12L1",
+        "description": "desc DHR12L1.",
+        "byte_offset": 12,
+        "fieldset": "DHR12L1"
+      },
+      {
+        "name": "DHR8R1",
+        "description": "desc DHR8R1.",
+        "byte_offset": 16,
+        "fieldset": "DHR8R1"
+      },
+      {
+        "name": "DHR12R2",
+        "description": "desc DHR12R2.",
+        "byte_offset": 20,
+        "fieldset": "DHR12R2"
+      },
+      {
+        "name": "DHR12L2",
+        "description": "desc DHR12L2.",
+        "byte_offset": 24,
+        "fieldset": "DHR12L2"
+      },
+      {
+        "name": "DHR8R2",
+        "description": "desc DHR8R2.",
+        "byte_offset": 28,
+        "fieldset": "DHR8R2"
+      },
+      {
+        "name": "DHR12RD",
+        "description": "desc DHR12RD.",
+        "byte_offset": 32,
+        "fieldset": "DHR12RD"
+      },
+      {
+        "name": "DHR12LD",
+        "description": "desc DHR12LD.",
+        "byte_offset": 36,
+        "fieldset": "DHR12LD"
+      },
+      {
+        "name": "DHR8RD",
+        "description": "desc DHR8RD.",
+        "byte_offset": 40,
+        "fieldset": "DHR8RD"
+      },
+      {
+        "name": "DOR1",
+        "description": "desc DOR1.",
+        "byte_offset": 44,
+        "fieldset": "DOR1"
+      },
+      {
+        "name": "DOR2",
+        "description": "desc DOR2.",
+        "byte_offset": 48,
+        "fieldset": "DOR2"
+      },
+      {
+        "name": "CR1",
+        "description": "Result register.",
+        "byte_offset": 52,
+        "fieldset": "CR1"
+      }
+    ]
+  },
+  "fieldset/CR0": {
+    "description": "Control register.",
+    "fields": [
+      {
+        "name": "EN1",
+        "description": "desc EN1.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "TEN1",
+        "description": "desc TEN1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "TSEL1",
+        "description": "desc TSEL1.",
+        "bit_offset": 2,
+        "bit_size": 4,
+        "enum": "Trigger"
+      },
+      {
+        "name": "WAVE1",
+        "description": "desc WAVE1.",
+        "bit_offset": 6,
+        "bit_size": 2,
+        "enum": "Wave"
+      },
+      {
+        "name": "MAMP1",
+        "description": "desc MAMP1.",
+        "bit_offset": 8,
+        "bit_size": 4
+      },
+      {
+        "name": "DMAEN1",
+        "description": "desc DMAEN1.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "DMAUDRIE1",
+        "description": "desc DMAUDRIE1.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "EN2",
+        "description": "desc EN2.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "TEN2",
+        "description": "desc TEN2.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "TSEL2",
+        "description": "desc TSEL2.",
+        "bit_offset": 18,
+        "bit_size": 4,
+        "enum": "Trigger"
+      },
+      {
+        "name": "WAVE2",
+        "description": "desc WAVE2.",
+        "bit_offset": 22,
+        "bit_size": 2,
+        "enum": "Wave"
+      },
+      {
+        "name": "MAMP2",
+        "description": "desc MAMP2.",
+        "bit_offset": 24,
+        "bit_size": 4
+      },
+      {
+        "name": "DMAEN2",
+        "description": "desc DMAEN2.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "DMAUDRIE2",
+        "description": "desc DMAUDRIE2.",
+        "bit_offset": 29,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/CR1": {
+    "description": "Result register.",
+    "fields": [
+      {
+        "name": "C1OUT",
+        "description": "desc C1OUT.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "C2OUT",
+        "description": "desc C2OUT.",
+        "bit_offset": 1,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/DHR12L1": {
+    "description": "desc DHR12L1.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 4,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR12L2": {
+    "description": "desc DHR12L2.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 4,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR12LD": {
+    "description": "desc DHR12LD.",
+    "fields": [
+      {
+        "name": "C1DATA",
+        "description": "desc C1DATA.",
+        "bit_offset": 4,
+        "bit_size": 12
+      },
+      {
+        "name": "C2DATA",
+        "description": "desc C2DATA.",
+        "bit_offset": 20,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR12R1": {
+    "description": "desc DHR12R1.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 0,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR12R2": {
+    "description": "desc DHR12R2.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 0,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR12RD": {
+    "description": "desc DHR12RD.",
+    "fields": [
+      {
+        "name": "C1DATA",
+        "description": "desc C1DATA.",
+        "bit_offset": 0,
+        "bit_size": 12
+      },
+      {
+        "name": "C2DATA",
+        "description": "desc C2DATA.",
+        "bit_offset": 16,
+        "bit_size": 12
+      }
+    ]
+  },
+  "fieldset/DHR8R1": {
+    "description": "desc DHR8R1.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 0,
+        "bit_size": 8
+      }
+    ]
+  },
+  "fieldset/DHR8R2": {
+    "description": "desc DHR8R2.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "desc DATA.",
+        "bit_offset": 0,
+        "bit_size": 8
+      }
+    ]
+  },
+  "fieldset/DHR8RD": {
+    "description": "desc DHR8RD.",
+    "fields": [
+      {
+        "name": "C1DATA",
+        "description": "desc C1DATA.",
+        "bit_offset": 0,
+        "bit_size": 8
+      },
+      {
+        "name": "C2DATA",
+        "description": "desc C2DATA.",
+        "bit_offset": 8,
+        "bit_size": 8
+      }
+    ]
+  },
+  "fieldset/DOR1": {
+    "description": "Output code is read-only; DMAUDR is write-zero-to-clear. Never use read-modify-write to clear flags.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "Read-only output code.",
+        "bit_offset": 0,
+        "bit_size": 12
+      },
+      {
+        "name": "DMAUDR",
+        "description": "DMA underrun: write 0 clears, write 1 leaves unchanged.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/DOR2": {
+    "description": "Output code is read-only; DMAUDR is write-zero-to-clear. Never use read-modify-write to clear flags.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "Read-only output code.",
+        "bit_offset": 0,
+        "bit_size": 12
+      },
+      {
+        "name": "DMAUDR",
+        "description": "DMA underrun: write 0 clears, write 1 leaves unchanged.",
+        "bit_offset": 15,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/SWTRGR": {
+    "description": "Software trigger command. W1 triggers, W0 no action; bits auto-clear.",
+    "fields": [
+      {
+        "name": "SWTRIG1",
+        "description": "desc SWTRIG1.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "SWTRIG2",
+        "description": "desc SWTRIG2.",
+        "bit_offset": 1,
+        "bit_size": 1
+      }
+    ]
+  },
+  "enum/Trigger": {
+    "bit_size": 4,
+    "variants": [
+      {
+        "name": "Software",
+        "description": "Software trigger.",
+        "value": 0
+      },
+      {
+        "name": "Btim1Trgo",
+        "description": "Btim1Trgo trigger.",
+        "value": 1
+      },
+      {
+        "name": "Btim2Trgo",
+        "description": "Btim2Trgo trigger.",
+        "value": 2
+      },
+      {
+        "name": "Btim3Trgo",
+        "description": "Btim3Trgo trigger.",
+        "value": 3
+      },
+      {
+        "name": "Gtim1Trgo",
+        "description": "Gtim1Trgo trigger.",
+        "value": 4
+      },
+      {
+        "name": "Gtim2Trgo",
+        "description": "Gtim2Trgo trigger.",
+        "value": 5
+      },
+      {
+        "name": "Gtim3Trgo",
+        "description": "Gtim3Trgo trigger.",
+        "value": 6
+      },
+      {
+        "name": "Gtim4Trgo",
+        "description": "Gtim4Trgo trigger.",
+        "value": 7
+      },
+      {
+        "name": "AtimTrgo",
+        "description": "AtimTrgo trigger.",
+        "value": 8
+      },
+      {
+        "name": "LptimOverflow",
+        "description": "LptimOverflow trigger.",
+        "value": 9
+      },
+      {
+        "name": "Btim1Etr",
+        "description": "Btim1Etr trigger.",
+        "value": 10
+      },
+      {
+        "name": "Btim2Etr",
+        "description": "Btim2Etr trigger.",
+        "value": 11
+      },
+      {
+        "name": "Btim3Etr",
+        "description": "Btim3Etr trigger.",
+        "value": 12
+      },
+      {
+        "name": "Gtim1Etr",
+        "description": "Gtim1Etr trigger.",
+        "value": 13
+      },
+      {
+        "name": "Gtim2Etr",
+        "description": "Gtim2Etr trigger.",
+        "value": 14
+      },
+      {
+        "name": "Gtim3Etr",
+        "description": "Gtim3Etr trigger.",
+        "value": 15
+      }
+    ]
+  },
+  "enum/Wave": {
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "Disabled",
+        "description": "Data holding register only.",
+        "value": 0
+      },
+      {
+        "name": "Noise",
+        "description": "Noise generator.",
+        "value": 1
+      },
+      {
+        "name": "Triangle",
+        "description": "Triangle generator.",
+        "value": 2
+      },
+      {
+        "name": "TriangleAlt",
+        "description": "Alternative documented triangle encoding.",
+        "value": 3
+      }
+    ]
+  }
+}

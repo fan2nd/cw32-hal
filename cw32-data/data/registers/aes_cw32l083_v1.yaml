@@ -1,0 +1,195 @@
+block/AES:
+  description: CW32L083 AES, own User Manual CN Rev2.0; see docs/l083-aes-trng-evidence.md.
+  items:
+  - name: CR
+    description: desc CR.
+    byte_offset: 0
+    fieldset: CR
+  - name: DATA0
+    description: desc DATA0.
+    byte_offset: 16
+    fieldset: DATA0
+  - name: DATA1
+    description: desc DATA1.
+    byte_offset: 20
+    fieldset: DATA1
+  - name: DATA2
+    description: desc DATA2.
+    byte_offset: 24
+    fieldset: DATA2
+  - name: DATA3
+    description: desc DATA3.
+    byte_offset: 28
+    fieldset: DATA3
+  - name: KEY0
+    description: desc KEY0.
+    byte_offset: 32
+    access: Write
+    fieldset: KEY0
+  - name: KEY1
+    description: desc KEY1.
+    byte_offset: 36
+    access: Write
+    fieldset: KEY1
+  - name: KEY2
+    description: desc KEY2.
+    byte_offset: 40
+    access: Write
+    fieldset: KEY2
+  - name: KEY3
+    description: desc KEY3.
+    byte_offset: 44
+    access: Write
+    fieldset: KEY3
+  - name: KEY4
+    description: desc KEY4.
+    byte_offset: 48
+    access: Write
+    fieldset: KEY4
+  - name: KEY5
+    description: desc KEY5.
+    byte_offset: 52
+    access: Write
+    fieldset: KEY5
+  - name: KEY6
+    description: desc KEY6.
+    byte_offset: 56
+    access: Write
+    fieldset: KEY6
+  - name: KEY7
+    description: desc KEY7.
+    byte_offset: 60
+    access: Write
+    fieldset: KEY7
+fieldset/CR:
+  description: desc CR.
+  fields:
+  - name: START
+    description: Write 1 to start; read 0 after completion, read 1 while active. W0 abort is not documented.
+    bit_offset: 0
+    bit_size: 1
+    enum: Operation
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 1
+    bit_size: 1
+    enum: Mode
+  - name: KEYSIZE
+    description: desc KEYSIZE.
+    bit_offset: 3
+    bit_size: 2
+    enum: KeySize
+fieldset/DATA0:
+  description: desc DATA0.
+  fields:
+  - name: DATA0
+    description: DATA bits31:0; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DATA1:
+  description: desc DATA1.
+  fields:
+  - name: DATA1
+    description: DATA bits63:32; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DATA2:
+  description: desc DATA2.
+  fields:
+  - name: DATA2
+    description: DATA bits95:64; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DATA3:
+  description: desc DATA3.
+  fields:
+  - name: DATA3
+    description: DATA bits127:96; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY0:
+  description: desc KEY0.
+  fields:
+  - name: KEY0
+    description: KEY bits31:0; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY1:
+  description: desc KEY1.
+  fields:
+  - name: KEY1
+    description: KEY bits63:32; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY2:
+  description: desc KEY2.
+  fields:
+  - name: KEY2
+    description: KEY bits95:64; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY3:
+  description: desc KEY3.
+  fields:
+  - name: KEY3
+    description: KEY bits127:96; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY4:
+  description: desc KEY4.
+  fields:
+  - name: KEY4
+    description: KEY bits159:128; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY5:
+  description: desc KEY5.
+  fields:
+  - name: KEY5
+    description: KEY bits191:160; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY6:
+  description: desc KEY6.
+  fields:
+  - name: KEY6
+    description: KEY bits223:192; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+fieldset/KEY7:
+  description: desc KEY7.
+  fields:
+  - name: KEY7
+    description: KEY bits255:224; index zero is the least-significant register word. No standard byte-array mapping is asserted.
+    bit_offset: 0
+    bit_size: 32
+enum/KeySize:
+  description: AES key length, UM section28.5.1. Encoding3 aliases128; HAL uses canonical0.
+  bit_size: 2
+  variants:
+  - name: BITS128
+    value: 0
+  - name: BITS192
+    value: 1
+  - name: BITS256
+    value: 2
+  - name: BITS128_ALTERNATE
+    value: 3
+enum/Mode:
+  description: AES direction, UM section28.5.1.
+  bit_size: 1
+  variants:
+  - name: ENCRYPT
+    value: 0
+  - name: DECRYPT
+    value: 1
+enum/Operation:
+  description: START command/status, CW32L083 UM Rev2.0 section 28.5.1. Writing zero is not an abort.
+  bit_size: 1
+  variants:
+  - name: IDLE
+    description: 'Read: operation complete. Write-zero behavior is unspecified.'
+    value: 0
+  - name: ACTIVE
+    description: 'Read: operation busy. Write: start an operation.'
+    value: 1

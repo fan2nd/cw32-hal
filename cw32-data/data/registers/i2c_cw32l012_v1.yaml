@@ -1,0 +1,753 @@
+block/I2C:
+  description: desc I2C1.
+  items:
+  - name: INSEL
+    description: desc INSEL.
+    byte_offset: 8
+    fieldset: INSEL
+  - name: MICR
+    description: Master Interrupt Flag Clear Register.
+    byte_offset: 12
+    fieldset: MICR
+  - name: MCR0
+    description: desc MCR0.
+    byte_offset: 16
+    fieldset: MCR0
+  - name: MISR
+    description: Master Interrupt Status Register.
+    byte_offset: 20
+    access: Read
+    fieldset: MISR
+  - name: MIER
+    description: Master Interrupt Enable Register.
+    byte_offset: 24
+    fieldset: MIER
+  - name: MDER
+    description: Master DMA Enable Register.
+    byte_offset: 28
+    fieldset: MDER
+  - name: MCR1
+    description: Master Control Register1.
+    byte_offset: 32
+    fieldset: MCR1
+  - name: MCR2
+    description: Master Control Register2.
+    byte_offset: 36
+    fieldset: MCR2
+  - name: SCR2
+    description: desc SCR2.
+    byte_offset: 36
+    fieldset: SCR2
+  - name: MCR3
+    description: Master Control Register3.
+    byte_offset: 40
+    fieldset: MCR3
+  - name: MCR4
+    description: Master Control Register4.
+    byte_offset: 44
+    fieldset: MCR4
+  - name: MMATCH
+    description: Master Match Register.
+    byte_offset: 64
+    fieldset: MMATCH
+  - name: MCCR
+    description: Master Clock Control Register.
+    byte_offset: 72
+    fieldset: MCCR
+  - name: MFIFOCR
+    description: Master FIFO Control Register.
+    byte_offset: 88
+    fieldset: MFIFOCR
+  - name: MFIFOSR
+    description: Master FIFO Status Register.
+    byte_offset: 92
+    access: Read
+    fieldset: MFIFOSR
+  - name: MTDR
+    description: Master Tx Data Register.
+    byte_offset: 96
+    access: Write
+    fieldset: MTDR
+  - name: MRDR
+    description: Master Rx Data Register.
+    byte_offset: 112
+    access: Read
+    fieldset: MRDR
+  - name: SICR
+    description: desc SICR.
+    byte_offset: 268
+    fieldset: SICR
+  - name: SCR0
+    description: Slave Control Register0.
+    byte_offset: 272
+    fieldset: SCR0
+  - name: SISR
+    description: desc SISR.
+    byte_offset: 276
+    access: Read
+    fieldset: SISR
+  - name: SIER
+    description: desc SIER.
+    byte_offset: 280
+    fieldset: SIER
+  - name: SDER
+    description: desc SDER.
+    byte_offset: 284
+    fieldset: SDER
+  - name: SCR1
+    description: desc SCR1.
+    byte_offset: 292
+    fieldset: SCR1
+  - name: SCR3
+    description: desc SCR3.
+    byte_offset: 296
+    fieldset: SCR3
+  - name: SAMR
+    description: desc SAMR.
+    byte_offset: 320
+    fieldset: SAMR
+  - name: SASR
+    description: desc SASR.
+    byte_offset: 336
+    access: Read
+    fieldset: SASR
+  - name: STAR
+    description: desc STAR.
+    byte_offset: 340
+    fieldset: STAR
+  - name: STDR
+    description: desc STDR.
+    byte_offset: 352
+    access: Write
+    fieldset: STDR
+  - name: SRDR
+    description: desc SRDR.
+    byte_offset: 368
+    access: Read
+    fieldset: SRDR
+fieldset/INSEL:
+  description: desc INSEL.
+  fields:
+  - name: SCLINSEL
+    description: desc SCLINSEL.
+    bit_offset: 0
+    bit_size: 3
+  - name: SDAINSEL
+    description: desc SDAINSEL.
+    bit_offset: 3
+    bit_size: 3
+fieldset/MCCR:
+  description: Master Clock Control Register.
+  fields:
+  - name: CLKLO
+    description: desc CLKLO.
+    bit_offset: 0
+    bit_size: 6
+  - name: CLKHI
+    description: desc CLKHI.
+    bit_offset: 8
+    bit_size: 6
+  - name: SETHOLD
+    description: desc SETHOLD.
+    bit_offset: 16
+    bit_size: 6
+  - name: DATAVD
+    description: desc DATAVD.
+    bit_offset: 24
+    bit_size: 6
+fieldset/MCR0:
+  description: desc MCR0.
+  fields:
+  - name: MEN
+    description: desc MEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: RESET
+    description: desc RESET.
+    bit_offset: 1
+    bit_size: 1
+  - name: SLEEPEN
+    description: desc SLEEPEN.
+    bit_offset: 2
+    bit_size: 1
+  - name: DBGEN
+    description: desc DBGEN.
+    bit_offset: 3
+    bit_size: 1
+  - name: CLKSRC
+    description: desc CLKSRC.
+    bit_offset: 6
+    bit_size: 2
+  - name: TXFIFORST
+    description: desc TXFIFORST.
+    bit_offset: 8
+    bit_size: 1
+  - name: RXFIFORST
+    description: desc RXFIFORST.
+    bit_offset: 9
+    bit_size: 1
+fieldset/MCR1:
+  description: Master Control Register1.
+  fields:
+  - name: CIRFIFO
+    description: desc CIRFIFO.
+    bit_offset: 8
+    bit_size: 1
+  - name: RDMO
+    description: desc RDMO.
+    bit_offset: 9
+    bit_size: 1
+fieldset/MCR2:
+  description: Master Control Register2.
+  fields:
+  - name: PRESCALE
+    description: desc PRESCALE.
+    bit_offset: 0
+    bit_size: 3
+  - name: AUTOSTOP
+    description: desc AUTOSTOP.
+    bit_offset: 8
+    bit_size: 1
+  - name: IGNACK
+    description: desc IGNACK.
+    bit_offset: 9
+    bit_size: 1
+  - name: TIMECFG
+    description: desc TIMECFG.
+    bit_offset: 10
+    bit_size: 1
+  - name: TRGSEL
+    description: desc TRGSEL.
+    bit_offset: 15
+    bit_size: 1
+  - name: MATCFG
+    description: desc MATCFG.
+    bit_offset: 16
+    bit_size: 3
+  - name: PINCFG
+    description: desc PINCFG.
+    bit_offset: 24
+    bit_size: 3
+fieldset/MCR3:
+  description: Master Control Register3.
+  fields:
+  - name: BUSIDLE
+    description: desc BUSIDLE.
+    bit_offset: 0
+    bit_size: 12
+  - name: FLTSCL
+    description: desc FLTSCL.
+    bit_offset: 16
+    bit_size: 4
+  - name: FLTSDA
+    description: desc FLTSDA.
+    bit_offset: 24
+    bit_size: 4
+fieldset/MCR4:
+  description: Master Control Register4.
+  fields:
+  - name: PINLOW
+    description: desc PINLOW.
+    bit_offset: 8
+    bit_size: 12
+fieldset/MDER:
+  description: Master DMA Enable Register.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+fieldset/MFIFOCR:
+  description: Master FIFO Control Register.
+  fields:
+  - name: TXWATER
+    description: desc TXWATER.
+    bit_offset: 0
+    bit_size: 2
+  - name: RXWATER
+    description: desc RXWATER.
+    bit_offset: 16
+    bit_size: 2
+fieldset/MFIFOSR:
+  description: Master FIFO Status Register.
+  fields:
+  - name: TXCNT
+    description: desc TXCNT.
+    bit_offset: 0
+    bit_size: 2
+  - name: RXCNT
+    description: desc RXCNT.
+    bit_offset: 16
+    bit_size: 2
+fieldset/MICR:
+  description: Master Interrupt Flag Clear Register.
+  fields:
+  - name: PACKET
+    description: desc PACKET.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: NACK
+    description: desc NACK.
+    bit_offset: 10
+    bit_size: 1
+  - name: ARBI
+    description: desc ARBI.
+    bit_offset: 11
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 12
+    bit_size: 1
+  - name: PINLOW
+    description: desc PINLOW.
+    bit_offset: 13
+    bit_size: 1
+  - name: MATCH
+    description: desc MATCH.
+    bit_offset: 14
+    bit_size: 1
+fieldset/MIER:
+  description: Master Interrupt Enable Register.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: PACKET
+    description: desc PACKET.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: NACK
+    description: desc NACK.
+    bit_offset: 10
+    bit_size: 1
+  - name: ARBI
+    description: desc ARBI.
+    bit_offset: 11
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 12
+    bit_size: 1
+  - name: PINLOW
+    description: desc PINLOW.
+    bit_offset: 13
+    bit_size: 1
+  - name: MATCH
+    description: desc MATCH.
+    bit_offset: 14
+    bit_size: 1
+fieldset/MISR:
+  description: Master Interrupt Status Register.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: PACKET
+    description: desc PACKET.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: NACK
+    description: desc NACK.
+    bit_offset: 10
+    bit_size: 1
+  - name: ARBI
+    description: desc ARBI.
+    bit_offset: 11
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 12
+    bit_size: 1
+  - name: PINLOW
+    description: desc PINLOW.
+    bit_offset: 13
+    bit_size: 1
+  - name: MATCH
+    description: desc MATCH.
+    bit_offset: 14
+    bit_size: 1
+  - name: MSTBUSY
+    description: desc MSTBUSY.
+    bit_offset: 24
+    bit_size: 1
+  - name: BUSBUSY
+    description: desc BUSBUSY.
+    bit_offset: 25
+    bit_size: 1
+fieldset/MMATCH:
+  description: Master Match Register.
+  fields:
+  - name: MATCH0
+    description: desc MATCH0.
+    bit_offset: 0
+    bit_size: 8
+  - name: MATCH1
+    description: desc MATCH1.
+    bit_offset: 16
+    bit_size: 8
+fieldset/MRDR:
+  description: Master Rx Data Register.
+  fields:
+  - name: DATA
+    description: desc DATA.
+    bit_offset: 0
+    bit_size: 8
+  - name: EMPTY
+    description: desc EMPTY.
+    bit_offset: 14
+    bit_size: 1
+fieldset/MTDR:
+  description: Master Tx Data Register.
+  fields:
+  - name: DATA
+    description: desc DATA.
+    bit_offset: 0
+    bit_size: 8
+  - name: CMD
+    description: desc CMD.
+    bit_offset: 8
+    bit_size: 3
+    enum: Command
+fieldset/SAMR:
+  description: desc SAMR.
+  fields:
+  - name: ADDR0
+    description: desc ADDR0.
+    bit_offset: 1
+    bit_size: 10
+  - name: ADDR1
+    description: desc ADDR1.
+    bit_offset: 17
+    bit_size: 10
+fieldset/SASR:
+  description: desc SASR.
+  fields:
+  - name: RADDR
+    description: desc RADDR.
+    bit_offset: 0
+    bit_size: 11
+  - name: ANV
+    description: desc ANV.
+    bit_offset: 14
+    bit_size: 1
+fieldset/SCR0:
+  description: Slave Control Register0.
+  fields:
+  - name: SEN
+    description: desc SEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: RESET
+    description: desc RESET.
+    bit_offset: 1
+    bit_size: 1
+  - name: FLTEN
+    description: desc FLTEN.
+    bit_offset: 4
+    bit_size: 1
+  - name: CLKSRC
+    description: desc CLKSRC.
+    bit_offset: 6
+    bit_size: 2
+  - name: TXFIFORST
+    description: desc TXFIFORST.
+    bit_offset: 8
+    bit_size: 1
+  - name: RXFIFORST
+    description: desc RXFIFORST.
+    bit_offset: 9
+    bit_size: 1
+fieldset/SCR1:
+  description: desc SCR1.
+  fields:
+  - name: ADRSTALL
+    description: desc ADRSTALL.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXSTALL
+    description: desc RXSTALL.
+    bit_offset: 1
+    bit_size: 1
+  - name: TXSTALL
+    description: desc TXSTALL.
+    bit_offset: 2
+    bit_size: 1
+  - name: ACKSTALL
+    description: desc ACKSTALL.
+    bit_offset: 3
+    bit_size: 1
+  - name: GCEN
+    description: desc GCEN.
+    bit_offset: 8
+    bit_size: 1
+  - name: ALERTEN
+    description: desc ALERTEN.
+    bit_offset: 9
+    bit_size: 1
+  - name: TXCFG
+    description: desc TXCFG.
+    bit_offset: 10
+    bit_size: 1
+  - name: RXCFG
+    description: desc RXCFG.
+    bit_offset: 11
+    bit_size: 1
+  - name: IGNACK
+    description: desc IGNACK.
+    bit_offset: 12
+    bit_size: 1
+  - name: TRGSEL
+    description: desc TRGSEL.
+    bit_offset: 15
+    bit_size: 1
+  - name: ADDRCFG
+    description: desc ADDRCFG.
+    bit_offset: 16
+    bit_size: 3
+fieldset/SCR2:
+  description: desc SCR2.
+  fields:
+  - name: PINCFG
+    description: desc PINCFG.
+    bit_offset: 24
+    bit_size: 3
+fieldset/SCR3:
+  description: desc SCR3.
+  fields:
+  - name: CLKHOLD
+    description: desc CLKHOLD.
+    bit_offset: 0
+    bit_size: 4
+  - name: DATAVD
+    description: desc DATAVD.
+    bit_offset: 8
+    bit_size: 6
+  - name: FLTSCL
+    description: desc FLTSCL.
+    bit_offset: 16
+    bit_size: 4
+  - name: FLTSDA
+    description: desc FLTSDA.
+    bit_offset: 24
+    bit_size: 4
+fieldset/SDER:
+  description: desc SDER.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: ADDR
+    description: desc ADDR.
+    bit_offset: 2
+    bit_size: 1
+fieldset/SICR:
+  description: desc SICR.
+  fields:
+  - name: RESTART
+    description: desc RESTART.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: BIT
+    description: desc BIT.
+    bit_offset: 10
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 11
+    bit_size: 1
+fieldset/SIER:
+  description: desc SIER.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: ADDR
+    description: desc ADDR.
+    bit_offset: 2
+    bit_size: 1
+  - name: TACK
+    description: desc TACK.
+    bit_offset: 3
+    bit_size: 1
+  - name: RESTART
+    description: desc RESTART.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: BIT
+    description: desc BIT.
+    bit_offset: 10
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 11
+    bit_size: 1
+  - name: AM0
+    description: desc AM0.
+    bit_offset: 12
+    bit_size: 1
+  - name: AM1
+    description: desc AM1.
+    bit_offset: 13
+    bit_size: 1
+  - name: GC
+    description: desc GC.
+    bit_offset: 14
+    bit_size: 1
+  - name: ALERT
+    description: desc ALERT.
+    bit_offset: 15
+    bit_size: 1
+fieldset/SISR:
+  description: desc SISR.
+  fields:
+  - name: TXE
+    description: desc TXE.
+    bit_offset: 0
+    bit_size: 1
+  - name: RXNE
+    description: desc RXNE.
+    bit_offset: 1
+    bit_size: 1
+  - name: ADDR
+    description: desc ADDR.
+    bit_offset: 2
+    bit_size: 1
+  - name: TACK
+    description: desc TACK.
+    bit_offset: 3
+    bit_size: 1
+  - name: RESTART
+    description: desc RESTART.
+    bit_offset: 8
+    bit_size: 1
+  - name: STOP
+    description: desc STOP.
+    bit_offset: 9
+    bit_size: 1
+  - name: BIT
+    description: desc BIT.
+    bit_offset: 10
+    bit_size: 1
+  - name: FIFO
+    description: desc FIFO.
+    bit_offset: 11
+    bit_size: 1
+  - name: AM0
+    description: desc AM0.
+    bit_offset: 12
+    bit_size: 1
+  - name: AM1
+    description: desc AM1.
+    bit_offset: 13
+    bit_size: 1
+  - name: GC
+    description: desc GC.
+    bit_offset: 14
+    bit_size: 1
+  - name: ALERT
+    description: desc ALERT.
+    bit_offset: 15
+    bit_size: 1
+  - name: SLVBUSY
+    description: desc SLVBUSY.
+    bit_offset: 24
+    bit_size: 1
+  - name: BUSBUSY
+    description: desc BUSBUSY.
+    bit_offset: 25
+    bit_size: 1
+fieldset/SRDR:
+  description: desc SRDR.
+  fields:
+  - name: DATA
+    description: desc DATA.
+    bit_offset: 0
+    bit_size: 8
+  - name: RXEMPTY
+    description: desc RXEMPTY.
+    bit_offset: 14
+    bit_size: 1
+  - name: SOF
+    description: desc SOF.
+    bit_offset: 15
+    bit_size: 1
+fieldset/STAR:
+  description: desc STAR.
+  fields:
+  - name: TXNACK
+    description: desc TXNACK.
+    bit_offset: 0
+    bit_size: 1
+fieldset/STDR:
+  description: desc STDR.
+  fields:
+  - name: DATA
+    description: desc DATA.
+    bit_offset: 0
+    bit_size: 8
+enum/Command:
+  description: MTDR commands from CW32L012 UM CN V1.4 section 23.8.11, printed page 552. Encodings 6 and 7 are not specified.
+  bit_size: 3
+  variants:
+  - name: TRANSMIT
+    description: Transmit DATA as one byte.
+    value: 0
+  - name: RECEIVE
+    description: Receive DATA+1 bytes into MRDR.
+    value: 1
+  - name: STOP
+    description: Generate STOP.
+    value: 2
+  - name: RECEIVE_DISCARD
+    description: Receive DATA+1 bytes without storing in MRDR.
+    value: 3
+  - name: START_EXPECT_ACK
+    description: Generate START or repeated START and transmit DATA, expecting ACK.
+    value: 4
+  - name: START_EXPECT_NACK
+    description: Generate START or repeated START and transmit DATA, expecting NACK.
+    value: 5

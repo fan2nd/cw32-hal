@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "i2c_cw32l012_v1": [
+      {
+        "block": "I2C",
+        "register": "MICR",
+        "fieldset": "MICR",
+        "reset_value": 32516,
+        "write_noop": 32516,
+        "zero_to_clear_fields": [
+          "PACKET",
+          "STOP",
+          "NACK",
+          "ARBI",
+          "FIFO",
+          "PINLOW",
+          "MATCH"
+        ],
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4.pdf section 23.8.16, printed p556 (PDF p582); SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; docs/i2c-typed-register-evidence.json families.CW32L012",
+          "docs/i2c-typed-registers.md: exact MICR write words and reset-before-clear ordering"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "vc_cw32f002_v1": [
+      {
+        "block": "VC",
+        "register": "SR",
+        "fieldset": "SR",
+        "reset_value": 0,
+        "write_noop": 1,
+        "zero_to_clear_fields": [
+          "INTF"
+        ],
+        "evidence": [
+          "docs/comparator.md: status reads and R1W0 command semantics",
+          "docs/comparator-classic-evidence.json and docs/comparator-low-evidence.json: own-manual SR tables"
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "gtim_cw32l012_v1": [
+      {
+        "block": "GTIM",
+        "register": "CNT",
+        "fieldset": "CNT",
+        "field": "UIFCPY",
+        "bit_offset": 31,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4.pdf CN V1.4 section 16.10.13, printed page 303/PDF page 329; https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; docs/timer-command-evidence.json families.CW32L012"
+        ]
+      }
+    ]
+  }
+}

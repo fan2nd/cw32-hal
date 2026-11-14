@@ -1,0 +1,719 @@
+block/ATIM:
+  description: desc ATIM.
+  items:
+  - name: ARR
+    description: desc ARR.
+    byte_offset: 0
+    fieldset: ARR
+  - name: CNT
+    description: desc CNT.
+    byte_offset: 4
+    fieldset: CNT
+  - name: CR
+    description: desc CR.
+    byte_offset: 12
+    fieldset: CR
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 16
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 20
+    fieldset: ICR
+  - name: MSCR
+    description: desc MSCR.
+    byte_offset: 24
+    fieldset: MSCR
+  - name: FLTR
+    description: desc FLTR.
+    byte_offset: 28
+    fieldset: FLTR
+  - name: TRIG
+    description: desc TRIG.
+    byte_offset: 32
+    fieldset: TRIG
+  - name: CH1CR
+    description: desc CH1CR.
+    byte_offset: 36
+    fieldset: CH1CR
+  - name: CH2CR
+    description: desc CH2CR.
+    byte_offset: 40
+    fieldset: CH2CR
+  - name: CH3CR
+    description: desc CH3CR.
+    byte_offset: 44
+    fieldset: CH3CR
+  - name: DTR
+    description: desc DTR.
+    byte_offset: 48
+    fieldset: DTR
+  - name: RCR
+    description: desc RCR.
+    byte_offset: 52
+    fieldset: RCR
+  - name: CH1CCRA
+    description: desc CH1CCRA.
+    byte_offset: 60
+    fieldset: CH1CCRA
+  - name: CH1CCRB
+    description: desc CH1CCRB.
+    byte_offset: 64
+    fieldset: CH1CCRB
+  - name: CH2CCRA
+    description: desc CH2CCRA.
+    byte_offset: 68
+    fieldset: CH2CCRA
+  - name: CH2CCRB
+    description: desc CH2CCRB.
+    byte_offset: 72
+    fieldset: CH2CCRB
+  - name: CH3CCRA
+    description: desc CH3CCRA.
+    byte_offset: 76
+    fieldset: CH3CCRA
+  - name: CH3CCRB
+    description: desc CH3CCRB.
+    byte_offset: 80
+    fieldset: CH3CCRB
+  - name: CH4CCR
+    description: desc CH4CCR.
+    byte_offset: 84
+    fieldset: CH4CCR
+  - name: CH4CR
+    description: desc CH4CR.
+    byte_offset: 88
+    fieldset: CH4CR
+fieldset/ARR:
+  description: desc ARR.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH1CCRA:
+  description: desc CH1CCRA.
+  fields:
+  - name: CCR1A
+    description: desc CCR1A.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH1CCRB:
+  description: desc CH1CCRB.
+  fields:
+  - name: CCR1B
+    description: desc CCR1B.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH1CR:
+  description: desc CH1CR.
+  fields:
+  - name: BKSA
+    description: desc BKSA.
+    bit_offset: 0
+    bit_size: 2
+  - name: BKSB
+    description: desc BKSB.
+    bit_offset: 2
+    bit_size: 2
+  - name: CSA
+    description: desc CSA.
+    bit_offset: 4
+    bit_size: 1
+  - name: CSB
+    description: desc CSB.
+    bit_offset: 5
+    bit_size: 1
+  - name: BUFEA
+    description: desc BUFEA.
+    bit_offset: 6
+    bit_size: 1
+  - name: BUFEB
+    description: desc BUFEB.
+    bit_offset: 7
+    bit_size: 1
+  - name: CIEA
+    description: desc CIEA.
+    bit_offset: 8
+    bit_size: 1
+  - name: CIEB
+    description: desc CIEB.
+    bit_offset: 9
+    bit_size: 1
+  - name: CISB
+    description: desc CISB.
+    bit_offset: 12
+    bit_size: 2
+  - name: CCGA
+    description: desc CCGA.
+    bit_offset: 14
+    bit_size: 1
+  - name: CCGB
+    description: desc CCGB.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CH2CCRA:
+  description: desc CH2CCRA.
+  fields:
+  - name: CCR2A
+    description: desc CCR2A.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH2CCRB:
+  description: desc CH2CCRB.
+  fields:
+  - name: CCR2B
+    description: desc CCR2B.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH2CR:
+  description: desc CH2CR.
+  fields:
+  - name: BKSA
+    description: desc BKSA.
+    bit_offset: 0
+    bit_size: 2
+  - name: BKSB
+    description: desc BKSB.
+    bit_offset: 2
+    bit_size: 2
+  - name: CSA
+    description: desc CSA.
+    bit_offset: 4
+    bit_size: 1
+  - name: CSB
+    description: desc CSB.
+    bit_offset: 5
+    bit_size: 1
+  - name: BUFEA
+    description: desc BUFEA.
+    bit_offset: 6
+    bit_size: 1
+  - name: BUFEB
+    description: desc BUFEB.
+    bit_offset: 7
+    bit_size: 1
+  - name: CIEA
+    description: desc CIEA.
+    bit_offset: 8
+    bit_size: 1
+  - name: CIEB
+    description: desc CIEB.
+    bit_offset: 9
+    bit_size: 1
+  - name: CISB
+    description: desc CISB.
+    bit_offset: 12
+    bit_size: 2
+  - name: CCGA
+    description: desc CCGA.
+    bit_offset: 14
+    bit_size: 1
+  - name: CCGB
+    description: desc CCGB.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CH3CCRA:
+  description: desc CH3CCRA.
+  fields:
+  - name: CCR3A
+    description: desc CCR3A.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH3CCRB:
+  description: desc CH3CCRB.
+  fields:
+  - name: CCR3B
+    description: desc CCR3B.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH3CR:
+  description: desc CH3CR.
+  fields:
+  - name: BKSA
+    description: desc BKSA.
+    bit_offset: 0
+    bit_size: 2
+  - name: BKSB
+    description: desc BKSB.
+    bit_offset: 2
+    bit_size: 2
+  - name: CSA
+    description: desc CSA.
+    bit_offset: 4
+    bit_size: 1
+  - name: CSB
+    description: desc CSB.
+    bit_offset: 5
+    bit_size: 1
+  - name: BUFEA
+    description: desc BUFEA.
+    bit_offset: 6
+    bit_size: 1
+  - name: BUFEB
+    description: desc BUFEB.
+    bit_offset: 7
+    bit_size: 1
+  - name: CIEA
+    description: desc CIEA.
+    bit_offset: 8
+    bit_size: 1
+  - name: CIEB
+    description: desc CIEB.
+    bit_offset: 9
+    bit_size: 1
+  - name: CISB
+    description: desc CISB.
+    bit_offset: 12
+    bit_size: 2
+  - name: CCGA
+    description: desc CCGA.
+    bit_offset: 14
+    bit_size: 1
+  - name: CCGB
+    description: desc CCGB.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CH4CCR:
+  description: desc CH4CCR.
+  fields:
+  - name: CCR4
+    description: desc CCR4.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CH4CR:
+  description: desc CH4CR.
+  fields:
+  - name: BUFE
+    description: desc BUFE.
+    bit_offset: 0
+    bit_size: 1
+  - name: CIE
+    description: desc CIE.
+    bit_offset: 1
+    bit_size: 1
+  - name: CIS
+    description: desc CIS.
+    bit_offset: 3
+    bit_size: 2
+  - name: C4EN
+    description: desc C4EN.
+    bit_offset: 5
+    bit_size: 1
+fieldset/CNT:
+  description: desc CNT.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CR:
+  description: desc CR.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: COMP
+    description: desc COMP.
+    bit_offset: 1
+    bit_size: 1
+  - name: CT
+    description: desc CT.
+    bit_offset: 2
+    bit_size: 1
+  - name: PWM2S
+    description: desc PWM2S.
+    bit_offset: 3
+    bit_size: 1
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 4
+    bit_size: 3
+  - name: BUFPEN
+    description: desc BUFPEN.
+    bit_offset: 7
+    bit_size: 1
+  - name: UIE
+    description: desc UIE.
+    bit_offset: 10
+    bit_size: 1
+  - name: MODE
+    description: Please keep 10/11.
+    bit_offset: 12
+    bit_size: 2
+  - name: ONESHOT
+    description: desc ONESHOT.
+    bit_offset: 14
+    bit_size: 1
+  - name: OCCS
+    description: desc OCCS.
+    bit_offset: 16
+    bit_size: 1
+  - name: URS
+    description: desc URS.
+    bit_offset: 17
+    bit_size: 1
+  - name: TIE
+    description: desc TIE.
+    bit_offset: 19
+    bit_size: 1
+  - name: BIE
+    description: desc BIE.
+    bit_offset: 20
+    bit_size: 1
+  - name: CISA
+    description: desc CISA.
+    bit_offset: 21
+    bit_size: 2
+  - name: OCCE
+    description: desc OCCE.
+    bit_offset: 23
+    bit_size: 1
+  - name: TG
+    description: desc TG.
+    bit_offset: 24
+    bit_size: 1
+  - name: UG
+    description: desc UG.
+    bit_offset: 25
+    bit_size: 1
+  - name: BG
+    description: desc BG.
+    bit_offset: 26
+    bit_size: 1
+  - name: DIR
+    description: desc DIR.
+    bit_offset: 27
+    bit_size: 1
+  - name: OVE
+    description: desc OVE.
+    bit_offset: 28
+    bit_size: 1
+  - name: UNDE
+    description: desc UNDE.
+    bit_offset: 29
+    bit_size: 1
+fieldset/DTR:
+  description: desc DTR.
+  fields:
+  - name: DTR
+    description: desc DTR.
+    bit_offset: 0
+    bit_size: 8
+  - name: DTEN
+    description: desc DTEN.
+    bit_offset: 9
+    bit_size: 1
+  - name: BKE
+    description: desc BKE.
+    bit_offset: 10
+    bit_size: 1
+  - name: AOE
+    description: desc AOE.
+    bit_offset: 11
+    bit_size: 1
+  - name: MOE
+    description: desc MOE.
+    bit_offset: 12
+    bit_size: 1
+  - name: SAFEEN
+    description: desc SAFEEN.
+    bit_offset: 13
+    bit_size: 1
+  - name: VCE
+    description: desc VCE.
+    bit_offset: 14
+    bit_size: 1
+fieldset/FLTR:
+  description: desc FLTR.
+  fields:
+  - name: OCM1AFLT1A
+    description: desc OCM1AFLT1A.
+    bit_offset: 0
+    bit_size: 3
+  - name: CCP1A
+    description: desc CCP1A.
+    bit_offset: 3
+    bit_size: 1
+  - name: OCM1BFLT1B
+    description: desc OCM1BFLT1B.
+    bit_offset: 4
+    bit_size: 3
+  - name: CCP1B
+    description: desc CCP1B.
+    bit_offset: 7
+    bit_size: 1
+  - name: OCM2AFLT2A
+    description: desc OCM2AFLT2A.
+    bit_offset: 8
+    bit_size: 3
+  - name: CCP2A
+    description: desc CCP2A.
+    bit_offset: 11
+    bit_size: 1
+  - name: OCM2BFLT2B
+    description: desc OCM2BFLT2B.
+    bit_offset: 12
+    bit_size: 3
+  - name: CCP2B
+    description: desc CCP2B.
+    bit_offset: 15
+    bit_size: 1
+  - name: OCM3AFLT3A
+    description: desc OCM3AFLT3A.
+    bit_offset: 16
+    bit_size: 3
+  - name: CCP3A
+    description: desc CCP3A.
+    bit_offset: 19
+    bit_size: 1
+  - name: OCM3BFLT3B
+    description: desc OCM3BFLT3B.
+    bit_offset: 20
+    bit_size: 3
+  - name: CCP3B
+    description: desc CCP3B.
+    bit_offset: 23
+    bit_size: 1
+  - name: FLTBK
+    description: desc FLTBK.
+    bit_offset: 24
+    bit_size: 3
+  - name: BKP
+    description: desc BKP.
+    bit_offset: 27
+    bit_size: 1
+  - name: FLTET
+    description: desc FLTET.
+    bit_offset: 28
+    bit_size: 3
+  - name: ETP
+    description: desc ETP.
+    bit_offset: 31
+    bit_size: 1
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: C1AF
+    description: desc C1AF.
+    bit_offset: 2
+    bit_size: 1
+  - name: C2AF
+    description: desc C2AF.
+    bit_offset: 3
+    bit_size: 1
+  - name: C3AF
+    description: desc C3AF.
+    bit_offset: 4
+    bit_size: 1
+  - name: C1BF
+    description: desc C1BF.
+    bit_offset: 5
+    bit_size: 1
+  - name: C2BF
+    description: desc C2BF.
+    bit_offset: 6
+    bit_size: 1
+  - name: C3BF
+    description: desc C3BF.
+    bit_offset: 7
+    bit_size: 1
+  - name: C1AE
+    description: desc C1AE.
+    bit_offset: 8
+    bit_size: 1
+  - name: C2AE
+    description: desc C2AE.
+    bit_offset: 9
+    bit_size: 1
+  - name: C3AE
+    description: desc C3AE.
+    bit_offset: 10
+    bit_size: 1
+  - name: C1BE
+    description: desc C1BE.
+    bit_offset: 11
+    bit_size: 1
+  - name: C2BE
+    description: desc C2BE.
+    bit_offset: 12
+    bit_size: 1
+  - name: C3BE
+    description: desc C3BE.
+    bit_offset: 13
+    bit_size: 1
+  - name: BIF
+    description: desc BIF.
+    bit_offset: 14
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 15
+    bit_size: 1
+  - name: OVF
+    description: desc OVF.
+    bit_offset: 16
+    bit_size: 1
+  - name: UNDF
+    description: desc UNDF.
+    bit_offset: 17
+    bit_size: 1
+  - name: C4AF
+    description: desc C4AF.
+    bit_offset: 18
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: C1AF
+    description: desc C1AF.
+    bit_offset: 2
+    bit_size: 1
+  - name: C2AF
+    description: desc C2AF.
+    bit_offset: 3
+    bit_size: 1
+  - name: C3AF
+    description: desc C3AF.
+    bit_offset: 4
+    bit_size: 1
+  - name: C1BF
+    description: desc C1BF.
+    bit_offset: 5
+    bit_size: 1
+  - name: C2BF
+    description: desc C2BF.
+    bit_offset: 6
+    bit_size: 1
+  - name: C3BF
+    description: desc C3BF.
+    bit_offset: 7
+    bit_size: 1
+  - name: C1AE
+    description: desc C1AE.
+    bit_offset: 8
+    bit_size: 1
+  - name: C2AE
+    description: desc C2AE.
+    bit_offset: 9
+    bit_size: 1
+  - name: C3AE
+    description: desc C3AE.
+    bit_offset: 10
+    bit_size: 1
+  - name: C1BE
+    description: desc C1BE.
+    bit_offset: 11
+    bit_size: 1
+  - name: C2BE
+    description: desc C2BE.
+    bit_offset: 12
+    bit_size: 1
+  - name: C3BE
+    description: desc C3BE.
+    bit_offset: 13
+    bit_size: 1
+  - name: BIF
+    description: desc BIF.
+    bit_offset: 14
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 15
+    bit_size: 1
+  - name: OVF
+    description: desc OVF.
+    bit_offset: 16
+    bit_size: 1
+  - name: UNDF
+    description: desc UNDF.
+    bit_offset: 17
+    bit_size: 1
+  - name: C4AF
+    description: desc C4AF.
+    bit_offset: 18
+    bit_size: 1
+fieldset/MSCR:
+  description: desc MSCR.
+  fields:
+  - name: MMS
+    description: desc MMS.
+    bit_offset: 0
+    bit_size: 3
+  - name: TS
+    description: desc TS.
+    bit_offset: 5
+    bit_size: 3
+  - name: SMS
+    description: desc SMS.
+    bit_offset: 8
+    bit_size: 3
+  - name: IA1S
+    description: desc IA1S.
+    bit_offset: 11
+    bit_size: 1
+  - name: IB1S
+    description: desc IB1S.
+    bit_offset: 12
+    bit_size: 1
+fieldset/RCR:
+  description: desc RCR.
+  fields:
+  - name: RCR
+    description: desc RCR.
+    bit_offset: 0
+    bit_size: 8
+  - name: OV
+    description: desc OV.
+    bit_offset: 8
+    bit_size: 1
+  - name: UD
+    description: desc UD.
+    bit_offset: 9
+    bit_size: 1
+fieldset/TRIG:
+  description: desc TRIG.
+  fields:
+  - name: UEVE
+    description: desc UEVE.
+    bit_offset: 0
+    bit_size: 1
+  - name: CM1AE
+    description: desc CM1AE.
+    bit_offset: 1
+    bit_size: 1
+  - name: CM2AE
+    description: desc CM2AE.
+    bit_offset: 2
+    bit_size: 1
+  - name: CM3AE
+    description: desc CM3AE.
+    bit_offset: 3
+    bit_size: 1
+  - name: CM1BE
+    description: desc CM1BE.
+    bit_offset: 4
+    bit_size: 1
+  - name: CM2BE
+    description: desc CM2BE.
+    bit_offset: 5
+    bit_size: 1
+  - name: CM3BE
+    description: desc CM3BE.
+    bit_offset: 6
+    bit_size: 1
+  - name: ADTE
+    description: desc ADTE.
+    bit_offset: 7
+    bit_size: 1

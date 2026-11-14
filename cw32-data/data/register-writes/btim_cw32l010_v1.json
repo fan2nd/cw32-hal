@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "btim_cw32l010_v1": [
+      {
+        "block": "BTIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 65,
+        "write_noop": 65,
+        "zero_to_clear_fields": [
+          "UIF",
+          "TIF"
+        ],
+        "evidence": [
+          "CW32L010_UserManual_CN_V1.2.pdf CN V1.2 section 11.9.6, printed page 183/PDF page 184; https://www.whxy.com/uploads/files/20260626/CW32L010_UserManual_CN_V1.2.pdf; SHA-256 b66ae2b2837cf22aede7f19312b82659ea10f96960bfe7965de8733bb72513fa; docs/timer-command-evidence.json families.CW32L010",
+          "CW32L011_UserManual_CN_V1.1.pdf CN V1.1 section 11.9.6, printed page 183/PDF page 184; https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf; SHA-256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f; docs/timer-command-evidence.json families.CW32L011"
+        ]
+      }
+    ]
+  }
+}

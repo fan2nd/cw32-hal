@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dma_cw32l012_v1": [
+      {
+        "block": "DMA",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 4294967295,
+        "write_noop": 4294967295,
+        "zero_to_clear_fields": [
+          "TC1",
+          "TE1",
+          "TC2",
+          "TE2",
+          "TC3",
+          "TE3",
+          "TC4",
+          "TE4"
+        ],
+        "evidence": [
+          "vendor:CW32L012_UserManual_CN_V1.4.pdf SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; section 8.8.2, PDF page 145/printed page 119: reset 0xffffffff; TC/TE are R1W0 at bits 0/1, 4/5, 8/9, 12/13; preserve reserved bits and other channels with the all-ones no-op seed. https://www.whxy.com/uploads/files/20260603/CW32L012_UserManual_CN_V1.4.pdf; docs/l012-dma-owned-evidence.json."
+        ]
+      }
+    ]
+  }
+}

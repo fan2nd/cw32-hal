@@ -1,0 +1,24 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "adc_cw32l012_v1": [
+      {
+        "block": "ADC",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 15,
+        "write_noop": 31,
+        "zero_to_clear_fields": [
+          "EOC",
+          "EOS",
+          "AWDL",
+          "AWDH"
+        ],
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4.pdf section25.12.10 printed p597/PDF p623; reset0xF, R1W0 EOC0 EOS1 AWDL3 AWDH4; reserved bit2 stays at reset1. All defined flags must write1 for no-op, yielding0x1F.",
+          "docs/adc-l012-scans.md; docs/adc-scan-source-evidence.json families.CW32L012"
+        ]
+      }
+    ]
+  }
+}

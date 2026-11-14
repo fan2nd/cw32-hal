@@ -1,0 +1,83 @@
+block/EAU:
+  description: desc EAU.
+  items:
+  - name: CSR
+    description: desc CSR.
+    byte_offset: 0
+    fieldset: CSR
+  - name: DIVIDEND
+    description: desc DIVIDEND.
+    byte_offset: 4
+    fieldset: DIVIDEND
+  - name: DIVISOR
+    description: desc DIVISOR.
+    byte_offset: 8
+    fieldset: DIVISOR
+  - name: QUOTIENT
+    description: desc QUOTIENT.
+    byte_offset: 12
+    access: Read
+    fieldset: QUOTIENT
+  - name: REMAINDER
+    description: desc REMAINDER.
+    byte_offset: 16
+    access: Read
+    fieldset: REMAINDER
+fieldset/CSR:
+  description: desc CSR.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 2
+    enum: Mode
+  - name: OVR
+    description: desc OVR.
+    bit_offset: 2
+    bit_size: 1
+  - name: ZERO
+    description: desc ZERO.
+    bit_offset: 3
+    bit_size: 1
+  - name: BUSY
+    description: desc BUSY.
+    bit_offset: 4
+    bit_size: 1
+fieldset/DIVIDEND:
+  description: desc DIVIDEND.
+  fields:
+  - name: DIVIDEND
+    description: desc DIVIDEND.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DIVISOR:
+  description: desc DIVISOR.
+  fields:
+  - name: DIVISOR
+    description: desc DIVISOR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/QUOTIENT:
+  description: desc QUOTIENT.
+  fields:
+  - name: QUOTIENT
+    description: desc QUOTIENT.
+    bit_offset: 0
+    bit_size: 32
+fieldset/REMAINDER:
+  description: desc REMAINDER.
+  fields:
+  - name: REMAINDER
+    description: desc REMAINDER.
+    bit_offset: 0
+    bit_size: 32
+enum/Mode:
+  description: L012 EAU Mode encodings, own CN manual Rev1.4; see docs/l012-math-evidence.md.
+  bit_size: 2
+  variants:
+  - name: UNSIGNED_DIVISION
+    value: 0
+  - name: SIGNED_DIVISION
+    value: 1
+  - name: SQUARE_ROOT
+    value: 2

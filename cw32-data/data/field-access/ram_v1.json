@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "ram_v1": [
+      {
+        "block": "RAM",
+        "register": "IER",
+        "fieldset": "IER",
+        "field": "EN",
+        "bit_offset": 0,
+        "bit_size": 1,
+        "evidence": [
+          "docs/ram-parity-evidence.json: own-family section 6.6.2 marks IER.EN RO; IER.PARITY remains RW."
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l052_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L052: CW32L052_UserManual_CN_V1.5.pdf CN V1.5 section 4.7.7, printed page 75/PDF page 76; https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf; SHA-256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l052/CW32L052_StandardPeripheralLib_V1.4/IdeSupport/MDK/WHXY.CW32L052_DFP.1.0.0/SVD/CW32L052.svd, SHA-256 78920e75111aa9845d9f66a2f305f96ec5577cde8c52543f0fa1d708e53867c7, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/18: source-correct captured RO and independently reviewed own-manual RO for CW32L052; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/19: source-correct captured RO and independently reviewed own-manual RO for CW32L052; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/20: source-correct captured RO and independently reviewed own-manual RO for CW32L052; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

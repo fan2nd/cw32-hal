@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "spi_cw32f002_v1": [
+      {
+        "block": "SPI",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 255,
+        "write_noop": 255,
+        "zero_to_clear_fields": [
+          "FLUSH",
+          "RXNE",
+          "SSF",
+          "SSR",
+          "UD",
+          "OV",
+          "SSERR",
+          "MODF"
+        ],
+        "evidence": [
+          "CW32F002_UserManual_CN_V1.4.pdf section 16.7.6, printed p260 (PDF p261); SHA-256 e453b3f82d9d180a86cd5f7cb18d858d7f228afc8101d87c700ca9d5c02d5add; docs/spi-register-write-evidence.json families.CW32F002",
+          "CW32F003_UserManual_CN_V2.3.pdf section 17.7.6, printed p319 (PDF p320); SHA-256 0fa58dac223add7f2ac1ee714a7df7db4e414e0f193601b80dda96a948bfc738; docs/spi-register-write-evidence.json families.CW32F003"
+        ]
+      }
+    ]
+  }
+}

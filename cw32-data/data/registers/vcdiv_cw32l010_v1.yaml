@@ -1,0 +1,60 @@
+block/VCDIV:
+  description: Shared comparator reference divider.
+  items:
+  - name: DIV
+    description: VCREF Control register.
+    byte_offset: 0
+    fieldset: DIV
+fieldset/DIV:
+  description: Shared comparator reference control; configure only while no consumer selects it.
+  fields:
+  - name: DIV
+    description: Ratio code 0..7 selects (1 + DIV) / 8. Values 8..15 are unqualified on L012.
+    bit_offset: 0
+    bit_size: 3
+    enum: DividerRatio
+  - name: EN
+    description: Enable the shared resistor divider.
+    bit_offset: 4
+    bit_size: 1
+  - name: VIN
+    description: Analog supply (VDD on L010, VDDA on L011/L012) or nominal 1.6 V core rail.
+    bit_offset: 5
+    bit_size: 1
+    enum: InputSource
+enum/DividerRatio:
+  bit_size: 3
+  variants:
+  - name: OneEighth
+    description: 1/8 of the selected input; subject to analog limits.
+    value: 0
+  - name: TwoEighths
+    description: 2/8 of the selected input; subject to analog limits.
+    value: 1
+  - name: ThreeEighths
+    description: 3/8 of the selected input; subject to analog limits.
+    value: 2
+  - name: FourEighths
+    description: 4/8 of the selected input; subject to analog limits.
+    value: 3
+  - name: FiveEighths
+    description: 5/8 of the selected input; subject to analog limits.
+    value: 4
+  - name: SixEighths
+    description: 6/8 of the selected input; subject to analog limits.
+    value: 5
+  - name: SevenEighths
+    description: 7/8 of the selected input; subject to analog limits.
+    value: 6
+  - name: EightEighths
+    description: 8/8 of the selected input; subject to analog limits.
+    value: 7
+enum/InputSource:
+  bit_size: 1
+  variants:
+  - name: Supply
+    description: VDD on L010; VDDA on L011/L012.
+    value: 0
+  - name: Core
+    description: Internal Vcore, nominally 1.6 V; not a calibrated reference.
+    value: 1

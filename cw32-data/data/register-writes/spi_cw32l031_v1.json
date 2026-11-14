@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "spi_cw32l031_v1": [
+      {
+        "block": "SPI",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 255,
+        "write_noop": 255,
+        "zero_to_clear_fields": [
+          "FLUSH",
+          "RXNE",
+          "SSF",
+          "SSR",
+          "UD",
+          "OV",
+          "SSERR",
+          "MODF"
+        ],
+        "evidence": [
+          "CW32L031_UserManual_CN_V1.6.pdf section 19.8.6, printed p390 (PDF p391); SHA-256 4288cfd97b56385059c5a283f69972047af4773ef8bbc4d8b51d8155fb17a760; docs/spi-register-write-evidence.json families.CW32L031",
+          "CW32R031_UserManual_CN_V1.3.pdf section 19.8.6, printed p393 (PDF p394); SHA-256 fbee9b6942be9fa09f00c946705644d5356c4249f3e2280e3dfe5f0cb342eddb; docs/spi-register-write-evidence.json families.CW32R031",
+          "CW32W031_UserManual_CN_V1.4.pdf section 19.8.6, printed p393 (PDF p394); SHA-256 b6973677946a9332b0e5b3e954119768aa40469d44140a73e18648e9419bedc9; docs/spi-register-write-evidence.json families.CW32W031",
+          "CW32L052_UserManual_CN_V1.5.pdf section 20.8.6, printed p427 (PDF p428); SHA-256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41; docs/spi-register-write-evidence.json families.CW32L052",
+          "CW32L083_UserManual_CN_V2.0.pdf section 20.8.6, printed p432 (PDF p433); SHA-256 9930bf1755f3bbf8933163c2d0da57fd9a4f3250a358a4c0bfc75ed4eda3a0a3; docs/spi-register-write-evidence.json families.CW32L083"
+        ]
+      }
+    ]
+  }
+}

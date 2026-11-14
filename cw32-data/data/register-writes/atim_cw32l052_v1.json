@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "atim_cw32l052_v1": [
+      {
+        "block": "ATIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 524287,
+        "write_noop": 524287,
+        "zero_to_clear_fields": [
+          "UIF",
+          "C1AF",
+          "C2AF",
+          "C3AF",
+          "C1BF",
+          "C2BF",
+          "C3BF",
+          "C1AE",
+          "C2AE",
+          "C3AE",
+          "C1BE",
+          "C2BE",
+          "C3BE",
+          "BIF",
+          "TIF",
+          "OVF",
+          "UNDF",
+          "C4AF"
+        ],
+        "evidence": [
+          "vendor:CW32L052_UserManual_CN_V1.5.pdf, printed p328/PDF page329; SHA-256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41; docs/classic-atim-complementary-evidence.json"
+        ]
+      }
+    ]
+  }
+}

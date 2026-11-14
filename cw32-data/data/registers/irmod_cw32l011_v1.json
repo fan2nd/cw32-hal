@@ -1,0 +1,123 @@
+{
+  "block/IRMOD": {
+    "description": "desc IRMOD.",
+    "items": [
+      {
+        "name": "CR",
+        "description": "Input selection register.",
+        "byte_offset": 0,
+        "fieldset": "CR"
+      }
+    ]
+  },
+  "fieldset/CR": {
+    "description": "Input selection register.",
+    "fields": [
+      {
+        "name": "MOD",
+        "description": "desc MOD.",
+        "bit_offset": 0,
+        "bit_size": 4,
+        "enum": "IrMode"
+      },
+      {
+        "name": "IRSW",
+        "description": "desc IRSW.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "INV",
+        "description": "desc INV.",
+        "bit_offset": 5,
+        "bit_size": 1
+      }
+    ]
+  },
+  "enum/IrMode": {
+    "description": "Exact own-family infrared boolean combinations; sources are configured separately.",
+    "bit_size": 4,
+    "variants": [
+      {
+        "name": "GTIM1_CH1_AND_GTIM2_CH1_AND_IRSW",
+        "description": "GTIM1_CH1 & GTIM2_CH1 & IRSW",
+        "value": 0
+      },
+      {
+        "name": "GTIM1_CH1_AND_GTIM2_CH2_AND_IRSW",
+        "description": "GTIM1_CH1 & GTIM2_CH2 & IRSW",
+        "value": 1
+      },
+      {
+        "name": "GTIM1_CH2_AND_GTIM2_CH1_AND_IRSW",
+        "description": "GTIM1_CH2 & GTIM2_CH1 & IRSW",
+        "value": 2
+      },
+      {
+        "name": "GTIM1_CH2_AND_GTIM2_CH2_AND_IRSW",
+        "description": "GTIM1_CH2 & GTIM2_CH2 & IRSW",
+        "value": 3
+      },
+      {
+        "name": "GTIM1_CH1_OR_GTIM2_CH1_OR_IRSW",
+        "description": "GTIM1_CH1 | GTIM2_CH1 | IRSW",
+        "value": 4
+      },
+      {
+        "name": "GTIM1_CH1_OR_GTIM2_CH2_OR_IRSW",
+        "description": "GTIM1_CH1 | GTIM2_CH2 | IRSW",
+        "value": 5
+      },
+      {
+        "name": "GTIM1_CH2_OR_GTIM2_CH1_OR_IRSW",
+        "description": "GTIM1_CH2 | GTIM2_CH1 | IRSW",
+        "value": 6
+      },
+      {
+        "name": "GTIM1_CH2_OR_GTIM2_CH2_OR_IRSW",
+        "description": "GTIM1_CH2 | GTIM2_CH2 | IRSW",
+        "value": 7
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM1_CH1_AND_IRSW",
+        "description": "UART1_TXD & GTIM1_CH1 & IRSW",
+        "value": 8
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM1_CH1_OR_IRSW",
+        "description": "UART1_TXD | GTIM1_CH1 | IRSW",
+        "value": 9
+      },
+      {
+        "name": "UART1_TXD_AND_GTIM1_CH2_AND_IRSW",
+        "description": "UART1_TXD & GTIM1_CH2 & IRSW",
+        "value": 10
+      },
+      {
+        "name": "UART1_TXD_OR_GTIM1_CH2_OR_IRSW",
+        "description": "UART1_TXD | GTIM1_CH2 | IRSW",
+        "value": 11
+      },
+      {
+        "name": "UART2_TXD_AND_GTIM2_CH1_AND_IRSW",
+        "description": "UART2_TXD & GTIM2_CH1 & IRSW",
+        "value": 12
+      },
+      {
+        "name": "UART2_TXD_OR_GTIM2_CH1_OR_IRSW",
+        "description": "UART2_TXD | GTIM2_CH1 | IRSW",
+        "value": 13
+      },
+      {
+        "name": "UART2_TXD_AND_GTIM2_CH2_AND_IRSW",
+        "description": "UART2_TXD & GTIM2_CH2 & IRSW",
+        "value": 14
+      },
+      {
+        "name": "UART2_TXD_OR_GTIM2_CH2_OR_IRSW",
+        "description": "UART2_TXD | GTIM2_CH2 | IRSW",
+        "value": 15
+      }
+    ]
+  }
+}

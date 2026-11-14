@@ -1,0 +1,599 @@
+{
+  "block/UART": {
+    "description": "desc UART1.",
+    "items": [
+      {
+        "name": "CR1",
+        "description": "desc CR1.",
+        "byte_offset": 0,
+        "fieldset": "CR1"
+      },
+      {
+        "name": "CR2",
+        "description": "desc CR2.",
+        "byte_offset": 4,
+        "fieldset": "CR2"
+      },
+      {
+        "name": "IER",
+        "description": "desc IER.",
+        "byte_offset": 8,
+        "fieldset": "IER"
+      },
+      {
+        "name": "BRRI",
+        "description": "desc BRRI.",
+        "byte_offset": 12,
+        "fieldset": "BRRI"
+      },
+      {
+        "name": "BRRF",
+        "description": "desc BRRF.",
+        "byte_offset": 16,
+        "fieldset": "BRRF"
+      },
+      {
+        "name": "TIMARR",
+        "description": "desc TIMARR.",
+        "byte_offset": 20,
+        "fieldset": "TIMARR"
+      },
+      {
+        "name": "TIMCNT",
+        "description": "desc TIMCNT.",
+        "byte_offset": 24,
+        "access": "Read",
+        "fieldset": "TIMCNT"
+      },
+      {
+        "name": "ISR",
+        "description": "desc ISR.",
+        "byte_offset": 28,
+        "access": "Read",
+        "fieldset": "ISR"
+      },
+      {
+        "name": "ICR",
+        "description": "desc ICR.",
+        "byte_offset": 32,
+        "fieldset": "ICR"
+      },
+      {
+        "name": "RDR",
+        "description": "desc RDR.",
+        "byte_offset": 36,
+        "access": "Read",
+        "fieldset": "RDR"
+      },
+      {
+        "name": "TDR",
+        "description": "desc TDR.",
+        "byte_offset": 40,
+        "access": "Write",
+        "fieldset": "TDR"
+      },
+      {
+        "name": "ADDR",
+        "description": "desc ADDR.",
+        "byte_offset": 48,
+        "fieldset": "ADDR"
+      },
+      {
+        "name": "MASK",
+        "description": "desc MASK.",
+        "byte_offset": 52,
+        "fieldset": "MASK"
+      }
+    ]
+  },
+  "fieldset/ADDR": {
+    "description": "desc ADDR.",
+    "fields": [
+      {
+        "name": "ADDR",
+        "description": "desc ADDR.",
+        "bit_offset": 0,
+        "bit_size": 8
+      }
+    ]
+  },
+  "fieldset/BRRF": {
+    "description": "desc BRRF.",
+    "fields": [
+      {
+        "name": "BRRF",
+        "description": "desc BRRF.",
+        "bit_offset": 0,
+        "bit_size": 4
+      }
+    ]
+  },
+  "fieldset/BRRI": {
+    "description": "desc BRRI.",
+    "fields": [
+      {
+        "name": "BRRI",
+        "description": "desc BRRI.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR1": {
+    "description": "desc CR1.",
+    "fields": [
+      {
+        "name": "TXEN",
+        "description": "desc TXEN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "RXEN",
+        "description": "desc RXEN.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "PARITY",
+        "description": "desc PARITY.",
+        "bit_offset": 2,
+        "bit_size": 2,
+        "enum": "Parity"
+      },
+      {
+        "name": "STOP",
+        "description": "desc STOP.",
+        "bit_offset": 4,
+        "bit_size": 2,
+        "enum": "Stop"
+      },
+      {
+        "name": "SYNC",
+        "description": "desc SYNC.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "LIN",
+        "description": "desc LINEN.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "START",
+        "description": "desc START.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "OVER",
+        "description": "desc OVER.",
+        "bit_offset": 9,
+        "bit_size": 2,
+        "enum": "Over"
+      },
+      {
+        "name": "TXBRK",
+        "description": "desc TXBRK.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "BRKL",
+        "description": "desc BRKLEN.",
+        "bit_offset": 12,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/CR2": {
+    "description": "desc CR2.",
+    "fields": [
+      {
+        "name": "ADDREN",
+        "description": "desc ADDREN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "SIGNAL",
+        "description": "desc SIGNAL.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CTSEN",
+        "description": "desc CTSEN.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "RTSEN",
+        "description": "desc RTSEN.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "RXINV",
+        "description": "desc RXINV.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "TXINV",
+        "description": "desc TXINV.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "DMARX",
+        "description": "desc DMARX.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "DMATX",
+        "description": "desc DMATX.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "SOURCE",
+        "description": "desc SOURCE.",
+        "bit_offset": 8,
+        "bit_size": 2,
+        "enum": "Source"
+      },
+      {
+        "name": "TIMCR",
+        "description": "desc TIMCR.",
+        "bit_offset": 10,
+        "bit_size": 3
+      }
+    ]
+  },
+  "fieldset/ICR": {
+    "description": "desc ICR.",
+    "fields": [
+      {
+        "name": "TC",
+        "description": "desc TC.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "RC",
+        "description": "desc RC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "FE",
+        "description": "desc FE.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "PE",
+        "description": "desc PE.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "CTS",
+        "description": "desc CTS.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "TIMOV",
+        "description": "desc TIMOV.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "BAUD",
+        "description": "desc BAUD.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "RXBRK",
+        "description": "desc RXBRK.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/IER": {
+    "description": "desc IER.",
+    "fields": [
+      {
+        "name": "TXE",
+        "description": "desc TXE.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "TC",
+        "description": "desc TC.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "RC",
+        "description": "desc RC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "FE",
+        "description": "desc FE.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "PE",
+        "description": "desc PE.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "CTS",
+        "description": "desc CTS.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "TIMOV",
+        "description": "desc TIMOV.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "BAUD",
+        "description": "desc BAUD.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "RXBRK",
+        "description": "desc RXBRK.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ISR": {
+    "description": "desc ISR.",
+    "fields": [
+      {
+        "name": "TXE",
+        "description": "desc TXE.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "TC",
+        "description": "desc TC.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "RC",
+        "description": "desc RC.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "FE",
+        "description": "desc FE.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "PE",
+        "description": "desc PE.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "MATCH",
+        "description": "desc MATCH.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "CTS",
+        "description": "desc CTS.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "CTSLV",
+        "description": "desc CTSLV.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "TXBUSY",
+        "description": "desc TXBUSY.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "TIMOV",
+        "description": "desc TIMOV.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "BAUD",
+        "description": "desc BAUD.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "RXBRK",
+        "description": "desc RXBRK.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/MASK": {
+    "description": "desc MASK.",
+    "fields": [
+      {
+        "name": "MASK",
+        "description": "desc MASK.",
+        "bit_offset": 0,
+        "bit_size": 8
+      }
+    ]
+  },
+  "fieldset/RDR": {
+    "description": "desc RDR.",
+    "fields": [
+      {
+        "name": "RDR",
+        "description": "desc RDR.",
+        "bit_offset": 0,
+        "bit_size": 9
+      }
+    ]
+  },
+  "fieldset/TDR": {
+    "description": "desc TDR.",
+    "fields": [
+      {
+        "name": "TDR",
+        "description": "desc TDR.",
+        "bit_offset": 0,
+        "bit_size": 9
+      }
+    ]
+  },
+  "fieldset/TIMARR": {
+    "description": "desc TIMARR.",
+    "fields": [
+      {
+        "name": "TIMARR",
+        "description": "desc TIMARR.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "fieldset/TIMCNT": {
+    "description": "desc TIMCNT.",
+    "fields": [
+      {
+        "name": "TIMCNT",
+        "description": "desc TIMCNT.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "enum/Over": {
+    "description": "UART OVER encodings; see docs/uart-typed-registers.md for own-manual evidence.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "OVER16",
+        "description": "Sixteen samples per bit.",
+        "value": 0
+      },
+      {
+        "name": "OVER8",
+        "description": "Eight samples per bit.",
+        "value": 1
+      },
+      {
+        "name": "OVER4",
+        "description": "Four samples per bit.",
+        "value": 2
+      },
+      {
+        "name": "SPECIAL",
+        "description": "Dedicated low-speed sampling.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/Parity": {
+    "description": "UART PARITY encodings; see docs/uart-typed-registers.md for own-manual evidence.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "NONE",
+        "description": "No parity.",
+        "value": 0
+      },
+      {
+        "name": "CUSTOM",
+        "description": "User-defined parity.",
+        "value": 1
+      },
+      {
+        "name": "EVEN",
+        "description": "Even parity.",
+        "value": 2
+      },
+      {
+        "name": "ODD",
+        "description": "Odd parity.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/Source": {
+    "description": "UART SOURCE encodings; see docs/uart-typed-registers.md for own-manual evidence.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "PCLK",
+        "description": "Peripheral clock.",
+        "value": 0
+      },
+      {
+        "name": "PCLK_ALT",
+        "description": "Peripheral clock, alternate encoding.",
+        "value": 1
+      },
+      {
+        "name": "LSE",
+        "description": "External low-speed clock.",
+        "value": 2
+      },
+      {
+        "name": "LSI",
+        "description": "Internal low-speed clock.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/Stop": {
+    "description": "UART STOP encodings; see docs/uart-typed-registers.md for own-manual evidence.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "STOP1",
+        "description": "One stop bit.",
+        "value": 0
+      },
+      {
+        "name": "STOP1P5",
+        "description": "One and a half stop bits.",
+        "value": 1
+      },
+      {
+        "name": "STOP2",
+        "description": "Two stop bits.",
+        "value": 2
+      }
+    ]
+  }
+}

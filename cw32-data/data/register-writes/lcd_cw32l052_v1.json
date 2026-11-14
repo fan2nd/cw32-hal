@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "lcd_cw32l052_v1": [
+      {
+        "block": "LCD",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 4096,
+        "write_noop": 4096,
+        "zero_to_clear_fields": [
+          "INTF"
+        ],
+        "evidence": [
+          "https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf §26.7.3: INTF bit12 writes zero to clear, one has no effect; reset 0x1000."
+        ]
+      }
+    ]
+  }
+}

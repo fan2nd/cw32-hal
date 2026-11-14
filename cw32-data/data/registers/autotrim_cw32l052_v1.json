@@ -1,0 +1,403 @@
+{
+  "block/AUTOTRIM": {
+    "description": "Automatic trim and independent timer. Safe HAL exposes only MD=3/AUTO=0; see docs/autotrim-counter-evidence.md.",
+    "items": [
+      {
+        "name": "CR",
+        "description": "desc CR.",
+        "byte_offset": 0,
+        "fieldset": "CR"
+      },
+      {
+        "name": "ARR",
+        "description": "desc ARR.",
+        "byte_offset": 4,
+        "fieldset": "ARR"
+      },
+      {
+        "name": "CNT",
+        "description": "desc CNT.",
+        "byte_offset": 8,
+        "access": "Read",
+        "fieldset": "CNT"
+      },
+      {
+        "name": "IER",
+        "description": "desc IER.",
+        "byte_offset": 16,
+        "fieldset": "IER"
+      },
+      {
+        "name": "ISR",
+        "description": "desc ISR.",
+        "byte_offset": 20,
+        "access": "Read",
+        "fieldset": "ISR"
+      },
+      {
+        "name": "ICR",
+        "description": "desc ICR.",
+        "byte_offset": 28,
+        "fieldset": "ICR"
+      },
+      {
+        "name": "FCAP",
+        "description": "desc FCAP.",
+        "byte_offset": 128,
+        "access": "Read",
+        "fieldset": "FCAP"
+      },
+      {
+        "name": "TVAL",
+        "description": "desc TVAL.",
+        "byte_offset": 132,
+        "access": "Read",
+        "fieldset": "TVAL"
+      },
+      {
+        "name": "FLIM",
+        "description": "desc FLIM.",
+        "byte_offset": 136,
+        "access": "Read",
+        "fieldset": "FLIM"
+      }
+    ]
+  },
+  "fieldset/ARR": {
+    "description": "desc ARR.",
+    "fields": [
+      {
+        "name": "ARR",
+        "description": "desc ARR.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CNT": {
+    "description": "desc CNT.",
+    "fields": [
+      {
+        "name": "CNT",
+        "description": "desc CNT.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/CR": {
+    "description": "desc CR.",
+    "fields": [
+      {
+        "name": "EN",
+        "description": "desc EN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "MD",
+        "description": "desc MD.",
+        "bit_offset": 1,
+        "bit_size": 2,
+        "enum": "Mode"
+      },
+      {
+        "name": "AUTO",
+        "description": "desc AUTO.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "PRS",
+        "description": "desc PRS.",
+        "bit_offset": 4,
+        "bit_size": 4,
+        "enum": "Prescaler"
+      },
+      {
+        "name": "SRC",
+        "description": "desc SRC.",
+        "bit_offset": 8,
+        "bit_size": 3,
+        "enum": "Source"
+      },
+      {
+        "name": "OST",
+        "description": "desc OST.",
+        "bit_offset": 11,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/FCAP": {
+    "description": "desc FCAP.",
+    "fields": [
+      {
+        "name": "FCAP",
+        "description": "desc FCAP.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/FLIM": {
+    "description": "desc FLIM.",
+    "fields": [
+      {
+        "name": "FLIM",
+        "description": "desc FLIM.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "fieldset/ICR": {
+    "description": "desc ICR.",
+    "fields": [
+      {
+        "name": "END",
+        "description": "Calibration ended, not proof of success.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OK",
+        "description": "Calibration reached its frequency-error target.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "UD",
+        "description": "Timer underflow event; multiple periods coalesce.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "OV",
+        "description": "Calibration trim code reached 0 or 0x1ff; not counter overflow.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "MISS",
+        "description": "Calibration interval count was missed.",
+        "bit_offset": 5,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/IER": {
+    "description": "desc IER.",
+    "fields": [
+      {
+        "name": "END",
+        "description": "Calibration ended, not proof of success.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OK",
+        "description": "Calibration reached its frequency-error target.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "UD",
+        "description": "Timer underflow event; multiple periods coalesce.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "OV",
+        "description": "Calibration trim code reached 0 or 0x1ff; not counter overflow.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "MISS",
+        "description": "Calibration interval count was missed.",
+        "bit_offset": 5,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ISR": {
+    "description": "desc ISR.",
+    "fields": [
+      {
+        "name": "END",
+        "description": "Calibration ended, not proof of success.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OK",
+        "description": "Calibration reached its frequency-error target.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "UD",
+        "description": "Timer underflow event; multiple periods coalesce.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "OV",
+        "description": "Calibration trim code reached 0 or 0x1ff; not counter overflow.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "MISS",
+        "description": "Calibration interval count was missed.",
+        "bit_offset": 5,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/TVAL": {
+    "description": "desc TVAL.",
+    "fields": [
+      {
+        "name": "TVAL",
+        "description": "desc TVAL.",
+        "bit_offset": 0,
+        "bit_size": 16
+      }
+    ]
+  },
+  "enum/Mode": {
+    "description": "Own-family CN UM section 11; see docs/autotrim-counter-evidence.json.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "HSI_CALIBRATION",
+        "description": "HSIOSC calibration; unsafe oscillator ownership is outside the safe HAL.",
+        "value": 0
+      },
+      {
+        "name": "LSI_CALIBRATION",
+        "description": "LSI calibration; unsafe oscillator ownership is outside the safe HAL.",
+        "value": 1
+      },
+      {
+        "name": "TIMER",
+        "description": "Periodic down-counter, with automatic trim disabled.",
+        "value": 3
+      }
+    ]
+  },
+  "enum/Prescaler": {
+    "description": "Own-family CN UM section 11; see docs/autotrim-counter-evidence.json.",
+    "bit_size": 4,
+    "variants": [
+      {
+        "name": "DIV2",
+        "description": "Divide source by 2.",
+        "value": 1
+      },
+      {
+        "name": "DIV4",
+        "description": "Divide source by 4.",
+        "value": 2
+      },
+      {
+        "name": "DIV8",
+        "description": "Divide source by 8.",
+        "value": 3
+      },
+      {
+        "name": "DIV16",
+        "description": "Divide source by 16.",
+        "value": 4
+      },
+      {
+        "name": "DIV32",
+        "description": "Divide source by 32.",
+        "value": 5
+      },
+      {
+        "name": "DIV64",
+        "description": "Divide source by 64.",
+        "value": 6
+      },
+      {
+        "name": "DIV128",
+        "description": "Divide source by 128.",
+        "value": 7
+      },
+      {
+        "name": "DIV256",
+        "description": "Divide source by 256.",
+        "value": 8
+      },
+      {
+        "name": "DIV512",
+        "description": "Divide source by 512.",
+        "value": 9
+      },
+      {
+        "name": "DIV1024",
+        "description": "Divide source by 1024.",
+        "value": 10
+      },
+      {
+        "name": "DIV2048",
+        "description": "Divide source by 2048.",
+        "value": 11
+      },
+      {
+        "name": "DIV4096",
+        "description": "Divide source by 4096.",
+        "value": 12
+      },
+      {
+        "name": "DIV8192",
+        "description": "Divide source by 8192.",
+        "value": 13
+      },
+      {
+        "name": "DIV16384",
+        "description": "Divide source by 16384.",
+        "value": 14
+      },
+      {
+        "name": "DIV32768",
+        "description": "Divide source by 32768.",
+        "value": 15
+      }
+    ]
+  },
+  "enum/Source": {
+    "description": "Own-family CN UM section 11; see docs/autotrim-counter-evidence.json.",
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "HSI_OSC",
+        "description": "Undivided nominal 48 MHz HSIOSC.",
+        "value": 0
+      },
+      {
+        "name": "LSI",
+        "description": "Internal low-speed oscillator.",
+        "value": 1
+      },
+      {
+        "name": "HSE",
+        "description": "External high-speed oscillator.",
+        "value": 2
+      },
+      {
+        "name": "LSE",
+        "description": "External low-speed oscillator.",
+        "value": 3
+      },
+      {
+        "name": "ETR",
+        "description": "External input.",
+        "value": 4
+      }
+    ]
+  }
+}

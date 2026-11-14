@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dma_v1": [
+      {
+        "block": "DMA",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 4294967295,
+        "write_noop": 4294967295,
+        "zero_to_clear_fields": [
+          "TC1",
+          "TE1",
+          "TC2",
+          "TE2",
+          "TC3",
+          "TE3",
+          "TC4",
+          "TE4",
+          "TC5",
+          "TE5"
+        ],
+        "evidence": [
+          "CW32x030 UM EN V1.0 section8.8.2 p145; CN V2.5 section8.8.2 p138",
+          "docs/dma-owned-copy-evidence.md: R1W0 seed and shared-vector isolation",
+          "CW32L083 own UM CN V2.0 section8.8.2 p146; docs/dma-owned-copy-evidence.json sources.l083"
+        ]
+      }
+    ]
+  }
+}

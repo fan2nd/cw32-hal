@@ -1,0 +1,200 @@
+block/FLASH:
+  description: desc FLASH.
+  items:
+  - name: CR1
+    description: Control register1.
+    byte_offset: 0
+    fieldset: CR1
+  - name: CR2
+    description: Control register2.
+    byte_offset: 4
+    fieldset: CR2
+  - name: PAGELOCK
+    description: Page Write Erase Lock.
+    byte_offset: 8
+    fieldset: PAGELOCK
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 32
+    fieldset: IER
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 36
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 40
+    fieldset: ICR
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 2
+    enum: Mode
+  - name: STANDBY
+    description: desc STANDBY.
+    bit_offset: 4
+    bit_size: 1
+  - name: BUSY
+    description: desc BUSY.
+    bit_offset: 5
+    bit_size: 1
+  - name: SECURITY
+    description: desc SECURITY.
+    bit_offset: 6
+    bit_size: 2
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/CR2:
+  description: Control register2.
+  fields:
+  - name: WAIT
+    description: desc WAIT.
+    bit_offset: 0
+    bit_size: 3
+  - name: FETCH
+    description: desc FETCH.
+    bit_offset: 3
+    bit_size: 1
+  - name: CACHE
+    description: desc CACHE.
+    bit_offset: 4
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: PC
+    description: desc PC.
+    bit_offset: 0
+    bit_size: 1
+  - name: PAGELOCK
+    description: desc PAGELOCK.
+    bit_offset: 1
+    bit_size: 1
+  - name: PROG
+    description: desc PROG.
+    bit_offset: 4
+    bit_size: 1
+fieldset/PAGELOCK:
+  description: Page Write Erase Lock.
+  fields:
+  - name: LOCK0
+    description: Page0 - 7.
+    bit_offset: 0
+    bit_size: 1
+  - name: LOCK1
+    description: Page8 - 15.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCK2
+    description: Page16 - 23.
+    bit_offset: 2
+    bit_size: 1
+  - name: LOCK3
+    description: Page24 - 31.
+    bit_offset: 3
+    bit_size: 1
+  - name: LOCK4
+    description: Page32 - 39.
+    bit_offset: 4
+    bit_size: 1
+  - name: LOCK5
+    description: Page40 - 47.
+    bit_offset: 5
+    bit_size: 1
+  - name: LOCK6
+    description: Page48 - 55.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCK7
+    description: Page56 - 63.
+    bit_offset: 7
+    bit_size: 1
+  - name: LOCK8
+    description: Page64 - 71.
+    bit_offset: 8
+    bit_size: 1
+  - name: LOCK9
+    description: Page72 - 79.
+    bit_offset: 9
+    bit_size: 1
+  - name: LOCK10
+    description: Page80 - 87.
+    bit_offset: 10
+    bit_size: 1
+  - name: LOCK11
+    description: Page88 - 95.
+    bit_offset: 11
+    bit_size: 1
+  - name: LOCK12
+    description: Page96 - 103.
+    bit_offset: 12
+    bit_size: 1
+  - name: LOCK13
+    description: Page104 - 111.
+    bit_offset: 13
+    bit_size: 1
+  - name: LOCK14
+    description: Page112 - 119.
+    bit_offset: 14
+    bit_size: 1
+  - name: LOCK15
+    description: Page120 - 127.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+enum/Mode:
+  description: Main FLASH operation, qualified by the own FLASH control chapter; see docs/flash-next-batch-audit.json.
+  bit_size: 2
+  variants:
+  - name: READ
+    description: Read operation.
+    value: 0
+  - name: PROGRAM
+    description: Program an erased byte, halfword or word.
+    value: 1
+  - name: PAGE_ERASE
+    description: Erase the page selected by the triggering store.
+    value: 2

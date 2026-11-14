@@ -1,0 +1,1285 @@
+block/ATIM:
+  description: desc ATIM.
+  items:
+  - name: CR1
+    description: Control Register1.
+    byte_offset: 0
+    fieldset: CR1
+  - name: CR2
+    description: Control Register2.
+    byte_offset: 4
+    fieldset: CR2
+  - name: SMCR
+    description: Slave Mode Control Register.
+    byte_offset: 8
+    fieldset: SMCR
+  - name: DIER
+    description: Interrupt Enable Register.
+    byte_offset: 12
+    fieldset: DIER
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 16
+    access: Read
+    fieldset: ISR
+  - name: EGR
+    description: Event generation register.
+    byte_offset: 20
+    fieldset: EGR
+  - name: CCMR1CAP
+    description: capture compare mode register 1.
+    byte_offset: 24
+    fieldset: CCMR1CAP
+  - name: CCMR1CMP
+    description: capture compare mode register 1.
+    byte_offset: 24
+    fieldset: CCMR1CMP
+  - name: CCMR2CAP
+    description: capture compare mode register 2.
+    byte_offset: 28
+    fieldset: CCMR2CAP
+  - name: CCMR2CMP
+    description: capture compare mode register 2.
+    byte_offset: 28
+    fieldset: CCMR2CMP
+  - name: CCER
+    description: capture compare enable register.
+    byte_offset: 32
+    fieldset: CCER
+  - name: CNT
+    description: Counter Register.
+    byte_offset: 36
+    fieldset: CNT
+  - name: PSC
+    description: prescaler Register.
+    byte_offset: 40
+    fieldset: PSC
+  - name: ARR
+    description: Auto reload Register.
+    byte_offset: 44
+    fieldset: ARR
+  - name: RCR
+    description: Repetition Counter Register.
+    byte_offset: 48
+    fieldset: RCR
+  - name: CCR1
+    description: capture compare register1.
+    byte_offset: 52
+    fieldset: CCR1
+  - name: CCR2
+    description: capture compare register2.
+    byte_offset: 56
+    fieldset: CCR2
+  - name: CCR3
+    description: capture compare register3.
+    byte_offset: 60
+    fieldset: CCR3
+  - name: CCR4
+    description: capture compare register4.
+    byte_offset: 64
+    fieldset: CCR4
+  - name: BDTR
+    description: break and dead-time register.
+    byte_offset: 68
+    fieldset: BDTR
+  - name: CCR5
+    description: capture compare register5.
+    byte_offset: 72
+    fieldset: CCR5
+  - name: CCR6
+    description: capture compare register6.
+    byte_offset: 76
+    fieldset: CCR6
+  - name: CCMR3CAP
+    description: capture compare mode register 3.
+    byte_offset: 80
+    fieldset: CCMR3CAP
+  - name: CCMR3CMP
+    description: capture compare mode register 3.
+    byte_offset: 80
+    fieldset: CCMR3CMP
+  - name: DTR2
+    description: dead-time register2.
+    byte_offset: 84
+    fieldset: DTR2
+  - name: ECR
+    description: Encoder control Register.
+    byte_offset: 88
+    fieldset: ECR
+  - name: TISEL1
+    description: Timer Input Select Register1.
+    byte_offset: 92
+    fieldset: TISEL1
+  - name: AF1
+    description: Alternate function Register1.
+    byte_offset: 96
+    fieldset: AF1
+  - name: AF2
+    description: Alternate function Register2.
+    byte_offset: 100
+    fieldset: AF2
+  - name: TISEL2
+    description: Timer Input Select Register2.
+    byte_offset: 108
+    fieldset: TISEL2
+  - name: ICR
+    description: Interrupt clean register.
+    byte_offset: 112
+    fieldset: ICR
+fieldset/AF1:
+  description: Alternate function Register1.
+  fields:
+  - name: BKINE
+    description: desc BKINE.
+    bit_offset: 0
+    bit_size: 1
+  - name: BKVC1E
+    description: desc BKVC1E.
+    bit_offset: 1
+    bit_size: 1
+  - name: BKVC2E
+    description: desc BKVC2E.
+    bit_offset: 2
+    bit_size: 1
+  - name: BKVC3E
+    description: desc BKVC3E.
+    bit_offset: 3
+    bit_size: 1
+  - name: BKVC4E
+    description: desc BKVC4E.
+    bit_offset: 4
+    bit_size: 1
+  - name: BKINP
+    description: desc BKINP.
+    bit_offset: 9
+    bit_size: 1
+  - name: BKVC1P
+    description: desc BKVC1P.
+    bit_offset: 10
+    bit_size: 1
+  - name: BKVC2P
+    description: desc BKVC2P.
+    bit_offset: 11
+    bit_size: 1
+  - name: BKVC3P
+    description: desc BKVC3P.
+    bit_offset: 12
+    bit_size: 1
+  - name: BKVC4P
+    description: desc BKVC4P.
+    bit_offset: 13
+    bit_size: 1
+  - name: ETRSEL
+    description: desc ETRSEL.
+    bit_offset: 16
+    bit_size: 4
+fieldset/AF2:
+  description: Alternate function Register2.
+  fields:
+  - name: BK2INE
+    description: desc BK2INE.
+    bit_offset: 0
+    bit_size: 1
+  - name: BK2VC1E
+    description: desc BK2VC1E.
+    bit_offset: 1
+    bit_size: 1
+  - name: BK2VC2E
+    description: desc BK2VC2E.
+    bit_offset: 2
+    bit_size: 1
+  - name: BK2VC3E
+    description: desc BK2VC3E.
+    bit_offset: 3
+    bit_size: 1
+  - name: BK2VC4E
+    description: desc BK2VC4E.
+    bit_offset: 4
+    bit_size: 1
+  - name: BK2INP
+    description: desc BK2INP.
+    bit_offset: 9
+    bit_size: 1
+  - name: BK2VC1P
+    description: desc BK2VC1P.
+    bit_offset: 10
+    bit_size: 1
+  - name: BK2VC2P
+    description: desc BK2VC2P.
+    bit_offset: 11
+    bit_size: 1
+  - name: BK2VC3P
+    description: desc BK2VC3P.
+    bit_offset: 12
+    bit_size: 1
+  - name: BK2VC4P
+    description: desc BK2VC4P.
+    bit_offset: 13
+    bit_size: 1
+  - name: OCRSEL
+    description: desc OCRSEL.
+    bit_offset: 16
+    bit_size: 4
+fieldset/ARR:
+  description: Auto reload Register.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/BDTR:
+  description: break and dead-time register.
+  fields:
+  - name: DTG
+    description: desc DTG.
+    bit_offset: 0
+    bit_size: 8
+  - name: LOCK
+    description: desc LOCK.
+    bit_offset: 8
+    bit_size: 2
+  - name: OSSI
+    description: desc OSSI.
+    bit_offset: 10
+    bit_size: 1
+  - name: OSSR
+    description: desc OSSR.
+    bit_offset: 11
+    bit_size: 1
+  - name: BKE
+    description: desc BKE.
+    bit_offset: 12
+    bit_size: 1
+  - name: BKP
+    description: desc BKP.
+    bit_offset: 13
+    bit_size: 1
+  - name: AOE
+    description: desc AOE.
+    bit_offset: 14
+    bit_size: 1
+  - name: MOE
+    description: desc MOE.
+    bit_offset: 15
+    bit_size: 1
+  - name: BKF
+    description: desc BKF.
+    bit_offset: 16
+    bit_size: 4
+  - name: BK2F
+    description: desc BK2F.
+    bit_offset: 20
+    bit_size: 4
+  - name: BK2E
+    description: desc BK2E.
+    bit_offset: 24
+    bit_size: 1
+  - name: BK2P
+    description: desc BK2P.
+    bit_offset: 25
+    bit_size: 1
+fieldset/CCER:
+  description: capture compare enable register.
+  fields:
+  - name: CC1E
+    description: desc CC1E.
+    bit_offset: 0
+    bit_size: 1
+  - name: CC1P
+    description: desc CC1P.
+    bit_offset: 1
+    bit_size: 1
+  - name: CC1NE
+    description: desc CC1NE.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC1NP
+    description: desc CC1NP.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC2E
+    description: desc CC2E.
+    bit_offset: 4
+    bit_size: 1
+  - name: CC2P
+    description: desc CC2P.
+    bit_offset: 5
+    bit_size: 1
+  - name: CC2NE
+    description: desc CC2NE.
+    bit_offset: 6
+    bit_size: 1
+  - name: CC2NP
+    description: desc CC2NP.
+    bit_offset: 7
+    bit_size: 1
+  - name: CC3E
+    description: desc CC3E.
+    bit_offset: 8
+    bit_size: 1
+  - name: CC3P
+    description: desc CC3P.
+    bit_offset: 9
+    bit_size: 1
+  - name: CC3NE
+    description: desc CC3NE.
+    bit_offset: 10
+    bit_size: 1
+  - name: CC3NP
+    description: desc CC3NP.
+    bit_offset: 11
+    bit_size: 1
+  - name: CC4E
+    description: desc CC4E.
+    bit_offset: 12
+    bit_size: 1
+  - name: CC4P
+    description: desc CC4P.
+    bit_offset: 13
+    bit_size: 1
+  - name: CC4NE
+    description: desc CC4NE.
+    bit_offset: 14
+    bit_size: 1
+  - name: CC4NP
+    description: desc CC4NP.
+    bit_offset: 15
+    bit_size: 1
+  - name: CC5E
+    description: desc CC5E.
+    bit_offset: 16
+    bit_size: 1
+  - name: CC5P
+    description: desc CC5P.
+    bit_offset: 17
+    bit_size: 1
+  - name: CC5NE
+    description: desc CC5NE.
+    bit_offset: 18
+    bit_size: 1
+  - name: CC5NP
+    description: desc CC5NP.
+    bit_offset: 19
+    bit_size: 1
+  - name: CC6E
+    description: desc CC6E.
+    bit_offset: 20
+    bit_size: 1
+  - name: CC6P
+    description: desc CC6P.
+    bit_offset: 21
+    bit_size: 1
+  - name: CC6NE
+    description: desc CC6NE.
+    bit_offset: 22
+    bit_size: 1
+  - name: CC6NP
+    description: desc CC6NP.
+    bit_offset: 23
+    bit_size: 1
+fieldset/CCMR1CAP:
+  description: capture compare mode register 1.
+  fields:
+  - name: CC1S
+    description: desc CC1S.
+    bit_offset: 0
+    bit_size: 2
+  - name: IC1PSC
+    description: desc IC1PSC.
+    bit_offset: 2
+    bit_size: 2
+  - name: IC1F
+    description: desc IC1F.
+    bit_offset: 4
+    bit_size: 4
+  - name: CC2S
+    description: desc CC2S.
+    bit_offset: 8
+    bit_size: 2
+  - name: IC2PSC
+    description: desc IC2PSC.
+    bit_offset: 10
+    bit_size: 2
+  - name: IC2F
+    description: desc IC2F.
+    bit_offset: 12
+    bit_size: 4
+fieldset/CCMR1CMP:
+  description: capture compare mode register 1.
+  fields:
+  - name: CC1S
+    description: desc CC1S.
+    bit_offset: 0
+    bit_size: 2
+  - name: OC1FE
+    description: desc OC1FE.
+    bit_offset: 2
+    bit_size: 1
+  - name: OC1PE
+    description: desc OC1PE.
+    bit_offset: 3
+    bit_size: 1
+  - name: OC1M
+    description: desc OC1M.
+    bit_offset: 4
+    bit_size: 3
+  - name: OC1CE
+    description: desc OC1CE.
+    bit_offset: 7
+    bit_size: 1
+  - name: CC2S
+    description: desc CC2S.
+    bit_offset: 8
+    bit_size: 2
+  - name: OC2FE
+    description: desc OC2FE.
+    bit_offset: 10
+    bit_size: 1
+  - name: OC2PE
+    description: desc OC2PE.
+    bit_offset: 11
+    bit_size: 1
+  - name: OC2M
+    description: desc OC2M.
+    bit_offset: 12
+    bit_size: 3
+  - name: OC2CE
+    description: desc OC2CE.
+    bit_offset: 15
+    bit_size: 1
+  - name: OC1MH
+    description: desc OC1MH.
+    bit_offset: 16
+    bit_size: 1
+  - name: OC2MH
+    description: desc OC2MH.
+    bit_offset: 24
+    bit_size: 1
+fieldset/CCMR2CAP:
+  description: capture compare mode register 2.
+  fields:
+  - name: CC3S
+    description: desc CC3S.
+    bit_offset: 0
+    bit_size: 2
+  - name: IC3PSC
+    description: desc IC3PSC.
+    bit_offset: 2
+    bit_size: 2
+  - name: IC3F
+    description: desc IC3F.
+    bit_offset: 4
+    bit_size: 4
+  - name: CC4S
+    description: desc CC4S.
+    bit_offset: 8
+    bit_size: 2
+  - name: IC4PSC
+    description: desc IC4PSC.
+    bit_offset: 10
+    bit_size: 2
+  - name: IC4F
+    description: desc IC4F.
+    bit_offset: 12
+    bit_size: 4
+fieldset/CCMR2CMP:
+  description: capture compare mode register 2.
+  fields:
+  - name: CC3S
+    description: desc CC3S.
+    bit_offset: 0
+    bit_size: 2
+  - name: OC3FE
+    description: desc OC3FE.
+    bit_offset: 2
+    bit_size: 1
+  - name: OC3PE
+    description: desc OC3PE.
+    bit_offset: 3
+    bit_size: 1
+  - name: OC3M
+    description: desc OC3M.
+    bit_offset: 4
+    bit_size: 3
+  - name: OC3CE
+    description: desc OC3CE.
+    bit_offset: 7
+    bit_size: 1
+  - name: CC4S
+    description: desc CC4S.
+    bit_offset: 8
+    bit_size: 2
+  - name: OC4FE
+    description: desc OC4FE.
+    bit_offset: 10
+    bit_size: 1
+  - name: OC4PE
+    description: desc OC4PE.
+    bit_offset: 11
+    bit_size: 1
+  - name: OC4M
+    description: desc OC4M.
+    bit_offset: 12
+    bit_size: 3
+  - name: OC4CE
+    description: desc OC4CE.
+    bit_offset: 15
+    bit_size: 1
+  - name: OC3MH
+    description: desc OC3MH.
+    bit_offset: 16
+    bit_size: 1
+  - name: OC4MH
+    description: desc OC4MH.
+    bit_offset: 24
+    bit_size: 1
+fieldset/CCMR3CAP:
+  description: capture compare mode register 3.
+  fields:
+  - name: CC5S
+    description: desc CC5S.
+    bit_offset: 0
+    bit_size: 2
+  - name: IC5PSC
+    description: desc IC5PSC.
+    bit_offset: 2
+    bit_size: 2
+  - name: IC5F
+    description: desc IC5F.
+    bit_offset: 4
+    bit_size: 4
+  - name: CC6S
+    description: desc CC6S.
+    bit_offset: 8
+    bit_size: 2
+  - name: IC6PSC
+    description: desc IC6PSC.
+    bit_offset: 10
+    bit_size: 2
+  - name: IC6F
+    description: desc IC6F.
+    bit_offset: 12
+    bit_size: 4
+fieldset/CCMR3CMP:
+  description: capture compare mode register 3.
+  fields:
+  - name: CC5S
+    description: desc CC5S.
+    bit_offset: 0
+    bit_size: 2
+  - name: OC5FE
+    description: desc OC5FE.
+    bit_offset: 2
+    bit_size: 1
+  - name: OC5PE
+    description: desc OC5PE.
+    bit_offset: 3
+    bit_size: 1
+  - name: OC5M
+    description: desc OC5M.
+    bit_offset: 4
+    bit_size: 3
+  - name: OC5CE
+    description: desc OC5CE.
+    bit_offset: 7
+    bit_size: 1
+  - name: CC6S
+    description: desc CC6S.
+    bit_offset: 8
+    bit_size: 2
+  - name: OC6FE
+    description: desc OC6FE.
+    bit_offset: 10
+    bit_size: 1
+  - name: OC6PE
+    description: desc OC6PE.
+    bit_offset: 11
+    bit_size: 1
+  - name: OC6M
+    description: desc OC6M.
+    bit_offset: 12
+    bit_size: 3
+  - name: OC6CE
+    description: desc OC6CE.
+    bit_offset: 15
+    bit_size: 1
+  - name: OC5MH
+    description: desc OC5MH.
+    bit_offset: 16
+    bit_size: 1
+  - name: OC6MH
+    description: desc OC6MH.
+    bit_offset: 24
+    bit_size: 1
+fieldset/CCR1:
+  description: capture compare register1.
+  fields:
+  - name: CCR1
+    description: desc CCR1.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR2:
+  description: capture compare register2.
+  fields:
+  - name: CCR2
+    description: desc CCR2.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR3:
+  description: capture compare register3.
+  fields:
+  - name: CCR3
+    description: desc CCR3.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR4:
+  description: capture compare register4.
+  fields:
+  - name: CCR4
+    description: desc CCR4.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CCR5:
+  description: capture compare register5.
+  fields:
+  - name: CCR5
+    description: desc CCR5.
+    bit_offset: 0
+    bit_size: 16
+  - name: GC5C1
+    description: desc GC5C1.
+    bit_offset: 26
+    bit_size: 1
+  - name: GC5C2
+    description: desc GC5C2.
+    bit_offset: 27
+    bit_size: 1
+  - name: GC5C3
+    description: desc GC5C3.
+    bit_offset: 28
+    bit_size: 1
+  - name: GC5C4
+    description: desc GC5C4.
+    bit_offset: 29
+    bit_size: 1
+  - name: GC5C5
+    description: desc GC5C5.
+    bit_offset: 30
+    bit_size: 1
+  - name: GC5C6
+    description: desc GC5C6.
+    bit_offset: 31
+    bit_size: 1
+fieldset/CCR6:
+  description: capture compare register6.
+  fields:
+  - name: CCR6
+    description: desc CCR6.
+    bit_offset: 0
+    bit_size: 16
+  - name: GC6C1
+    description: desc GC6C1.
+    bit_offset: 26
+    bit_size: 1
+  - name: GC6C2
+    description: desc GC6C2.
+    bit_offset: 27
+    bit_size: 1
+  - name: GC6C3
+    description: desc GC6C3.
+    bit_offset: 28
+    bit_size: 1
+  - name: GC6C4
+    description: desc GC6C4.
+    bit_offset: 29
+    bit_size: 1
+  - name: GC6C5
+    description: desc GC6C5.
+    bit_offset: 30
+    bit_size: 1
+  - name: GC6C6
+    description: desc GC6C6.
+    bit_offset: 31
+    bit_size: 1
+fieldset/CNT:
+  description: Counter Register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+  - name: UIFCPY
+    description: desc UIFCPY.
+    bit_offset: 31
+    bit_size: 1
+fieldset/CR1:
+  description: Control Register1.
+  fields:
+  - name: CEN
+    description: desc CEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: UDIS
+    description: desc UDIS.
+    bit_offset: 1
+    bit_size: 1
+  - name: URS
+    description: desc URS.
+    bit_offset: 2
+    bit_size: 1
+  - name: OPM
+    description: desc OPM.
+    bit_offset: 3
+    bit_size: 1
+  - name: DIR
+    description: desc DIR.
+    bit_offset: 4
+    bit_size: 1
+  - name: CMS
+    description: desc CMS.
+    bit_offset: 5
+    bit_size: 2
+  - name: ARPE
+    description: desc ARPE.
+    bit_offset: 7
+    bit_size: 1
+  - name: CKD
+    description: desc CKD.
+    bit_offset: 8
+    bit_size: 2
+  - name: UIFREMAP
+    description: desc UIFREMAP.
+    bit_offset: 11
+    bit_size: 1
+fieldset/CR2:
+  description: Control Register2.
+  fields:
+  - name: CCPC
+    description: desc CCPC.
+    bit_offset: 0
+    bit_size: 1
+  - name: CCUS
+    description: desc CCUS.
+    bit_offset: 2
+    bit_size: 1
+  - name: CCDS
+    description: desc CCDS.
+    bit_offset: 3
+    bit_size: 1
+  - name: MMS
+    description: desc MMS.
+    bit_offset: 4
+    bit_size: 3
+  - name: TI1S
+    description: desc TI1S.
+    bit_offset: 7
+    bit_size: 1
+  - name: OIS1
+    description: desc OIS1.
+    bit_offset: 8
+    bit_size: 1
+  - name: OIS1N
+    description: desc OIS1N.
+    bit_offset: 9
+    bit_size: 1
+  - name: OIS2
+    description: desc OIS2.
+    bit_offset: 10
+    bit_size: 1
+  - name: OIS2N
+    description: desc OIS2N.
+    bit_offset: 11
+    bit_size: 1
+  - name: OIS3
+    description: desc OIS3.
+    bit_offset: 12
+    bit_size: 1
+  - name: OIS3N
+    description: desc OIS3N.
+    bit_offset: 13
+    bit_size: 1
+  - name: OIS4
+    description: desc OIS4.
+    bit_offset: 14
+    bit_size: 1
+  - name: OIS4N
+    description: desc OIS4N.
+    bit_offset: 15
+    bit_size: 1
+  - name: OIS5
+    description: desc OIS5.
+    bit_offset: 16
+    bit_size: 1
+  - name: OIS5N
+    description: desc OIS5N.
+    bit_offset: 17
+    bit_size: 1
+  - name: OIS6
+    description: desc OIS6.
+    bit_offset: 18
+    bit_size: 1
+  - name: OIS6N
+    description: desc OIS6N.
+    bit_offset: 19
+    bit_size: 1
+  - name: MMS2
+    description: desc MMS2.
+    bit_offset: 20
+    bit_size: 5
+  - name: MMSH
+    description: desc MMSH.
+    bit_offset: 25
+    bit_size: 2
+fieldset/DIER:
+  description: Interrupt Enable Register.
+  fields:
+  - name: UIE
+    description: desc UIE.
+    bit_offset: 0
+    bit_size: 1
+  - name: CC1IE
+    description: desc CC1IE.
+    bit_offset: 1
+    bit_size: 1
+  - name: CC2IE
+    description: desc CC2IE.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC3IE
+    description: desc CC3IE.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC4IE
+    description: desc CC4IE.
+    bit_offset: 4
+    bit_size: 1
+  - name: COMIE
+    description: desc COMIE.
+    bit_offset: 5
+    bit_size: 1
+  - name: TIE
+    description: desc TIE.
+    bit_offset: 6
+    bit_size: 1
+  - name: BIE
+    description: desc BIE.
+    bit_offset: 7
+    bit_size: 1
+  - name: UDE
+    description: desc UDE.
+    bit_offset: 8
+    bit_size: 1
+  - name: CC1DE
+    description: desc CC1DE.
+    bit_offset: 9
+    bit_size: 1
+  - name: CC2DE
+    description: desc CC2DE.
+    bit_offset: 10
+    bit_size: 1
+  - name: CC3DE
+    description: desc CC3DE.
+    bit_offset: 11
+    bit_size: 1
+  - name: CC4DE
+    description: desc CC4DE.
+    bit_offset: 12
+    bit_size: 1
+  - name: COMDE
+    description: desc COMDE.
+    bit_offset: 13
+    bit_size: 1
+  - name: TDE
+    description: desc TDE.
+    bit_offset: 14
+    bit_size: 1
+  - name: CC5IE
+    description: desc CC5IE.
+    bit_offset: 16
+    bit_size: 1
+  - name: CC6IE
+    description: desc CC6IE.
+    bit_offset: 17
+    bit_size: 1
+  - name: CC5DE
+    description: desc CC5DE.
+    bit_offset: 18
+    bit_size: 1
+  - name: CC6DE
+    description: desc CC6DE.
+    bit_offset: 19
+    bit_size: 1
+  - name: IDXIE
+    description: desc IDXIE.
+    bit_offset: 20
+    bit_size: 1
+  - name: DIRIE
+    description: desc DIRIE.
+    bit_offset: 21
+    bit_size: 1
+  - name: IERRIE
+    description: desc IERRIE.
+    bit_offset: 22
+    bit_size: 1
+  - name: TERRIE
+    description: desc TERRIE.
+    bit_offset: 23
+    bit_size: 1
+fieldset/DTR2:
+  description: dead-time register2.
+  fields:
+  - name: DTGF
+    description: desc DTGF.
+    bit_offset: 0
+    bit_size: 8
+  - name: DTAE
+    description: desc DTAE.
+    bit_offset: 16
+    bit_size: 1
+  - name: DTPE
+    description: desc DTPE.
+    bit_offset: 17
+    bit_size: 1
+fieldset/ECR:
+  description: Encoder control Register.
+  fields:
+  - name: IE
+    description: desc IE.
+    bit_offset: 0
+    bit_size: 1
+  - name: IDIR
+    description: desc IDIR.
+    bit_offset: 1
+    bit_size: 2
+  - name: FIDX
+    description: desc FIDX.
+    bit_offset: 5
+    bit_size: 1
+  - name: IPOS
+    description: desc IPOS.
+    bit_offset: 6
+    bit_size: 2
+fieldset/EGR:
+  description: Event generation register.
+  fields:
+  - name: UG
+    description: desc UG.
+    bit_offset: 0
+    bit_size: 1
+  - name: CC1G
+    description: desc CC1G.
+    bit_offset: 1
+    bit_size: 1
+  - name: CC2G
+    description: desc CC2G.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC3G
+    description: desc CC3G.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC4G
+    description: desc CC4G.
+    bit_offset: 4
+    bit_size: 1
+  - name: COMG
+    description: desc COMG.
+    bit_offset: 5
+    bit_size: 1
+  - name: TG
+    description: desc TG.
+    bit_offset: 6
+    bit_size: 1
+  - name: BG
+    description: desc BG.
+    bit_offset: 7
+    bit_size: 1
+  - name: B2G
+    description: desc B2G.
+    bit_offset: 8
+    bit_size: 1
+  - name: CC5G
+    description: desc CC5G.
+    bit_offset: 16
+    bit_size: 1
+  - name: CC6G
+    description: desc CC6G.
+    bit_offset: 17
+    bit_size: 1
+fieldset/ICR:
+  description: Interrupt clean register.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: CC1IF
+    description: desc CC1IF.
+    bit_offset: 1
+    bit_size: 1
+  - name: CC2IF
+    description: desc CC2IF.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC3IF
+    description: desc CC3IF.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC4IF
+    description: desc CC4IF.
+    bit_offset: 4
+    bit_size: 1
+  - name: COMIF
+    description: desc COMIF.
+    bit_offset: 5
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 6
+    bit_size: 1
+  - name: BIF
+    description: desc BIF.
+    bit_offset: 7
+    bit_size: 1
+  - name: B2IF
+    description: desc B2IF.
+    bit_offset: 8
+    bit_size: 1
+  - name: CC1OF
+    description: desc CC1OF.
+    bit_offset: 9
+    bit_size: 1
+  - name: CC2OF
+    description: desc CC2OF.
+    bit_offset: 10
+    bit_size: 1
+  - name: CC3OF
+    description: desc CC3OF.
+    bit_offset: 11
+    bit_size: 1
+  - name: CC4OF
+    description: desc CC4OF.
+    bit_offset: 12
+    bit_size: 1
+  - name: SBIF
+    description: desc SBIF.
+    bit_offset: 13
+    bit_size: 1
+  - name: CC5IF
+    description: desc CC5IF.
+    bit_offset: 16
+    bit_size: 1
+  - name: CC6IF
+    description: desc CC6IF.
+    bit_offset: 17
+    bit_size: 1
+  - name: CC5OF
+    description: desc CC5OF.
+    bit_offset: 18
+    bit_size: 1
+  - name: CC6OF
+    description: desc CC6OF.
+    bit_offset: 19
+    bit_size: 1
+  - name: IDXF
+    description: desc IDXF.
+    bit_offset: 20
+    bit_size: 1
+  - name: DIRF
+    description: desc DIRF.
+    bit_offset: 21
+    bit_size: 1
+  - name: IERRF
+    description: desc IERRF.
+    bit_offset: 22
+    bit_size: 1
+  - name: TERRF
+    description: desc TERRF.
+    bit_offset: 23
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: UIF
+    description: desc UIF.
+    bit_offset: 0
+    bit_size: 1
+  - name: CC1IF
+    description: desc CC1IF.
+    bit_offset: 1
+    bit_size: 1
+  - name: CC2IF
+    description: desc CC2IF.
+    bit_offset: 2
+    bit_size: 1
+  - name: CC3IF
+    description: desc CC3IF.
+    bit_offset: 3
+    bit_size: 1
+  - name: CC4IF
+    description: desc CC4IF.
+    bit_offset: 4
+    bit_size: 1
+  - name: COMIF
+    description: desc COMIF.
+    bit_offset: 5
+    bit_size: 1
+  - name: TIF
+    description: desc TIF.
+    bit_offset: 6
+    bit_size: 1
+  - name: BIF
+    description: desc BIF.
+    bit_offset: 7
+    bit_size: 1
+  - name: B2IF
+    description: desc B2IF.
+    bit_offset: 8
+    bit_size: 1
+  - name: CC1OF
+    description: desc CC1OF.
+    bit_offset: 9
+    bit_size: 1
+  - name: CC2OF
+    description: desc CC2OF.
+    bit_offset: 10
+    bit_size: 1
+  - name: CC3OF
+    description: desc CC3OF.
+    bit_offset: 11
+    bit_size: 1
+  - name: CC4OF
+    description: desc CC4OF.
+    bit_offset: 12
+    bit_size: 1
+  - name: SBIF
+    description: desc SBIF.
+    bit_offset: 13
+    bit_size: 1
+  - name: CC5IF
+    description: desc CC5IF.
+    bit_offset: 16
+    bit_size: 1
+  - name: CC6IF
+    description: desc CC6IF.
+    bit_offset: 17
+    bit_size: 1
+  - name: CC5OF
+    description: desc CC5OF.
+    bit_offset: 18
+    bit_size: 1
+  - name: CC6OF
+    description: desc CC6OF.
+    bit_offset: 19
+    bit_size: 1
+  - name: IDXF
+    description: desc IDXF.
+    bit_offset: 20
+    bit_size: 1
+  - name: DIRF
+    description: desc DIRF.
+    bit_offset: 21
+    bit_size: 1
+  - name: IERRF
+    description: desc IERRF.
+    bit_offset: 22
+    bit_size: 1
+  - name: TERRF
+    description: desc TERRF.
+    bit_offset: 23
+    bit_size: 1
+fieldset/PSC:
+  description: prescaler Register.
+  fields:
+  - name: PSC
+    description: desc PSC.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RCR:
+  description: Repetition Counter Register.
+  fields:
+  - name: REP
+    description: desc REP.
+    bit_offset: 0
+    bit_size: 16
+fieldset/SMCR:
+  description: Slave Mode Control Register.
+  fields:
+  - name: SMS
+    description: desc SMS.
+    bit_offset: 0
+    bit_size: 3
+  - name: OCCS
+    description: desc OCCS.
+    bit_offset: 3
+    bit_size: 1
+  - name: TS
+    description: desc TS.
+    bit_offset: 4
+    bit_size: 3
+  - name: MSM
+    description: desc MSM.
+    bit_offset: 7
+    bit_size: 1
+  - name: ETF
+    description: desc ETF.
+    bit_offset: 8
+    bit_size: 4
+  - name: ETPS
+    description: desc ETPS.
+    bit_offset: 12
+    bit_size: 2
+  - name: ECE
+    description: desc ECE.
+    bit_offset: 14
+    bit_size: 1
+  - name: ETP
+    description: desc ETP.
+    bit_offset: 15
+    bit_size: 1
+  - name: SMSH
+    description: desc SMSH.
+    bit_offset: 16
+    bit_size: 1
+  - name: TSH
+    description: desc TSH.
+    bit_offset: 20
+    bit_size: 2
+  - name: SMSPE
+    description: desc SMSPE.
+    bit_offset: 24
+    bit_size: 1
+  - name: SMSPS
+    description: desc SMSPS.
+    bit_offset: 25
+    bit_size: 1
+fieldset/TISEL1:
+  description: Timer Input Select Register1.
+  fields:
+  - name: TI1SEL
+    description: desc TI1SEL.
+    bit_offset: 0
+    bit_size: 4
+  - name: TI2SEL
+    description: desc TI2SEL.
+    bit_offset: 8
+    bit_size: 4
+  - name: TI3SEL
+    description: desc TI3SEL.
+    bit_offset: 16
+    bit_size: 4
+  - name: TI4SEL
+    description: desc TI4SEL.
+    bit_offset: 24
+    bit_size: 4
+fieldset/TISEL2:
+  description: Timer Input Select Register2.
+  fields:
+  - name: TI5SEL
+    description: desc TI5SEL.
+    bit_offset: 0
+    bit_size: 4
+  - name: TI6SEL
+    description: desc TI6SEL.
+    bit_offset: 8
+    bit_size: 4

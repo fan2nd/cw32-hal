@@ -1,0 +1,31 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "dma_cw32l031_v1": [
+      {
+        "block": "DMA",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 4294967295,
+        "write_noop": 4294967295,
+        "zero_to_clear_fields": [
+          "TC1",
+          "TE1",
+          "TC2",
+          "TE2",
+          "TC3",
+          "TE3",
+          "TC4",
+          "TE4"
+        ],
+        "evidence": [
+          "vendor:CW32L031_UserManual_CN_V1.6.pdf, section 8.8.2, printed p131/PDF page132; SHA-256 4288cfd97b56385059c5a283f69972047af4773ef8bbc4d8b51d8155fb17a760; docs/four-channel-dma-owned-evidence.json",
+          "vendor:CW32L052_UserManual_CN_V1.5.pdf, section 8.8.2, printed p136/PDF page137; SHA-256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41; docs/four-channel-dma-owned-evidence.json",
+          "vendor:CW32R031_UserManual_CN_V1.3.pdf, section 8.8.2, printed p133/PDF page134; SHA-256 fbee9b6942be9fa09f00c946705644d5356c4249f3e2280e3dfe5f0cb342eddb; docs/four-channel-dma-owned-evidence.json",
+          "vendor:CW32W031_UserManual_CN_V1.4.pdf, section 8.8.2, printed p132/PDF page133; SHA-256 b6973677946a9332b0e5b3e954119768aa40469d44140a73e18648e9419bedc9; docs/four-channel-dma-owned-evidence.json",
+          "docs/four-channel-dma-owned.md: Native ICR command seed"
+        ]
+      }
+    ]
+  }
+}

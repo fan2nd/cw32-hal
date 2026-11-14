@@ -1,0 +1,77 @@
+block/CRC:
+  description: F020 CRC16 engine. Only MODE values 0 through 7 are documented; CRC32 algorithms are unsupported.
+  items:
+  - name: CR
+    description: Control register.
+    byte_offset: 0
+    fieldset: CR
+  - name: DR16
+    description: Data register.
+    byte_offset: 8
+    bit_size: 16
+    fieldset: DR16
+  - name: DR32
+    description: Data register.
+    byte_offset: 8
+    fieldset: DR32
+  - name: DR8
+    description: Data register.
+    byte_offset: 8
+    bit_size: 8
+    fieldset: DR8
+  - name: RESULT16
+    description: Result register.
+    byte_offset: 12
+    access: Read
+    bit_size: 16
+    fieldset: RESULT16
+  - name: RESULT32
+    description: 32-bit bus view of the 16-bit CRC result. Bits 31:16 are reserved, not a CRC32 result.
+    byte_offset: 12
+    access: Read
+    fieldset: RESULT32
+fieldset/CR:
+  description: Control register.
+  fields:
+  - name: MODE
+    description: 'CRC16 preset: 0 IBM, 1 MAXIM, 2 USB, 3 MODBUS, 4 CCITT, 5 CCITT-FALSE, 6 X25, 7 XMODEM. Encodings 8 through 15 are undocumented and must not be used.'
+    bit_offset: 0
+    bit_size: 4
+fieldset/DR16:
+  description: Data register.
+  bit_size: 16
+  fields:
+  - name: DR16
+    description: desc DR16.
+    bit_offset: 0
+    bit_size: 16
+fieldset/DR32:
+  description: Data register.
+  fields:
+  - name: DR32
+    description: desc DR32.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DR8:
+  description: Data register.
+  bit_size: 8
+  fields:
+  - name: DR8
+    description: desc DR8.
+    bit_offset: 0
+    bit_size: 8
+fieldset/RESULT16:
+  description: Result register.
+  bit_size: 16
+  fields:
+  - name: RESULT16
+    description: desc RESULT16.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT32:
+  description: 32-bit bus view; only bits 15:0 hold a CRC16 result.
+  fields:
+  - name: RESULT32
+    description: CRC16 result in bits 15:0; bits 31:16 are reserved (F020 manual section10.6.3).
+    bit_offset: 0
+    bit_size: 16

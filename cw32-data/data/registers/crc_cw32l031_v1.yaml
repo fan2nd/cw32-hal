@@ -1,0 +1,37 @@
+block/CRC:
+  description: desc CRC.
+  items:
+  - name: CR
+    description: desc CR.
+    byte_offset: 0
+    fieldset: CR
+  - name: DR
+    description: desc DR.
+    byte_offset: 8
+    fieldset: DR
+  - name: RESULT
+    description: desc RESULT.
+    byte_offset: 12
+    access: Read
+    fieldset: RESULT
+fieldset/CR:
+  description: desc CR.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 4
+fieldset/DR:
+  description: desc DR.
+  fields:
+  - name: DR
+    description: desc DR.
+    bit_offset: 0
+    bit_size: 8
+fieldset/RESULT:
+  description: desc RESULT.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16

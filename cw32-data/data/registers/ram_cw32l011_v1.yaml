@@ -1,0 +1,49 @@
+block/RAM:
+  description: desc RAM.
+  items:
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 0
+    fieldset: IER
+  - name: ADDR
+    description: Error address register.
+    byte_offset: 4
+    access: Read
+    fieldset: ADDR
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 8
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 12
+    fieldset: ICR
+fieldset/ADDR:
+  description: Error address register.
+  fields:
+  - name: ADDR
+    description: desc ADDR.
+    bit_offset: 0
+    bit_size: 32
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: PARITY
+    description: desc PARITY.
+    bit_offset: 0
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: PARITY
+    description: desc PARITY.
+    bit_offset: 0
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: PARITY
+    description: desc PARITY.
+    bit_offset: 0
+    bit_size: 1

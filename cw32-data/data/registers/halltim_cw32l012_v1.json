@@ -1,0 +1,357 @@
+{
+  "block/HALLTIM": {
+    "description": "CW32L012 24-bit Hall sensor timer; CN manual V1.4 section 18.",
+    "items": [
+      {
+        "name": "CR",
+        "description": "Control register1.",
+        "byte_offset": 0,
+        "fieldset": "CR"
+      },
+      {
+        "name": "DIER",
+        "description": "DMA and Interrupt register2.",
+        "byte_offset": 4,
+        "fieldset": "DIER"
+      },
+      {
+        "name": "CNT",
+        "description": "counter register.",
+        "byte_offset": 8,
+        "fieldset": "CNT"
+      },
+      {
+        "name": "ARR",
+        "description": "Auto Reload Register.",
+        "byte_offset": 12,
+        "fieldset": "ARR"
+      },
+      {
+        "name": "WIDTH",
+        "description": "Width Register.",
+        "byte_offset": 16,
+        "access": "Read",
+        "fieldset": "WIDTH"
+      },
+      {
+        "name": "CCR",
+        "description": "Compare control Register.",
+        "byte_offset": 20,
+        "fieldset": "CCR"
+      },
+      {
+        "name": "ISR",
+        "description": "Interrupt states register.",
+        "byte_offset": 24,
+        "access": "Read",
+        "fieldset": "ISR"
+      },
+      {
+        "name": "ICR",
+        "description": "Interrupt clean register.",
+        "byte_offset": 28,
+        "fieldset": "ICR"
+      },
+      {
+        "name": "STATE",
+        "description": "State register.",
+        "byte_offset": 32,
+        "access": "Read",
+        "fieldset": "STATE"
+      }
+    ]
+  },
+  "fieldset/ARR": {
+    "description": "Auto Reload Register.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "24-bit ARR value.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "fieldset/CCR": {
+    "description": "Compare control Register.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "24-bit CCR value.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "fieldset/CNT": {
+    "description": "24-bit counter. Write zero only; any filtered input edge captures and clears it.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "24-bit counter. Write zero only; any filtered input edge captures and clears it.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "fieldset/CR": {
+    "description": "Control register. SOFTCAP is a write-one command that reads zero.",
+    "fields": [
+      {
+        "name": "EN",
+        "description": "Hall timer enable.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "FLT1EN",
+        "description": "Enable first-stage 5/7 filter.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "DIV",
+        "description": "PCLK divisor; CN V1.4 table 18-1 and section 18.8.1.",
+        "bit_offset": 2,
+        "bit_size": 2,
+        "enum": "Prescaler"
+      },
+      {
+        "name": "MMS",
+        "description": "Local HALLTIM_TRGO waveform only; downstream routing is not implied.",
+        "bit_offset": 4,
+        "bit_size": 3,
+        "enum": "MasterMode"
+      },
+      {
+        "name": "FLT2LEN",
+        "description": "Filter rejects pulses shorter than FLT2LEN ticks; pulses at least FLT2LEN+2 ticks pass.",
+        "bit_offset": 8,
+        "bit_size": 15
+      },
+      {
+        "name": "SOFTCAP",
+        "description": "Write one generates a software trigger; reads zero. HAL does not infer that it captures WIDTH.",
+        "bit_offset": 23,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/DIER": {
+    "description": "DMA and Interrupt register2.",
+    "fields": [
+      {
+        "name": "CAPIE",
+        "description": "desc CAPIE.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OVIE",
+        "description": "desc OVIE.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "MATCHIE",
+        "description": "desc MATCHIE.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "CAPDMA",
+        "description": "desc CAPDMA.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "OVDMA",
+        "description": "desc OVDMA.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "MATCHDMA",
+        "description": "desc MATCHDMA.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "SOFTDMA",
+        "description": "desc SOFTDMA.",
+        "bit_offset": 7,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ICR": {
+    "description": "R1W0 flags. Start from write_noop(), clear intended fields, and write once.",
+    "fields": [
+      {
+        "name": "CAPF",
+        "description": "Input capture flag; write zero to clear, one leaves unchanged.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OVF",
+        "description": "Counter overflow flag; write zero to clear, one leaves unchanged.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "MATCHF",
+        "description": "Counter compare match flag; write zero to clear, one leaves unchanged.",
+        "bit_offset": 2,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/ISR": {
+    "description": "Read-only, coalescing capture, overflow and match flags.",
+    "fields": [
+      {
+        "name": "CAPF",
+        "description": "Input capture flag; read only.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "OVF",
+        "description": "Counter overflow flag; read only.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "MATCHF",
+        "description": "Counter compare match flag; read only.",
+        "bit_offset": 2,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/STATE": {
+    "description": "Live raw and filtered inputs, not a capture-latched state.",
+    "fields": [
+      {
+        "name": "CH1F",
+        "description": "desc CH1F.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "CH2F",
+        "description": "desc CH2F.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "CH3F",
+        "description": "desc CH3F.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "CH1S",
+        "description": "desc CH1S.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "CH2S",
+        "description": "desc CH2S.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "CH3S",
+        "description": "desc CH3S.",
+        "bit_offset": 6,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/WIDTH": {
+    "description": "Latest captured counter value; overwritten on every filtered input transition. No FIFO or overcapture flag.",
+    "fields": [
+      {
+        "name": "DATA",
+        "description": "Latest captured counter value; overwritten on every filtered input transition. No FIFO or overcapture flag.",
+        "bit_offset": 0,
+        "bit_size": 24
+      }
+    ]
+  },
+  "enum/MasterMode": {
+    "description": "Local TRGO output selection; own L012 CN V1.4 pp418,421. No consumer route implied.",
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "OVERFLOW",
+        "description": "Overflow pulse.",
+        "value": 0
+      },
+      {
+        "name": "PWM",
+        "description": "PWM signal.",
+        "value": 1
+      },
+      {
+        "name": "MATCH",
+        "description": "Compare match pulse.",
+        "value": 2
+      },
+      {
+        "name": "CAPTURE",
+        "description": "Filtered Hall input change pulse.",
+        "value": 3
+      },
+      {
+        "name": "CH3",
+        "description": "Filtered channel 3.",
+        "value": 4
+      },
+      {
+        "name": "CH2",
+        "description": "Filtered channel 2.",
+        "value": 5
+      },
+      {
+        "name": "CH1",
+        "description": "Filtered channel 1.",
+        "value": 6
+      },
+      {
+        "name": "XOR",
+        "description": "XOR of the three filtered inputs.",
+        "value": 7
+      }
+    ]
+  },
+  "enum/Prescaler": {
+    "description": "PCLK divider; own L012 CN V1.4 pp415,421.",
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "DIV1",
+        "description": "PCLK divided by 1.",
+        "value": 0
+      },
+      {
+        "name": "DIV2",
+        "description": "PCLK divided by 2.",
+        "value": 1
+      },
+      {
+        "name": "DIV4",
+        "description": "PCLK divided by 4.",
+        "value": 2
+      },
+      {
+        "name": "DIV8",
+        "description": "PCLK divided by 8.",
+        "value": 3
+      }
+    ]
+  }
+}

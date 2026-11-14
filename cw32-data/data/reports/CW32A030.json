@@ -1,0 +1,73 @@
+{
+  "profile": "CW32A030",
+  "source_device": "CW32F030",
+  "shared_map_evidence": "cw32-data/register-source-aliases.yaml: official shared CW32x030 reference manual explicitly covers CW32F030/CW32A030; A030 datasheet address boundaries agree. No independently imported A030 SVD.",
+  "source_sha256": "c59bdc211510db5a8117d4d7610c2ef9b7ba328d9221c166354766f07e079aaa",
+  "source_url": "https://www.whxy.com/uploads/files/20241111/CW32F030_StandardPeripheralLib_V2.2.zip",
+  "peripherals": 37,
+  "register_blocks": 22,
+  "registers": 265,
+  "fieldsets": 265,
+  "fields": 1398,
+  "interrupts": 32,
+  "die_pins": 40,
+  "pinouts": {
+    "exact_parts": 1,
+    "physical_pin_entries": 48,
+    "alias_policy": "common-package-intersection: GPIO labels common to every reviewed package for the family or matching family_part; no physical package is assigned to an alias"
+  },
+  "dma": {
+    "physical_channels": 5,
+    "hardware_requests": 43,
+    "excluded_sdk_requests": 0,
+    "unresolved_semantics": 0
+  },
+  "clocks": {
+    "peripheral_records": 37,
+    "supported_records": 26,
+    "control_records": 34,
+    "partial_records": 11,
+    "shared_enable_groups": 3,
+    "shared_reset_groups": 3,
+    "limitations": [
+      "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+      "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+      "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+      "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+      "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+      "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+      "A030 intentionally uses the common CW32x030 manual; F030 header bit names are checked against shared manual field positions. No independent A030 SDK claim.",
+      "Clock metadata: 26 complete identities, 34 independently verified controls; 11 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+    ]
+  },
+  "applied_errata": [
+    "nvicPrioBits 3 -> 2: CW32x030 User Manual EN V1.0 section 5.5.3 page 99: only upper two priority bits; CMSIS __NVIC_PRIO_BITS=2. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GPIO.ISR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section9.6.14 page165 explicitly marks GPIOx_ISR read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GPIOC.IDR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section9.6.18 page167 marks GPIOx_IDR read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GPIOC.ISR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section9.6.14 page165 explicitly marks GPIOx_ISR read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GPIOF.IDR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section9.6.18 page167 marks GPIOx_IDR read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GPIOF.ISR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section9.6.14 page165 explicitly marks GPIOx_ISR read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "GTIM.ISR ReadWrite -> Read: CW32x030 User Manual EN V1.0 section14.8.12 page272 marks all fields read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "RTC.TAMPDATE ReadWrite -> Read: CW32x030 User Manual EN V1.0 section12.5.10 page206 marks all fields read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "RTC.TAMPTIME ReadWrite -> Read: CW32x030 User Manual EN V1.0 section12.5.11 page207 marks all fields read-only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_EN_V1.0.pdf",
+    "Removed reserved field COMPEN.FREQ at bits 16+4: RTC.COMPEN bits31:16 are reserved in shared CW32x030 manual CN V2.5 section12.5.5 page189 and EN V1.0 section12.5.5 page203. Remove obsolete SVD FREQ bits19:16 only. https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf",
+    "Added external interrupt FAULT=31: Official SDK v2.2 Libraries/inc/cw32f030.h FAULT_IRQn=31, SHA256 7060347a4cb18d8550708ce8c488cdbdb8e58c0e9d6ecf6f1e6467e139328862"
+  ],
+  "limitations": [
+    "SVD-imported registers are not silicon-tested or a guarantee the vendor SVD is error-free.",
+    "Generic family features have no memory-size assertion; exact part features source memory separately.",
+    "Exact-part core pins and physical package pins come only from reviewed package tables; package-less aliases use an explicitly documented common-package GPIO intersection when configured. Input-only/output capability remains in pinout sidecars.",
+    "Only configured reviewed clock and DMA projections are imported. Verified reset polarity, write keys and shared controls are transported independently in rcc_control; unresolved kernel identities are withheld.",
+    "Digital alternate-function routes are imported only for explicitly reviewed profiles and filtered by package pins. Analog/special routes and flash geometry remain incomplete.",
+    "Read-clear, write-one-clear and reset-value semantics are not represented by chiptool IR.",
+    "A030 is a documentary shared-register-map profile using the corrected F030 SVD under the shared vendor CW32x030 manual, not an independently sourced A030 SVD. See cw32-data/register-source-aliases.yaml.",
+    "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+    "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+    "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+    "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+    "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+    "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+    "A030 intentionally uses the common CW32x030 manual; F030 header bit names are checked against shared manual field positions. No independent A030 SDK claim.",
+    "Clock metadata: 26 complete identities, 34 independently verified controls; 11 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+  ]
+}

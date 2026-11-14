@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "spi_cw32l012_v1": [
+      {
+        "block": "SPI",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 255,
+        "write_noop": 255,
+        "zero_to_clear_fields": [
+          "FLUSH",
+          "RXNE",
+          "SSF",
+          "SSR",
+          "UD",
+          "OV",
+          "SSERR",
+          "MODF"
+        ],
+        "evidence": [
+          "CW32L012_UserManual_CN_V1.4.pdf section 22.7.7, printed p522 (PDF p548); SHA-256 a9e54694a26f03c1f3e3041f40844900168ca2b8e6142f3328671b92e6b7a340; docs/spi-register-write-evidence.json families.CW32L012"
+        ]
+      }
+    ]
+  }
+}

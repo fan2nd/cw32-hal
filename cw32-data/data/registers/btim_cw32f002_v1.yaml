@@ -1,0 +1,133 @@
+block/BTIM:
+  description: Base Timer 1.
+  items:
+  - name: ARR
+    description: Auto Reload Register.
+    byte_offset: 0
+    fieldset: ARR
+  - name: CNT
+    description: Counter Register.
+    byte_offset: 4
+    fieldset: CNT
+  - name: ACR
+    description: Advanced Control register.
+    byte_offset: 12
+    fieldset: ACR
+  - name: BCR
+    description: Base Control register.
+    byte_offset: 16
+    fieldset: BCR
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 20
+    fieldset: IER
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 24
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 28
+    fieldset: ICR
+fieldset/ACR:
+  description: Advanced Control register.
+  fields:
+  - name: ETRFLT
+    description: desc ETRFLT.
+    bit_offset: 4
+    bit_size: 3
+fieldset/ARR:
+  description: Auto Reload Register.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/BCR:
+  description: Base Control register.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 1
+    bit_size: 2
+  - name: TRS
+    description: desc TRS.
+    bit_offset: 3
+    bit_size: 1
+  - name: POL
+    description: desc POL.
+    bit_offset: 4
+    bit_size: 1
+  - name: ONESHOT
+    description: desc ONESHOT.
+    bit_offset: 5
+    bit_size: 1
+  - name: TOGEN
+    description: desc TOGEN.
+    bit_offset: 6
+    bit_size: 1
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 7
+    bit_size: 4
+  - name: PRSSTATUS
+    description: desc PRSSTATUS.
+    bit_offset: 11
+    bit_size: 4
+fieldset/CNT:
+  description: Counter Register.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1

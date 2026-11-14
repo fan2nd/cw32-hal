@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "btim_cw32l052_v1": [
+      {
+        "block": "BTIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 7,
+        "write_noop": 7,
+        "zero_to_clear_fields": [
+          "OV",
+          "TI",
+          "TOP"
+        ],
+        "evidence": [
+          "CW32L052_UserManual_CN_V1.5.pdf CN V1.5 section 13.7.8, printed page 220/PDF page 221; https://www.whxy.com/uploads/files/20240920/CW32L052_UserManual_CN_V1.5.pdf; SHA-256 4bac53df4db69a3b76c833cb14dd45b0e5c7f9884506c83a5cda6ea00a859f41; docs/timer-command-evidence.json families.CW32L052"
+        ]
+      }
+    ]
+  }
+}

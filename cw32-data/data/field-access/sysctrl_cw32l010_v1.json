@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "sysctrl_cw32l010_v1": [
+      {
+        "block": "SYSCTRL",
+        "register": "HSE",
+        "fieldset": "HSE",
+        "field": "STABLE",
+        "bit_offset": 19,
+        "bit_size": 1,
+        "evidence": [
+          "vendor:CW32L010_UserManual_CN_V1.2.pdf SHA-256 b66ae2b2837cf22aede7f19312b82659ea10f96960bfe7965de8733bb72513fa; section 4.7.6 PDF73/printed72 marks SYSCTRL_HSE bit19 STABLE RO; cw32-data/hse-qualified.yaml."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSE",
+        "fieldset": "LSE",
+        "field": "STABLE",
+        "bit_offset": 18,
+        "bit_size": 1,
+        "evidence": [
+          "CW32L010: CW32L010_UserManual_CN_V1.2.pdf CN V1.2 section 4.7.7, printed page 73/PDF page 74; https://www.whxy.com/uploads/files/20260626/CW32L010_UserManual_CN_V1.2.pdf; SHA-256 b66ae2b2837cf22aede7f19312b82659ea10f96960bfe7965de8733bb72513fa. STABLE is RO; the containing register remains RW. Original pinned SVD member:cw32l010/CW32L010_StandardPeripheralLib_V1.0.9/IDEsupport/MDK/WHXY.CW32L010_DFP.1.0.2/WHXY.CW32L010_DFP/SVD/CW32L010.svd, SHA-256 733cc8ff3e186a128342134aee71db1d155e5e2b95ab1c8c8a77054391cb8c66, already marks this field read-only; docs/oscillator-status-access-evidence.json."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "HSI",
+        "fieldset": "HSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/12: source-correct captured RO and independently reviewed own-manual RO for CW32L010; containing register remains 32-bit RW."
+        ]
+      },
+      {
+        "block": "SYSCTRL",
+        "register": "LSI",
+        "fieldset": "LSI",
+        "field": "STABLE",
+        "bit_offset": 15,
+        "bit_size": 1,
+        "evidence": [
+          "docs/reviewed-status-access-selection.json#/fields/13: source-correct captured RO and independently reviewed own-manual RO for CW32L010; containing register remains 32-bit RW."
+        ]
+      }
+    ]
+  }
+}

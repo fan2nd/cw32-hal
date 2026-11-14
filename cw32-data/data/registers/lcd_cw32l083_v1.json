@@ -1,0 +1,3158 @@
+{
+  "block/LCD": {
+    "description": "desc LCD.",
+    "items": [
+      {
+        "name": "CR0",
+        "description": "desc CR0.",
+        "byte_offset": 0,
+        "fieldset": "CR0"
+      },
+      {
+        "name": "CR1",
+        "description": "desc CR1.",
+        "byte_offset": 4,
+        "fieldset": "CR1"
+      },
+      {
+        "name": "INTCLR",
+        "description": "desc INTCLR.",
+        "byte_offset": 8,
+        "fieldset": "INTCLR"
+      },
+      {
+        "name": "PINEN1",
+        "description": "desc PINEN1.",
+        "byte_offset": 12,
+        "fieldset": "PINEN1"
+      },
+      {
+        "name": "PINEN2",
+        "description": "desc PINEN2.",
+        "byte_offset": 16,
+        "fieldset": "PINEN2"
+      },
+      {
+        "name": "RAM0",
+        "description": "desc RAM0.",
+        "byte_offset": 64,
+        "fieldset": "RAM0"
+      },
+      {
+        "name": "RAM1",
+        "description": "desc RAM1.",
+        "byte_offset": 68,
+        "fieldset": "RAM1"
+      },
+      {
+        "name": "RAM2",
+        "description": "desc RAM2.",
+        "byte_offset": 72,
+        "fieldset": "RAM2"
+      },
+      {
+        "name": "RAM3",
+        "description": "desc RAM3.",
+        "byte_offset": 76,
+        "fieldset": "RAM3"
+      },
+      {
+        "name": "RAM4",
+        "description": "desc RAM4.",
+        "byte_offset": 80,
+        "fieldset": "RAM4"
+      },
+      {
+        "name": "RAM5",
+        "description": "desc RAM5.",
+        "byte_offset": 84,
+        "fieldset": "RAM5"
+      },
+      {
+        "name": "RAM6",
+        "description": "desc RAM6.",
+        "byte_offset": 88,
+        "fieldset": "RAM6"
+      },
+      {
+        "name": "RAM7",
+        "description": "desc RAM7.",
+        "byte_offset": 92,
+        "fieldset": "RAM7"
+      },
+      {
+        "name": "RAM8",
+        "description": "desc RAM8.",
+        "byte_offset": 96,
+        "fieldset": "RAM8"
+      },
+      {
+        "name": "RAM9",
+        "description": "desc RAM9.",
+        "byte_offset": 100,
+        "fieldset": "RAM9"
+      },
+      {
+        "name": "RAM10",
+        "description": "desc RAM10.",
+        "byte_offset": 104,
+        "fieldset": "RAM10"
+      },
+      {
+        "name": "RAM11",
+        "description": "desc RAM11.",
+        "byte_offset": 108,
+        "fieldset": "RAM11"
+      },
+      {
+        "name": "RAM12",
+        "description": "desc RAM12.",
+        "byte_offset": 112,
+        "fieldset": "RAM12"
+      },
+      {
+        "name": "RAM13",
+        "description": "desc RAM13.",
+        "byte_offset": 116,
+        "fieldset": "RAM13"
+      }
+    ]
+  },
+  "fieldset/CR0": {
+    "description": "desc CR0.",
+    "fields": [
+      {
+        "name": "EN",
+        "description": "desc EN.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "CPCLK",
+        "description": "desc CPCLK.",
+        "bit_offset": 1,
+        "bit_size": 2,
+        "enum": "PumpFrequency"
+      },
+      {
+        "name": "BUMP",
+        "description": "desc BUMP.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "BIAS",
+        "description": "desc BIAS.",
+        "bit_offset": 4,
+        "bit_size": 1,
+        "enum": "Bias"
+      },
+      {
+        "name": "DUTY",
+        "description": "desc DUTY.",
+        "bit_offset": 6,
+        "bit_size": 3,
+        "enum": "Duty"
+      },
+      {
+        "name": "INRS",
+        "description": "desc INRS.",
+        "bit_offset": 9,
+        "bit_size": 3,
+        "enum": "BiasSource"
+      },
+      {
+        "name": "CONTRAST",
+        "description": "desc CONTRAST.",
+        "bit_offset": 12,
+        "bit_size": 4
+      }
+    ]
+  },
+  "fieldset/CR1": {
+    "description": "desc CR1.",
+    "fields": [
+      {
+        "name": "BLINKCNT",
+        "description": "desc BLINKCNT.",
+        "bit_offset": 0,
+        "bit_size": 6
+      },
+      {
+        "name": "BLINKEN",
+        "description": "desc BLINKEN.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "CLKCS",
+        "description": "desc CLKCS.",
+        "bit_offset": 7,
+        "bit_size": 1,
+        "enum": "ClockSource"
+      },
+      {
+        "name": "LCDFS",
+        "description": "desc LCDFS.",
+        "bit_offset": 8,
+        "bit_size": 2,
+        "enum": "ScanFrequency"
+      },
+      {
+        "name": "DMAEN",
+        "description": "desc DMAEN.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "IE",
+        "description": "desc IE.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "INTF",
+        "description": "desc INTF.",
+        "bit_offset": 12,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/INTCLR": {
+    "description": "desc INTCLR.",
+    "fields": [
+      {
+        "name": "INTF",
+        "description": "desc INTF.",
+        "bit_offset": 12,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/PINEN1": {
+    "description": "desc PINEN1.",
+    "fields": [
+      {
+        "name": "SEGX",
+        "description": "desc SEGX.",
+        "bit_offset": 0,
+        "bit_size": 24
+      },
+      {
+        "name": "SEG_VBIAS",
+        "description": "desc SEG_VBIAS.",
+        "bit_offset": 24,
+        "bit_size": 4
+      },
+      {
+        "name": "SEG_COM",
+        "description": "desc SEG_COM.",
+        "bit_offset": 28,
+        "bit_size": 4
+      }
+    ]
+  },
+  "fieldset/PINEN2": {
+    "description": "desc PINEN2.",
+    "fields": [
+      {
+        "name": "SEGX",
+        "description": "desc SEGX.",
+        "bit_offset": 0,
+        "bit_size": 24
+      },
+      {
+        "name": "COMY",
+        "description": "desc COMY.",
+        "bit_offset": 24,
+        "bit_size": 4
+      },
+      {
+        "name": "MUX",
+        "description": "desc MUX.",
+        "bit_offset": 28,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM0": {
+    "description": "desc RAM0.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM1": {
+    "description": "desc RAM1.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM10": {
+    "description": "desc RAM10.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM11": {
+    "description": "desc RAM11.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM12": {
+    "description": "desc RAM12.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM13": {
+    "description": "desc RAM13.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM2": {
+    "description": "desc RAM2.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM3": {
+    "description": "desc RAM3.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM4": {
+    "description": "desc RAM4.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM5": {
+    "description": "desc RAM5.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM6": {
+    "description": "desc RAM6.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM7": {
+    "description": "desc RAM7.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM8": {
+    "description": "desc RAM8.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "fieldset/RAM9": {
+    "description": "desc RAM9.",
+    "fields": [
+      {
+        "name": "D0",
+        "description": "desc D0.",
+        "bit_offset": 0,
+        "bit_size": 1
+      },
+      {
+        "name": "D1",
+        "description": "desc D1.",
+        "bit_offset": 1,
+        "bit_size": 1
+      },
+      {
+        "name": "D2",
+        "description": "desc D2.",
+        "bit_offset": 2,
+        "bit_size": 1
+      },
+      {
+        "name": "D3",
+        "description": "desc D3.",
+        "bit_offset": 3,
+        "bit_size": 1
+      },
+      {
+        "name": "D4",
+        "description": "desc D4.",
+        "bit_offset": 4,
+        "bit_size": 1
+      },
+      {
+        "name": "D5",
+        "description": "desc D5.",
+        "bit_offset": 5,
+        "bit_size": 1
+      },
+      {
+        "name": "D6",
+        "description": "desc D6.",
+        "bit_offset": 6,
+        "bit_size": 1
+      },
+      {
+        "name": "D7",
+        "description": "desc D7.",
+        "bit_offset": 7,
+        "bit_size": 1
+      },
+      {
+        "name": "D8",
+        "description": "desc D8.",
+        "bit_offset": 8,
+        "bit_size": 1
+      },
+      {
+        "name": "D9",
+        "description": "desc D9.",
+        "bit_offset": 9,
+        "bit_size": 1
+      },
+      {
+        "name": "D10",
+        "description": "desc D10.",
+        "bit_offset": 10,
+        "bit_size": 1
+      },
+      {
+        "name": "D11",
+        "description": "desc D11.",
+        "bit_offset": 11,
+        "bit_size": 1
+      },
+      {
+        "name": "D12",
+        "description": "desc D12.",
+        "bit_offset": 12,
+        "bit_size": 1
+      },
+      {
+        "name": "D13",
+        "description": "desc D13.",
+        "bit_offset": 13,
+        "bit_size": 1
+      },
+      {
+        "name": "D14",
+        "description": "desc D14.",
+        "bit_offset": 14,
+        "bit_size": 1
+      },
+      {
+        "name": "D15",
+        "description": "desc D15.",
+        "bit_offset": 15,
+        "bit_size": 1
+      },
+      {
+        "name": "D16",
+        "description": "desc D16.",
+        "bit_offset": 16,
+        "bit_size": 1
+      },
+      {
+        "name": "D17",
+        "description": "desc D17.",
+        "bit_offset": 17,
+        "bit_size": 1
+      },
+      {
+        "name": "D18",
+        "description": "desc D18.",
+        "bit_offset": 18,
+        "bit_size": 1
+      },
+      {
+        "name": "D19",
+        "description": "desc D19.",
+        "bit_offset": 19,
+        "bit_size": 1
+      },
+      {
+        "name": "D20",
+        "description": "desc D20.",
+        "bit_offset": 20,
+        "bit_size": 1
+      },
+      {
+        "name": "D21",
+        "description": "desc D21.",
+        "bit_offset": 21,
+        "bit_size": 1
+      },
+      {
+        "name": "D22",
+        "description": "desc D22.",
+        "bit_offset": 22,
+        "bit_size": 1
+      },
+      {
+        "name": "D23",
+        "description": "desc D23.",
+        "bit_offset": 23,
+        "bit_size": 1
+      },
+      {
+        "name": "D24",
+        "description": "desc D24.",
+        "bit_offset": 24,
+        "bit_size": 1
+      },
+      {
+        "name": "D25",
+        "description": "desc D25.",
+        "bit_offset": 25,
+        "bit_size": 1
+      },
+      {
+        "name": "D26",
+        "description": "desc D26.",
+        "bit_offset": 26,
+        "bit_size": 1
+      },
+      {
+        "name": "D27",
+        "description": "desc D27.",
+        "bit_offset": 27,
+        "bit_size": 1
+      },
+      {
+        "name": "D28",
+        "description": "desc D28.",
+        "bit_offset": 28,
+        "bit_size": 1
+      },
+      {
+        "name": "D29",
+        "description": "desc D29.",
+        "bit_offset": 29,
+        "bit_size": 1
+      },
+      {
+        "name": "D30",
+        "description": "desc D30.",
+        "bit_offset": 30,
+        "bit_size": 1
+      },
+      {
+        "name": "D31",
+        "description": "desc D31.",
+        "bit_offset": 31,
+        "bit_size": 1
+      }
+    ]
+  },
+  "enum/Bias": {
+    "bit_size": 1,
+    "variants": [
+      {
+        "name": "Third",
+        "value": 0
+      },
+      {
+        "name": "Half",
+        "value": 1
+      }
+    ]
+  },
+  "enum/BiasSource": {
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "External",
+        "value": 0
+      },
+      {
+        "name": "InternalMedium",
+        "value": 1
+      },
+      {
+        "name": "InternalLow",
+        "value": 2
+      },
+      {
+        "name": "InternalLowest",
+        "value": 4
+      },
+      {
+        "name": "InternalHighest",
+        "value": 7
+      }
+    ]
+  },
+  "enum/ClockSource": {
+    "bit_size": 1,
+    "variants": [
+      {
+        "name": "Lsi",
+        "value": 0
+      },
+      {
+        "name": "Lse",
+        "value": 1
+      }
+    ]
+  },
+  "enum/Duty": {
+    "bit_size": 3,
+    "variants": [
+      {
+        "name": "Static",
+        "value": 0
+      },
+      {
+        "name": "Half",
+        "value": 1
+      },
+      {
+        "name": "Third",
+        "value": 2
+      },
+      {
+        "name": "Quarter",
+        "value": 3
+      },
+      {
+        "name": "Sixth",
+        "value": 5
+      },
+      {
+        "name": "Eighth",
+        "value": 7
+      }
+    ]
+  },
+  "enum/PumpFrequency": {
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "Khz2",
+        "value": 0
+      },
+      {
+        "name": "Khz4",
+        "value": 1
+      },
+      {
+        "name": "Khz8",
+        "value": 2
+      },
+      {
+        "name": "Khz16",
+        "value": 3
+      }
+    ]
+  },
+  "enum/ScanFrequency": {
+    "bit_size": 2,
+    "variants": [
+      {
+        "name": "Hz128",
+        "value": 0
+      },
+      {
+        "name": "Hz256",
+        "value": 1
+      },
+      {
+        "name": "Hz512",
+        "value": 2
+      },
+      {
+        "name": "Hz64",
+        "value": 3
+      }
+    ]
+  }
+}

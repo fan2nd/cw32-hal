@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "gtim_v1": [
+      {
+        "block": "GTIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 1023,
+        "write_noop": 1023,
+        "zero_to_clear_fields": [
+          "OV",
+          "TI",
+          "UD",
+          "CC1",
+          "CC2",
+          "CC3",
+          "CC4",
+          "DIRCHANGE"
+        ],
+        "evidence": [
+          "CW32x030_UserManual_CN_V2.5.pdf CN V2.5 section 14.8.13, printed page 250/PDF page 251; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2; docs/timer-command-evidence.json families.CW32A030",
+          "CW32F020_UserManual_CN_V1.4.pdf CN V1.4 section 14.8.13, printed page 247/PDF page 248; https://www.whxy.com/uploads/files/20240920/CW32F020_UserManual_CN_V1.4.pdf; SHA-256 279521eaf7d32b241e614a9553044a4d99c1e7ca2566efa3b0fdd2b66c106eed; docs/timer-command-evidence.json families.CW32F020",
+          "CW32x030_UserManual_CN_V2.5.pdf CN V2.5 section 14.8.13, printed page 250/PDF page 251; https://www.whxy.com/uploads/files/20240920/CW32x030_UserManual_CN_V2.5.pdf; SHA-256 1afd49261f0f0689af8cb8ebf1b0ac1c00e3209b20d3c722106707ff4a10bdd2; docs/timer-command-evidence.json families.CW32F030"
+        ]
+      }
+    ]
+  }
+}

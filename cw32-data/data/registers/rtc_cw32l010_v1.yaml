@@ -1,0 +1,423 @@
+block/RTC:
+  description: desc RTC.
+  items:
+  - name: KEY
+    description: desc KEY.
+    byte_offset: 0
+    access: Write
+    fieldset: KEY
+  - name: CR0
+    description: desc CR0.
+    byte_offset: 4
+    fieldset: CR0
+  - name: CR1
+    description: desc CR1.
+    byte_offset: 8
+    fieldset: CR1
+  - name: CR2
+    description: desc CR2.
+    byte_offset: 12
+    fieldset: CR2
+  - name: COMPCFR1
+    description: desc COMPCFR1.
+    byte_offset: 16
+    fieldset: COMPCFR1
+  - name: DATE
+    description: desc DATE.
+    byte_offset: 20
+    fieldset: DATE
+  - name: TIME
+    description: desc TIME.
+    byte_offset: 24
+    fieldset: TIME
+  - name: ALARMA
+    description: desc ALARMA.
+    byte_offset: 28
+    fieldset: ALARMA
+  - name: ALARMB
+    description: desc ALARMB.
+    byte_offset: 32
+    fieldset: ALARMB
+  - name: TAMPDATE
+    description: desc TAMPDATE.
+    byte_offset: 36
+    access: Read
+    fieldset: TAMPDATE
+  - name: TAMPTIME
+    description: desc TAMPTIME.
+    byte_offset: 40
+    access: Read
+    fieldset: TAMPTIME
+  - name: AWTARR
+    description: desc AWTARR.
+    byte_offset: 44
+    fieldset: AWTARR
+  - name: IER
+    description: desc IER.
+    byte_offset: 48
+    fieldset: IER
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 52
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 56
+    fieldset: ICR
+  - name: AWTCNT
+    description: desc AWTCNT.
+    byte_offset: 60
+    access: Read
+    fieldset: AWTCNT
+  - name: PSC
+    description: desc PSC.
+    byte_offset: 64
+    fieldset: PSC
+  - name: SSCNT
+    description: desc SSCNT.
+    byte_offset: 68
+    access: Read
+    fieldset: SSCNT
+fieldset/ALARMA:
+  description: desc ALARMA.
+  fields:
+  - name: SECOND
+    description: desc SECOND.
+    bit_offset: 0
+    bit_size: 7
+  - name: SECONDEN
+    description: desc SECONDEN.
+    bit_offset: 7
+    bit_size: 1
+  - name: MINUTE
+    description: desc MINUTE.
+    bit_offset: 8
+    bit_size: 7
+  - name: MINUTEEN
+    description: desc MINUTEEN.
+    bit_offset: 15
+    bit_size: 1
+  - name: HOUR
+    description: desc HOUR.
+    bit_offset: 16
+    bit_size: 6
+  - name: HOUREN
+    description: desc HOUREN.
+    bit_offset: 23
+    bit_size: 1
+  - name: WEEKMASK
+    description: desc WEEKMASK.
+    bit_offset: 24
+    bit_size: 7
+fieldset/ALARMB:
+  description: desc ALARMB.
+  fields:
+  - name: SECOND
+    description: desc SECOND.
+    bit_offset: 0
+    bit_size: 7
+  - name: SECONDEN
+    description: desc SECONDEN.
+    bit_offset: 7
+    bit_size: 1
+  - name: MINUTE
+    description: desc MINUTE.
+    bit_offset: 8
+    bit_size: 7
+  - name: MINUTEEN
+    description: desc MINUTEEN.
+    bit_offset: 15
+    bit_size: 1
+  - name: HOUR
+    description: desc HOUR.
+    bit_offset: 16
+    bit_size: 6
+  - name: HOUREN
+    description: desc HOUREN.
+    bit_offset: 23
+    bit_size: 1
+  - name: WEEKMASK
+    description: desc WEEKMASK.
+    bit_offset: 24
+    bit_size: 7
+fieldset/AWTARR:
+  description: desc AWTARR.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/AWTCNT:
+  description: desc AWTCNT.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/COMPCFR1:
+  description: desc COMPCFR1.
+  fields:
+  - name: COMP
+    description: desc COMP.
+    bit_offset: 0
+    bit_size: 12
+  - name: PERIOD
+    description: desc PERIOD.
+    bit_offset: 12
+    bit_size: 2
+  - name: SIGN
+    description: desc SIGN.
+    bit_offset: 14
+    bit_size: 1
+  - name: EN
+    description: desc EN.
+    bit_offset: 15
+    bit_size: 1
+fieldset/CR0:
+  description: desc CR0.
+  fields:
+  - name: INTERVAL
+    description: desc INTERVAL.
+    bit_offset: 0
+    bit_size: 3
+  - name: H24
+    description: desc H24.
+    bit_offset: 3
+    bit_size: 1
+  - name: RTC1HZ
+    description: desc RTC1HZ.
+    bit_offset: 5
+    bit_size: 2
+  - name: START
+    description: desc START.
+    bit_offset: 7
+    bit_size: 1
+fieldset/CR1:
+  description: desc CR1.
+  fields:
+  - name: ACCESS
+    description: desc ACCESS.
+    bit_offset: 0
+    bit_size: 1
+  - name: WINDOW
+    description: desc WINDOW.
+    bit_offset: 1
+    bit_size: 1
+  - name: WAIT
+    description: desc WAIT.
+    bit_offset: 2
+    bit_size: 1
+  - name: SOURCE
+    description: desc SOURCE.
+    bit_offset: 8
+    bit_size: 3
+fieldset/CR2:
+  description: desc CR2.
+  fields:
+  - name: AWTPRS
+    description: desc AWTPRS.
+    bit_offset: 0
+    bit_size: 2
+  - name: AWTSRC
+    description: desc AWTSRC.
+    bit_offset: 2
+    bit_size: 1
+  - name: TAMPEDGE
+    description: desc TAMPEDGE.
+    bit_offset: 3
+    bit_size: 1
+  - name: RTCOUT
+    description: desc RTCOUT.
+    bit_offset: 4
+    bit_size: 2
+  - name: TAMPEN
+    description: desc TAMPEN.
+    bit_offset: 6
+    bit_size: 1
+  - name: AWTEN
+    description: desc AWTEN.
+    bit_offset: 7
+    bit_size: 1
+  - name: ALARMAEN
+    description: desc ALARMAEN.
+    bit_offset: 9
+    bit_size: 1
+  - name: ALARMBEN
+    description: desc ALARMBEN.
+    bit_offset: 10
+    bit_size: 1
+fieldset/DATE:
+  description: desc DATE.
+  fields:
+  - name: DAY
+    description: desc DAY.
+    bit_offset: 0
+    bit_size: 6
+  - name: MONTH
+    description: desc MONTH.
+    bit_offset: 8
+    bit_size: 5
+  - name: YEAR
+    description: desc YEAR.
+    bit_offset: 16
+    bit_size: 8
+  - name: WEEK
+    description: desc WEEK.
+    bit_offset: 24
+    bit_size: 3
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: ALARMA
+    description: desc ALARMA.
+    bit_offset: 0
+    bit_size: 1
+  - name: ALARMB
+    description: desc ALARMB.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWTIMER
+    description: desc AWTIMER.
+    bit_offset: 2
+    bit_size: 1
+  - name: TAMP
+    description: desc TAMP.
+    bit_offset: 3
+    bit_size: 1
+  - name: TAMPOV
+    description: desc TAMPOV.
+    bit_offset: 4
+    bit_size: 1
+  - name: INTERVAL
+    description: desc INTERVAL.
+    bit_offset: 6
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: ALARMA
+    description: desc ALARMA.
+    bit_offset: 0
+    bit_size: 1
+  - name: ALARMB
+    description: desc ALARMB.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWTIMER
+    description: desc AWTIMER.
+    bit_offset: 2
+    bit_size: 1
+  - name: TAMP
+    description: desc TAMP.
+    bit_offset: 3
+    bit_size: 1
+  - name: TAMPOV
+    description: desc TAMPOV.
+    bit_offset: 4
+    bit_size: 1
+  - name: INTERVAL
+    description: desc INTERVAL.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: ALARMA
+    description: desc ALARMA.
+    bit_offset: 0
+    bit_size: 1
+  - name: ALARMB
+    description: desc ALARMB.
+    bit_offset: 1
+    bit_size: 1
+  - name: AWTIMER
+    description: desc AWTIMER.
+    bit_offset: 2
+    bit_size: 1
+  - name: TAMP
+    description: desc TAMP.
+    bit_offset: 3
+    bit_size: 1
+  - name: TAMPOV
+    description: desc TAMPOV.
+    bit_offset: 4
+    bit_size: 1
+  - name: INTERVAL
+    description: desc INTERVAL.
+    bit_offset: 6
+    bit_size: 1
+fieldset/KEY:
+  description: desc KEY.
+  fields:
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 0
+    bit_size: 8
+fieldset/PSC:
+  description: desc PSC.
+  fields:
+  - name: PSC2
+    description: desc PSC2.
+    bit_offset: 0
+    bit_size: 20
+  - name: PSC1
+    description: desc PSC1.
+    bit_offset: 20
+    bit_size: 8
+fieldset/SSCNT:
+  description: desc SSCNT.
+  fields:
+  - name: SSCNT0
+    description: desc SSCNT0.
+    bit_offset: 0
+    bit_size: 20
+  - name: SSCNT1
+    description: desc SSCNT1.
+    bit_offset: 20
+    bit_size: 1
+fieldset/TAMPDATE:
+  description: desc TAMPDATE.
+  fields:
+  - name: DAY
+    description: desc DAY.
+    bit_offset: 0
+    bit_size: 6
+  - name: MONTH
+    description: desc MONTH.
+    bit_offset: 8
+    bit_size: 5
+  - name: WEEK
+    description: desc WEEK.
+    bit_offset: 13
+    bit_size: 3
+fieldset/TAMPTIME:
+  description: desc TAMPTIME.
+  fields:
+  - name: SECOND
+    description: desc SECOND.
+    bit_offset: 0
+    bit_size: 7
+  - name: MINUTE
+    description: desc MINUTE.
+    bit_offset: 8
+    bit_size: 7
+  - name: HOUR
+    description: desc HOUR.
+    bit_offset: 16
+    bit_size: 6
+fieldset/TIME:
+  description: desc TIME.
+  fields:
+  - name: SECOND
+    description: desc SECOND.
+    bit_offset: 0
+    bit_size: 7
+  - name: MINUTE
+    description: desc MINUTE.
+    bit_offset: 8
+    bit_size: 7
+  - name: HOUR
+    description: desc HOUR.
+    bit_offset: 16
+    bit_size: 6

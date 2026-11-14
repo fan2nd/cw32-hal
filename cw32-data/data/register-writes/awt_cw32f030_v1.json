@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "awt_cw32f030_v1": [
+      {
+        "block": "AWT",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 63,
+        "write_noop": 63,
+        "zero_to_clear_fields": [
+          "UD"
+        ],
+        "evidence": [
+          "docs/low-power-timers-evidence.json: awt_v1",
+          "docs/low-power-timers.md: commands and reserved-bit policy",
+          "cw32-data/hse-qualified.yaml: own F020/x030 AWT semantic split preserves existing independently reviewed ICR layout and command policy."
+        ]
+      }
+    ]
+  }
+}

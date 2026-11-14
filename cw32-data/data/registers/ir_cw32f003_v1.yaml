@@ -1,0 +1,14 @@
+block/IR:
+  description: desc IR.
+  items:
+  - name: IRMOD
+    description: desc IRMOD.
+    byte_offset: 0
+    fieldset: IRMOD
+fieldset/IRMOD:
+  description: desc IRMOD.
+  fields:
+  - name: MOD
+    description: desc MOD.
+    bit_offset: 0
+    bit_size: 4

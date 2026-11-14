@@ -1,0 +1,792 @@
+block/SYSCTRL:
+  description: System Ctrl.
+  items:
+  - name: CR0
+    description: Control Reg0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: Control Reg1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: CR2
+    description: Control Reg2.
+    byte_offset: 8
+    fieldset: CR2
+  - name: IER
+    description: Interupt Enable Reg.
+    byte_offset: 12
+    fieldset: IER
+  - name: ISR
+    description: Interupt Status Reg.
+    byte_offset: 16
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interupt Clear Reg.
+    byte_offset: 20
+    fieldset: ICR
+  - name: HSI
+    description: HSI Control Reg.
+    byte_offset: 24
+    fieldset: HSI
+  - name: HSE
+    description: HEX Control Reg.
+    byte_offset: 28
+    fieldset: HSE
+  - name: LSI
+    description: LSI Control Reg.
+    byte_offset: 32
+    fieldset: LSI
+  - name: LSE
+    description: LSE Control Reg.
+    byte_offset: 36
+    fieldset: LSE
+  - name: DEBUG
+    description: Debug Control Reg.
+    byte_offset: 44
+    fieldset: DEBUG
+  - name: AHBEN
+    description: AHB Clock Control Reg.
+    byte_offset: 48
+    fieldset: AHBEN
+  - name: APBEN2
+    description: APB Clock Control Reg2.
+    byte_offset: 52
+    fieldset: APBEN2
+  - name: APBEN1
+    description: APB Clock Control Reg1.
+    byte_offset: 56
+    fieldset: APBEN1
+  - name: AHBRST
+    description: AHB Reset Control Reg.
+    byte_offset: 64
+    fieldset: AHBRST
+  - name: APBRST2
+    description: APB Reset Control Reg2.
+    byte_offset: 68
+    fieldset: APBRST2
+  - name: APBRST1
+    description: APB Reset Control Reg1.
+    byte_offset: 72
+    fieldset: APBRST1
+  - name: RESETFLAG
+    description: Reset Status Reg.
+    byte_offset: 76
+    fieldset: RESETFLAG
+  - name: MCO
+    description: Master Clock Output Control Reg.
+    byte_offset: 112
+    fieldset: MCO
+fieldset/AHBEN:
+  description: AHB Clock Control Reg.
+  fields:
+  - name: FLASH
+    description: desc FLASH.
+    bit_offset: 1
+    bit_size: 1
+  - name: CRC
+    description: desc CRC.
+    bit_offset: 2
+    bit_size: 1
+  - name: GPIOA
+    description: desc GPIOA.
+    bit_offset: 4
+    bit_size: 1
+  - name: GPIOB
+    description: desc GPIOB.
+    bit_offset: 5
+    bit_size: 1
+  - name: GPIOC
+    description: desc GPIOC.
+    bit_offset: 6
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/AHBRST:
+  description: AHB Reset Control Reg.
+  fields:
+  - name: FLASH
+    description: desc FLASH.
+    bit_offset: 1
+    bit_size: 1
+  - name: CRC
+    description: desc CRC.
+    bit_offset: 2
+    bit_size: 1
+  - name: GPIOA
+    description: desc GPIOA.
+    bit_offset: 4
+    bit_size: 1
+  - name: GPIOB
+    description: desc GPIOB.
+    bit_offset: 5
+    bit_size: 1
+  - name: GPIOC
+    description: desc GPIOC.
+    bit_offset: 6
+    bit_size: 1
+fieldset/APBEN1:
+  description: APB Clock Control Reg1.
+  fields:
+  - name: ADC
+    description: desc ADC.
+    bit_offset: 0
+    bit_size: 1
+  - name: VC
+    description: desc VC.
+    bit_offset: 1
+    bit_size: 1
+  - name: SPI1
+    description: desc SPI1.
+    bit_offset: 2
+    bit_size: 1
+  - name: UART1
+    description: desc UART1.
+    bit_offset: 3
+    bit_size: 1
+  - name: UART2
+    description: desc UART2.
+    bit_offset: 4
+    bit_size: 1
+  - name: ATIM
+    description: desc ATIM.
+    bit_offset: 5
+    bit_size: 1
+  - name: GTIM1
+    description: desc GTIM1.
+    bit_offset: 6
+    bit_size: 1
+  - name: GTIM2
+    description: desc GTIM2.
+    bit_offset: 7
+    bit_size: 1
+  - name: UART3
+    description: desc UART3.
+    bit_offset: 8
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/APBEN2:
+  description: APB Clock Control Reg2.
+  fields:
+  - name: RTC
+    description: desc RTC.
+    bit_offset: 1
+    bit_size: 1
+  - name: BTIM123
+    description: desc BTIM123.
+    bit_offset: 2
+    bit_size: 1
+  - name: IWDT
+    description: desc IWDT.
+    bit_offset: 4
+    bit_size: 1
+  - name: I2C1
+    description: desc I2C1.
+    bit_offset: 6
+    bit_size: 1
+  - name: LPTIM
+    description: desc LPTIM.
+    bit_offset: 7
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/APBRST1:
+  description: APB Reset Control Reg1.
+  fields:
+  - name: ADC
+    description: desc ADC.
+    bit_offset: 0
+    bit_size: 1
+  - name: VC
+    description: desc VC.
+    bit_offset: 1
+    bit_size: 1
+  - name: SPI1
+    description: desc SPI1.
+    bit_offset: 2
+    bit_size: 1
+  - name: UART1
+    description: desc UART1.
+    bit_offset: 3
+    bit_size: 1
+  - name: UART2
+    description: desc UART2.
+    bit_offset: 4
+    bit_size: 1
+  - name: ATIM
+    description: desc ATIM.
+    bit_offset: 5
+    bit_size: 1
+  - name: GTIM1
+    description: desc GTIM1.
+    bit_offset: 6
+    bit_size: 1
+  - name: GTIM2
+    description: desc GTIM2.
+    bit_offset: 7
+    bit_size: 1
+  - name: UART3
+    description: desc UART3.
+    bit_offset: 8
+    bit_size: 1
+fieldset/APBRST2:
+  description: APB Reset Control Reg2.
+  fields:
+  - name: RTC
+    description: desc RTC.
+    bit_offset: 1
+    bit_size: 1
+  - name: BTIM123
+    description: desc BTIM123.
+    bit_offset: 2
+    bit_size: 1
+  - name: IWDT
+    description: desc IWDT.
+    bit_offset: 4
+    bit_size: 1
+  - name: I2C1
+    description: desc I2C1.
+    bit_offset: 6
+    bit_size: 1
+  - name: LPTIM
+    description: desc LPTIM.
+    bit_offset: 7
+    bit_size: 1
+fieldset/CR0:
+  description: Control Reg0.
+  fields:
+  - name: SYSCLK
+    description: desc SYSCLK.
+    bit_offset: 0
+    bit_size: 3
+    enum: Sysclk
+  - name: PCLKPRS
+    description: desc PCLKPRS.
+    bit_offset: 3
+    bit_size: 2
+  - name: HCLKPRS
+    description: desc HCLKPRS.
+    bit_offset: 5
+    bit_size: 3
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/CR1:
+  description: Control Reg1.
+  fields:
+  - name: HSIEN
+    description: desc HSIEN.
+    bit_offset: 0
+    bit_size: 1
+  - name: HSEEN
+    description: desc HSEEN.
+    bit_offset: 1
+    bit_size: 1
+  - name: LSIEN
+    description: desc LSIEN.
+    bit_offset: 3
+    bit_size: 1
+  - name: LSEEN
+    description: desc LSEEN.
+    bit_offset: 4
+    bit_size: 1
+  - name: LSELOCK
+    description: desc LSELOCK.
+    bit_offset: 5
+    bit_size: 1
+  - name: LSECCS
+    description: desc LSECCS.
+    bit_offset: 6
+    bit_size: 1
+  - name: HSECCS
+    description: desc HSECCS.
+    bit_offset: 7
+    bit_size: 1
+  - name: CLKCCS
+    description: desc CLKCCS.
+    bit_offset: 8
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/CR2:
+  description: Control Reg2.
+  fields:
+  - name: SWDIO
+    description: desc SWDIO.
+    bit_offset: 1
+    bit_size: 1
+  - name: LOCKUP
+    description: desc LOCKUP.
+    bit_offset: 2
+    bit_size: 1
+  - name: WAKEUPCLK
+    description: desc WAKEUPCLK.
+    bit_offset: 3
+    bit_size: 1
+  - name: FLASHWAIT
+    description: desc FLASHWAIT.
+    bit_offset: 4
+    bit_size: 3
+  - name: RTCLPM
+    description: desc RTCLPM.
+    bit_offset: 7
+    bit_size: 1
+  - name: HSEBRKEN
+    description: desc HSEBRKEN.
+    bit_offset: 10
+    bit_size: 1
+  - name: LSEBRKEN
+    description: desc LSEBRKEN.
+    bit_offset: 11
+    bit_size: 1
+  - name: CLLBRKEN
+    description: desc CLLBRKEN.
+    bit_offset: 12
+    bit_size: 1
+  - name: DSBRKEN
+    description: desc DSBRKEN.
+    bit_offset: 13
+    bit_size: 1
+  - name: LVDBRKEN
+    description: desc LVDBRKEN.
+    bit_offset: 14
+    bit_size: 1
+  - name: RAMBRKEN
+    description: desc RAMBRKEN.
+    bit_offset: 15
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/DEBUG:
+  description: Debug Control Reg.
+  fields:
+  - name: ATIM
+    description: desc ATIM.
+    bit_offset: 0
+    bit_size: 1
+  - name: GTIM1
+    description: desc GTIM1.
+    bit_offset: 1
+    bit_size: 1
+  - name: GTIM2
+    description: desc GTIM2.
+    bit_offset: 2
+    bit_size: 1
+  - name: BTIM123
+    description: desc BTIM123.
+    bit_offset: 5
+    bit_size: 1
+  - name: LPTIM
+    description: desc LPTIM.
+    bit_offset: 6
+    bit_size: 1
+  - name: RTC
+    description: desc RTC.
+    bit_offset: 8
+    bit_size: 1
+  - name: IWDT
+    description: desc IWDT.
+    bit_offset: 9
+    bit_size: 1
+fieldset/HSE:
+  description: HEX Control Reg.
+  fields:
+  - name: DRIVER
+    description: desc DRIVER.
+    bit_offset: 0
+    bit_size: 4
+    enum: HseDrive
+  - name: WAITCYCLE
+    description: desc WAITCYCLE.
+    bit_offset: 4
+    bit_size: 2
+    enum: HseWait
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 6
+    bit_size: 1
+  - name: HEXENPOL
+    description: desc HEXENPOL.
+    bit_offset: 7
+    bit_size: 1
+  - name: DETCNT
+    description: desc DETCNT.
+    bit_offset: 8
+    bit_size: 11
+  - name: STABLE
+    description: desc STABLE.
+    bit_offset: 19
+    bit_size: 1
+  - name: PDRIVER
+    description: desc PDRIVER.
+    bit_offset: 20
+    bit_size: 4
+    enum: HseDrive
+  - name: DIGFLT
+    description: desc DIGFLT.
+    bit_offset: 24
+    bit_size: 1
+fieldset/HSI:
+  description: HSI Control Reg.
+  fields:
+  - name: TRIM
+    description: desc TRIM.
+    bit_offset: 0
+    bit_size: 11
+  - name: DIV
+    description: desc DIV.
+    bit_offset: 11
+    bit_size: 4
+  - name: STABLE
+    description: desc STABLE.
+    bit_offset: 15
+    bit_size: 1
+fieldset/ICR:
+  description: Interupt Clear Reg.
+  fields:
+  - name: HSIRDY
+    description: desc HSIRDY.
+    bit_offset: 0
+    bit_size: 1
+  - name: HSERDY
+    description: desc HSERDY.
+    bit_offset: 1
+    bit_size: 1
+  - name: LSIRDY
+    description: desc LSIRDY.
+    bit_offset: 3
+    bit_size: 1
+  - name: LSERDY
+    description: desc LSERDY.
+    bit_offset: 4
+    bit_size: 1
+  - name: LSEFAIL
+    description: desc LSEFAIL.
+    bit_offset: 5
+    bit_size: 1
+  - name: HSEFAIL
+    description: desc HSEFAIL.
+    bit_offset: 6
+    bit_size: 1
+  - name: LSEFAULT
+    description: desc LSEFAULT.
+    bit_offset: 7
+    bit_size: 1
+  - name: HSEFAULT
+    description: desc HSEFAULT.
+    bit_offset: 8
+    bit_size: 1
+fieldset/IER:
+  description: Interupt Enable Reg.
+  fields:
+  - name: HSIRDY
+    description: desc HSIRDY.
+    bit_offset: 0
+    bit_size: 1
+  - name: HSERDY
+    description: desc HSERDY.
+    bit_offset: 1
+    bit_size: 1
+  - name: LSIRDY
+    description: desc LSIRDY.
+    bit_offset: 3
+    bit_size: 1
+  - name: LSERDY
+    description: desc LSERDY.
+    bit_offset: 4
+    bit_size: 1
+  - name: LSEFAIL
+    description: desc LSEFAIL.
+    bit_offset: 5
+    bit_size: 1
+  - name: HSEFAIL
+    description: desc HSEFAIL.
+    bit_offset: 6
+    bit_size: 1
+  - name: LSEFAULT
+    description: desc LSEFAULT.
+    bit_offset: 7
+    bit_size: 1
+  - name: HSEFAULT
+    description: desc HSEFAULT.
+    bit_offset: 8
+    bit_size: 1
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 16
+    bit_size: 16
+fieldset/ISR:
+  description: Interupt Status Reg.
+  fields:
+  - name: HSIRDY
+    description: desc HSIRDY.
+    bit_offset: 0
+    bit_size: 1
+  - name: HSERDY
+    description: desc HSERDY.
+    bit_offset: 1
+    bit_size: 1
+  - name: LSIRDY
+    description: desc LSIRDY.
+    bit_offset: 3
+    bit_size: 1
+  - name: LSERDY
+    description: desc LSERDY.
+    bit_offset: 4
+    bit_size: 1
+  - name: LSEFAIL
+    description: desc LSEFAIL.
+    bit_offset: 5
+    bit_size: 1
+  - name: HSEFAIL
+    description: desc HSEFAIL.
+    bit_offset: 6
+    bit_size: 1
+  - name: LSEFAULT
+    description: desc LSEFAULT.
+    bit_offset: 7
+    bit_size: 1
+  - name: HSEFAULT
+    description: desc HSEFAULT.
+    bit_offset: 8
+    bit_size: 1
+  - name: HSISTABLE
+    description: desc HSISTABLE.
+    bit_offset: 11
+    bit_size: 1
+  - name: HSESTABLE
+    description: desc HSESTABLE.
+    bit_offset: 12
+    bit_size: 1
+  - name: LSISTABLE
+    description: desc LSISTABLE.
+    bit_offset: 14
+    bit_size: 1
+  - name: LSESTABLE
+    description: desc LSESTABLE.
+    bit_offset: 15
+    bit_size: 1
+fieldset/LSE:
+  description: LSE Control Reg.
+  fields:
+  - name: DRIVER
+    description: desc DRIVER.
+    bit_offset: 0
+    bit_size: 4
+    enum: LseDrive
+  - name: WAITCYCLE
+    description: desc WAITCYCLE.
+    bit_offset: 4
+    bit_size: 2
+    enum: LseWait
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 6
+    bit_size: 1
+  - name: PDRIVER
+    description: desc PDRIVER.
+    bit_offset: 8
+    bit_size: 4
+    enum: LseDrive
+  - name: PINLOCK
+    description: desc PINLOCK.
+    bit_offset: 17
+    bit_size: 1
+  - name: STABLE
+    description: desc STABLE.
+    bit_offset: 18
+    bit_size: 1
+fieldset/LSI:
+  description: LSI Control Reg.
+  fields:
+  - name: TRIM
+    description: desc TRIM.
+    bit_offset: 0
+    bit_size: 10
+  - name: WAITCYCLE
+    description: desc WAITCYCLE.
+    bit_offset: 10
+    bit_size: 2
+  - name: STABLE
+    description: desc STABLE.
+    bit_offset: 15
+    bit_size: 1
+fieldset/MCO:
+  description: Master Clock Output Control Reg.
+  fields:
+  - name: SOURCE
+    description: desc SOURCE.
+    bit_offset: 0
+    bit_size: 4
+  - name: DIV
+    description: desc DIV.
+    bit_offset: 4
+    bit_size: 3
+fieldset/RESETFLAG:
+  description: Reset Status Reg.
+  fields:
+  - name: POR
+    description: desc POR.
+    bit_offset: 0
+    bit_size: 1
+  - name: LVD
+    description: desc LVD.
+    bit_offset: 3
+    bit_size: 1
+  - name: IWDT
+    description: desc IWDT.
+    bit_offset: 4
+    bit_size: 1
+  - name: RSTB
+    description: desc RSTB.
+    bit_offset: 6
+    bit_size: 1
+  - name: LOCKUP
+    description: desc LOCKUP.
+    bit_offset: 8
+    bit_size: 1
+  - name: SYSRESETREQ
+    description: desc SYSRESETREQ.
+    bit_offset: 9
+    bit_size: 1
+enum/HseDrive:
+  description: 'Own CW32L011 RM CN V1.1 section 4.7.6: pre-start and run HSE drive; only codes 0..7 documented.'
+  bit_size: 4
+  variants:
+  - name: LEVEL0
+    description: Minimum drive.
+    value: 0
+  - name: LEVEL1
+    description: Board-qualified drive code 1.
+    value: 1
+  - name: LEVEL2
+    description: Board-qualified drive code 2.
+    value: 2
+  - name: LEVEL3
+    description: Board-qualified drive code 3.
+    value: 3
+  - name: LEVEL4
+    description: Board-qualified drive code 4.
+    value: 4
+  - name: LEVEL5
+    description: Board-qualified drive code 5.
+    value: 5
+  - name: LEVEL6
+    description: Board-qualified drive code 6.
+    value: 6
+  - name: LEVEL7
+    description: Maximum drive.
+    value: 7
+enum/HseWait:
+  description: 'Own CW32L011 RM CN V1.1 section 4.7.6: startup stable-detection HSE cycle counts.'
+  bit_size: 2
+  variants:
+  - name: CYCLES8192
+    description: Wait 8192 HSE cycles.
+    value: 0
+  - name: CYCLES32768
+    description: Wait 32768 HSE cycles.
+    value: 1
+  - name: CYCLES131072
+    description: Wait 131072 HSE cycles.
+    value: 2
+  - name: CYCLES262144
+    description: Wait 262144 HSE cycles.
+    value: 3
+enum/LseDrive:
+  description: Own CW32L011 RM CN Rev1.1 PDF72/printed71.
+  bit_size: 4
+  variants:
+  - name: LEVEL0
+    description: Board-qualified LSE drive code 0.
+    value: 0
+  - name: LEVEL1
+    description: Board-qualified LSE drive code 1.
+    value: 1
+  - name: LEVEL2
+    description: Board-qualified LSE drive code 2.
+    value: 2
+  - name: LEVEL3
+    description: Board-qualified LSE drive code 3.
+    value: 3
+  - name: LEVEL4
+    description: Board-qualified LSE drive code 4.
+    value: 4
+  - name: LEVEL5
+    description: Board-qualified LSE drive code 5.
+    value: 5
+  - name: LEVEL6
+    description: Board-qualified LSE drive code 6.
+    value: 6
+  - name: LEVEL7
+    description: Board-qualified LSE drive code 7.
+    value: 7
+  - name: LEVEL8
+    description: Board-qualified LSE drive code 8.
+    value: 8
+  - name: LEVEL9
+    description: Board-qualified LSE drive code 9.
+    value: 9
+  - name: LEVEL10
+    description: Board-qualified LSE drive code 10.
+    value: 10
+  - name: LEVEL11
+    description: Board-qualified LSE drive code 11.
+    value: 11
+  - name: LEVEL12
+    description: Board-qualified LSE drive code 12.
+    value: 12
+  - name: LEVEL13
+    description: Board-qualified LSE drive code 13.
+    value: 13
+  - name: LEVEL14
+    description: Board-qualified LSE drive code 14.
+    value: 14
+  - name: LEVEL15
+    description: Board-qualified LSE drive code 15.
+    value: 15
+enum/LseWait:
+  description: Own CW32L011 RM CN Rev1.1 PDF72/printed71.
+  bit_size: 2
+  variants:
+  - name: CYCLES256
+    description: Wait 256 LSE cycles.
+    value: 0
+  - name: CYCLES1024
+    description: Wait 1024 LSE cycles.
+    value: 1
+  - name: CYCLES4096
+    description: Wait 4096 LSE cycles.
+    value: 2
+  - name: CYCLES16384
+    description: Wait 16384 LSE cycles.
+    value: 3
+enum/Sysclk:
+  description: 'Own CW32L011 RM CN V1.1 section 4.7.1: system clock; codes 2 and 5..7 reserved, no documented PLL.'
+  bit_size: 3
+  variants:
+  - name: HSI
+    description: HSI system clock.
+    value: 0
+  - name: HSE
+    description: HSE system clock.
+    value: 1
+  - name: LSI
+    description: LSI system clock.
+    value: 3
+  - name: LSE
+    description: LSE system clock.
+    value: 4

@@ -1,0 +1,72 @@
+{
+  "profile": "CW32L011",
+  "source_device": "CW32L011",
+  "shared_map_evidence": null,
+  "source_sha256": "b814843fcea7ed61b11f49ba3a8c00289b98c4dfb36b051ec87671446013ca47",
+  "source_url": "https://www.whxy.com/uploads/files/20251016/CW32L011_StandardPeripheralLib_V1.0.3.zip",
+  "peripherals": 27,
+  "register_blocks": 19,
+  "registers": 196,
+  "fieldsets": 196,
+  "fields": 1217,
+  "interrupts": 24,
+  "die_pins": 0,
+  "pinouts": {
+    "exact_parts": 2,
+    "physical_pin_entries": 64,
+    "alias_policy": "common-package-intersection: GPIO labels common to every reviewed package for the family or matching family_part; no physical package is assigned to an alias"
+  },
+  "dma": {
+    "physical_channels": 0,
+    "hardware_requests": 0,
+    "excluded_sdk_requests": 0,
+    "unresolved_semantics": 0
+  },
+  "clocks": {
+    "peripheral_records": 27,
+    "supported_records": 14,
+    "control_records": 22,
+    "partial_records": 13,
+    "shared_enable_groups": 2,
+    "shared_reset_groups": 2,
+    "limitations": [
+      "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+      "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+      "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+      "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+      "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+      "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+      "SYSCTRL AHBEN/APBEN gate writes require KEY=0x5A5A in bits31:16; upstream Rcc.enable cannot encode this write protocol. See each enable_write_key fact.",
+      "All APB gate registers use the single PCLK; APBEN1/APBEN2 are register banks, not evidence for distinct PCLK1/PCLK2.",
+      "StopMode is deliberately omitted: Sleep/DeepSleep behavior is clock-source dependent and upstream Stop1 requires explicit conservative build policy.",
+      "Supported indicates bus/kernel upstream source plus gate/reset field identities; sidecar gate-key and active-low reset semantics remain mandatory consumer considerations.",
+      "Clock metadata: 14 complete identities, 22 independently verified controls; 13 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+    ]
+  },
+  "applied_errata": [
+    "nvicPrioBits 2 -> 2: Official CW32L011 SDK Libraries/inc header __NVIC_PRIO_BITS=2; SHA256 2ae110a7a35e26be4816f6eeb615152eb52469da095d8d7a282df4aa80d946b8",
+    "Corrected field RTC.DATE.DAY at bit 0: width 8 -> 6: Own CW32L011 User Manual CN V1.1 section 10.5.6, printed page 153/PDF page 154: RTC_DATE.DAY is bits5:0 and MONTH is bits12:8; bits7:6 and bits15:13 are reserved. Correct only the copied SVD 8-bit field widths; preserve all offsets and other fields. PDF SHA256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f. https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf",
+    "Corrected field RTC.DATE.MONTH at bit 8: width 8 -> 5: Own CW32L011 User Manual CN V1.1 section 10.5.6, printed page 153/PDF page 154: RTC_DATE.DAY is bits5:0 and MONTH is bits12:8; bits7:6 and bits15:13 are reserved. Correct only the copied SVD 8-bit field widths; preserve all offsets and other fields. PDF SHA256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f. https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf",
+    "GPIO.ISR ReadWrite -> Read: CW32L011 User Manual CN V1.1 section 8.6.9, printed page 128/PDF page 129: GPIO ISR at offset 0x34 marks every defined status field RO; flags clear through the separate ICR. Access-only correction; widths, offsets and fields unchanged. PDF SHA256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f. https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf",
+    "IRQ FLASHRAM:3 owners [\"FLASH\"] -> [\"FLASH\", \"RAM\"]: CW32L011 own manual section 5.4 interrupt table PDF page 87 and RAM section 6.4: FLASHRAM IRQ3 is shared by FLASH and RAM parity. Official CMSIS FLASHRAM_IRQn=3. https://www.whxy.com/uploads/files/20260602/CW32L011_UserManual_CN_V1.1.pdf PDF SHA256 b245887e9037caf267f739e25bd3c354c2579d23315fc06389e055f371159f4f. See docs/ram-parity-evidence.json."
+  ],
+  "limitations": [
+    "SVD-imported registers are not silicon-tested or a guarantee the vendor SVD is error-free.",
+    "Generic family features have no memory-size assertion; exact part features source memory separately.",
+    "Exact-part core pins and physical package pins come only from reviewed package tables; package-less aliases use an explicitly documented common-package GPIO intersection when configured. Input-only/output capability remains in pinout sidecars.",
+    "Only configured reviewed clock and DMA projections are imported. Verified reset polarity, write keys and shared controls are transported independently in rcc_control; unresolved kernel identities are withheld.",
+    "Digital alternate-function routes are imported only for explicitly reviewed profiles and filtered by package pins. Analog/special routes and flash geometry remain incomplete.",
+    "Read-clear, write-one-clear and reset-value semantics are not represented by chiptool IR.",
+    "All verified SYSCTRL peripheral-reset controls assert low (write 0) and release high (write 1). Upstream Rcc field references cannot encode polarity; consumers must read this sidecar rather than use active-high STM32 reset assumptions.",
+    "APBEN1/APBEN2 are register banks for one PCLK, not evidence for PCLK1/PCLK2.",
+    "Scoped peripheral-local muxes cannot be represented faithfully by upstream unscoped Rcc::Mux Field. Such records are partial and must not be emitted with a fabricated fixed PCLK.",
+    "Kernel fixed-clock facts denote input source before peripheral prescalers, baud dividers, timer count-mode routing, or optional digital filters; they are not guaranteed counter/output frequencies.",
+    "CW32 documents Sleep and DeepSleep; upstream Stop1/Stop2/Standby enum is not directly vendor-backed. Apply an explicitly documented conservative software policy if emitting Rcc.",
+    "Shared gates/reset lines require shared ownership or reference counting. Resetting one member can affect all members.",
+    "SYSCTRL AHBEN/APBEN gate writes require KEY=0x5A5A in bits31:16; upstream Rcc.enable cannot encode this write protocol. See each enable_write_key fact.",
+    "All APB gate registers use the single PCLK; APBEN1/APBEN2 are register banks, not evidence for distinct PCLK1/PCLK2.",
+    "StopMode is deliberately omitted: Sleep/DeepSleep behavior is clock-source dependent and upstream Stop1 requires explicit conservative build policy.",
+    "Supported indicates bus/kernel upstream source plus gate/reset field identities; sidecar gate-key and active-low reset semantics remain mandatory consumer considerations.",
+    "Clock metadata: 14 complete identities, 22 independently verified controls; 13 partial identities remain in the factual sidecar. RccControl carries actual reset polarity, write keys and shared groups without inferring a kernel. Stop1 is only a conservative build policy, not a CW32 hardware mode."
+  ]
+}

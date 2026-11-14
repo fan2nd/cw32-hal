@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "uart_v1": [
+      {
+        "block": "UART",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 255,
+        "write_noop": 255,
+        "zero_to_clear_fields": [
+          "TC",
+          "RC",
+          "FE",
+          "PE",
+          "CTS"
+        ],
+        "evidence": [
+          "docs/uart-typed-register-evidence.json: uart_v1",
+          "docs/uart-typed-registers.md: R1W0 command seeds and reserved-bit policy"
+        ]
+      }
+    ]
+  }
+}

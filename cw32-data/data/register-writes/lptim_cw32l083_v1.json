@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "lptim_cw32l083_v1": [
+      {
+        "block": "LPTIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 127,
+        "write_noop": 127,
+        "zero_to_clear_fields": [
+          "CMPM",
+          "ARRM",
+          "EXTTRIG",
+          "CMPOK",
+          "ARROK",
+          "UP",
+          "DOWN"
+        ],
+        "evidence": [
+          "docs/low-power-timers-evidence.json: lptim_cw32l083_v1",
+          "docs/low-power-timers.md: commands and reserved-bit policy"
+        ]
+      },
+      {
+        "block": "LPTIM",
+        "register": "CR",
+        "fieldset": "CR",
+        "reset_value": 24,
+        "write_noop": 24,
+        "zero_to_clear_fields": [
+          "SRST",
+          "ARST"
+        ],
+        "evidence": [
+          "docs/low-power-timers-evidence.json: lptim_cw32l083_v1",
+          "docs/low-power-timers.md: commands and reserved-bit policy"
+        ]
+      }
+    ]
+  }
+}

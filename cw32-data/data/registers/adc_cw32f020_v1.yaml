@@ -1,0 +1,429 @@
+block/ADC:
+  description: desc ADC.
+  items:
+  - name: CR0
+    description: Control register0.
+    byte_offset: 0
+    fieldset: CR0
+  - name: CR1
+    description: Control register1.
+    byte_offset: 4
+    fieldset: CR1
+  - name: START
+    description: desc START.
+    byte_offset: 8
+    fieldset: START
+  - name: SQR
+    description: desc SQR.
+    byte_offset: 12
+    fieldset: SQR
+  - name: CR2
+    description: Control register2.
+    byte_offset: 16
+    fieldset: CR2
+  - name: VTH
+    description: desc VTH.
+    byte_offset: 20
+    fieldset: VTH
+  - name: VTL
+    description: desc VTL.
+    byte_offset: 24
+    fieldset: VTL
+  - name: TRIGGER
+    description: desc TRIGGER.
+    byte_offset: 28
+    fieldset: TRIGGER
+  - name: RESULT
+    description: Ordered scan conversion results, indexed by sequence slot.
+    array:
+      len: 4
+      stride: 4
+    byte_offset: 32
+    access: Read
+    fieldset: RESULT
+  - name: RESULTACC
+    description: desc RESULTACC.
+    byte_offset: 48
+    access: Read
+    fieldset: RESULTACC
+  - name: IER
+    description: Interrupt enable register.
+    byte_offset: 52
+    fieldset: IER
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 56
+    fieldset: ICR
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 60
+    access: Read
+    fieldset: ISR
+  - name: RESULT140
+    description: desc RESULT140.
+    byte_offset: 64
+    access: Read
+    fieldset: RESULT140
+  - name: RESULT141
+    description: desc RESULT141.
+    byte_offset: 68
+    access: Read
+    fieldset: RESULT141
+  - name: RESULT142
+    description: desc RESULT142.
+    byte_offset: 72
+    access: Read
+    fieldset: RESULT142
+  - name: RESULT143
+    description: desc RESULT143.
+    byte_offset: 76
+    access: Read
+    fieldset: RESULT143
+  - name: ENABLE14
+    description: desc ENABLE14.
+    byte_offset: 136
+    access: Write
+    fieldset: ENABLE14
+fieldset/CR0:
+  description: Control register0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MODE
+    description: Conversion mode.
+    bit_offset: 1
+    bit_size: 3
+    enum: Mode
+  - name: BGREN
+    description: desc BGREN.
+    bit_offset: 4
+    bit_size: 1
+  - name: TSEN
+    description: desc TSEN.
+    bit_offset: 5
+    bit_size: 1
+  - name: REF
+    description: desc REF.
+    bit_offset: 6
+    bit_size: 2
+  - name: CLK
+    description: desc CLK.
+    bit_offset: 8
+    bit_size: 3
+  - name: SAM
+    description: desc SAM.
+    bit_offset: 11
+    bit_size: 2
+  - name: BUF
+    description: desc BUF.
+    bit_offset: 13
+    bit_size: 1
+  - name: BIAS
+    description: desc BIAS.
+    bit_offset: 14
+    bit_size: 2
+fieldset/CR1:
+  description: Control register1.
+  fields:
+  - name: CHMUX
+    description: desc CHMUX.
+    bit_offset: 0
+    bit_size: 4
+  - name: DISCARD
+    description: desc DISCARD.
+    bit_offset: 5
+    bit_size: 1
+  - name: ALIGN
+    description: desc ALIGN.
+    bit_offset: 6
+    bit_size: 1
+  - name: DMAEN
+    description: desc DMAEN.
+    bit_offset: 7
+    bit_size: 1
+  - name: WDTCH
+    description: desc WDTCH.
+    bit_offset: 8
+    bit_size: 4
+  - name: WDTALL
+    description: desc WDTALL.
+    bit_offset: 13
+    bit_size: 1
+fieldset/CR2:
+  description: Control register2.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 8
+  - name: ACCEN
+    description: desc ACCEN.
+    bit_offset: 8
+    bit_size: 1
+  - name: ACCRST
+    description: desc ACCRST.
+    bit_offset: 9
+    bit_size: 1
+fieldset/ENABLE14:
+  description: desc ENABLE14.
+  fields:
+  - name: KEY
+    description: desc KEY.
+    bit_offset: 0
+    bit_size: 16
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+fieldset/IER:
+  description: Interrupt enable register.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: EOC
+    description: desc EOC.
+    bit_offset: 0
+    bit_size: 1
+  - name: EOS
+    description: desc EOS.
+    bit_offset: 1
+    bit_size: 1
+  - name: EOA
+    description: desc EOA.
+    bit_offset: 2
+    bit_size: 1
+  - name: WDTL
+    description: desc WDTL.
+    bit_offset: 3
+    bit_size: 1
+  - name: WDTH
+    description: desc WDTH.
+    bit_offset: 4
+    bit_size: 1
+  - name: WDTR
+    description: desc WDTR.
+    bit_offset: 5
+    bit_size: 1
+  - name: OVW
+    description: desc OVW.
+    bit_offset: 6
+    bit_size: 1
+  - name: READY
+    description: desc READY.
+    bit_offset: 7
+    bit_size: 1
+fieldset/RESULT:
+  description: Ordered scan conversion result, right-aligned when CR1.ALIGN is zero.
+  fields:
+  - name: RESULT
+    description: Twelve-bit conversion result.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT140:
+  description: desc RESULT140.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT141:
+  description: desc RESULT141.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT142:
+  description: desc RESULT142.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT143:
+  description: desc RESULT143.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULTACC:
+  description: desc RESULTACC.
+  fields:
+  - name: RESULT
+    description: desc RESULT.
+    bit_offset: 0
+    bit_size: 24
+fieldset/SQR:
+  description: desc SQR.
+  fields:
+  - name: SQR
+    description: Hardware input mux for this ordered scan slot.
+    bit_offset: 0
+    bit_size: 4
+    array:
+      len: 4
+      stride: 4
+  - name: ENS
+    description: desc ENS.
+    bit_offset: 16
+    bit_size: 2
+fieldset/START:
+  description: desc START.
+  fields:
+  - name: START
+    description: desc START.
+    bit_offset: 0
+    bit_size: 1
+  - name: AUTOSTOP
+    description: desc AUTOSTOP.
+    bit_offset: 1
+    bit_size: 1
+fieldset/TRIGGER:
+  description: desc TRIGGER.
+  fields:
+  - name: GTIM1
+    description: desc GTIM1.
+    bit_offset: 1
+    bit_size: 1
+  - name: GTIM2
+    description: desc GTIM2.
+    bit_offset: 2
+    bit_size: 1
+  - name: GTIM3
+    description: desc GTIM3.
+    bit_offset: 3
+    bit_size: 1
+  - name: GTIM4
+    description: desc GTIM4.
+    bit_offset: 4
+    bit_size: 1
+  - name: BTIM1
+    description: desc BTIM1.
+    bit_offset: 5
+    bit_size: 1
+  - name: BTIM2
+    description: desc BTIM2.
+    bit_offset: 6
+    bit_size: 1
+  - name: BTIM3
+    description: desc BTIM3.
+    bit_offset: 7
+    bit_size: 1
+  - name: UART1
+    description: desc UART1.
+    bit_offset: 8
+    bit_size: 1
+  - name: UART2
+    description: desc UART2.
+    bit_offset: 9
+    bit_size: 1
+  - name: UART3
+    description: desc UART3.
+    bit_offset: 10
+    bit_size: 1
+  - name: SPI1
+    description: desc SPI1.
+    bit_offset: 11
+    bit_size: 1
+  - name: SPI2
+    description: desc SPI2.
+    bit_offset: 12
+    bit_size: 1
+  - name: I2C1
+    description: desc I2C1.
+    bit_offset: 13
+    bit_size: 1
+  - name: I2C2
+    description: desc I2C2.
+    bit_offset: 14
+    bit_size: 1
+  - name: DMA
+    description: desc DMA.
+    bit_offset: 15
+    bit_size: 1
+fieldset/VTH:
+  description: desc VTH.
+  fields:
+  - name: VTH
+    description: desc VTH.
+    bit_offset: 0
+    bit_size: 12
+fieldset/VTL:
+  description: desc VTL.
+  fields:
+  - name: VTL
+    description: desc VTL.
+    bit_offset: 0
+    bit_size: 12
+enum/Mode:
+  description: Source-qualified software-triggered modes; other conversion modes are outside this subset.
+  bit_size: 3
+  variants:
+  - name: SINGLE
+    description: One conversion of CR1.CHMUX, stored in RESULT0.
+    value: 0
+  - name: CONTINUOUS
+    description: Repeated CHMUX conversions into RESULT0 until START is cleared; own-family evidence in docs/adc-classic-continuous.md.
+    value: 2
+  - name: SCAN
+    description: One pass through SQR slots, with EOS and automatic START clear after the final result.
+    value: 4

@@ -1,0 +1,664 @@
+block/GPIOB:
+  description: desc GPIOB.
+  items:
+  - name: DIR
+    description: desc DIR.
+    byte_offset: 0
+    fieldset: DIR
+  - name: OPENDRAIN
+    description: desc OPENDRAIN.
+    byte_offset: 4
+    fieldset: OPENDRAIN
+  - name: PDR
+    description: desc PDR.
+    byte_offset: 12
+    fieldset: PDR
+  - name: PUR
+    description: desc PUR.
+    byte_offset: 16
+    fieldset: PUR
+  - name: AFRL
+    description: desc AFRL.
+    byte_offset: 24
+    fieldset: AFRL
+  - name: ANALOG
+    description: desc ANALOG.
+    byte_offset: 28
+    fieldset: ANALOG
+  - name: RISEIE
+    description: Interrupt enable register.
+    byte_offset: 36
+    fieldset: RISEIE
+  - name: FALLIE
+    description: Interrupt enable register.
+    byte_offset: 40
+    fieldset: FALLIE
+  - name: ISR
+    description: Interrupt status register.
+    byte_offset: 52
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: Interrupt flag clear register.
+    byte_offset: 56
+    fieldset: ICR
+  - name: FILTER
+    description: desc FILTER.
+    byte_offset: 64
+    fieldset: FILTER
+  - name: IDR
+    description: desc IDR.
+    byte_offset: 80
+    fieldset: IDR
+  - name: ODR
+    description: desc ODR.
+    byte_offset: 84
+    fieldset: ODR
+  - name: BRR
+    description: desc BRR.
+    byte_offset: 88
+    fieldset: BRR
+  - name: BSRR
+    description: desc BSRR.
+    byte_offset: 92
+    fieldset: BSRR
+  - name: TOG
+    description: desc TOG.
+    byte_offset: 96
+    fieldset: TOG
+fieldset/AFRL:
+  description: desc AFRL.
+  fields:
+  - name: AFR0
+    description: desc AFR0.
+    bit_offset: 0
+    bit_size: 3
+  - name: AFR1
+    description: desc AFR1.
+    bit_offset: 4
+    bit_size: 3
+  - name: AFR2
+    description: desc AFR2.
+    bit_offset: 8
+    bit_size: 3
+  - name: AFR3
+    description: desc AFR3.
+    bit_offset: 12
+    bit_size: 3
+  - name: AFR4
+    description: desc AFR4.
+    bit_offset: 16
+    bit_size: 3
+  - name: AFR5
+    description: desc AFR5.
+    bit_offset: 20
+    bit_size: 3
+  - name: AFR6
+    description: desc AFR6.
+    bit_offset: 24
+    bit_size: 3
+  - name: AFR7
+    description: desc AFR7.
+    bit_offset: 28
+    bit_size: 3
+fieldset/ANALOG:
+  description: desc ANALOG.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/BRR:
+  description: desc BRR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/BSRR:
+  description: desc BSRR.
+  fields:
+  - name: BSS0
+    description: desc BSS0.
+    bit_offset: 0
+    bit_size: 1
+  - name: BSS1
+    description: desc BSS1.
+    bit_offset: 1
+    bit_size: 1
+  - name: BSS2
+    description: desc BSS2.
+    bit_offset: 2
+    bit_size: 1
+  - name: BSS3
+    description: desc BSS3.
+    bit_offset: 3
+    bit_size: 1
+  - name: BSS4
+    description: desc BSS4.
+    bit_offset: 4
+    bit_size: 1
+  - name: BSS5
+    description: desc BSS5.
+    bit_offset: 5
+    bit_size: 1
+  - name: BSS6
+    description: desc BSS6.
+    bit_offset: 6
+    bit_size: 1
+  - name: BSS7
+    description: desc BSS7.
+    bit_offset: 7
+    bit_size: 1
+  - name: BRR0
+    description: desc BRR0.
+    bit_offset: 16
+    bit_size: 1
+  - name: BRR1
+    description: desc BRR1.
+    bit_offset: 17
+    bit_size: 1
+  - name: BRR2
+    description: desc BRR2.
+    bit_offset: 18
+    bit_size: 1
+  - name: BRR3
+    description: desc BRR3.
+    bit_offset: 19
+    bit_size: 1
+  - name: BRR4
+    description: desc BRR4.
+    bit_offset: 20
+    bit_size: 1
+  - name: BRR5
+    description: desc BRR5.
+    bit_offset: 21
+    bit_size: 1
+  - name: BRR6
+    description: desc BRR6.
+    bit_offset: 22
+    bit_size: 1
+  - name: BRR7
+    description: desc BRR7.
+    bit_offset: 23
+    bit_size: 1
+fieldset/DIR:
+  description: desc DIR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/FALLIE:
+  description: Interrupt enable register.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/FILTER:
+  description: desc FILTER.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+  - name: FLTCLK
+    description: desc FLTCLK.
+    bit_offset: 16
+    bit_size: 3
+fieldset/ICR:
+  description: Interrupt flag clear register.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/IDR:
+  description: desc IDR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/ISR:
+  description: Interrupt status register.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/ODR:
+  description: desc ODR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/OPENDRAIN:
+  description: desc OPENDRAIN.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/PDR:
+  description: desc PDR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/PUR:
+  description: desc PUR.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/RISEIE:
+  description: Interrupt enable register.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1
+fieldset/TOG:
+  description: desc TOG.
+  fields:
+  - name: PIN0
+    description: desc PIN0.
+    bit_offset: 0
+    bit_size: 1
+  - name: PIN1
+    description: desc PIN1.
+    bit_offset: 1
+    bit_size: 1
+  - name: PIN2
+    description: desc PIN2.
+    bit_offset: 2
+    bit_size: 1
+  - name: PIN3
+    description: desc PIN3.
+    bit_offset: 3
+    bit_size: 1
+  - name: PIN4
+    description: desc PIN4.
+    bit_offset: 4
+    bit_size: 1
+  - name: PIN5
+    description: desc PIN5.
+    bit_offset: 5
+    bit_size: 1
+  - name: PIN6
+    description: desc PIN6.
+    bit_offset: 6
+    bit_size: 1
+  - name: PIN7
+    description: desc PIN7.
+    bit_offset: 7
+    bit_size: 1

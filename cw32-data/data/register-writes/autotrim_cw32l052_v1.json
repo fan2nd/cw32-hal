@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "autotrim_cw32l052_v1": [
+      {
+        "block": "AUTOTRIM",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 63,
+        "write_noop": 63,
+        "zero_to_clear_fields": [
+          "END",
+          "OK",
+          "UD",
+          "OV",
+          "MISS"
+        ],
+        "evidence": [
+          "docs/autotrim-counter-evidence.json: own-family UM section 11.8.6",
+          "docs/autotrim-counter-evidence.md: R1W0 command seed retains reserved bit 2"
+        ]
+      }
+    ]
+  }
+}

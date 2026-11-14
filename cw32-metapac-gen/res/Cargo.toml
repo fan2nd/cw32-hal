@@ -1,5 +1,4 @@
 [package]
-workspace = "../firmware"
 name = "cw32-metapac"
 version = "0.1.0"
 edition = "2024"

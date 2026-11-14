@@ -1,0 +1,151 @@
+block/BTIM:
+  description: desc BTIM1.
+  items:
+  - name: ARR
+    description: desc ARR.
+    byte_offset: 0
+    fieldset: ARR
+  - name: CNT
+    description: desc CNT.
+    byte_offset: 4
+    fieldset: CNT
+  - name: ACR
+    description: desc ACR.
+    byte_offset: 12
+    fieldset: ACR
+  - name: BCR
+    description: desc BCR.
+    byte_offset: 16
+    fieldset: BCR
+  - name: IER
+    description: desc IER.
+    byte_offset: 20
+    fieldset: IER
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 24
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 28
+    fieldset: ICR
+  - name: DMA
+    description: desc DMA.
+    byte_offset: 32
+    fieldset: DMA
+  - name: PSC
+    description: desc PSC.
+    byte_offset: 36
+    fieldset: PSC
+fieldset/ACR:
+  description: desc ACR.
+  fields:
+  - name: ETRFLT
+    description: desc ETRFLT.
+    bit_offset: 4
+    bit_size: 3
+fieldset/ARR:
+  description: desc ARR.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/BCR:
+  description: desc BCR.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: MD
+    description: desc MD.
+    bit_offset: 1
+    bit_size: 2
+  - name: TRS
+    description: desc TRS.
+    bit_offset: 3
+    bit_size: 1
+  - name: POLARITY
+    description: desc POLARITY.
+    bit_offset: 4
+    bit_size: 1
+  - name: ONESHOT
+    description: desc ONESHOT.
+    bit_offset: 5
+    bit_size: 1
+  - name: TOGEN
+    description: desc TOGEN.
+    bit_offset: 6
+    bit_size: 1
+fieldset/CNT:
+  description: desc CNT.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/DMA:
+  description: desc DMA.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TRS
+    description: desc TRS.
+    bit_offset: 1
+    bit_size: 1
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: OV
+    description: desc OV.
+    bit_offset: 0
+    bit_size: 1
+  - name: TI
+    description: desc TI.
+    bit_offset: 1
+    bit_size: 1
+  - name: TOP
+    description: desc TOP.
+    bit_offset: 2
+    bit_size: 1
+fieldset/PSC:
+  description: desc PSC.
+  fields:
+  - name: PSC
+    description: desc PSC.
+    bit_offset: 0
+    bit_size: 16

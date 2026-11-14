@@ -1,0 +1,315 @@
+block/LPTIM:
+  description: desc LPTIM.
+  items:
+  - name: ISR
+    description: desc ISR.
+    byte_offset: 0
+    access: Read
+    fieldset: ISR
+  - name: ICR
+    description: desc ICR.
+    byte_offset: 4
+    fieldset: ICR
+  - name: IER
+    description: desc IER.
+    byte_offset: 8
+    fieldset: IER
+  - name: CFGR
+    description: desc CFGR.
+    byte_offset: 12
+    fieldset: CFGR
+  - name: CR0
+    description: desc CR0.
+    byte_offset: 16
+    fieldset: CR0
+  - name: CMP
+    description: desc CMP.
+    byte_offset: 20
+    fieldset: CMP
+  - name: ARR
+    description: desc ARR.
+    byte_offset: 24
+    fieldset: ARR
+  - name: CNT
+    description: desc CNT.
+    byte_offset: 28
+    access: Read
+    fieldset: CNT
+  - name: CR1
+    description: desc CR1.
+    byte_offset: 32
+    fieldset: CR1
+fieldset/ARR:
+  description: desc ARR.
+  fields:
+  - name: ARR
+    description: desc ARR.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CFGR:
+  description: desc CFGR.
+  fields:
+  - name: CKSEL
+    description: desc CKSEL.
+    bit_offset: 0
+    bit_size: 1
+  - name: ENCMD_CKPOL
+    description: desc ENCMD_CKPOL.
+    bit_offset: 1
+    bit_size: 2
+  - name: CHFLT
+    description: desc CHFLT.
+    bit_offset: 3
+    bit_size: 2
+  - name: TRIGFLT
+    description: desc TRIGFLT.
+    bit_offset: 6
+    bit_size: 2
+  - name: PRS
+    description: desc PRS.
+    bit_offset: 9
+    bit_size: 3
+    enum: Prescaler
+  - name: TRIGSEL
+    description: desc TRIGSEL.
+    bit_offset: 12
+    bit_size: 4
+  - name: TRIGEN
+    description: desc TRIGEN.
+    bit_offset: 17
+    bit_size: 2
+    enum: Trigger
+  - name: TIMOUT
+    description: desc TIMOUT.
+    bit_offset: 19
+    bit_size: 1
+  - name: WAVE
+    description: desc WAVE.
+    bit_offset: 20
+    bit_size: 1
+  - name: WAVPOL
+    description: desc WAVPOL.
+    bit_offset: 21
+    bit_size: 1
+  - name: PRELOAD
+    description: desc PRELOAD.
+    bit_offset: 22
+    bit_size: 1
+  - name: COUNTMD
+    description: desc COUNTMD.
+    bit_offset: 23
+    bit_size: 1
+  - name: ENC
+    description: desc ENC.
+    bit_offset: 24
+    bit_size: 1
+  - name: ICLKSRC
+    description: desc ICLKSRC.
+    bit_offset: 25
+    bit_size: 2
+    enum: Source
+fieldset/CMP:
+  description: desc CMP.
+  fields:
+  - name: CMP
+    description: desc CMP.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CNT:
+  description: desc CNT.
+  fields:
+  - name: CNT
+    description: desc CNT.
+    bit_offset: 0
+    bit_size: 16
+fieldset/CR0:
+  description: desc CR0.
+  fields:
+  - name: EN
+    description: desc EN.
+    bit_offset: 0
+    bit_size: 1
+  - name: SNGSTART
+    description: desc SNGSTART.
+    bit_offset: 1
+    bit_size: 1
+  - name: CNTSTART
+    description: desc CNTSTART.
+    bit_offset: 2
+    bit_size: 1
+  - name: SRST
+    description: desc SRST.
+    bit_offset: 3
+    bit_size: 1
+  - name: ARST
+    description: desc ARST.
+    bit_offset: 4
+    bit_size: 1
+fieldset/CR1:
+  description: desc CR1.
+  fields:
+  - name: CH1SRC
+    description: desc CH1SRC.
+    bit_offset: 0
+    bit_size: 3
+  - name: CH2SRC
+    description: desc CH2SRC.
+    bit_offset: 3
+    bit_size: 3
+fieldset/ICR:
+  description: desc ICR.
+  fields:
+  - name: CMPM
+    description: desc CMPM.
+    bit_offset: 0
+    bit_size: 1
+  - name: ARRM
+    description: desc ARRM.
+    bit_offset: 1
+    bit_size: 1
+  - name: EXTTRIG
+    description: desc EXTTRIG.
+    bit_offset: 2
+    bit_size: 1
+  - name: CMPOK
+    description: desc CMPOK.
+    bit_offset: 3
+    bit_size: 1
+  - name: ARROK
+    description: desc ARROK.
+    bit_offset: 4
+    bit_size: 1
+  - name: UP
+    description: desc UP.
+    bit_offset: 5
+    bit_size: 1
+  - name: DOWN
+    description: desc DOWN.
+    bit_offset: 6
+    bit_size: 1
+fieldset/IER:
+  description: desc IER.
+  fields:
+  - name: CMPM
+    description: desc CMPM.
+    bit_offset: 0
+    bit_size: 1
+  - name: ARRM
+    description: desc ARRM.
+    bit_offset: 1
+    bit_size: 1
+  - name: EXTTRIG
+    description: desc EXTTRIG.
+    bit_offset: 2
+    bit_size: 1
+  - name: CMPOK
+    description: desc CMPOK.
+    bit_offset: 3
+    bit_size: 1
+  - name: ARROK
+    description: desc ARROK.
+    bit_offset: 4
+    bit_size: 1
+  - name: UP
+    description: desc UP.
+    bit_offset: 5
+    bit_size: 1
+  - name: DOWN
+    description: desc DOWN.
+    bit_offset: 6
+    bit_size: 1
+fieldset/ISR:
+  description: desc ISR.
+  fields:
+  - name: CMPM
+    description: desc CMPM.
+    bit_offset: 0
+    bit_size: 1
+  - name: ARRM
+    description: desc ARRM.
+    bit_offset: 1
+    bit_size: 1
+  - name: EXTTRIG
+    description: desc EXTTRIG.
+    bit_offset: 2
+    bit_size: 1
+  - name: CMPOK
+    description: desc CMPOK.
+    bit_offset: 3
+    bit_size: 1
+  - name: ARROK
+    description: desc ARROK.
+    bit_offset: 4
+    bit_size: 1
+  - name: UP
+    description: desc UP.
+    bit_offset: 5
+    bit_size: 1
+  - name: DOWN
+    description: desc DOWN.
+    bit_offset: 6
+    bit_size: 1
+  - name: DIR
+    description: desc DIR.
+    bit_offset: 7
+    bit_size: 2
+enum/Prescaler:
+  description: Reviewed timer encodings; see docs/low-power-timers-evidence.json.
+  bit_size: 3
+  variants:
+  - name: DIV1
+    description: Divide by 1.
+    value: 0
+  - name: DIV2
+    description: Divide by 2.
+    value: 1
+  - name: DIV4
+    description: Divide by 4.
+    value: 2
+  - name: DIV8
+    description: Divide by 8.
+    value: 3
+  - name: DIV16
+    description: Divide by 16.
+    value: 4
+  - name: DIV32
+    description: Divide by 32.
+    value: 5
+  - name: DIV64
+    description: Divide by 64.
+    value: 6
+  - name: DIV128
+    description: Divide by 128.
+    value: 7
+enum/Source:
+  description: Reviewed timer encodings; see docs/low-power-timers-evidence.json.
+  bit_size: 2
+  variants:
+  - name: PCLK
+    description: Peripheral bus clock.
+    value: 0
+  - name: PCLK_ALT
+    description: Peripheral bus clock, alternate encoding.
+    value: 1
+  - name: LSE
+    description: External low-speed oscillator.
+    value: 2
+  - name: LSI
+    description: Internal low-speed oscillator.
+    value: 3
+enum/Trigger:
+  description: Reviewed timer encodings; see docs/low-power-timers-evidence.json.
+  bit_size: 2
+  variants:
+  - name: SOFTWARE
+    description: Software start.
+    value: 0
+  - name: RISING
+    description: Rising-edge trigger.
+    value: 1
+  - name: FALLING
+    description: Falling-edge trigger.
+    value: 2
+  - name: BOTH
+    description: Both-edge trigger.
+    value: 3

@@ -1,0 +1,77 @@
+block/CRC:
+  description: desc CRC.
+  items:
+  - name: CR
+    description: Control register.
+    byte_offset: 0
+    fieldset: CR
+  - name: DR16
+    description: Data register.
+    byte_offset: 8
+    bit_size: 16
+    fieldset: DR16
+  - name: DR32
+    description: Data register.
+    byte_offset: 8
+    fieldset: DR32
+  - name: DR8
+    description: Data register.
+    byte_offset: 8
+    bit_size: 8
+    fieldset: DR8
+  - name: RESULT16
+    description: Result register.
+    byte_offset: 12
+    access: Read
+    bit_size: 16
+    fieldset: RESULT16
+  - name: RESULT32
+    description: Result register.
+    byte_offset: 12
+    access: Read
+    fieldset: RESULT32
+fieldset/CR:
+  description: Control register.
+  fields:
+  - name: MODE
+    description: desc MODE.
+    bit_offset: 0
+    bit_size: 4
+fieldset/DR16:
+  description: Data register.
+  bit_size: 16
+  fields:
+  - name: DR16
+    description: desc DR16.
+    bit_offset: 0
+    bit_size: 16
+fieldset/DR32:
+  description: Data register.
+  fields:
+  - name: DR32
+    description: desc DR32.
+    bit_offset: 0
+    bit_size: 32
+fieldset/DR8:
+  description: Data register.
+  bit_size: 8
+  fields:
+  - name: DR8
+    description: desc DR8.
+    bit_offset: 0
+    bit_size: 8
+fieldset/RESULT16:
+  description: Result register.
+  bit_size: 16
+  fields:
+  - name: RESULT16
+    description: desc RESULT16.
+    bit_offset: 0
+    bit_size: 16
+fieldset/RESULT32:
+  description: Result register.
+  fields:
+  - name: RESULT32
+    description: desc RESULT32.
+    bit_offset: 0
+    bit_size: 32

@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "registers": {
+    "uart_cw32l012_v1": [
+      {
+        "block": "UART",
+        "register": "ICR",
+        "fieldset": "ICR",
+        "reset_value": 8191,
+        "write_noop": 8191,
+        "zero_to_clear_fields": [
+          "TC",
+          "RC",
+          "RXIDLE",
+          "RXBRK",
+          "BAUD",
+          "TIMOV",
+          "CTS",
+          "FE",
+          "PE",
+          "NE",
+          "ORE",
+          "RXMATCH"
+        ],
+        "evidence": [
+          "docs/uart-typed-register-evidence.json: uart_cw32l012_v1",
+          "docs/uart-typed-registers.md: R1W0 command seeds and reserved-bit policy"
+        ]
+      }
+    ]
+  }
+}
