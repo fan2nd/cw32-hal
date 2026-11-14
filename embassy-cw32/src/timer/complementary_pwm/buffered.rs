@@ -175,11 +175,15 @@ impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
         // Reset/initialization has already stopped CEN, cleared CCER and MOE,
         // selected CKD=/1, disabled asymmetric/preloaded DT and zeroed OISy/N.
         // LOCK=0 remains writable; no nonzero lock level is requested here.
+        // The reference C initialization leaves BK1 disabled unless a real
+        // break source is routed.  Enabling BKE with no BKIN route can still
+        // admit a package/system break source and clear MOE asynchronously,
+        // which looks like a PWM polarity or dead-output fault to users.
         pac::ATIM.bdtr().write(|v| {
             v.set_dtg(dead_time);
             v.set_ossi(true);
             v.set_ossr(true);
-            v.set_bke(true);
+            v.set_bke(break_input.is_some());
             v.set_bkp(true); // OR-combined break request active high.
         });
         // BKE/BKP writes take one APB cycle to apply. Complete a bus read before

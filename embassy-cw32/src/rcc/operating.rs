@@ -37,7 +37,20 @@ impl Default for OperatingConditions {
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn validate(c: OperatingConditions, clocks: Clocks) -> Result<(), Error> {
+    validate_with_bus_policy(c, clocks, false)
+}
+
+/// Validate source/supply conditions, optionally using the requested nominal
+/// bus rate instead of the worst-case HSI tolerance bound. The opt-in is used
+/// by motor-control applications that run the factory-calibrated nominal HSI
+/// clock and accept responsibility for its frequency envelope.
+pub(crate) fn validate_with_bus_policy(
+    c: OperatingConditions,
+    clocks: Clocks,
+    allow_nominal_bus_overclock: bool,
+) -> Result<(), Error> {
     if c.min_supply_mv > c.max_supply_mv {
         return Err(Error::InvalidSupplyRange);
     }
@@ -57,10 +70,10 @@ pub(crate) fn validate(c: OperatingConditions, clocks: Clocks) -> Result<(), Err
     } else {
         crate::RCC_HIGH_VOLTAGE_BUS_MAX_HZ
     };
-    if clocks.hclk_bounds().maximum_exceeds(maximum) {
+    if !allow_nominal_bus_overclock && clocks.hclk_bounds().maximum_exceeds(maximum) {
         return Err(Error::HclkTooHigh);
     }
-    if clocks.pclk_bounds().maximum_exceeds(maximum) {
+    if !allow_nominal_bus_overclock && clocks.pclk_bounds().maximum_exceeds(maximum) {
         return Err(Error::PclkTooHigh);
     }
     Ok(())

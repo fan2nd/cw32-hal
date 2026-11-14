@@ -282,6 +282,12 @@ pub struct Config {
     pub ahb_pre: AHBPrescaler,
     /// PCLK prescaler.
     pub apb_pre: APBPrescaler,
+    /// Permit a nominal HSI bus rate above the worst-case oscillator bound.
+    ///
+    /// This is intended for calibrated motor-control boards that explicitly
+    /// accept the factory HSI tolerance at the selected supply voltage. The
+    /// default remains conservative and rejects that configuration.
+    pub allow_nominal_bus_overclock: bool,
     /// Maximum register polls for each hardware wait. Must be nonzero.
     ///
     /// This is an iteration budget, not a duration: the entry clock may be
@@ -300,6 +306,7 @@ impl Config {
             sys: Sysclk::HSI,
             ahb_pre: AHBPrescaler::Div1,
             apb_pre: APBPrescaler::Div1,
+            allow_nominal_bus_overclock: false,
             timeout: 100_000,
         }
     }
@@ -389,14 +396,19 @@ impl Config {
             #[cfg(rcc_lse)]
             lse,
         };
-        crate::rcc::operating::validate(self.operating_conditions, clocks)?;
+        crate::rcc::operating::validate_with_bus_policy(
+            self.operating_conditions,
+            clocks,
+            self.allow_nominal_bus_overclock,
+        )?;
         // Validate the requested retained HSI as a possible system source too.
-        crate::rcc::operating::validate(
+        crate::rcc::operating::validate_with_bus_policy(
             self.operating_conditions,
             Clocks {
                 source: crate::rcc::ClockBounds::hsi(self.hsi.div.divisor()),
                 ..clocks
             },
+            self.allow_nominal_bus_overclock,
         )?;
         // LSE target admission takes no bus-divider retention credit for the
         // full effective HSI/24 fallback. Other source contracts stay unchanged.
@@ -414,13 +426,14 @@ impl Config {
             fallback_dividers
         };
         // Own L012 hardware forces /24 after CCS, independently of the default /12.
-        crate::rcc::operating::validate(
+        crate::rcc::operating::validate_with_bus_policy(
             self.operating_conditions,
             Clocks {
                 source: crate::rcc::ClockBounds::hsi(crate::RCC_FIXED_CCS_HSI_DIVISOR),
                 dividers: fallback_dividers,
                 ..clocks
             },
+            self.allow_nominal_bus_overclock,
         )?;
         Ok(clocks)
     }

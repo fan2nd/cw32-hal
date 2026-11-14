@@ -36,13 +36,17 @@ update and leaves LOCK=0. LOCK is write-once after reset: that initial zero stay
 zero, and this API does not claim to install a nonzero protection lock afterward.
 
 While every output gate and MOE remain disabled, construction writes DTG,
-OSSI=OSSR=1, BKE=1, BKP=1, AOE=0, BKF=0, then performs an APB read to complete
-the documented one-cycle BKE/BKP write delay. AF1 enables only the supplied BK1
-pin, with BKINP selecting its active level. Comparator routes and BK2 are disabled
-by timer initialization. Already configured system-level break requests are not
-owned or changed by this driver and can still assert BK1. The input AF is
-connected before output AFs. The counter then starts; all pair gates and MOE
-remain disabled. Users explicitly enable pairs and then explicitly enable MOE.
+OSSI=OSSR=1, BKP=1, AOE=0 and BKF=0. BKE is set only when a `BreakInput` is
+supplied; with no routed BK1 pad the break source stays disabled, matching the
+reference C initialization and preventing an unrelated package/system source
+from clearing MOE. The constructor then performs an APB read to complete the
+documented one-cycle BKE/BKP write delay. AF1 enables only the supplied BK1 pin,
+with BKINP selecting its active level. Comparator routes and BK2 are disabled by
+timer initialization. Already configured system-level break requests are not
+owned or changed by this driver and can still assert BK1 when BKE is enabled. The
+input AF is connected before output AFs. The counter then starts; all pair gates
+and MOE remain disabled. Users explicitly enable pairs and then explicitly enable
+MOE.
 
 DTG uses the own manuals' four ranges: 0–127 PCLK cycles, 128–254 in steps of two,
 256–504 in steps of eight, and 512–1008 in steps of sixteen. CKD stays /1, so the

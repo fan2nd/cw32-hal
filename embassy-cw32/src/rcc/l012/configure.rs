@@ -456,14 +456,15 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     } else {
         crate::RCC_HIGH_VOLTAGE_BUS_MAX_HZ
     };
-    if crate::RCC_HSI_OPERATING_RANGE_HZ
-        .1
-        .div_ceil(1 << guard_hclk)
-        > bus_max
-        || crate::RCC_HSI_OPERATING_RANGE_HZ
+    if !config.allow_nominal_bus_overclock
+        && (crate::RCC_HSI_OPERATING_RANGE_HZ
             .1
-            .div_ceil(1 << (guard_hclk + guard_pclk))
+            .div_ceil(1 << guard_hclk)
             > bus_max
+            || crate::RCC_HSI_OPERATING_RANGE_HZ
+                .1
+                .div_ceil(1 << (guard_hclk + guard_pclk))
+                > bus_max)
     {
         return Err(Error::InvalidEntryClock);
     }
