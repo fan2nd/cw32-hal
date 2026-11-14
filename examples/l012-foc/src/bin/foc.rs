@@ -197,14 +197,17 @@ fn main() -> ! {
         wait_period(&mut tick);
     }
 
-    pwm.set_master_output_enable(true);
     let alignment = Duty {
         a: 20_000,
         b: 14_566,
         c: 14_566,
     };
+    // The first interior duty write changes each channel from the disabled
+    // endpoint. The HAL deliberately clears MOE for that transition, so write
+    // all three alignment duties first and assert MOE afterwards.
+    apply_duty(&mut pwm, alignment);
+    pwm.set_master_output_enable(true);
     for _ in 0..ALIGNMENT_PERIODS {
-        apply_duty(&mut pwm, alignment);
         wait_period(&mut tick);
     }
     let encoder_offset = encoder.read_angle().unwrap_or(0);
