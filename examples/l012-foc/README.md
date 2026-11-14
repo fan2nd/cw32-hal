@@ -38,3 +38,12 @@ rustc --edition 2024 --test examples/l012-foc/src/foc.rs -o /tmp/cw32-foc-math-t
 cargo build --manifest-path examples/l012-foc/Cargo.toml --release \
   --target thumbv6m-none-eabi --no-default-features --features cw32l012c8t6 --bin foc --offline
 ```
+
+工程内的 `.cargo/config.toml` 已配置 `probe-rs` runner。连接调试器并确认
+电源、电流采样和电位器安全后，可在本目录执行：
+
+```sh
+cargo run --release --bin foc
+```
+
+该配置只属于此独立 example，不使用 Cargo workspace。
