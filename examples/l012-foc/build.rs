@@ -20,5 +20,7 @@ fn main() {
     fs::write(out.join("memory.x"), memory).unwrap();
     println!("cargo:rustc-link-search={}", out.display());
     println!("cargo:rustc-link-arg=-Tlink.x");
+    println!("cargo:rustc-link-arg=-Tdefmt.x");
+    println!("cargo:rustc-env=DEFMT_LOG=trace");
     println!("cargo:rerun-if-changed=build.rs");
 }

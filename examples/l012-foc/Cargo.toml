@@ -7,8 +7,8 @@ publish = false
 
 [features]
 default = ["cw32l012c8t6"]
-cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6", "cw32-metapac/cw32l012c8t6"]
-cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6", "cw32-metapac/cw32l012c8u6"]
+cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6", "embassy-cw32/defmt", "cw32-metapac/cw32l012c8t6"]
+cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6", "embassy-cw32/defmt", "cw32-metapac/cw32l012c8u6"]
 
 [dependencies]
 embassy-cw32 = { path = "../../embassy-cw32", default-features = false, features = ["rt"] }
@@ -16,6 +16,8 @@ cw32-metapac = { path = "../../cw32-metapac", default-features = false }
 cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7.5"
 embedded-hal = "1.0"
+defmt = "1"
+defmt-rtt = { version = "1", features = ["disable-blocking-mode"] }
 
 [build-dependencies]
 cw32-metapac = { path = "../../cw32-metapac", default-features = false, features = ["metadata"] }
@@ -28,4 +30,4 @@ debug = 0
 opt-level = "z"
 lto = true
 codegen-units = 1
-debug = 0
+debug = 2
