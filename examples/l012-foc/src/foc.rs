@@ -110,6 +110,7 @@ pub struct SpeedController {
     ki_gain: i32,
     ki_shift: u8,
     integral_q15: i32,
+    last_target_rpm: i32,
 }
 
 impl SpeedController {
@@ -126,15 +127,28 @@ impl SpeedController {
             ki_gain: 5,
             ki_shift: 8,
             integral_q15: 0,
+            last_target_rpm: 0,
         }
     }
 
     pub fn reset(&mut self) {
         self.integral_q15 = 0;
+        self.last_target_rpm = 0;
     }
 
     pub fn update(&mut self, target_rpm: i32, feedback_rpm: i32) -> i16 {
+        if self.last_target_rpm > 0 && target_rpm < self.last_target_rpm {
+            self.integral_q15 = 0;
+        }
+        self.last_target_rpm = target_rpm;
         let error = (target_rpm - feedback_rpm).clamp(-self.max_speed_rpm, self.max_speed_rpm);
+        // Do not let acceleration integral fight a braking error.  The C
+        // controller is reset when a new command is ramped down; applying the
+        // same sign handoff here also covers a steady low command that has
+        // overshot before the next command edge.
+        if (error < 0 && self.integral_q15 > 0) || (error > 0 && self.integral_q15 < 0) {
+            self.integral_q15 = 0;
+        }
         let proportional = error.saturating_mul(self.kp_gain) >> self.kp_shift;
         self.integral_q15 = self
             .integral_q15
@@ -146,7 +160,21 @@ impl SpeedController {
     }
 
     pub fn update_for_ticks(&mut self, target_rpm: i32, feedback_rpm: i32, elapsed_ms: u32) -> i16 {
+        if self.last_target_rpm > 0 && target_rpm < self.last_target_rpm {
+            // A falling command must brake immediately. Keeping the positive
+            // acceleration integral here can exactly cancel the negative
+            // proportional term and produce iqref=0 while overspeeding.
+            self.integral_q15 = 0;
+        }
+        self.last_target_rpm = target_rpm;
         let error = (target_rpm - feedback_rpm).clamp(-self.max_speed_rpm, self.max_speed_rpm);
+        // Drop stale acceleration torque as soon as the measured speed is
+        // above the reference.  Without this, the positive integral can keep
+        // the motor accelerating for several slow-loop periods after a small
+        // command, which is visible as target=30 while feedback is about 60.
+        if (error < 0 && self.integral_q15 > 0) || (error > 0 && self.integral_q15 < 0) {
+            self.integral_q15 = 0;
+        }
         let proportional = error.saturating_mul(self.kp_gain) >> self.kp_shift;
         let elapsed = elapsed_ms.clamp(1, 100) as i32;
         let integral_delta =

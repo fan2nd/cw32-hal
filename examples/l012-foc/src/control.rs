@@ -76,10 +76,77 @@ pub fn target_rpm_from_pot(
     } else {
         let span = i32::from(max_counts - min_counts);
         let command = i32::from(pot.min(max_counts) - min_counts);
-        // Integer quadratic curve: zero stays at zero, full scale reaches the
-        // rated speed, and the low end has finer adjustment than the C linear
-        // command. All intermediates fit in i32 for the 12-bit ADC range.
-        let shaped = command.saturating_mul(command) / span;
+        // Power-shaped curve with a small linear blend. The quadratic part
+        // gives useful resolution at the low end; the blend coefficient keeps
+        // the first nonzero command from jumping while preserving the exact
+        // 0..max endpoint. All intermediates fit in i32 for the 12-bit ADC.
+        const LINEAR_BLEND_Q10: i32 = 256;
+        let quadratic = command.saturating_mul(command) / span;
+        let shaped = quadratic
+            .saturating_mul(1_024 - LINEAR_BLEND_Q10)
+            .saturating_add(command.saturating_mul(LINEAR_BLEND_Q10))
+            / 1_024;
         min_rpm + shaped * (max_rpm - min_rpm) / span
     }
+}
+
+/// A smooth q-axis bias for static friction and load torque.
+///
+/// The speed PI supplies only the dynamic correction. This bias is largest at
+/// the bottom of the command range and fades continuously to zero at the top,
+/// so there is no separate low-speed control mode or threshold.
+pub fn holding_torque_reference(target_rpm: i32, max_rpm: i32) -> i16 {
+    if target_rpm <= 0 || max_rpm <= 0 {
+        return 0;
+    }
+    let target = target_rpm.min(max_rpm);
+    let remaining = max_rpm - target;
+    // The squared fade keeps the added holding torque small once the motor is
+    // already moving quickly. All values fit comfortably in i32.
+    const HOLDING_TORQUE_MAX_Q15: i32 = 300;
+    let denominator = max_rpm.saturating_mul(max_rpm);
+    if denominator == 0 {
+        return 0;
+    }
+    (HOLDING_TORQUE_MAX_Q15
+        .saturating_mul(remaining)
+        .saturating_mul(remaining)
+        / denominator)
+        .clamp(0, i32::from(i16::MAX)) as i16
+}
+
+/// Combine the static holding torque with the speed-loop correction.
+///
+/// Holding torque is only a forward feed-forward term while the rotor is at
+/// or below the requested speed. Once the measured speed is above the target,
+/// the speed PI must be allowed to apply a signed braking torque without a
+/// positive bias fighting it.
+pub fn combined_torque_reference(
+    speed_iq: i16,
+    holding_iq: i16,
+    target_rpm: i32,
+    feedback_rpm: i32,
+) -> i16 {
+    // Holding torque is feed-forward for static friction. Scale it by the
+    // remaining speed error so it helps a stalled rotor, then fades out as
+    // the measured speed reaches the target. It is removed on overspeed so a
+    // negative speed-loop result reaches the current loop.
+    let holding_nominal = i32::from(holding_iq).max(0);
+    let holding = if target_rpm > 0 && feedback_rpm <= target_rpm {
+        let remaining = target_rpm.saturating_sub(feedback_rpm).clamp(0, target_rpm);
+        let denominator = target_rpm.saturating_mul(target_rpm);
+        if denominator == 0 {
+            0
+        } else {
+            holding_nominal
+                .saturating_mul(remaining)
+                .saturating_mul(remaining)
+                / denominator
+        }
+    } else {
+        0
+    };
+    i32::from(speed_iq)
+        .saturating_add(holding)
+        .clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16
 }

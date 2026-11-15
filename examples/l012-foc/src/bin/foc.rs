@@ -8,12 +8,16 @@ use cortex_m_rt::entry;
 use cw32_l012_foc::{
     board::{
         ALIGNMENT_ELECTRICAL_OFFSET, ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV,
-        CurrentSampleFilter, Encoder, POT_MAX_COUNTS, POT_MAX_RPM, POT_MIN_COUNTS, POT_MIN_RPM,
-        POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV, angle_delta, apply_duty,
-        bus_voltage_mv, current_ma_from_counts, electrical_angle, sin_cos_q15,
-        speed_rpm_from_delta, wait_period,
+        CurrentSampleFilter, DIRECTION_MIN_DELTA_COUNTS, DIRECTION_TEST_IQ_Q15,
+        DIRECTION_TEST_PERIODS, Encoder, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
+        POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV,
+        angle_delta, apply_duty, bus_voltage_mv, current_ma_from_counts, electrical_angle,
+        sin_cos_q15, speed_rpm_from_delta, wait_period,
     },
-    control::{ArmingGate, MotorState, target_rpm_from_pot},
+    control::{
+        ArmingGate, MotorState, combined_torque_reference, holding_torque_reference,
+        target_rpm_from_pot,
+    },
     foc::{Duty, FocController, JD4631, SpeedController},
 };
 use embassy_cw32::interrupt::typelevel::{ADC1, Handler, Interrupt};
@@ -41,13 +45,11 @@ defmt::timestamp!("{=u32}", 0u32);
 // the alignment/encoder/current-loop path can be verified independently of
 // the command potentiometer. Set to zero after the mechanical loop is proven.
 const NO_MOTION_TIMEOUT_SPEED_TICKS: u32 = 2_000; // 2 s at the 1 kHz speed loop.
-const SPEED_RAMP_STEP_RPM: i32 = 5; // C control layer: 5 rpm per 1 ms tick.
-const STARTUP_KICK_RPM: i32 = 120;
-const STARTUP_KICK_TICKS: u32 = 250; // 250 ms at the 1 kHz speed loop.
+const SPEED_RAMP_STEP_RPM: i32 = 2; // Smooth command slew: 2 rpm per elapsed ms.
 const PROBE_VOLTAGE_LIMIT_Q15: i16 = 6_000;
-// `Encoder::read_angle` already converts the SSI frame to the board's
-// mechanical convention. With the present phase sequence, a positive torque
-// command produces a positive SSI delta, so retain that sign for positive rpm.
+// The validated open-loop phase sequence produces a positive SSI-count delta
+// on this board with the present electrical-angle convention. Keep the speed
+// feedback sign positive for that direction.
 const ENCODER_DIRECTION_SIGN: i16 = 1;
 // Keep the software trip at the reference C current-loop range. Bench-supply
 // current limiting remains the external protection during bring-up.
@@ -531,29 +533,74 @@ fn main() -> ! {
         wait_period(&mut tick);
     }
     let encoder_offset = encoder.read_angle().unwrap_or(0);
-    CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
-    set_current_output(&mut pwm, false);
-    CURRENT_RESET.store(1, Ordering::Relaxed);
+    // Keep the static alignment vector and MOE asserted until the first
+    // nonzero command is handed to the current loop.  Dropping into a zero
+    // q-reference current loop here leaves the rotor unpowered for the
+    // blocking SSI/speed-loop handoff; static friction can then move it by an
+    // electrical sector and make the first torque vector appear with either
+    // sign.  The command edge below performs the atomic handoff.
     let direction_sign = ENCODER_DIRECTION_SIGN;
     CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
     CURRENT_PROBE_ACTIVE.store(0, Ordering::Relaxed);
     CURRENT_FAULT.store(0, Ordering::Relaxed);
-    CURRENT_RESET.store(1, Ordering::Relaxed);
-    // Open-loop verification already established the phase order. The static
-    // alignment output is handed directly to the current loop now.
+    // The alignment vector is intentionally replaced by a short positive-q
+    // point test. Different mechanical start positions can settle on either
+    // side of the alignment vector; measuring the encoder delta makes the
+    // subsequent speed loop use one deterministic physical direction.
+    let aligned_angle = electrical_angle(encoder_offset, encoder_offset);
+    let (aligned_sin, aligned_cos) = sin_cos_q15(&mut cordic, aligned_angle);
+    CURRENT_SIN.store(aligned_sin, Ordering::Relaxed);
+    CURRENT_COS.store(aligned_cos, Ordering::Relaxed);
+    set_current_output(&mut pwm, false);
+    CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
+    CURRENT_PROBE_ACTIVE.store(1, Ordering::Release);
+    CURRENT_RESET.store(1, Ordering::Release);
+    CURRENT_IQ_REFERENCE.store(DIRECTION_TEST_IQ_Q15, Ordering::Release);
+    set_current_output(&mut pwm, true);
+    let probe_samples = (DIRECTION_TEST_PERIODS / (PWM_HZ / 1_000)).max(1);
+    let mut probe_angle = encoder_offset;
+    let mut probe_delta = 0i32;
+    for _ in 0..probe_samples {
+        for _ in 0..(PWM_HZ / 1_000) {
+            wait_period(&mut tick);
+        }
+        let mechanical_angle = encoder.read_angle().unwrap_or(probe_angle);
+        probe_delta += angle_delta(mechanical_angle, probe_angle);
+        probe_angle = mechanical_angle;
+        let angle = electrical_angle(mechanical_angle, encoder_offset);
+        let (sin, cos) = sin_cos_q15(&mut cordic, angle);
+        CURRENT_SIN.store(sin, Ordering::Relaxed);
+        CURRENT_COS.store(cos, Ordering::Relaxed);
+    }
+    let torque_direction_sign = if probe_delta < -DIRECTION_MIN_DELTA_COUNTS {
+        -1i16
+    } else {
+        1i16
+    };
+    CURRENT_PROBE_ACTIVE.store(0, Ordering::Release);
+    CURRENT_RESET.store(1, Ordering::Release);
+    // Keep the small probe torque applied across the handoff. The first speed
+    // update replaces it with the ramped reference without an unpowered gap.
+    CURRENT_IQ_REFERENCE.store(
+        DIRECTION_TEST_IQ_Q15.saturating_mul(torque_direction_sign),
+        Ordering::Release,
+    );
     set_current_output(&mut pwm, true);
     defmt::info!(
-        "state=aligned: encoder_offset={=u16} electrical_offset={=u16} direction_sign={=i16}",
+        "state=aligned: encoder_offset={=u16} electrical_offset={=u16} probe_delta={=i32} torque_sign={=i16}",
         encoder_offset,
         ALIGNMENT_ELECTRICAL_OFFSET,
-        direction_sign
+        probe_delta,
+        torque_direction_sign
     );
 
     state.set_state(MotorState::Running);
     led.set_low();
     defmt::info!("state=run: speed control enabled");
     let mut speed = SpeedController::new(POT_MAX_RPM);
-    let mut last_angle = encoder.read_angle().unwrap_or(encoder_offset);
+    let initial_angle = encoder.read_angle().unwrap_or(encoder_offset);
+    let mut angle_tracker = EncoderAngleTracker::new(initial_angle);
+    let mut last_angle = initial_angle;
     let mut last_speed_loop_total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
     let mut speed_delta_sum = 0i32;
     let mut speed_tick = 0u32;
@@ -561,12 +608,17 @@ fn main() -> ! {
     // filter the 16 ms SSI count window quantizes low-speed feedback between
     // positive and negative values and makes the speed PI pump iqref.
     let mut speed_feedback_rpm = 0i32;
+    let mut speed_window_has_sample = false;
     let mut log_elapsed_pwm_periods = 0u32;
     let mut startup_log_tick = 0u32;
-    let mut command_active = false;
+    let mut command_active = true;
     let mut no_motion_ticks = 0u32;
     let mut speed_reference_rpm = 0i32;
-    let mut startup_kick_ticks = 0u32;
+    // Match the C SampleSpeed hysteresis: once a nonzero command is accepted
+    // above NMINVD, the 50-count band down to NMINVD-50 does not clear it.
+    // Without this latch a low-speed command near ADC count 200 can alternate
+    // between 50 rpm and zero from ordinary potentiometer noise.
+    let mut command_rpm_latched = 0i32;
 
     loop {
         let pot_now = hal::pac::ADC2.result(1).read().result();
@@ -579,7 +631,7 @@ fn main() -> ! {
             speed.reset();
             speed_feedback_rpm = 0;
             speed_reference_rpm = 0;
-            startup_kick_ticks = 0;
+            command_rpm_latched = 0;
             CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
             CURRENT_FAULT.store(0, Ordering::Relaxed);
             CURRENT_RESET.store(1, Ordering::Release);
@@ -623,7 +675,11 @@ fn main() -> ! {
             );
             continue;
         }
-        let mechanical_angle = encoder.read_angle().unwrap_or(last_angle);
+        let (mechanical_angle, sample_valid) = match encoder.read_angle() {
+            Ok(encoder_sample) => angle_tracker.update_checked(encoder_sample),
+            Err(_) => (last_angle, false),
+        };
+        speed_window_has_sample |= sample_valid;
         speed_delta_sum += angle_delta(mechanical_angle, last_angle);
         last_angle = mechanical_angle;
         speed_tick += 1;
@@ -635,7 +691,15 @@ fn main() -> ! {
             let elapsed_pwm_periods = speed_loop_total.wrapping_sub(last_speed_loop_total);
             last_speed_loop_total = speed_loop_total;
             let elapsed_ms = (elapsed_pwm_periods / (PWM_HZ / 1_000)).clamp(1, 100);
-            let feedback_rpm_raw = speed_rpm_from_delta(speed_delta_sum, elapsed_pwm_periods);
+            // A blocking SSI transfer can fail while the ADC current ISR keeps
+            // running. Treat a window with no accepted encoder sample as
+            // missing data; feeding its zero displacement to the speed PI
+            // creates the observed full-speed/full-stop oscillation.
+            let feedback_rpm_raw = if speed_window_has_sample {
+                speed_rpm_from_delta(speed_delta_sum, elapsed_pwm_periods)
+            } else {
+                speed_feedback_rpm
+            };
             // Match C's ENC_CalcAvrgMecSpeed: last*7 + new, then /8.
             // Filtering is essential at low speed because a 16 ms SSI window
             // contains only a handful of encoder counts.
@@ -645,55 +709,55 @@ fn main() -> ! {
                 / 8;
             let feedback_rpm = speed_feedback_rpm * i32::from(direction_sign);
             let pot = pot_now;
-            let command_rpm = target_rpm_from_pot(
-                pot,
-                POT_ZERO_COUNTS,
-                POT_MIN_COUNTS,
-                POT_MAX_COUNTS,
-                POT_MIN_RPM,
-                POT_MAX_RPM,
-            );
-            // A low potentiometer command can be below the static-friction
-            // starting torque. Give the aligned rotor a short 120 rpm
-            // reference, then hand control back to the potentiometer as soon
-            // as encoder motion is real. This keeps the normal C-style ramp
-            // and avoids integrating current into a locked rotor.
-            let startup_command_rpm = if startup_kick_ticks != 0 && feedback_rpm.abs() < 5 {
-                command_rpm.max(STARTUP_KICK_RPM)
+            let mapped_command_rpm = if auto_command {
+                AUTO_START_TEST_RPM
             } else {
-                command_rpm
+                target_rpm_from_pot(
+                    pot,
+                    POT_ZERO_COUNTS,
+                    POT_MIN_COUNTS,
+                    POT_MAX_COUNTS,
+                    POT_MIN_RPM,
+                    POT_MAX_RPM,
+                )
             };
+            let command_rpm = if auto_command {
+                mapped_command_rpm
+            } else if pot <= POT_ZERO_COUNTS {
+                command_rpm_latched = 0;
+                0
+            } else if pot <= POT_MIN_COUNTS {
+                // Keep the previous nonzero command in the C deadband. A
+                // genuine stop still requires returning to POT_ZERO_COUNTS.
+                command_rpm_latched
+            } else {
+                command_rpm_latched = mapped_command_rpm;
+                mapped_command_rpm
+            };
+            // Keep the speed reference equal to the operator command. The
+            // static-friction feed-forward below supplies starting torque;
+            // raising a 30 rpm command to an artificial 120 rpm kick makes
+            // the motor overshoot before the speed loop can take control.
             let target_rpm = if command_rpm == 0 {
                 speed_reference_rpm = 0;
-                startup_kick_ticks = 0;
                 0
-            } else if speed_reference_rpm < startup_command_rpm {
+            } else if speed_reference_rpm < command_rpm {
                 let ramp_step = SPEED_RAMP_STEP_RPM.saturating_mul(elapsed_ms as i32);
-                speed_reference_rpm = (speed_reference_rpm + ramp_step).min(startup_command_rpm);
+                speed_reference_rpm = (speed_reference_rpm + ramp_step).min(command_rpm);
                 speed_reference_rpm
-            } else if speed_reference_rpm > startup_command_rpm {
+            } else if speed_reference_rpm > command_rpm {
                 let ramp_step = SPEED_RAMP_STEP_RPM.saturating_mul(elapsed_ms as i32);
-                speed_reference_rpm = (speed_reference_rpm - ramp_step).max(startup_command_rpm);
+                speed_reference_rpm = (speed_reference_rpm - ramp_step).max(command_rpm);
                 speed_reference_rpm
             } else {
                 speed_reference_rpm
             };
-            if startup_kick_ticks != 0 {
-                if feedback_rpm.abs() >= 5 {
-                    defmt::info!(
-                        "startup kick released: feedback={=i32} target={=i32}",
-                        feedback_rpm,
-                        command_rpm
-                    );
-                    startup_kick_ticks = 0;
-                } else {
-                    startup_kick_ticks = startup_kick_ticks.saturating_sub(elapsed_ms);
-                }
-            }
             // Keep the bridge off throughout the complete command deadband.
             // Previously pot=151..200 entered the current loop with a zero
             // speed reference, so ADC offset/noise was converted into holding
             // current even though the operator had not requested motion.
+            let mut speed_iq_reference = 0i16;
+            let mut holding_iq_reference = 0i16;
             if target_rpm == 0 {
                 // A zero command is an explicit stop request. Clear the speed
                 // integrator so a previous positive command cannot restart the
@@ -708,8 +772,19 @@ fn main() -> ! {
                 no_motion_ticks = 0;
                 set_current_output(&mut pwm, false);
             } else {
-                let iq_reference = speed.update_for_ticks(target_rpm, feedback_rpm, elapsed_ms);
-                CURRENT_IQ_REFERENCE.store(iq_reference, Ordering::Relaxed);
+                speed_iq_reference = speed.update_for_ticks(target_rpm, feedback_rpm, elapsed_ms);
+                holding_iq_reference = holding_torque_reference(target_rpm, POT_MAX_RPM);
+                let iq_reference = i32::from(combined_torque_reference(
+                    speed_iq_reference,
+                    holding_iq_reference,
+                    target_rpm,
+                    feedback_rpm,
+                ));
+                let signed_iq_reference = iq_reference
+                    .saturating_mul(i32::from(torque_direction_sign))
+                    .clamp(i32::from(i16::MIN), i32::from(i16::MAX))
+                    as i16;
+                CURRENT_IQ_REFERENCE.store(signed_iq_reference, Ordering::Relaxed);
                 if feedback_rpm.abs() >= 5 {
                     no_motion_ticks = 0;
                 } else {
@@ -742,17 +817,20 @@ fn main() -> ! {
                     continue;
                 }
                 if !command_active {
-                    // The point-test ended with MOE low.  Re-arm it only after
-                    // a real nonzero speed command has been observed.
+                    // Break the static alignment vector only at the same edge
+                    // that enables the first nonzero current-loop request.
+                    // This removes the unpowered gap between encoder capture
+                    // and q-axis control, which otherwise makes the startup
+                    // direction depend on rotor settling and load friction.
+                    set_current_output(&mut pwm, false);
+                    CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
                     CURRENT_RESET.store(1, Ordering::Release);
                     defmt::info!(
-                        "run: command active, bridge on pot={=u16} target={=i32} kick={=i32}",
+                        "run: command active, bridge on pot={=u16} target={=i32}",
                         pot,
-                        target_rpm,
-                        STARTUP_KICK_RPM
+                        target_rpm
                     );
                     command_active = true;
-                    startup_kick_ticks = STARTUP_KICK_TICKS;
                     set_current_output(&mut pwm, true);
                     for _ in 0..4 {
                         wait_period(&mut tick);
@@ -777,7 +855,7 @@ fn main() -> ! {
             log_elapsed_pwm_periods = log_elapsed_pwm_periods.saturating_add(elapsed_pwm_periods);
             if startup_log_tick < 30 {
                 defmt::info!(
-                    "startup sample: pot={=u16} cmd={=i32} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} dangle={=i32} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} fault={=u16}",
+                    "startup sample: pot={=u16} cmd={=i32} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} dangle={=i32} speed_iq={=i16} hold_iq={=i16} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} fault={=u16}",
                     pot,
                     command_rpm,
                     target_rpm,
@@ -785,6 +863,8 @@ fn main() -> ! {
                     feedback_rpm_raw,
                     elapsed_pwm_periods,
                     speed_delta_sum,
+                    speed_iq_reference,
+                    holding_iq_reference,
                     CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
                     current_ma_from_counts(CURRENT_IQ_REFERENCE.load(Ordering::Relaxed)),
                     CURRENT_ID.load(Ordering::Relaxed),
@@ -805,12 +885,15 @@ fn main() -> ! {
             if log_elapsed_pwm_periods >= PWM_HZ {
                 led.toggle();
                 defmt::info!(
-                    "run: pot={=u16} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia_adc={=u16} ib_adc={=u16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} adc_eos={=u16}",
+                    "run: pot={=u16} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} dangle={=i32} speed_iq={=i16} hold_iq={=i16} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia_adc={=u16} ib_adc={=u16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} adc_eos={=u16}",
                     pot,
                     target_rpm,
                     feedback_rpm,
                     feedback_rpm_raw,
                     elapsed_pwm_periods,
+                    speed_delta_sum,
+                    speed_iq_reference,
+                    holding_iq_reference,
                     CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
                     current_ma_from_counts(CURRENT_IQ_REFERENCE.load(Ordering::Relaxed)),
                     CURRENT_ID.load(Ordering::Relaxed),
@@ -833,6 +916,7 @@ fn main() -> ! {
             }
             speed_delta_sum = 0;
             speed_tick = 0;
+            speed_window_has_sample = false;
         }
         let angle = electrical_angle(mechanical_angle, encoder_offset);
         let (sin, cos) = sin_cos_q15(&mut cordic, angle);
@@ -841,7 +925,9 @@ fn main() -> ! {
         // Keep the hardware gate synchronized with the command transition.
         // The explicit helper above handles the edge; this write also repairs
         // MOE if the ISR had cleared it for a transient current fault.
-        if command_active && CURRENT_FAULT.load(Ordering::Relaxed) == 0 {
+        if CURRENT_ALIGNMENT_ACTIVE.load(Ordering::Relaxed) != 0 {
+            pwm.set_master_output_enable(true);
+        } else if command_active && CURRENT_FAULT.load(Ordering::Relaxed) == 0 {
             pwm.set_master_output_enable(true);
         } else if !command_active {
             set_current_output(&mut pwm, false);

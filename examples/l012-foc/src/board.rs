@@ -28,7 +28,7 @@ pub const READY_ZERO_SAMPLES: u32 = 1_600;
 pub const POT_ZERO_COUNTS: u16 = 150; // C project NMINVD-50.
 pub const POT_MIN_COUNTS: u16 = 200; // C project NMINVD.
 pub const POT_MAX_COUNTS: u16 = 3_523; // C project NMAXVD.
-pub const POT_MIN_RPM: i32 = 50;
+pub const POT_MIN_RPM: i32 = 0;
 pub const POT_MAX_RPM: i32 = 240;
 pub const SPEED_LOOP_DIV: u32 = 16;
 pub const DIRECTION_TEST_PERIODS: u32 = PWM_HZ / 10;
@@ -211,6 +211,45 @@ pub fn angle_delta(current: u16, previous: u16) -> i32 {
         delta + 16_384
     } else {
         delta
+    }
+}
+
+/// Keep one bad SSI frame from becoming a full speed-loop correction.
+///
+/// The absolute encoder wraps at 14 bits. `angle_delta` already handles that
+/// intended wrap, but a malformed frame can still look like a several-thousand
+/// count jump. At the configured 240 rpm limit the real displacement between
+/// foreground samples is far below this bound, so holding the previous angle
+/// for one sample is safer than asking the speed PI to brake the motor. The
+/// limit is a sampling-integrity bound, not a low-speed control branch.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct EncoderAngleTracker {
+    angle: u16,
+}
+
+impl EncoderAngleTracker {
+    pub const MAX_SAMPLE_DELTA_COUNTS: i32 = 512;
+
+    pub const fn new(angle: u16) -> Self {
+        Self { angle }
+    }
+
+    pub fn update_checked(&mut self, sample: u16) -> (u16, bool) {
+        let delta = angle_delta(sample, self.angle);
+        if delta.abs() <= Self::MAX_SAMPLE_DELTA_COUNTS {
+            self.angle = sample;
+            (self.angle, true)
+        } else {
+            (self.angle, false)
+        }
+    }
+
+    pub fn update(&mut self, sample: u16) -> u16 {
+        self.update_checked(sample).0
+    }
+
+    pub const fn angle(self) -> u16 {
+        self.angle
     }
 }
 
