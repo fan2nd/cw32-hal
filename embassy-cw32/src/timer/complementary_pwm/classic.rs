@@ -262,6 +262,10 @@ impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
         self.try_set_duty(channel, duty)
             .expect("invalid complementary duty");
     }
+    /// Embassy STM32-compatible name for [`Self::set_duty`].
+    pub fn set_duty_cycle(&mut self, channel: Channel, duty: u32) {
+        self.set_duty(channel, duty);
+    }
     /// Write only the selected CCRA. Does not change MOE, reset phase, or commit
     /// peers' pending comparisons. The next UEV latches the requested duty.
     pub fn try_set_duty(&mut self, channel: Channel, duty: u32) -> Result<(), DutyError> {

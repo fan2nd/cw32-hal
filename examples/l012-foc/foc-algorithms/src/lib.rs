@@ -1,11 +1,16 @@
-//! Small, allocation-free FOC kernel used by the CW32L012 example.
+#![no_std]
+
+//! Allocation-free fixed-point FOC algorithms shared by the CW32L012 examples.
 //!
+//! This crate owns the current PID, speed PID, Clarke/Park transforms and SVPWM.
 //! The kernel deliberately contains no PAC or HAL calls.  This keeps the
 //! control law testable on a host and makes the hardware boundary explicit:
 //! the application supplies calibrated currents and the electrical angle, and
 //! receives three normalized PWM duties.
 
-const Q15_ONE: i32 = 32_767;
+pub mod control;
+
+use embassy_cw32::cordic::{q15_mul, Q15_ONE};
 const HALF_Q15: i32 = 16_384;
 const SQRT3_OVER_2_Q15: i32 = 28_346;
 const INV_SQRT3_Q15: i32 = 18_918;
@@ -31,15 +36,21 @@ pub struct MotorParameters {
     pub rated_voltage_mv: u32,
     pub rated_current_ma: u32,
     pub max_current_ma: u32,
-    pub encoder_counts_per_rev: u16,
+    /// Current-loop proportional gain numerator.
+    pub current_kp_gain: i32,
+    /// Right shift applied to the current-loop proportional term.
+    pub current_kp_shift: u8,
+    /// Current-loop integral gain in the controller's fixed-point scale.
+    pub current_ki_gain: i32,
+    /// Per-axis current-loop voltage output limit in Q1.15.
+    pub current_voltage_limit: i32,
 }
 
 /// JD-Power 4621-class motor from `JD-4621.jpg` (24N22P = 22 poles = 11
 /// pole pairs).
 ///
-/// The image identifies the encoder as 5048A, while the supplied reference
-/// project uses an MT6701 SSI encoder.  The electrical interface is therefore
-/// kept in the board layer and this parameter set only describes the motor.
+/// Encoder selection and electrical interface are kept in the board layer;
+/// this parameter set describes only the motor and its control gains.
 pub const JD4631: MotorParameters = MotorParameters {
     pole_pairs: 11,
     phase_resistance_mohm: 6_700,
@@ -47,7 +58,29 @@ pub const JD4631: MotorParameters = MotorParameters {
     rated_voltage_mv: 12_000,
     rated_current_ma: 1_100,
     max_current_ma: 2_000,
-    encoder_counts_per_rev: 16_384,
+    current_kp_gain: 2_000,
+    current_kp_shift: 7,
+    current_ki_gain: 50,
+    current_voltage_limit: 27_851,
+};
+
+/// HT2806 / GB2806 motor data from `assets/HT2806-param.png`.
+///
+/// The supplied sheet lists AS5048A/AS5600 as possible encoder options; encoder
+/// selection is intentionally kept out of this motor-only parameter crate.
+/// The sheet does not specify controller gains, so the same conservative
+/// fixed-point bring-up gains are used until a current trace is available.
+pub const HT2806: MotorParameters = MotorParameters {
+    pole_pairs: 7,
+    phase_resistance_mohm: 5_000,
+    phase_inductance_uh: 1_510,
+    rated_voltage_mv: 12_000,
+    rated_current_ma: 810,
+    max_current_ma: 1_220,
+    current_kp_gain: 2_000,
+    current_kp_shift: 7,
+    current_ki_gain: 50,
+    current_voltage_limit: 27_851,
 };
 
 #[derive(Clone, Copy, Debug)]
@@ -79,6 +112,9 @@ impl Pi {
         // C stores the integral before the Q15 shift. Retain that accumulator
         // in i32; with the configured limits `limit << 15` remains bounded.
         let integral_limit = self.limit.saturating_mul(1 << 15);
+        // The current-loop ranges are bounded to ADC/PWM 32-bit values. Keep
+        // this ISR path in native-width arithmetic; the speed-loop accumulators
+        // below use i64 where their elapsed-time product can grow larger.
         self.integral = self
             .integral
             .saturating_add(error.saturating_mul(self.ki_gain))
@@ -149,14 +185,15 @@ impl SpeedController {
         if (error < 0 && self.integral_q15 > 0) || (error > 0 && self.integral_q15 < 0) {
             self.integral_q15 = 0;
         }
-        let proportional = error.saturating_mul(self.kp_gain) >> self.kp_shift;
-        self.integral_q15 = self
-            .integral_q15
-            .saturating_add(error.saturating_mul(self.ki_gain) >> self.ki_shift)
-            .clamp(i32::from(i16::MIN), i32::from(i16::MAX));
+        let proportional = (i64::from(error) * i64::from(self.kp_gain)) >> self.kp_shift;
+        let integral_delta =
+            (i64::from(error) * i64::from(self.ki_gain)) >> self.ki_shift;
+        let integral_sum = i64::from(self.integral_q15) + integral_delta;
+        self.integral_q15 = integral_sum.clamp(i64::from(i16::MIN), i64::from(i16::MAX)) as i32;
         // There is no application-level iqref ceiling. The signed Q15
         // transport type is the only numeric boundary before the current PI.
-        (proportional + self.integral_q15).clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16
+        (proportional + i64::from(self.integral_q15))
+            .clamp(i64::from(i16::MIN), i64::from(i16::MAX)) as i16
     }
 
     pub fn update_for_ticks(&mut self, target_rpm: i32, feedback_rpm: i32, elapsed_ms: u32) -> i16 {
@@ -175,15 +212,13 @@ impl SpeedController {
         if (error < 0 && self.integral_q15 > 0) || (error > 0 && self.integral_q15 < 0) {
             self.integral_q15 = 0;
         }
-        let proportional = error.saturating_mul(self.kp_gain) >> self.kp_shift;
-        let elapsed = elapsed_ms.clamp(1, 100) as i32;
-        let integral_delta =
-            error.saturating_mul(self.ki_gain).saturating_mul(elapsed) >> self.ki_shift;
-        self.integral_q15 = self
-            .integral_q15
-            .saturating_add(integral_delta)
-            .clamp(i32::from(i16::MIN), i32::from(i16::MAX));
-        (proportional + self.integral_q15).clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16
+        let proportional = (i64::from(error) * i64::from(self.kp_gain)) >> self.kp_shift;
+        let elapsed = i64::from(elapsed_ms.clamp(1, 100));
+        let integral_delta = (i64::from(error) * i64::from(self.ki_gain) * elapsed) >> self.ki_shift;
+        let integral_sum = i64::from(self.integral_q15) + integral_delta;
+        self.integral_q15 = integral_sum.clamp(i64::from(i16::MIN), i64::from(i16::MAX)) as i32;
+        (proportional + i64::from(self.integral_q15))
+            .clamp(i64::from(i16::MIN), i64::from(i16::MAX)) as i16
     }
 }
 
@@ -194,12 +229,21 @@ impl FocController {
         // tuned against the actual current amplifier and bus voltage.
         Self {
             motor,
-            // C: Kp=2000/2^7 and Ki=50/2^15 for both current axes.
-            id_pi: Pi::new(2_000, 7, 50, 27_851),
-            iq_pi: Pi::new(2_000, 7, 50, 27_851),
+            id_pi: Pi::new(
+                motor.current_kp_gain,
+                motor.current_kp_shift,
+                motor.current_ki_gain,
+                motor.current_voltage_limit,
+            ),
+            iq_pi: Pi::new(
+                motor.current_kp_gain,
+                motor.current_kp_shift,
+                motor.current_ki_gain,
+                motor.current_voltage_limit,
+            ),
             id_reference: 0,
             iq_reference: 0,
-            voltage_limit: 27_851,
+            voltage_limit: motor.current_voltage_limit as i16,
             measured_id: 0,
             measured_iq: 0,
         }
@@ -217,12 +261,12 @@ impl FocController {
         let ia = i32::from(currents.a);
         let ib = i32::from(currents.b);
         let alpha = ia;
-        let beta = ((ia + 2 * ib) * INV_SQRT3_Q15) >> 15;
+        let beta = q15_mul(ia + 2 * ib, INV_SQRT3_Q15);
 
         let sin = i32::from(sin_q15);
         let cos = i32::from(cos_q15);
-        let id = ((alpha * cos) + (beta * sin)) >> 15;
-        let iq = ((-alpha * sin) + (beta * cos)) >> 15;
+        let id = q15_mul(alpha, cos) + q15_mul(beta, sin);
+        let iq = q15_mul(-alpha, sin) + q15_mul(beta, cos);
         self.measured_id = id.clamp(-Q15_ONE, Q15_ONE) as i16;
         self.measured_iq = iq.clamp(-Q15_ONE, Q15_ONE) as i16;
 
@@ -235,21 +279,22 @@ impl FocController {
         let vd = vd.clamp(-limit, limit);
         let vq = vq.clamp(-limit, limit);
 
-        let v_alpha = ((vd * cos) - (vq * sin)) >> 15;
-        let v_beta = ((vd * sin) + (vq * cos)) >> 15;
+        let v_alpha = q15_mul(vd, cos) - q15_mul(vq, sin);
+        let v_beta = q15_mul(vd, sin) + q15_mul(vq, cos);
         // This is the same center-aligned three-phase calculation as the C
         // FOC_MC_svpwm path.  The previous hand-written sector permutation
         // swapped phases in the alpha sectors: an alpha vector could become a
         // single-phase duty change, producing current without average torque.
-        // Each product is below 2^31, so this remains entirely 32-bit.
+        // Keep the Q15 products widened, as in the reference controller's
+        // fixed-point intermediates, before reducing back to the duty scale.
         let v_a = v_alpha;
         // Inverse Clarke, matching the C reference's U2/U3 terms:
         //   Vb = -Va/2 + sqrt(3)/2*Vbeta
         //   Vc = -Va/2 - sqrt(3)/2*Vbeta
         // The previous code used Q15_ONE with a 16-bit shift for both terms,
         // halving the beta vector and leaving the rotating field too weak.
-        let v_b = ((-v_alpha * HALF_Q15) + (v_beta * SQRT3_OVER_2_Q15)) >> 15;
-        let v_c = ((-v_alpha * HALF_Q15) - (v_beta * SQRT3_OVER_2_Q15)) >> 15;
+        let v_b = q15_mul(-v_alpha, HALF_Q15) + q15_mul(v_beta, SQRT3_OVER_2_Q15);
+        let v_c = q15_mul(-v_alpha, HALF_Q15) - q15_mul(v_beta, SQRT3_OVER_2_Q15);
         let max = v_a.max(v_b).max(v_c);
         let min = v_a.min(v_b).min(v_c);
         let common = (max + min) / 2;
@@ -298,6 +343,14 @@ mod tests {
     fn jd4631_uses_the_11_pole_pair_motor() {
         assert_eq!(JD4631.pole_pairs, 11);
         assert_eq!(JD4631.phase_resistance_mohm, 6_700);
+    }
+
+    #[test]
+    fn ht2806_uses_the_sheet_parameters() {
+        assert_eq!(HT2806.pole_pairs, 7);
+        assert_eq!(HT2806.phase_resistance_mohm, 5_000);
+        assert_eq!(HT2806.phase_inductance_uh, 1_510);
+        assert_eq!(HT2806.rated_current_ma, 810);
     }
 
     #[test]

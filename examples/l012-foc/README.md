@@ -53,7 +53,7 @@ Build without flashing or executing hardware:
 ```sh
 rustc --edition 2024 --test examples/l012-foc/src/foc.rs -o /tmp/cw32-foc-math-tests \
   && /tmp/cw32-foc-math-tests
-cargo build --manifest-path examples/l012-foc/Cargo.toml --release \
+cargo build --manifest-path examples/l012-foc/speed-loop/Cargo.toml --release \
   --target thumbv6m-none-eabi --no-default-features --features cw32l012c8t6 --bin foc --offline
 ```
 
@@ -65,6 +65,21 @@ cargo run --release --bin foc
 ```
 
 该配置只属于此独立 example，不使用 Cargo workspace。
+
+算法验证拆成了同级独立 Cargo crate，均使用 `foc-algorithms` 的同一份
+实现：
+
+底层算法本身位于 `foc-algorithms/` 独立 crate，包含电流 PID、速度 PID、
+Clarke/Park 变换、SVPWM 和电机参数。完整速度闭环与耗时 crate 都通过
+这个 crate 使用同一份实现。
+
+| crate | 用途 |
+| --- | --- |
+| `algorithm-timing/` | 用 BTIM1 统计电流环和速度环耗时 |
+| `speed-loop/` | 完整速度闭环 FOC 应用，包含 PWM/ADC/编码器板级代码 |
+
+进入对应目录后执行 `cargo run --release --offline`。这些目录各自有
+`Cargo.toml`，没有加入 workspace。
 
 ## 项目约束
 

@@ -2,17 +2,16 @@
 #![no_main]
 
 use core::cell::RefCell;
-use core::sync::atomic::{AtomicI16, AtomicU16, AtomicU32, Ordering};
+use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
-use cortex_m_rt::entry;
-use cw32_l012_foc::{
+use cortex_m_rt::{entry, exception, ExceptionFrame};
+use cw32_l012_foc_speed_loop::{
     board::{
-        ALIGNMENT_ELECTRICAL_OFFSET, ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV,
-        CurrentSampleFilter, DIRECTION_MIN_DELTA_COUNTS, DIRECTION_TEST_IQ_Q15,
-        DIRECTION_TEST_PERIODS, Encoder, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
+        ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, CurrentSampleFilter, Encoder,
+        EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV,
-        angle_delta, apply_duty, bus_voltage_mv, current_ma_from_counts, electrical_angle,
-        sin_cos_q15, speed_rpm_from_delta, wait_period,
+        angle_delta, apply_duty, bus_voltage_mv, electrical_angle,
+        electrical_angle_step_for_rpm, sin_cos_q15_lut, speed_rpm_from_delta, wait_period,
     },
     control::{
         ArmingGate, MotorState, combined_torque_reference, holding_torque_reference,
@@ -24,7 +23,6 @@ use embassy_cw32::interrupt::typelevel::{ADC1, Handler, Interrupt};
 use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
-    cordic::Cordic,
     gpio::{Flex, Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -68,8 +66,12 @@ static CURRENT_SAMPLE_FILTER: Mutex<RefCell<CurrentSampleFilter>> =
     Mutex::new(RefCell::new(CurrentSampleFilter::new()));
 static CURRENT_OFFSET_A: AtomicU16 = AtomicU16::new(0);
 static CURRENT_OFFSET_B: AtomicU16 = AtomicU16::new(0);
-static CURRENT_SIN: AtomicI16 = AtomicI16::new(0);
-static CURRENT_COS: AtomicI16 = AtomicI16::new(32_767);
+// Raw samples are retained for hardware bring-up diagnostics. They let the
+// log distinguish a bad ADC trigger/analog path from a control-law problem.
+static CURRENT_ADC_A: AtomicU16 = AtomicU16::new(0);
+static CURRENT_ADC_B: AtomicU16 = AtomicU16::new(0);
+static CURRENT_ELECTRICAL_ANGLE: AtomicU32 = AtomicU32::new(0);
+static CURRENT_ANGLE_STEP: AtomicI32 = AtomicI32::new(0);
 static CURRENT_IQ_REFERENCE: AtomicI16 = AtomicI16::new(0);
 static CURRENT_PHASE_A: AtomicI16 = AtomicI16::new(0);
 static CURRENT_PHASE_B: AtomicI16 = AtomicI16::new(0);
@@ -88,8 +90,18 @@ static CURRENT_ALIGNMENT_ACTIVE: AtomicU16 = AtomicU16::new(0);
 /// never immediately undo a legitimate nonzero-pot command with the stale
 /// zero state.
 fn set_current_output(pwm: &mut ComplementaryPwm<'_, hal::peripherals::ATIM>, enable: bool) {
+    let previous = CURRENT_OUTPUT_ENABLE.load(Ordering::Acquire) != 0;
     CURRENT_OUTPUT_ENABLE.store(u16::from(enable), Ordering::Release);
+    if previous == enable {
+        return;
+    }
+    defmt::info!("moe: request enable={=bool}", enable);
     pwm.set_master_output_enable(enable);
+    defmt::info!(
+        "moe: applied request={=bool} readback={=bool}",
+        enable,
+        pwm.get_master_output_enable()
+    );
 }
 
 struct Adc1CurrentLoop;
@@ -106,6 +118,8 @@ impl Handler<ADC1> for Adc1CurrentLoop {
         hal::pac::ADC1.ier().modify(|v| v.set_eos(false));
         let ia = hal::pac::ADC1.result(0).read().result();
         let ib = hal::pac::ADC1.result(1).read().result();
+        CURRENT_ADC_A.store(ia, Ordering::Relaxed);
+        CURRENT_ADC_B.store(ib, Ordering::Relaxed);
         hal::pac::ADC1.icr().write(|v| {
             *v = hal::pac::adc::regs::Icr::write_noop();
             v.set_eoc(false);
@@ -127,8 +141,15 @@ impl Handler<ADC1> for Adc1CurrentLoop {
             return;
         }
 
-        let sin = CURRENT_SIN.load(Ordering::Relaxed);
-        let cos = CURRENT_COS.load(Ordering::Relaxed);
+        // Predict the angle at the exact current-loop instant. The foreground
+        // SSI read periodically re-anchors this accumulator; between reads the
+        // ISR advances it by the measured electrical speed.
+        let step = CURRENT_ANGLE_STEP.load(Ordering::Relaxed) as u16;
+        let angle = CURRENT_ELECTRICAL_ANGLE
+            .load(Ordering::Relaxed)
+            .wrapping_add(u32::from(step)) as u16;
+        CURRENT_ELECTRICAL_ANGLE.store(u32::from(angle), Ordering::Relaxed);
+        let (sin, cos) = sin_cos_q15_lut(angle);
         let iq_reference = CURRENT_IQ_REFERENCE.load(Ordering::Relaxed);
         let (currents, duty) = cortex_m::interrupt::free(|cs| {
             let mut filter = CURRENT_SAMPLE_FILTER.borrow(cs).borrow_mut();
@@ -188,7 +209,24 @@ hal::bind_interrupts!(struct Irqs {
 });
 
 #[panic_handler]
-fn panic(_: &core::panic::PanicInfo<'_>) -> ! {
+fn panic(_panic: &core::panic::PanicInfo<'_>) -> ! {
+    defmt::error!("panic: firmware panic handler entered");
+    loop {
+        cortex_m::asm::wfi();
+    }
+}
+
+#[exception]
+unsafe fn HardFault(_frame: &ExceptionFrame) -> ! {
+    defmt::error!("fault: hard fault handler entered");
+    loop {
+        cortex_m::asm::wfi();
+    }
+}
+
+#[exception]
+unsafe fn DefaultHandler(irqn: i16) -> ! {
+    defmt::error!("fault: unhandled irq={=i16}", irqn);
     loop {
         cortex_m::asm::wfi();
     }
@@ -211,8 +249,9 @@ fn configure_current_loop_trigger(period: u32) {
         v.set_cont(false);
         v.set_slave(false);
         v.set_ens(1);
-        // C: ADC_Clk_Div2.  The raw encoding is 1; zero is Div1 and
-        // overclocks ADC1 at the 96 MHz PCLK used by this example.
+        // The L012 ADC permits up to 48 MHz ADCCLK. The reference C project
+        // uses ADC_Clk_Div2 at the 96 MHz control clock; retain that timing so
+        // the two 30-cycle samples complete at the intended trigger phase.
         v.set_clk(1);
     });
     hal::pac::ADC1.icr().write(|v| {
@@ -306,7 +345,6 @@ fn configure_aux_adc_continuous() {
 
 #[entry]
 fn main() -> ! {
-    defmt::info!("entry: before hal init");
     // The board supplies the MCU/VDDA from 5 V. The motor-control application
     // deliberately opts into the calibrated nominal 96 MHz HSI bus path.
     let mut system = hal::Config::default();
@@ -323,14 +361,11 @@ fn main() -> ! {
             }
         }
     };
-    defmt::info!("entry: after hal init");
     // The reference board LED is active-low on PC13, matching LEDON/LEDOFF
     // in the C project: waiting blinks, alignment is solid, and run heartbeats.
     let mut led = Output::new(p.PC13, Level::High, Speed::Default);
     defmt::info!("JD4631 FOC boot: PWM={=u32}Hz", PWM_HZ);
-    defmt::info!("init: common");
     let common = Common::new(p.BGR, 100_000).unwrap();
-    defmt::info!("init: adc1");
     let mut adc_config = AdcConfig::default();
     adc_config.vdda_mv = 5_000;
     // The default L012 clock tree is 8 MHz PCLK. 24 MHz is the requested
@@ -391,15 +426,11 @@ fn main() -> ! {
         hal::pac::OPA2.cal().read().calen()
     );
 
-    defmt::info!("init: adc1");
     // Keep ADC1 owned for the lifetime of the firmware. Its sequence is
     // reprogrammed below to the C project's ATIM-CC4 triggered scan.
-    let _adc1 = Adc::new(p.ADC1, &common, adc_config).unwrap();
-    defmt::info!("init: adc2");
+    let adc1 = Adc::new(p.ADC1, &common, adc_config).unwrap();
     let _adc2 = Adc::new(p.ADC2, &common, adc_config).unwrap();
-    defmt::info!("init: adc done");
     configure_aux_adc_continuous();
-    defmt::info!("init: adc2 continuous scan armed");
 
     let mut pwm = ComplementaryPwm::new(
         p.ATIM,
@@ -427,9 +458,8 @@ fn main() -> ! {
         v.set_cms(1); // center-aligned mode 1
         v.set_cen(true);
     });
-    defmt::info!("init: pwm done");
     for channel in [Channel::Ch1, Channel::Ch2, Channel::Ch3] {
-        pwm.set_duty(channel, pwm.get_max_duty() / 2);
+        pwm.set_duty_cycle(channel, pwm.get_max_duty() / 2);
         pwm.enable(channel);
     }
     // Keep the power stage off while current offsets are sampled and until the
@@ -444,7 +474,6 @@ fn main() -> ! {
     // calibration. MOE is still low, so the ISR only drains conversions and
     // cannot apply any voltage to the motor.
     configure_current_loop_trigger(pwm_period);
-    defmt::info!("init: tick done");
 
     let mut cs = Flex::new(p.PF0);
     cs.set_high();
@@ -453,10 +482,7 @@ fn main() -> ! {
     spi_config.mode = MODE_1;
     spi_config.frequency = Hertz(4_000_000);
     let spi = Spi::new_blocking(p.SPI3, p.PB8, p.PA11, p.PC14, spi_config).unwrap();
-    defmt::info!("init: spi done");
     let mut encoder = Encoder::new(spi, cs);
-    let mut cordic = Cordic::new(p.CORDIC).unwrap();
-    defmt::info!("init: peripherals done");
 
     // The bridge stays disabled while offsets are measured and while the rotor
     // is held at the electrical zero used for encoder alignment. Match the C
@@ -469,8 +495,8 @@ fn main() -> ! {
         for _ in 0..(PWM_HZ / 500) {
             wait_period(&mut tick);
         }
-        offset_a += u32::from(hal::pac::ADC1.result(0).read().result());
-        offset_b += u32::from(hal::pac::ADC1.result(1).read().result());
+        offset_a += u32::from(adc1.latest_result(0).unwrap_or(0));
+        offset_b += u32::from(adc1.latest_result(1).unwrap_or(0));
     }
     let offset_a = (offset_a / 16) as u16;
     let offset_b = (offset_b / 16) as u16;
@@ -486,10 +512,16 @@ fn main() -> ! {
     // the command pot to zero. This is the arming gesture required at power-on.
     let mut state = ArmingGate::new(READY_ZERO_SAMPLES);
     let mut wait_led_ticks = 0u32;
+    let mut wait_zero_log_ticks = 0u32;
     defmt::info!("state=wait-zero: move potentiometer to zero");
     loop {
         pwm.set_master_output_enable(false);
         let pot = hal::pac::ADC2.result(1).read().result();
+        if wait_zero_log_ticks >= PWM_HZ / 2 {
+            defmt::info!("wait-zero: pot={=u16}", pot);
+            wait_zero_log_ticks = 0;
+        }
+        wait_zero_log_ticks += 1;
         if state.observe(pot, POT_ZERO_COUNTS) {
             break;
         }
@@ -525,8 +557,14 @@ fn main() -> ! {
     // potentiometer remains in its zero deadband. This is the C startup
     // handoff: the rotor cannot drift before its encoder zero is captured.
     defmt::info!("state=aligned: waiting for nonzero command");
+    let mut pot_wait_log_ticks = 0u32;
     loop {
         let pot = hal::pac::ADC2.result(1).read().result();
+        if pot_wait_log_ticks >= PWM_HZ / 2 {
+            defmt::info!("wait-nonzero: pot={=u16}", pot);
+            pot_wait_log_ticks = 0;
+        }
+        pot_wait_log_ticks += 1;
         if AUTO_START_TEST_RPM > 0 || pot > POT_MIN_COUNTS {
             break;
         }
@@ -543,56 +581,19 @@ fn main() -> ! {
     CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
     CURRENT_PROBE_ACTIVE.store(0, Ordering::Relaxed);
     CURRENT_FAULT.store(0, Ordering::Relaxed);
-    // The alignment vector is intentionally replaced by a short positive-q
-    // point test. Different mechanical start positions can settle on either
-    // side of the alignment vector; measuring the encoder delta makes the
-    // subsequent speed loop use one deterministic physical direction.
+    // The electrical direction was already validated in the open-loop bring-up.
+    // Do not apply a second point-test torque here: it can disturb the aligned
+    // rotor and blocks the foreground SSI handoff while the bridge is active.
     let aligned_angle = electrical_angle(encoder_offset, encoder_offset);
-    let (aligned_sin, aligned_cos) = sin_cos_q15(&mut cordic, aligned_angle);
-    CURRENT_SIN.store(aligned_sin, Ordering::Relaxed);
-    CURRENT_COS.store(aligned_cos, Ordering::Relaxed);
+    CURRENT_ELECTRICAL_ANGLE.store(u32::from(aligned_angle), Ordering::Relaxed);
+    CURRENT_ANGLE_STEP.store(0, Ordering::Relaxed);
     set_current_output(&mut pwm, false);
     CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
-    CURRENT_PROBE_ACTIVE.store(1, Ordering::Release);
     CURRENT_RESET.store(1, Ordering::Release);
-    CURRENT_IQ_REFERENCE.store(DIRECTION_TEST_IQ_Q15, Ordering::Release);
+    CURRENT_IQ_REFERENCE.store(0, Ordering::Release);
     set_current_output(&mut pwm, true);
-    let probe_samples = (DIRECTION_TEST_PERIODS / (PWM_HZ / 1_000)).max(1);
-    let mut probe_angle = encoder_offset;
-    let mut probe_delta = 0i32;
-    for _ in 0..probe_samples {
-        for _ in 0..(PWM_HZ / 1_000) {
-            wait_period(&mut tick);
-        }
-        let mechanical_angle = encoder.read_angle().unwrap_or(probe_angle);
-        probe_delta += angle_delta(mechanical_angle, probe_angle);
-        probe_angle = mechanical_angle;
-        let angle = electrical_angle(mechanical_angle, encoder_offset);
-        let (sin, cos) = sin_cos_q15(&mut cordic, angle);
-        CURRENT_SIN.store(sin, Ordering::Relaxed);
-        CURRENT_COS.store(cos, Ordering::Relaxed);
-    }
-    let torque_direction_sign = if probe_delta < -DIRECTION_MIN_DELTA_COUNTS {
-        -1i16
-    } else {
-        1i16
-    };
-    CURRENT_PROBE_ACTIVE.store(0, Ordering::Release);
-    CURRENT_RESET.store(1, Ordering::Release);
-    // Keep the small probe torque applied across the handoff. The first speed
-    // update replaces it with the ramped reference without an unpowered gap.
-    CURRENT_IQ_REFERENCE.store(
-        DIRECTION_TEST_IQ_Q15.saturating_mul(torque_direction_sign),
-        Ordering::Release,
-    );
-    set_current_output(&mut pwm, true);
-    defmt::info!(
-        "state=aligned: encoder_offset={=u16} electrical_offset={=u16} probe_delta={=i32} torque_sign={=i16}",
-        encoder_offset,
-        ALIGNMENT_ELECTRICAL_OFFSET,
-        probe_delta,
-        torque_direction_sign
-    );
+    let torque_direction_sign = ENCODER_DIRECTION_SIGN;
+    defmt::info!("state=aligned: fixed torque_sign={=i16}", torque_direction_sign);
 
     state.set_state(MotorState::Running);
     led.set_low();
@@ -610,7 +611,6 @@ fn main() -> ! {
     let mut speed_feedback_rpm = 0i32;
     let mut speed_window_has_sample = false;
     let mut log_elapsed_pwm_periods = 0u32;
-    let mut startup_log_tick = 0u32;
     let mut command_active = true;
     let mut no_motion_ticks = 0u32;
     let mut speed_reference_rpm = 0i32;
@@ -708,6 +708,13 @@ fn main() -> ! {
                 .saturating_add(feedback_rpm_raw))
                 / 8;
             let feedback_rpm = speed_feedback_rpm * i32::from(direction_sign);
+            // electrical_angle() uses the inverted mechanical displacement, so
+            // negate the physical signed speed when advancing the predicted
+            // electrical angle in the ISR.
+            CURRENT_ANGLE_STEP.store(
+                electrical_angle_step_for_rpm(-feedback_rpm),
+                Ordering::Relaxed,
+            );
             let pot = pot_now;
             let mapped_command_rpm = if auto_command {
                 AUTO_START_TEST_RPM
@@ -853,63 +860,21 @@ fn main() -> ! {
                 }
             }
             log_elapsed_pwm_periods = log_elapsed_pwm_periods.saturating_add(elapsed_pwm_periods);
-            if startup_log_tick < 30 {
-                defmt::info!(
-                    "startup sample: pot={=u16} cmd={=i32} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} dangle={=i32} speed_iq={=i16} hold_iq={=i16} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} fault={=u16}",
-                    pot,
-                    command_rpm,
-                    target_rpm,
-                    feedback_rpm,
-                    feedback_rpm_raw,
-                    elapsed_pwm_periods,
-                    speed_delta_sum,
-                    speed_iq_reference,
-                    holding_iq_reference,
-                    CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_IQ_REFERENCE.load(Ordering::Relaxed)),
-                    CURRENT_ID.load(Ordering::Relaxed),
-                    CURRENT_IQ.load(Ordering::Relaxed),
-                    CURRENT_PHASE_A.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_PHASE_A.load(Ordering::Relaxed)),
-                    CURRENT_PHASE_B.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_PHASE_B.load(Ordering::Relaxed)),
-                    mechanical_angle,
-                    bus_mv,
-                    hal::pac::ATIM.ccr1().read().ccr1(),
-                    hal::pac::ATIM.ccr2().read().ccr2(),
-                    hal::pac::ATIM.ccr3().read().ccr3(),
-                    CURRENT_FAULT.load(Ordering::Relaxed)
-                );
-                startup_log_tick += 1;
-            }
             if log_elapsed_pwm_periods >= PWM_HZ {
                 led.toggle();
                 defmt::info!(
-                    "run: pot={=u16} target={=i32} feedback={=i32} raw_feedback={=i32} dt={=u32} dangle={=i32} speed_iq={=i16} hold_iq={=i16} iqref={=i16}/{=i32} idq={=i16}/{=i16} ia_adc={=u16} ib_adc={=u16} ia={=i16}/{=i32} ib={=i16}/{=i32} angle={=u16} bus={=u32} ccr={=u16}/{=u16}/{=u16} adc_eos={=u16}",
+                    "run: pot={=u16} target={=i32} fb={=i32} iqref={=i16} idq={=i16}/{=i16} adc={=u16}/{=u16} off={=u16}/{=u16} bus={=u32}",
                     pot,
                     target_rpm,
                     feedback_rpm,
-                    feedback_rpm_raw,
-                    elapsed_pwm_periods,
-                    speed_delta_sum,
-                    speed_iq_reference,
-                    holding_iq_reference,
                     CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_IQ_REFERENCE.load(Ordering::Relaxed)),
                     CURRENT_ID.load(Ordering::Relaxed),
                     CURRENT_IQ.load(Ordering::Relaxed),
-                    hal::pac::ADC1.result(0).read().result(),
-                    hal::pac::ADC1.result(1).read().result(),
-                    CURRENT_PHASE_A.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_PHASE_A.load(Ordering::Relaxed)),
-                    CURRENT_PHASE_B.load(Ordering::Relaxed),
-                    current_ma_from_counts(CURRENT_PHASE_B.load(Ordering::Relaxed)),
-                    mechanical_angle,
-                    bus_mv,
-                    hal::pac::ATIM.ccr1().read().ccr1(),
-                    hal::pac::ATIM.ccr2().read().ccr2(),
-                    hal::pac::ATIM.ccr3().read().ccr3(),
-                    CURRENT_LOOP_COUNT.load(Ordering::Relaxed)
+                    CURRENT_ADC_A.load(Ordering::Relaxed),
+                    CURRENT_ADC_B.load(Ordering::Relaxed),
+                    CURRENT_OFFSET_A.load(Ordering::Relaxed),
+                    CURRENT_OFFSET_B.load(Ordering::Relaxed),
+                    bus_mv
                 );
                 CURRENT_LOOP_COUNT.store(0, Ordering::Relaxed);
                 log_elapsed_pwm_periods -= PWM_HZ;
@@ -919,9 +884,7 @@ fn main() -> ! {
             speed_window_has_sample = false;
         }
         let angle = electrical_angle(mechanical_angle, encoder_offset);
-        let (sin, cos) = sin_cos_q15(&mut cordic, angle);
-        CURRENT_SIN.store(sin, Ordering::Relaxed);
-        CURRENT_COS.store(cos, Ordering::Relaxed);
+        CURRENT_ELECTRICAL_ANGLE.store(u32::from(angle), Ordering::Relaxed);
         // Keep the hardware gate synchronized with the command transition.
         // The explicit helper above handles the edge; this write also repairs
         // MOE if the ISR had cleared it for a transient current fault.

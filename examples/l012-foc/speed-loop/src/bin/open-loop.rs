@@ -8,7 +8,7 @@
 //! limit before enabling closed-loop FOC.
 
 use cortex_m_rt::entry;
-use cw32_l012_foc::{
+use cw32_l012_foc_speed_loop::{
     board::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, Encoder, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, angle_delta, apply_duty,
@@ -73,13 +73,15 @@ fn open_loop_duty(
     // electrical-angle domain; the shared CORDIC helper uses the C reference's
     // 16-bit full-turn domain.
     let (sin, cos) = sin_cos_q15(cordic, angle << 2);
-    let sin = i32::from(sin);
-    let cos = i32::from(cos);
+    let sin = i64::from(sin);
+    let cos = i64::from(cos);
     // Inverse Clarke: b/c are -alpha/2 +/- sqrt(3)*beta/2.
     // Keeping the half factor is essential; -alpha would destroy the 120°
     // phase spacing and only shake the rotor while drawing current.
-    let beta = ((-sin * HALF_Q15) + (cos * SQRT3_OVER_2_Q15)) >> 15;
-    let gamma = ((-sin * HALF_Q15) - (cos * SQRT3_OVER_2_Q15)) >> 15;
+    let beta = ((-sin * i64::from(HALF_Q15))
+        + (cos * i64::from(SQRT3_OVER_2_Q15))) >> 15;
+    let gamma = ((-sin * i64::from(HALF_Q15))
+        - (cos * i64::from(SQRT3_OVER_2_Q15))) >> 15;
     Duty {
         a: centered_duty(sin, modulation_q15),
         b: centered_duty(beta, modulation_q15),
@@ -89,8 +91,9 @@ fn open_loop_duty(
 
 const Q15_ONE: i32 = 32_767;
 
-fn centered_duty(value: i32, modulation_q15: i32) -> u16 {
-    (16_384 + value * modulation_q15 / Q15_ONE).clamp(1, 32_766) as u16
+fn centered_duty(value: i64, modulation_q15: i32) -> u16 {
+    (16_384_i64 + value * i64::from(modulation_q15) / i64::from(Q15_ONE))
+        .clamp(1, 32_766) as u16
 }
 
 fn modulation_for_rpm(target_rpm: i32) -> i32 {
@@ -194,7 +197,7 @@ fn main() -> ! {
     )
     .unwrap();
     for channel in [Channel::Ch1, Channel::Ch2, Channel::Ch3] {
-        pwm.set_duty(channel, pwm.get_max_duty() / 2);
+        pwm.set_duty_cycle(channel, pwm.get_max_duty() / 2);
         pwm.enable(channel);
     }
     pwm.set_master_output_enable(false);

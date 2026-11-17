@@ -226,6 +226,17 @@ impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
     pub fn disable(&mut self, channel: Channel) {
         set_enabled(channel, false, false);
     }
+    /// Enable or disable either side of one owned half-bridge.
+    ///
+    /// This is independent from MOE: channel gating selects which pairs are
+    /// connected to the timer, while MOE remains the global power-stage gate.
+    pub fn set_channel_enable(&mut self, channel: Channel, main: bool, complementary: bool) {
+        assert!(
+            self.pins[channel.index() * 2].is_some(),
+            "unavailable PWM channel"
+        );
+        set_enabled(channel, main, complementary);
+    }
     /// Explicitly write MOE. An asserted break can keep it cleared; inspect
     /// `get_master_output_enable`. This is not an atomic fault-clear/rearm protocol.
     pub fn set_master_output_enable(&mut self, enable: bool) {
@@ -234,6 +245,43 @@ impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
     /// Read actual hardware MOE, including asynchronous break clearing.
     pub fn get_master_output_enable(&self) -> bool {
         pac::ATIM.bdtr().read().moe()
+    }
+    /// Set the same active polarity on the main and complementary outputs.
+    pub fn set_polarity(&mut self, channel: Channel, polarity: super::OutputPolarity) {
+        self.set_main_polarity(channel, polarity);
+        self.set_complementary_polarity(channel, polarity);
+    }
+    /// Set only the main output polarity.
+    pub fn set_main_polarity(&mut self, channel: Channel, polarity: super::OutputPolarity) {
+        assert!(
+            self.pins[channel.index() * 2].is_some(),
+            "unavailable PWM channel"
+        );
+        let active_low = polarity == super::OutputPolarity::ActiveLow;
+        pac::ATIM.ccer().modify(|v| match channel {
+            Channel::Ch1 => v.set_cc1p(active_low),
+            Channel::Ch2 => v.set_cc2p(active_low),
+            Channel::Ch3 => v.set_cc3p(active_low),
+            Channel::Ch4 => v.set_cc4p(active_low),
+        });
+    }
+    /// Set only the complementary output polarity.
+    pub fn set_complementary_polarity(
+        &mut self,
+        channel: Channel,
+        polarity: super::OutputPolarity,
+    ) {
+        assert!(
+            self.pins[channel.index() * 2 + 1].is_some(),
+            "unavailable PWM channel"
+        );
+        let active_low = polarity == super::OutputPolarity::ActiveLow;
+        pac::ATIM.ccer().modify(|v| match channel {
+            Channel::Ch1 => v.set_cc1np(active_low),
+            Channel::Ch2 => v.set_cc2np(active_low),
+            Channel::Ch3 => v.set_cc3np(active_low),
+            Channel::Ch4 => v.set_cc4np(active_low),
+        });
     }
     /// Generate software BK1. Hardware clears MOE and sets BIF.
     pub fn trigger_software_break(&mut self) {
@@ -313,6 +361,10 @@ impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
             self.inner.start();
         }
         self.duties[channel.index()] = duty;
+    }
+    /// Embassy STM32-compatible name for [`Self::set_duty`].
+    pub fn set_duty_cycle(&mut self, channel: Channel, duty: u32) {
+        self.set_duty(channel, duty);
     }
     /// Last requested main-active ticks; a buffered change may still be pending.
     pub fn get_duty(&self, channel: Channel) -> u32 {

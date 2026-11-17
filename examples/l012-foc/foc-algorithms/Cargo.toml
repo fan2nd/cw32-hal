@@ -1,0 +1,24 @@
+[package]
+name = "cw32-l012-foc-algorithms"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[features]
+default = ["cw32l012c8t6"]
+cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6"]
+cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6"]
+
+[dependencies]
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false }
+
+[profile.dev]
+opt-level = "s"
+debug = 0
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+debug = 2

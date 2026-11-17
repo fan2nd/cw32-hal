@@ -1,6 +1,10 @@
 //! Board-level peripherals and fixed-point conversions for the L012 FOC board.
 
 use crate::foc::{Duty, JD4631, PhaseCurrent};
+
+/// Encoder resolution is a board/sensor choice, independent of motor data.
+/// The current L012 wiring uses the 14-bit AS5048A/MT6701-compatible frame.
+pub const ENCODER_COUNTS_PER_REV: u16 = 16_384;
 use embassy_cw32::{
     self as hal,
     cordic::{Cordic, Q1_31},
@@ -56,7 +60,7 @@ impl<'d> Encoder<'d> {
         self.cs.set_high();
         result?;
         let raw = (u16::from(frame[0]) << 6) | (u16::from(frame[1]) >> 2);
-        Ok((JD4631.encoder_counts_per_rev - (raw & 0x3fff)) & 0x3fff)
+        Ok((ENCODER_COUNTS_PER_REV - (raw & 0x3fff)) & 0x3fff)
     }
 }
 
@@ -188,9 +192,51 @@ pub fn electrical_angle(mechanical: u16, offset: u16) -> u16 {
     // `Encoder::read_angle` and apply this one fixed electrical orientation.
     // The 14-bit mechanical angle is expanded to the C 16-bit full-turn
     // electrical representation by multiplying by four.
-    let mechanical = u32::from(offset.wrapping_sub(mechanical) & 0x3fff);
-    ((mechanical * u32::from(JD4631.pole_pairs) * 4 + u32::from(ALIGNMENT_ELECTRICAL_OFFSET))
+    let mechanical = i64::from(offset.wrapping_sub(mechanical) & 0x3fff);
+    ((mechanical * i64::from(JD4631.pole_pairs) * 4
+        + i64::from(ALIGNMENT_ELECTRICAL_OFFSET))
         & 0xffff) as u16
+}
+
+/// Electrical-angle increment per current-loop tick for a mechanical speed in
+/// rpm. The sign follows `electrical_angle`, whose mechanical displacement is
+/// inverted on this board. The product is widened before division so the
+/// fixed-point phase increment matches the reference controller's range.
+pub fn electrical_angle_step_for_rpm(mechanical_rpm: i32) -> i32 {
+    let numerator = i64::from(mechanical_rpm)
+        * i64::from(JD4631.pole_pairs)
+        * 65_536;
+    (numerator / i64::from(60 * PWM_HZ as i32)) as i32
+}
+
+// 1/4-wave Q1.15 lookup table. The current ISR uses this instead of the
+// blocking CORDIC call so angle prediction does not add peripheral latency.
+const SIN_QUARTER_Q15: [i16; 65] = [
+    0, 804, 1608, 2410, 3212, 4011, 4808, 5602, 6393, 7179, 7962, 8739, 9512, 10278, 11039, 11793,
+    12539, 13279, 14010, 14732, 15446, 16151, 16846, 17530, 18204, 18868, 19519, 20159, 20787,
+    21403, 22005, 22594, 23170, 23731, 24279, 24811, 25329, 25832, 26319, 26790, 27245, 27683,
+    28105, 28510, 28898, 29268, 29621, 29956, 30273, 30571, 30852, 31113, 31356, 31580, 31785,
+    31971, 32137, 32285, 32412, 32521, 32609, 32678, 32728, 32757, 32767,
+];
+
+/// Return Q1.15 sine/cosine for a 16-bit electrical angle without division or
+/// peripheral access. Linear interpolation is intentionally omitted to keep
+/// the 16 kHz current ISR bounded on Cortex-M0+.
+pub fn sin_cos_q15_lut(angle: u16) -> (i16, i16) {
+    fn quarter(index: u8) -> i16 {
+        SIN_QUARTER_Q15[index as usize]
+    }
+    fn sin(angle: u16) -> i16 {
+        let quadrant = (angle >> 14) as u8;
+        let index = ((angle & 0x3fff) >> 8) as u8;
+        match quadrant {
+            0 => quarter(index),
+            1 => quarter(64 - index),
+            2 => -quarter(index),
+            _ => -quarter(64 - index),
+        }
+    }
+    (sin(angle), sin(angle.wrapping_add(16_384)))
 }
 
 pub fn phase_step_for_rpm(target_rpm: u32) -> u32 {
@@ -262,7 +308,7 @@ pub fn speed_rpm_from_delta(delta_counts: i32, elapsed_pwm_periods: u32) -> i32 
     if elapsed_pwm_periods == 0 {
         return 0;
     }
-    let counts_per_rev = i32::from(JD4631.encoder_counts_per_rev);
+    let counts_per_rev = i32::from(ENCODER_COUNTS_PER_REV);
     let elapsed = elapsed_pwm_periods.min(i32::MAX as u32) as i32;
     let scaled = delta_counts.saturating_mul(60);
     let whole_turns = scaled / counts_per_rev;
@@ -296,7 +342,7 @@ pub fn sin_cos_q15(cordic: &mut Cordic<'_, peripherals::CORDIC>, angle: u16) -> 
 
 pub fn apply_duty(pwm: &mut ComplementaryPwm<'_, peripherals::ATIM>, duty: Duty) {
     let max = pwm.get_max_duty();
-    pwm.set_duty(Channel::Ch1, u32::from(duty.a) * max / 32_767);
-    pwm.set_duty(Channel::Ch2, u32::from(duty.b) * max / 32_767);
-    pwm.set_duty(Channel::Ch3, u32::from(duty.c) * max / 32_767);
+    pwm.set_duty_cycle(Channel::Ch1, u32::from(duty.a) * max / 32_767);
+    pwm.set_duty_cycle(Channel::Ch2, u32::from(duty.b) * max / 32_767);
+    pwm.set_duty_cycle(Channel::Ch3, u32::from(duty.c) * max / 32_767);
 }

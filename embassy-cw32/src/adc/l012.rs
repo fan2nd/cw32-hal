@@ -465,6 +465,20 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
     ) -> Result<Self, Error> {
         Self::new(peripheral, common, config)
     }
+    /// Read the most recently completed hardware result without starting a
+    /// conversion. This is intended for timer-triggered motor-control loops:
+    /// the trigger/ISR owns conversion timing, while the foreground or a
+    /// cooperating observer only consumes the sampled value.
+    ///
+    /// `None` is returned for a slot outside the device's result bank. The
+    /// value is raw right-aligned ADC counts; no flag is cleared and no ADC
+    /// register is reconfigured.
+    pub fn latest_result(&self, slot: usize) -> Option<u16> {
+        if slot >= crate::ADC_SEQUENCE_MAX_LEN {
+            return None;
+        }
+        Some(T::regs().result(slot).read().result() & Resolution::Bits12.max_count() as u16)
+    }
     /// Read a verified pin or internal source. GPIO preparation can happen
     /// before timing rejection; the ADC itself remains unchanged on rejection.
     /// Internal sources require >=40 us acquisition, and wait 50 us

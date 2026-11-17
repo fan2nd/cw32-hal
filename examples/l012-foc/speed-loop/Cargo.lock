@@ -94,11 +94,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "790eea4361631c5e7d22598ecd5723ff611904e3344ce8720784c93e3d83d40b"
 
 [[package]]
-name = "cw32-l012-foc"
+name = "cw32-l012-foc-algorithms"
+version = "0.1.0"
+dependencies = [
+ "embassy-cw32",
+]
+
+[[package]]
+name = "cw32-l012-foc-speed-loop"
 version = "0.1.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
+ "cw32-l012-foc-algorithms",
  "cw32-metapac",
  "defmt",
  "defmt-rtt",

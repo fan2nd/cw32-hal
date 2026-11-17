@@ -29,21 +29,41 @@ mod domains {
     include!(concat!(env!("OUT_DIR"), "/_cordic_domains.rs"));
 }
 
-/// Signed Q1.31 bit pattern: real value = `to_bits() / 2^31`, in [-1, 1).
-/// No implicit saturation or floating-point conversion is performed.
+/// Signed Q1.31 bit pattern used by the CORDIC peripheral.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[repr(transparent)]
 pub struct Q1_31(i32);
 impl Q1_31 {
-    /// Construct from the exact two's-complement hardware bit pattern.
-    pub const fn from_bits(bits: i32) -> Self {
-        Self(bits)
-    }
-    /// Extract the exact two's-complement hardware bit pattern.
-    pub const fn to_bits(self) -> i32 {
-        self.0
-    }
+    pub const fn from_bits(bits: i32) -> Self { Self(bits) }
+    pub const fn to_bits(self) -> i32 { self.0 }
+}
+
+/// Signed Q1.15 value shared with motor-control fixed-point code.
+#[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[repr(transparent)]
+pub struct Q1_15(i16);
+impl Q1_15 {
+    pub const fn from_bits(bits: i16) -> Self { Self(bits) }
+    pub const fn to_bits(self) -> i16 { self.0 }
+}
+
+pub const Q15_ONE: i32 = 32_767;
+
+#[inline(always)]
+pub const fn q15_mul_wide(lhs: i64, rhs: i64) -> i64 { (lhs * rhs) >> 15 }
+
+/// Q1.15 multiply for bounded real-time paths. Q15 operands and the FOC
+/// current ranges fit in a signed 32-bit product; keep this separate from the
+/// widened helper so Cortex-M0 ISRs do not pay for software 64-bit multiply.
+#[inline(always)]
+pub const fn q15_mul(lhs: i32, rhs: i32) -> i32 { (lhs * rhs) >> 15 }
+
+#[inline(always)]
+pub const fn q15_clamp(value: i64) -> Q1_15 {
+    let value = if value < -32_767 { -32_767 } else if value > 32_767 { 32_767 } else { value };
+    Q1_15(value as i16)
 }
 
 /// Startup, input-domain or bounded-wait failure.
@@ -113,7 +133,7 @@ impl AtanScale {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum LogScale {
-    /// x in [0.0535, 0.5): return ln(2*x)/4.
+    /// x in [0.to_bits()535, 0.5): return ln(2*x)/4.
     X2Over4,
     /// x in [0.25, 0.75): return ln(4*x)/2.
     X4Over2,
@@ -136,7 +156,7 @@ impl LogScale {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub enum SqrtScale {
-    /// x in [0.027, 0.75): return sqrt(x).
+    /// x in [0.to_bits()27, 0.75): return sqrt(x).
     X1,
     /// x in [0.375, 0.875): return sqrt(2*x)/2.
     X2Over2,
@@ -249,53 +269,53 @@ impl<'d, T: Instance> Cordic<'d, T> {
     pub fn sin_cos(&mut self, angle: Q1_31, polls: u32) -> Result<SinCos, Error> {
         self.prepare(Func::Cos, Scale::Scale0, polls)?;
         let r = T::regs();
-        r.z().write(|w| w.set_z(angle.0 as u32));
+        r.z().write(|w| w.set_z(angle.to_bits() as u32));
         self.wait(polls)?;
-        let cos = Q1_31(r.x().read().x() as i32);
-        let sin = Q1_31(r.y().read().y() as i32);
+        let cos = Q1_31::from_bits(r.x().read().x() as i32);
+        let sin = Q1_31::from_bits(r.y().read().y() as i32);
         Ok(SinCos { sin, cos })
     }
     /// atan(y/x)/pi, using the hardware phase function. Requires x > 0.
     /// This intentionally excludes zero/negative-x quadrant and origin cases,
     /// whose branch-cut behavior is not specified in the manual's atan(y/x) table.
     pub fn phase(&mut self, x: Q1_31, y: Q1_31, polls: u32) -> Result<Q1_31, Error> {
-        if x.0 <= 0 {
+        if x.to_bits() <= 0 {
             return Err(Error::OutOfDomain);
         }
         self.prepare(Func::Atan2, Scale::Scale0, polls)?;
         let r = T::regs();
-        r.x().write(|w| w.set_x(x.0 as u32));
-        r.y().write(|w| w.set_y(y.0 as u32));
+        r.x().write(|w| w.set_x(x.to_bits() as u32));
+        r.y().write(|w| w.set_y(y.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// sqrt(x*x + y*y)/2, for both inputs in [-1, 1), with hardware K compensation.
     /// The factor 1/2 is part of the documented hardware result.
     pub fn hypot_half(&mut self, x: Q1_31, y: Q1_31, polls: u32) -> Result<Q1_31, Error> {
         self.prepare(Func::Hypot, Scale::Scale0, polls)?;
         let r = T::regs();
-        r.x().write(|w| w.set_x(x.0 as u32));
-        r.y().write(|w| w.set_y(y.0 as u32));
+        r.x().write(|w| w.set_x(x.to_bits() as u32));
+        r.y().write(|w| w.set_y(y.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.x().read().x() as i32))
+        Ok(Q1_31::from_bits(r.x().read().x() as i32))
     }
     /// atan(multiplier*y)/pi, for y in [-1, 1), with multiplier chosen by `scale`.
     pub fn atan(&mut self, y: Q1_31, scale: AtanScale, polls: u32) -> Result<Q1_31, Error> {
         self.prepare(Func::Atan, scale.value(), polls)?;
         let r = T::regs();
-        r.y().write(|w| w.set_y(y.0 as u32));
+        r.y().write(|w| w.set_y(y.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// Return sinh(2*z)/2 and cosh(2*z)/2; z must be in [-0.559, 0.559].
     pub fn sinh_cosh_half(&mut self, z: Q1_31, polls: u32) -> Result<SinhCosh, Error> {
         check_domain(z, domains::HYPERBOLIC)?;
         self.prepare(Func::Cosh, Scale::Scale1, polls)?;
         let r = T::regs();
-        r.z().write(|w| w.set_z(z.0 as u32));
+        r.z().write(|w| w.set_z(z.to_bits() as u32));
         self.wait(polls)?;
-        let cosh_half = Q1_31(r.x().read().x() as i32);
-        let sinh_half = Q1_31(r.y().read().y() as i32);
+        let cosh_half = Q1_31::from_bits(r.x().read().x() as i32);
+        let sinh_half = Q1_31::from_bits(r.y().read().y() as i32);
         Ok(SinhCosh {
             sinh_half,
             cosh_half,
@@ -306,9 +326,9 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(y, domains::ATANH)?;
         self.prepare(Func::Atanh, Scale::Scale1, polls)?;
         let r = T::regs();
-        r.y().write(|w| w.set_y(y.0 as u32));
+        r.y().write(|w| w.set_y(y.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// Natural logarithm with the exact input domain/output scaling in [`LogScale`].
     pub fn ln(&mut self, x: Q1_31, scale: LogScale, polls: u32) -> Result<Q1_31, Error> {
@@ -316,9 +336,9 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(x, domain)?;
         self.prepare(Func::Ln, scale, polls)?;
         let r = T::regs();
-        r.x().write(|w| w.set_x(x.0 as u32));
+        r.x().write(|w| w.set_x(x.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// Fixed-point root with [`SqrtScale`] domain/scaling and hardware K compensation.
     /// For full-range unsigned integer roots, use [`crate::eau::Eau::square_root`].
@@ -327,9 +347,9 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(x, domain)?;
         self.prepare(Func::Sqrt, scale, polls)?;
         let r = T::regs();
-        r.x().write(|w| w.set_x(x.0 as u32));
+        r.x().write(|w| w.set_x(x.to_bits() as u32));
         self.wait(polls)?;
-        Ok(Q1_31(r.x().read().x() as i32))
+        Ok(Q1_31::from_bits(r.x().read().x() as i32))
     }
     /// IRQ-backed variant of [`Self::sin_cos`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -340,12 +360,12 @@ impl<'d, T: Instance> Cordic<'d, T> {
     ) -> Result<SinCos, Error> {
         self.prepare(Func::Cos, Scale::Scale0, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.z().write(|w| w.set_z(angle.0 as u32));
+            r.z().write(|w| w.set_z(angle.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        let cos = Q1_31(r.x().read().x() as i32);
-        let sin = Q1_31(r.y().read().y() as i32);
+        let cos = Q1_31::from_bits(r.x().read().x() as i32);
+        let sin = Q1_31::from_bits(r.y().read().y() as i32);
         Ok(SinCos { sin, cos })
     }
     /// IRQ-backed variant of [`Self::phase`], with identical numeric domain.
@@ -356,17 +376,17 @@ impl<'d, T: Instance> Cordic<'d, T> {
         y: Q1_31,
         _irq: impl Binding<CORDIC, InterruptHandler<T>>,
     ) -> Result<Q1_31, Error> {
-        if x.0 <= 0 {
+        if x.to_bits() <= 0 {
             return Err(Error::OutOfDomain);
         }
         self.prepare(Func::Atan2, Scale::Scale0, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.x().write(|w| w.set_x(x.0 as u32));
-            r.y().write(|w| w.set_y(y.0 as u32));
+            r.x().write(|w| w.set_x(x.to_bits() as u32));
+            r.y().write(|w| w.set_y(y.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// IRQ-backed variant of [`Self::hypot_half`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -378,12 +398,12 @@ impl<'d, T: Instance> Cordic<'d, T> {
     ) -> Result<Q1_31, Error> {
         self.prepare(Func::Hypot, Scale::Scale0, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.x().write(|w| w.set_x(x.0 as u32));
-            r.y().write(|w| w.set_y(y.0 as u32));
+            r.x().write(|w| w.set_x(x.to_bits() as u32));
+            r.y().write(|w| w.set_y(y.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.x().read().x() as i32))
+        Ok(Q1_31::from_bits(r.x().read().x() as i32))
     }
     /// IRQ-backed variant of [`Self::atan`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -395,11 +415,11 @@ impl<'d, T: Instance> Cordic<'d, T> {
     ) -> Result<Q1_31, Error> {
         self.prepare(Func::Atan, scale.value(), 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.y().write(|w| w.set_y(y.0 as u32));
+            r.y().write(|w| w.set_y(y.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// IRQ-backed variant of [`Self::sinh_cosh_half`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -411,12 +431,12 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(z, domains::HYPERBOLIC)?;
         self.prepare(Func::Cosh, Scale::Scale1, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.z().write(|w| w.set_z(z.0 as u32));
+            r.z().write(|w| w.set_z(z.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        let cosh_half = Q1_31(r.x().read().x() as i32);
-        let sinh_half = Q1_31(r.y().read().y() as i32);
+        let cosh_half = Q1_31::from_bits(r.x().read().x() as i32);
+        let sinh_half = Q1_31::from_bits(r.y().read().y() as i32);
         Ok(SinhCosh {
             sinh_half,
             cosh_half,
@@ -432,11 +452,11 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(y, domains::ATANH)?;
         self.prepare(Func::Atanh, Scale::Scale1, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.y().write(|w| w.set_y(y.0 as u32));
+            r.y().write(|w| w.set_y(y.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// IRQ-backed variant of [`Self::ln`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -450,11 +470,11 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(x, domain)?;
         self.prepare(Func::Ln, scale, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.x().write(|w| w.set_x(x.0 as u32));
+            r.x().write(|w| w.set_x(x.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.z().read().z() as i32))
+        Ok(Q1_31::from_bits(r.z().read().z() as i32))
     }
     /// IRQ-backed variant of [`Self::square_root`], with identical numeric domain.
     /// Cancellation masks IE but does not abort; hardware may remain busy.
@@ -468,11 +488,11 @@ impl<'d, T: Instance> Cordic<'d, T> {
         check_domain(x, domain)?;
         self.prepare(Func::Sqrt, scale, 1)?;
         let _wait = self.submit_async(_irq, |r| {
-            r.x().write(|w| w.set_x(x.0 as u32));
+            r.x().write(|w| w.set_x(x.to_bits() as u32));
         });
         self.wait_async().await;
         let r = T::regs();
-        Ok(Q1_31(r.x().read().x() as i32))
+        Ok(Q1_31::from_bits(r.x().read().x() as i32))
     }
     fn submit_async(
         &mut self,
@@ -550,7 +570,7 @@ impl<'d, T: Instance> Cordic<'d, T> {
     }
 }
 fn check_domain(value: Q1_31, (minimum, maximum): (i32, i32)) -> Result<(), Error> {
-    if (minimum..=maximum).contains(&value.0) {
+    if (minimum..=maximum).contains(&value.to_bits()) {
         Ok(())
     } else {
         Err(Error::OutOfDomain)
