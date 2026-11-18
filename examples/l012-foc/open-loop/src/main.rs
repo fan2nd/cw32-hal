@@ -8,7 +8,7 @@
 //! limit before enabling closed-loop FOC.
 
 use cortex_m_rt::entry;
-use cw32_l012_foc_speed_loop::{
+use cw32_l012_foc_open_loop::{
     board::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, Encoder, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, angle_delta, apply_duty,

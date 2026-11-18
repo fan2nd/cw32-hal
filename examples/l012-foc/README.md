@@ -54,14 +54,14 @@ Build without flashing or executing hardware:
 rustc --edition 2024 --test examples/l012-foc/src/foc.rs -o /tmp/cw32-foc-math-tests \
   && /tmp/cw32-foc-math-tests
 cargo build --manifest-path examples/l012-foc/speed-loop/Cargo.toml --release \
-  --target thumbv6m-none-eabi --no-default-features --features cw32l012c8t6 --bin foc --offline
+  --target thumbv6m-none-eabi --no-default-features --features cw32l012c8t6 --offline
 ```
 
 工程内的 `.cargo/config.toml` 已配置 `probe-rs` runner。连接调试器并确认
 电源、电流采样和电位器安全后，可在本目录执行：
 
 ```sh
-cargo run --release --bin foc
+cargo run --release --offline
 ```
 
 该配置只属于此独立 example，不使用 Cargo workspace。
@@ -75,8 +75,9 @@ Clarke/Park 变换、SVPWM 和电机参数。完整速度闭环与耗时 crate �
 
 | crate | 用途 |
 | --- | --- |
-| `algorithm-timing/` | 用 BTIM1 统计电流环和速度环耗时 |
+| `algorithm-timing/` | 用 SysTick 统计电流环和速度环耗时 |
 | `speed-loop/` | 完整速度闭环 FOC 应用，包含 PWM/ADC/编码器板级代码 |
+| `open-loop/` | 独立开环换向与 PWM 相序验证 |
 
 进入对应目录后执行 `cargo run --release --offline`。这些目录各自有
 `Cargo.toml`，没有加入 workspace。

@@ -54,8 +54,8 @@
 
 ## 验证结果和未完成项
 
-- 已通过 `cargo build --target thumbv6m-none-eabi --release --bin foc --offline`。
-- 已通过项目配置的 `cargo run --release --bin foc --offline` 实机烧录和 RTT 验证；没有手动执行 `probe-rs download/attach`。
+- 已通过 `cargo build --target thumbv6m-none-eabi --release --offline`。
+- 已通过项目配置的 `cargo run --release --offline` 实机烧录和 RTT 验证；没有手动执行 `probe-rs download/attach`。
 - FOC 源码未使用 `i64/u64`，工程仍是独立 Cargo 工程，不使用 workspace。
 - 高速试验后已把电位器满量程降为 `240 rpm`，保留二次曲线；堵转积分残留也已清除。当前不再设置 `iqref=2000` 的应用层上限，但仍保留 `CURRENT_TRIP_COUNTS=2000` 的相电流 ADC 保护和 2 秒无运动停机保护。
 
