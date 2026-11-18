@@ -1,81 +1,11 @@
-//! Board-level peripherals and fixed-point conversions for the L012 FOC board.
+//! Hardware peripherals and fixed-point conversions for the L012 FOC example.
 
-use crate::foc::{Duty, JD4631, PhaseCurrent};
+use crate::foc::{JD4631, PhaseCurrent};
+pub use crate::config::*;
+use embassy_cw32::{cordic::{Cordic, Q1_31}, peripherals};
 
 /// Encoder resolution is a board/sensor choice, independent of motor data.
 /// The current L012 wiring uses the 14-bit AS5048A/MT6701-compatible frame.
-pub const ENCODER_COUNTS_PER_REV: u16 = 16_384;
-use embassy_cw32::{
-    self as hal,
-    cordic::{Cordic, Q1_31},
-    gpio::Flex,
-    mode::Blocking,
-    peripherals,
-    spi::{self, Spi},
-    timer::{Channel, complementary_pwm::ComplementaryPwm, low_level::Timer},
-};
-
-pub const PWM_HZ: u32 = 16_000;
-pub const CURRENT_SAMPLE_TICKS: u16 = 250; // BTIM1: 8 MHz / 16 kHz, sample at PWM midpoint.
-pub const ADC_REFERENCE_MV: u32 = 5_000;
-pub const ADC_FULL_SCALE: u32 = 4_095;
-pub const CURRENT_BIAS_MV: u32 = 2_500;
-pub const CURRENT_SHUNT_MOHM: u32 = 50;
-pub const CURRENT_AMPLIFIER_GAIN: u32 = 10;
-pub const BUS_DIVIDER_RATIO: u32 = 11; // C project: RV1=1, RV2=10.
-pub const ADC_FULL_SCALE_COUNTS: i32 = 2_048;
-pub const ALIGNMENT_PERIODS: u32 = PWM_HZ / 2; // C project: T_ALIGNMENT=500 ms.
-// The closed-loop controller uses the C reference's A-axis alignment vector,
-// so the encoder sample taken after alignment is electrical angle zero.
-pub const ALIGNMENT_ELECTRICAL_OFFSET: u16 = 0;
-pub const READY_ZERO_SAMPLES: u32 = 1_600;
-pub const POT_ZERO_COUNTS: u16 = 150; // C project NMINVD-50.
-pub const POT_MIN_COUNTS: u16 = 200; // C project NMINVD.
-pub const POT_MAX_COUNTS: u16 = 3_523; // C project NMAXVD.
-pub const POT_MIN_RPM: i32 = 0;
-pub const POT_MAX_RPM: i32 = 240;
-pub const SPEED_LOOP_DIV: u32 = 16;
-pub const DIRECTION_TEST_PERIODS: u32 = PWM_HZ / 10;
-// The reference C controller uses raw ADC-count current units. Keep the
-// direction check in that same unit so it does not overdrive the amplifier.
-pub const DIRECTION_TEST_IQ_Q15: i16 = 400;
-pub const DIRECTION_MIN_DELTA_COUNTS: i32 = 4;
-pub const BUS_MIN_MV: u32 = 8_000;
-pub const BUS_MAX_MV: u32 = 16_000;
-
-pub struct Encoder<'d> {
-    spi: Spi<'d, Blocking>,
-    cs: Flex<'d>,
-}
-
-impl<'d> Encoder<'d> {
-    pub fn new(spi: Spi<'d, Blocking>, cs: Flex<'d>) -> Self {
-        Self { spi, cs }
-    }
-
-    pub fn read_angle(&mut self) -> Result<u16, spi::Error> {
-        let mut frame = [0u8; 3];
-        self.cs.set_low();
-        let result = self.spi.blocking_transfer_in_place(&mut frame);
-        self.cs.set_high();
-        result?;
-        let raw = (u16::from(frame[0]) << 6) | (u16::from(frame[1]) >> 2);
-        Ok((ENCODER_COUNTS_PER_REV - (raw & 0x3fff)) & 0x3fff)
-    }
-}
-
-pub fn wait_period<T: hal::timer::OverflowInstance>(timer: &mut Timer<'_, T>) {
-    while !timer.take_overflow() {
-        core::hint::spin_loop();
-    }
-}
-
-pub fn wait_current_sample_phase<T: hal::timer::OverflowInstance>(timer: &mut Timer<'_, T>) {
-    while timer.get_counter() < CURRENT_SAMPLE_TICKS {
-        core::hint::spin_loop();
-    }
-}
-
 pub fn q15_from_adc(sample: u16, offset: u16) -> i16 {
     let signed = i32::from(offset) - i32::from(sample);
     // The C project feeds the calibrated ADC difference directly to Clarke /
@@ -102,85 +32,6 @@ pub fn phase_current(a: u16, b: u16, offset_a: u16, offset_b: u16) -> PhaseCurre
     }
 }
 
-/// Two-shunt current sample filter copied from `SVPWM_GetPhaseCurrentValues`.
-///
-/// The ADC is deliberately sampled at the same timer phase every cycle, but
-/// the OPA/ADC path can still produce one isolated conversion spike when a
-/// complementary edge is nearby. The C controller discards one jump larger
-/// than 50 counts and accepts it only when the next sample repeats the jump.
-/// Keeping the history here makes that behavior explicit and keeps the fast
-/// path in signed 32-bit arithmetic.
-#[derive(Clone, Copy, Debug, Default)]
-pub struct CurrentSampleFilter {
-    last_a: i32,
-    last_b: i32,
-    first_a: bool,
-    first_b: bool,
-    glitch_a: bool,
-    glitch_b: bool,
-}
-
-impl CurrentSampleFilter {
-    pub const fn new() -> Self {
-        Self {
-            last_a: 0,
-            last_b: 0,
-            first_a: false,
-            first_b: false,
-            glitch_a: false,
-            glitch_b: false,
-        }
-    }
-
-    pub fn reset(&mut self) {
-        *self = Self::new();
-    }
-
-    #[inline]
-    fn accept(sample: i32, last: &mut i32, first: &mut bool, glitch: &mut bool) -> i16 {
-        if !*first {
-            *first = true;
-            *last = sample;
-            return sample.clamp(-32_767, 32_767) as i16;
-        }
-
-        let delta = sample - *last;
-        if delta > 50 || delta < -50 {
-            if *glitch {
-                // Second consecutive excursion: it is a real current change.
-                *last = sample;
-                *glitch = true;
-            } else {
-                // Isolated conversion spike: retain the previous sample.
-                *glitch = true;
-                return (*last).clamp(-32_767, 32_767) as i16;
-            }
-        } else {
-            *last = sample;
-            *glitch = false;
-        }
-        (*last).clamp(-32_767, 32_767) as i16
-    }
-
-    pub fn sample(&mut self, a: u16, b: u16, offset_a: u16, offset_b: u16) -> PhaseCurrent {
-        let raw_a = i32::from(offset_a) - i32::from(a);
-        let raw_b = i32::from(offset_b) - i32::from(b);
-        PhaseCurrent {
-            a: Self::accept(
-                raw_a,
-                &mut self.last_a,
-                &mut self.first_a,
-                &mut self.glitch_a,
-            ),
-            b: Self::accept(
-                raw_b,
-                &mut self.last_b,
-                &mut self.first_b,
-                &mut self.glitch_b,
-            ),
-        }
-    }
-}
 
 pub fn bus_voltage_mv(sample: u16) -> u32 {
     u32::from(sample) * ADC_REFERENCE_MV * BUS_DIVIDER_RATIO / ADC_FULL_SCALE
@@ -340,9 +191,3 @@ pub fn sin_cos_q15(cordic: &mut Cordic<'_, peripherals::CORDIC>, angle: u16) -> 
     )
 }
 
-pub fn apply_duty(pwm: &mut ComplementaryPwm<'_, peripherals::ATIM>, duty: Duty) {
-    let max = pwm.get_max_duty();
-    pwm.set_duty_cycle(Channel::Ch1, u32::from(duty.a) * max / 32_767);
-    pwm.set_duty_cycle(Channel::Ch2, u32::from(duty.b) * max / 32_767);
-    pwm.set_duty_cycle(Channel::Ch3, u32::from(duty.c) * max / 32_767);
-}

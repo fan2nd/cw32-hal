@@ -830,6 +830,39 @@ impl<T: Instance> Drop for AsyncGuard<'_, '_, T> {
 }
 
 impl<T: Instance, M: Mode> Adc<'_, T, M> {
+    /// Read a completed sequence slot without exposing the device PAC.
+    #[inline]
+    pub fn latest_result(&self, slot: usize) -> Option<u16> {
+        if slot < crate::ADC_SEQUENCE_MAX_LEN {
+            Some(T::regs().result(slot).read().result())
+        } else {
+            None
+        }
+    }
+
+    /// Whether the end-of-sequence flag is pending.
+    #[inline]
+    pub fn end_of_sequence(&self) -> bool {
+        T::regs().isr().read().eos()
+    }
+
+    /// Enable or mask the end-of-sequence interrupt.
+    #[inline]
+    pub fn enable_end_of_sequence_interrupt(&self, enable: bool) {
+        T::regs().ier().modify(|v| v.set_eos(enable));
+    }
+
+    /// Acknowledge conversion-complete flags.
+    #[inline]
+    pub fn clear_completion(&self) {
+        T::regs().icr().write(|v| {
+            v.set_eoc(false);
+            v.set_eos(false);
+            v.set_awdl(true);
+            v.set_awdh(true);
+        });
+    }
+
     fn async_poll_control(&self, mut ready: impl FnMut() -> bool) -> bool {
         for _ in 0..self.config.timeout {
             if ready() {
@@ -977,6 +1010,30 @@ fn hardware_trigger_enabled<T: Instance>() -> bool {
         || v.gtim2cc3()
         || v.gtim2cc4();
     enabled
+}
+
+/// PAC-free accessors for timer-triggered ADC users whose interrupt handler
+/// cannot borrow the foreground `Adc` value.
+#[inline]
+pub fn adc_irq_eos<T: Instance>() -> bool {
+    T::regs().isr().read().eos()
+}
+#[inline]
+pub fn adc_irq_result<T: Instance>(slot: usize) -> Option<u16> {
+    (slot < crate::ADC_SEQUENCE_MAX_LEN).then(|| T::regs().result(slot).read().result())
+}
+#[inline]
+pub fn adc_irq_enable_eos<T: Instance>(enable: bool) {
+    T::regs().ier().modify(|v| v.set_eos(enable));
+}
+#[inline]
+pub fn adc_irq_clear<T: Instance>() {
+    T::regs().icr().write(|v| {
+        v.set_eoc(false);
+        v.set_eos(false);
+        v.set_awdl(true);
+        v.set_awdh(true);
+    });
 }
 
 fn inherited_async_configuration<T: Instance>() -> bool {

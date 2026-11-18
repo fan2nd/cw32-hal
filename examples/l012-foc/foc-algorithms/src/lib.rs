@@ -21,6 +21,86 @@ pub struct PhaseCurrent {
     pub b: i16,
 }
 
+/// Two-shunt current sample filter copied from `SVPWM_GetPhaseCurrentValues`.
+///
+/// The ADC is deliberately sampled at the same timer phase every cycle, but
+/// the OPA/ADC path can still produce one isolated conversion spike when a
+/// complementary edge is nearby. The C controller discards one jump larger
+/// than 50 counts and accepts it only when the next sample repeats the jump.
+/// Keeping the history here makes that behavior explicit and keeps the fast
+/// path in signed 32-bit arithmetic.
+#[derive(Clone, Copy, Debug, Default)]
+pub struct CurrentSampleFilter {
+    last_a: i32,
+    last_b: i32,
+    first_a: bool,
+    first_b: bool,
+    glitch_a: bool,
+    glitch_b: bool,
+}
+
+impl CurrentSampleFilter {
+    pub const fn new() -> Self {
+        Self {
+            last_a: 0,
+            last_b: 0,
+            first_a: false,
+            first_b: false,
+            glitch_a: false,
+            glitch_b: false,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        *self = Self::new();
+    }
+
+    #[inline]
+    fn accept(sample: i32, last: &mut i32, first: &mut bool, glitch: &mut bool) -> i16 {
+        if !*first {
+            *first = true;
+            *last = sample;
+            return sample.clamp(-32_767, 32_767) as i16;
+        }
+
+        let delta = sample - *last;
+        if delta > 50 || delta < -50 {
+            if *glitch {
+                // Second consecutive excursion: it is a real current change.
+                *last = sample;
+                *glitch = true;
+            } else {
+                // Isolated conversion spike: retain the previous sample.
+                *glitch = true;
+                return (*last).clamp(-32_767, 32_767) as i16;
+            }
+        } else {
+            *last = sample;
+            *glitch = false;
+        }
+        (*last).clamp(-32_767, 32_767) as i16
+    }
+
+    pub fn sample(&mut self, a: u16, b: u16, offset_a: u16, offset_b: u16) -> PhaseCurrent {
+        let raw_a = i32::from(offset_a) - i32::from(a);
+        let raw_b = i32::from(offset_b) - i32::from(b);
+        PhaseCurrent {
+            a: Self::accept(
+                raw_a,
+                &mut self.last_a,
+                &mut self.first_a,
+                &mut self.glitch_a,
+            ),
+            b: Self::accept(
+                raw_b,
+                &mut self.last_b,
+                &mut self.first_b,
+                &mut self.glitch_b,
+            ),
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
 pub struct Duty {
     pub a: u16,

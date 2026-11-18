@@ -2,27 +2,29 @@
 #![no_main]
 
 use core::cell::RefCell;
+mod adc;
 use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
 use cortex_m_rt::{entry, exception, ExceptionFrame};
 use cw32_l012_foc_speed_loop::{
-    board::{
-        ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, CurrentSampleFilter, Encoder,
-        EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
+    hardware::{
+        ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV,
-        angle_delta, apply_duty, bus_voltage_mv, electrical_angle,
-        electrical_angle_step_for_rpm, sin_cos_q15_lut, speed_rpm_from_delta, wait_period,
+        angle_delta, bus_voltage_mv, electrical_angle,
+        electrical_angle_step_for_rpm, sin_cos_q15_lut, speed_rpm_from_delta,
     },
     control::{
         ArmingGate, MotorState, combined_torque_reference, holding_torque_reference,
         target_rpm_from_pot,
     },
-    foc::{Duty, FocController, JD4631, SpeedController},
+    foc::{CurrentSampleFilter, Duty, FocController, JD4631, SpeedController},
 };
-use embassy_cw32::interrupt::typelevel::{ADC1, Handler, Interrupt};
+use cw32_l012_foc_speed_loop::{actuator::apply_duty, sensor::Encoder, actuator::wait_period};
+use embassy_cw32::interrupt::typelevel::{ADC1, Handler};
 use embassy_cw32::{
     self as hal,
-    adc::{Adc, Common, Config as AdcConfig, SampleTime},
+    adc::{Adc, Common, Config as AdcConfig, adc_irq_clear,
+        adc_irq_enable_eos, adc_irq_eos, adc_irq_result},
     gpio::{Flex, Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -108,23 +110,18 @@ struct Adc1CurrentLoop;
 
 impl Handler<ADC1> for Adc1CurrentLoop {
     unsafe fn on_interrupt() {
-        let status = hal::pac::ADC1.isr().read();
-        if !status.eos() {
+        if !adc_irq_eos::<hal::peripherals::ADC1>() {
             return;
         }
         // EOS is a level request on this ADC. Mask it before touching the
         // current-loop state so a pending/sticky flag cannot immediately
         // re-enter the handler and starve the foreground probe/speed loop.
-        hal::pac::ADC1.ier().modify(|v| v.set_eos(false));
-        let ia = hal::pac::ADC1.result(0).read().result();
-        let ib = hal::pac::ADC1.result(1).read().result();
+        adc_irq_enable_eos::<hal::peripherals::ADC1>(false);
+        let ia = adc_irq_result::<hal::peripherals::ADC1>(0).unwrap_or(0);
+        let ib = adc_irq_result::<hal::peripherals::ADC1>(1).unwrap_or(0);
         CURRENT_ADC_A.store(ia, Ordering::Relaxed);
         CURRENT_ADC_B.store(ib, Ordering::Relaxed);
-        hal::pac::ADC1.icr().write(|v| {
-            *v = hal::pac::adc::regs::Icr::write_noop();
-            v.set_eoc(false);
-            v.set_eos(false);
-        });
+        adc_irq_clear::<hal::peripherals::ADC1>();
 
         // The ADC trigger remains armed while the foreground state machine is
         // waiting for a nonzero speed command. Keep the power stage hard-off
@@ -132,12 +129,12 @@ impl Handler<ADC1> for Adc1CurrentLoop {
         // During alignment the foreground owns the fixed duty vector; the
         // current ISR must drain EOS without clearing MOE or replacing it.
         if CURRENT_ALIGNMENT_ACTIVE.load(Ordering::Relaxed) != 0 {
-            hal::pac::ADC1.ier().modify(|v| v.set_eos(true));
+            adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
             return;
         }
         if CURRENT_OUTPUT_ENABLE.load(Ordering::Relaxed) == 0 {
-            hal::pac::ATIM.bdtr().modify(|v| v.set_moe(false));
-            hal::pac::ADC1.ier().modify(|v| v.set_eos(true));
+            hal::timer::complementary_pwm::irq_moe(false);
+            adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
             return;
         }
 
@@ -184,23 +181,17 @@ impl Handler<ADC1> for Adc1CurrentLoop {
         let ib_q15 = i32::from(CURRENT_PHASE_B.load(Ordering::Relaxed));
         if ia_q15.abs() > CURRENT_TRIP_COUNTS || ib_q15.abs() > CURRENT_TRIP_COUNTS {
             CURRENT_FAULT.store(1, Ordering::Relaxed);
-            hal::pac::ATIM.bdtr().modify(|v| v.set_moe(false));
+            hal::timer::complementary_pwm::irq_moe(false);
         }
         let count = CURRENT_LOOP_COUNT.load(Ordering::Relaxed);
         CURRENT_LOOP_COUNT.store(count.wrapping_add(1), Ordering::Relaxed);
         let total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
         CURRENT_LOOP_TOTAL.store(total.wrapping_add(1), Ordering::Relaxed);
-        let period = u32::from(hal::pac::ATIM.arr().read().arr()) + 1;
-        hal::pac::ATIM
-            .ccr1()
-            .write(|v| v.set_ccr1(((u32::from(duty.a) * period) >> 15).min(65_535) as u16));
-        hal::pac::ATIM
-            .ccr2()
-            .write(|v| v.set_ccr2(((u32::from(duty.b) * period) >> 15).min(65_535) as u16));
-        hal::pac::ATIM
-            .ccr3()
-            .write(|v| v.set_ccr3(((u32::from(duty.c) * period) >> 15).min(65_535) as u16));
-        hal::pac::ADC1.ier().modify(|v| v.set_eos(true));
+        let period = hal::timer::complementary_pwm::irq_arr();
+        hal::timer::complementary_pwm::irq_ccr(Channel::Ch1, ((u32::from(duty.a) * period) >> 15).min(65_535) as u16);
+        hal::timer::complementary_pwm::irq_ccr(Channel::Ch2, ((u32::from(duty.b) * period) >> 15).min(65_535) as u16);
+        hal::timer::complementary_pwm::irq_ccr(Channel::Ch3, ((u32::from(duty.c) * period) >> 15).min(65_535) as u16);
+        adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
     }
 }
 
@@ -230,117 +221,6 @@ unsafe fn DefaultHandler(irqn: i16) -> ! {
     loop {
         cortex_m::asm::wfi();
     }
-}
-
-fn configure_current_loop_trigger(period: u32) {
-    // Match the reference C path: ADC1 scans PB0/PB1 on ATIM CC4 and raises
-    // EOS. The ISR above executes the current PI and writes the preloaded CCRs.
-    hal::pac::ADC1.start().write(|v| v.set_start(false));
-    hal::pac::ADC1.sqrcfr().write(|v| {
-        v.set_sqrch(0, 8);
-        v.set_sqrch(1, 9);
-    });
-    hal::pac::ADC1.sample().write(|v| {
-        v.set_sqrch(0, 6); // 30 acquisition cycles
-        v.set_sqrch(1, 6);
-    });
-    hal::pac::ADC1.cr().modify(|v| {
-        v.set_en(true);
-        v.set_cont(false);
-        v.set_slave(false);
-        v.set_ens(1);
-        // The L012 ADC permits up to 48 MHz ADCCLK. The reference C project
-        // uses ADC_Clk_Div2 at the 96 MHz control clock; retain that timing so
-        // the two 30-cycle samples complete at the intended trigger phase.
-        v.set_clk(1);
-    });
-    hal::pac::ADC1.icr().write(|v| {
-        v.set_eoc(false);
-        v.set_eos(false);
-    });
-    hal::pac::ADC1.ier().write(|v| v.set_eos(true));
-    hal::pac::ADC1.trigger().write(|v| v.set_atimoc4refc(true));
-
-    let compare = period.saturating_sub(5).min(65_535) as u16;
-    hal::pac::ATIM.ccr4().write(|v| v.set_ccr4(compare));
-    hal::pac::ATIM.ccmr2cmp().modify(|v| {
-        v.set_oc4pe(true);
-        v.set_oc4m(7); // PWM2, matching the C ADC trigger channel.
-    });
-    hal::pac::ATIM.ccer().modify(|v| {
-        v.set_cc4p(false);
-        v.set_cc4e(true);
-    });
-    // The C path leaves START low: ATIM CC4 is the sole conversion trigger.
-    // START is only for software conversion and would make this one-shot
-    // sequence run continuously, starving the foreground state machine.
-    hal::pac::ADC1.start().write(|v| v.set_start(false));
-    unsafe { ADC1::enable() };
-    defmt::info!(
-        "current loop armed: adc_en={=bool} adc_clk_div={=u8} adc_start={=bool} adc_trigger={=bool} ccr4={=u16} arr={=u16}",
-        hal::pac::ADC1.cr().read().en(),
-        hal::pac::ADC1.cr().read().clk(),
-        hal::pac::ADC1.start().read().start(),
-        hal::pac::ADC1.trigger().read().atimoc4refc(),
-        hal::pac::ATIM.ccr4().read().ccr4(),
-        hal::pac::ATIM.arr().read().arr()
-    );
-}
-
-/// Run the same level auto-zero sequence as `OPA_AutoZeroSoft_Start/Stop` in
-/// the reference C project.  The vendor API calls this "soft" calibration,
-/// but the implementation selects level mode and holds START high while the
-/// calibration window runs.  Keep CALEN asserted afterwards, as the C code
-/// does; the ADC offset sample below then removes the complete remaining
-/// 2.5 V amplifier output bias in ADC counts.
-fn calibrate_current_amplifiers() {
-    for opa in [hal::pac::OPA1, hal::pac::OPA2] {
-        opa.cal().write(|v| {
-            v.set_calen(true);
-            v.set_calmode(hal::pac::opa::vals::CalibrationMode::Level);
-            v.set_start(true);
-            v.set_softtrig(false);
-        });
-        // The C project uses FirmwareDelay(100) at 96 MHz.  This bounded
-        // delay is deliberately kept short and is followed by the SDK's
-        // required post-stop settling interval.
-        cortex_m::asm::delay(100);
-        opa.cal().modify(|v| {
-            v.set_start(false);
-            v.set_calmode(hal::pac::opa::vals::CalibrationMode::Triggered);
-            v.set_softtrig(false);
-        });
-        cortex_m::asm::delay(960);
-    }
-}
-
-fn configure_aux_adc_continuous() {
-    // Match the C project: ADC2 continuously scans PA8/CH5 (bus) and
-    // PA10/CH7 (pot). Foreground code only reads RESULT0/RESULT1; it never
-    // starts a software conversion while ADC1 is being timer-triggered.
-    hal::pac::ADC2.start().write(|v| v.set_start(false));
-    hal::pac::ADC2.sqrcfr().write(|v| {
-        v.set_sqrch(0, 5);
-        v.set_sqrch(1, 7);
-    });
-    hal::pac::ADC2.sample().write(|v| {
-        v.set_sqrch(0, SampleTime::Cycles518 as u8);
-        v.set_sqrch(1, SampleTime::Cycles518 as u8);
-    });
-    hal::pac::ADC2.cr().modify(|v| {
-        v.set_en(true);
-        v.set_cont(true);
-        v.set_slave(false);
-        v.set_ens(1);
-        v.set_clk(3); // C ADC_Clk_Div8.
-    });
-    hal::pac::ADC2.ier().write(|v| {
-        v.set_eoc(false);
-        v.set_eos(false);
-    });
-    hal::pac::ADC2.trigger().write(|_| {});
-    hal::pac::ADC2.start().write(|v| v.set_start(true));
-    cortex_m::asm::delay(8_000);
 }
 
 #[entry]
@@ -374,63 +254,30 @@ fn main() -> ! {
     adc_config.frequency = Hertz(24_000_000);
     // The current-sense amplifier and its analog routing are established
     // before ADC1 is acquired, matching the C startup order.
-    let mut ia_pin = Flex::new(p.PB0);
-    ia_pin.set_as_analog();
-    let mut ib_pin = Flex::new(p.PB1);
-    ib_pin.set_as_analog();
     let mut bus_pin = Flex::new(p.PA8);
     bus_pin.set_as_analog();
     let mut pot_pin = Flex::new(p.PA10);
     pot_pin.set_as_analog();
 
-    // The C reference enables both external-feedback current amplifiers:
-    // OPA1 PA6/PA7 -> PB0 and OPA2 PA4/PA5 -> PB1. The HAL's scoped OPA
-    // output guard cannot share PB0/PB1 with ADC ownership, so retain the
-    // HAL clock admission and apply the reviewed pin-switch configuration
-    // directly; ADC then owns the amplifier output pins for sampling.
+    // Configure both current-sense amplifiers through the HAL. Their fixed PB0/PB1
+    // outputs remain available for ADC1 sampling.
     let mut opa_config = hal::opamp::Config::default();
     opa_config.supply_mv = 5_000;
-    let opa1 = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
-    let opa2 = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
-    core::mem::forget(opa1);
-    core::mem::forget(opa2);
-    let mut opa1_inp = Flex::new(p.PA6);
-    opa1_inp.set_as_analog();
-    let mut opa1_inn = Flex::new(p.PA7);
-    opa1_inn.set_as_analog();
-    let mut opa2_inp = Flex::new(p.PA4);
-    opa2_inp.set_as_analog();
-    let mut opa2_inn = Flex::new(p.PA5);
-    opa2_inn.set_as_analog();
-    hal::pac::OPA1.cr().write(|w| {
-        w.set_bias(hal::pac::opa::vals::Bias::Ua8);
-        w.set_mode(hal::pac::opa::vals::Mode::External);
-        w.set_inp2en(true);
-        w.set_inn2en(true);
-        w.set_en(true);
-    });
-    hal::pac::OPA2.cr().write(|w| {
-        w.set_bias(hal::pac::opa::vals::Bias::Ua8);
-        w.set_mode(hal::pac::opa::vals::Mode::External);
-        w.set_inp1en(true);
-        w.set_inn1en(true);
-        w.set_en(true);
-    });
+    let mut opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
+    let mut opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
+    let mut opa1 = opa1_ctrl.standalone_ext_adc(p.PA6, p.PA7).unwrap();
+    let mut opa2 = opa2_ctrl.standalone_ext_adc(p.PA4, p.PA5).unwrap();
     cortex_m::asm::delay(800);
-    calibrate_current_amplifiers();
-    defmt::info!(
-        "init: opa current amplifiers enabled opa1={=bool} opa2={=bool} cal1={=bool} cal2={=bool}",
-        hal::pac::OPA1.cr().read().en(),
-        hal::pac::OPA2.cr().read().en(),
-        hal::pac::OPA1.cal().read().calen(),
-        hal::pac::OPA2.cal().read().calen()
-    );
+    opa1.calibrate(100);
+    opa2.calibrate(100);
+    defmt::info!("init: opa current amplifiers enabled opa1={=bool} opa2={=bool} cal1={=bool} cal2={=bool}",
+        opa1.is_enabled(), opa2.is_enabled(), opa1.calibration_enabled(), opa2.calibration_enabled());
 
     // Keep ADC1 owned for the lifetime of the firmware. Its sequence is
     // reprogrammed below to the C project's ATIM-CC4 triggered scan.
-    let adc1 = Adc::new(p.ADC1, &common, adc_config).unwrap();
+    let adc1 = Adc::new_motor(p.ADC1, &common, Irqs, adc_config).unwrap();
     let _adc2 = Adc::new(p.ADC2, &common, adc_config).unwrap();
-    configure_aux_adc_continuous();
+    adc::auxiliary();
 
     let mut pwm = ComplementaryPwm::new(
         p.ATIM,
@@ -453,11 +300,7 @@ fn main() -> ! {
         },
     )
     .unwrap();
-    hal::pac::ATIM.cr1().modify(|v| {
-        v.set_cen(false);
-        v.set_cms(1); // center-aligned mode 1
-        v.set_cen(true);
-    });
+    hal::timer::complementary_pwm::irq_center();
     for channel in [Channel::Ch1, Channel::Ch2, Channel::Ch3] {
         pwm.set_duty_cycle(channel, pwm.get_max_duty() / 2);
         pwm.enable(channel);
@@ -473,7 +316,7 @@ fn main() -> ! {
     // Arm the same ADC1 EOS path used by the C project before offset
     // calibration. MOE is still low, so the ISR only drains conversions and
     // cannot apply any voltage to the motor.
-    configure_current_loop_trigger(pwm_period);
+    adc::current_loop(pwm_period);
 
     let mut cs = Flex::new(p.PF0);
     cs.set_high();
@@ -516,7 +359,7 @@ fn main() -> ! {
     defmt::info!("state=wait-zero: move potentiometer to zero");
     loop {
         pwm.set_master_output_enable(false);
-        let pot = hal::pac::ADC2.result(1).read().result();
+        let pot = adc_irq_result::<hal::peripherals::ADC2>(1).unwrap_or(0);
         if wait_zero_log_ticks >= PWM_HZ / 2 {
             defmt::info!("wait-zero: pot={=u16}", pot);
             wait_zero_log_ticks = 0;
@@ -559,7 +402,7 @@ fn main() -> ! {
     defmt::info!("state=aligned: waiting for nonzero command");
     let mut pot_wait_log_ticks = 0u32;
     loop {
-        let pot = hal::pac::ADC2.result(1).read().result();
+        let pot = adc_irq_result::<hal::peripherals::ADC2>(1).unwrap_or(0);
         if pot_wait_log_ticks >= PWM_HZ / 2 {
             defmt::info!("wait-nonzero: pot={=u16}", pot);
             pot_wait_log_ticks = 0;
@@ -621,7 +464,7 @@ fn main() -> ! {
     let mut command_rpm_latched = 0i32;
 
     loop {
-        let pot_now = hal::pac::ADC2.result(1).read().result();
+        let pot_now = adc_irq_result::<hal::peripherals::ADC2>(1).unwrap_or(0);
         let auto_command = AUTO_START_TEST_RPM > 0;
         if !auto_command && pot_now <= POT_ZERO_COUNTS {
             // Zero is also the operator's fault-clear command. Drop the
@@ -650,7 +493,7 @@ fn main() -> ! {
             set_current_output(&mut pwm, false);
             continue;
         }
-        let bus = hal::pac::ADC2.result(0).read().result();
+        let bus = adc_irq_result::<hal::peripherals::ADC2>(0).unwrap_or(0);
         let bus_mv = bus_voltage_mv(bus);
         if (auto_command || pot_now > POT_ZERO_COUNTS)
             && !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv)
@@ -668,9 +511,9 @@ fn main() -> ! {
                 CURRENT_IQ.load(Ordering::Relaxed),
                 CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
                 last_angle,
-                hal::pac::ATIM.ccr1().read().ccr1(),
-                hal::pac::ATIM.ccr2().read().ccr2(),
-                hal::pac::ATIM.ccr3().read().ccr3(),
+                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
+                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
+                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3),
                 CURRENT_LOOP_COUNT.load(Ordering::Relaxed)
             );
             continue;
@@ -817,9 +660,9 @@ fn main() -> ! {
                         CURRENT_IQ.load(Ordering::Relaxed),
                         CURRENT_PHASE_A.load(Ordering::Relaxed),
                         CURRENT_PHASE_B.load(Ordering::Relaxed),
-                        hal::pac::ATIM.ccr1().read().ccr1(),
-                        hal::pac::ATIM.ccr2().read().ccr2(),
-                        hal::pac::ATIM.ccr3().read().ccr3()
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3)
                     );
                     continue;
                 }
@@ -851,9 +694,9 @@ fn main() -> ! {
                         CURRENT_PHASE_A.load(Ordering::Relaxed),
                         CURRENT_PHASE_B.load(Ordering::Relaxed),
                         mechanical_angle,
-                        hal::pac::ATIM.ccr1().read().ccr1(),
-                        hal::pac::ATIM.ccr2().read().ccr2(),
-                        hal::pac::ATIM.ccr3().read().ccr3()
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
+                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3)
                     );
                 } else {
                     set_current_output(&mut pwm, true);

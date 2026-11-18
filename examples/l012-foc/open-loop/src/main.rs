@@ -9,15 +9,16 @@
 
 use cortex_m_rt::entry;
 use cw32_l012_foc_open_loop::{
-    board::{
-        ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, Encoder, POT_MAX_COUNTS, POT_MAX_RPM,
-        POT_MIN_COUNTS, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, angle_delta, apply_duty,
-        bus_voltage_mv, sin_cos_q15, wait_period,
+    hardware::{
+        ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, POT_MAX_COUNTS, POT_MAX_RPM,
+        POT_MIN_COUNTS, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, angle_delta,
+        bus_voltage_mv, sin_cos_q15,
     },
     control::target_rpm_from_pot,
     foc::{Duty, JD4631},
 };
 use defmt_rtt as _;
+use cw32_l012_foc_open_loop::{actuator::apply_duty, sensor::Encoder, actuator::wait_period};
 use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
@@ -128,39 +129,18 @@ fn main() -> ! {
     let mut bus_pin = p.PA8;
     let mut pot_pin = p.PA10;
 
-    // Match the C board's current-sense path: OPA1 PA6/PA7 -> PB0 and
-    // OPA2 PA4/PA5 -> PB1. Without this setup ADC1 reads zero even while the
-    // bridge is switching.
+    // Configure the current-sense amplifiers through the HAL; PB0/PB1 remain
+    // available as ADC channels while the input pins are retained by the guards.
     let mut opa_config = hal::opamp::Config::default();
     opa_config.supply_mv = 5_000;
-    let opa1 = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
-    let opa2 = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
-    core::mem::forget(opa1);
-    core::mem::forget(opa2);
-    let mut opa1_inp = Flex::new(p.PA6);
-    opa1_inp.set_as_analog();
-    let mut opa1_inn = Flex::new(p.PA7);
-    opa1_inn.set_as_analog();
-    let mut opa2_inp = Flex::new(p.PA4);
-    opa2_inp.set_as_analog();
-    let mut opa2_inn = Flex::new(p.PA5);
-    opa2_inn.set_as_analog();
-    hal::pac::OPA1.cr().write(|w| {
-        w.set_bias(hal::pac::opa::vals::Bias::Ua8);
-        w.set_mode(hal::pac::opa::vals::Mode::External);
-        w.set_inp2en(true);
-        w.set_inn2en(true);
-        w.set_en(true);
-    });
-    hal::pac::OPA2.cr().write(|w| {
-        w.set_bias(hal::pac::opa::vals::Bias::Ua8);
-        w.set_mode(hal::pac::opa::vals::Mode::External);
-        w.set_inp1en(true);
-        w.set_inn1en(true);
-        w.set_en(true);
-    });
+    let mut opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
+    let mut opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
+    let mut opa1 = opa1_ctrl.standalone_ext_adc(p.PA6, p.PA7).unwrap();
+    let mut opa2 = opa2_ctrl.standalone_ext_adc(p.PA4, p.PA5).unwrap();
     cortex_m::asm::delay(800);
-    info!("init: opa current amplifiers enabled");
+    opa1.calibrate(100);
+    opa2.calibrate(100);
+    info!("init: opa current amplifiers enabled opa1={=bool} opa2={=bool}", opa1.is_enabled(), opa2.is_enabled());
 
     let mut offset_a = 0u32;
     let mut offset_b = 0u32;

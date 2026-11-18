@@ -50,6 +50,13 @@ use embassy_sync::waitqueue::AtomicWaker;
 /// Maximum independently programmed hardware slots, in caller-supplied order.
 pub const MAX_SEQUENCE_LEN: usize = crate::ADC_SEQUENCE_MAX_LEN;
 
+/// External trigger selected for an ADC motor-control scan.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum AdcTrigger {
+    /// Advanced timer compare channel 4 reference.
+    AtimCc4,
+}
+
 /// Fixed hardware conversion resolution.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -455,6 +462,39 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
         };
         adc.initialize();
         Ok(adc)
+    }
+
+    /// Construct a blocking ADC while consuming the application's interrupt
+    /// binding. The foreground retains ADC ownership; the bound handler may
+    /// use the `adc_irq_*` accessors from its ISR.
+    pub fn new_with_irq<I, H>(
+        peripheral: Peri<'d, T>,
+        common: &'d Common<'d>,
+        _irqs: I,
+        config: Config,
+    ) -> Result<Self, Error>
+    where
+        T: AsyncInstance,
+        I: Binding<T::Interrupt, H> + 'd,
+        H: Handler<T::Interrupt>,
+    {
+        Self::new(peripheral, common, config)
+    }
+
+    /// Motor-control ADC mode: foreground ownership plus an application-owned
+    /// fast current-loop ISR binding.
+    pub fn new_motor<I, H>(
+        peripheral: Peri<'d, T>,
+        common: &'d Common<'d>,
+        irqs: I,
+        config: Config,
+    ) -> Result<Self, Error>
+    where
+        T: AsyncInstance,
+        I: Binding<T::Interrupt, H> + 'd,
+        H: Handler<T::Interrupt>,
+    {
+        Self::new_with_irq(peripheral, common, irqs, config)
     }
 
     /// Fallible explicit blocking constructor.
@@ -938,6 +978,18 @@ impl<T: Instance> Drop for AsyncGuard<'_, '_, T> {
 }
 
 impl<T: Instance, M: Mode> Adc<'_, T, M> {
+    /// Whether an end-of-sequence conversion is pending.
+    #[inline]
+    pub fn end_of_sequence(&self) -> bool { adc_irq_eos::<T>() }
+    /// Enable or mask the end-of-sequence interrupt.
+    #[inline]
+    pub fn enable_end_of_sequence_interrupt(&self, enable: bool) {
+        adc_irq_enable_eos::<T>(enable)
+    }
+    /// Acknowledge conversion-complete flags.
+    #[inline]
+    pub fn clear_completion(&self) { adc_irq_clear::<T>() }
+
     fn async_poll_control(&self, mut ready: impl FnMut() -> bool) -> bool {
         for _ in 0..self.config.timeout {
             if ready() {
@@ -1056,6 +1108,93 @@ impl<T: Instance, M: Mode> Adc<'_, T, M> {
         self.active = true;
         Ok(())
     }
+}
+
+/// PAC-free accessors for timer-triggered ADC users whose interrupt handler
+/// cannot borrow the foreground `Adc` value.
+#[inline]
+pub fn adc_irq_eos<T: Instance>() -> bool { T::regs().isr().read().eos() }
+#[inline]
+pub fn adc_irq_result<T: Instance>(slot: usize) -> Option<u16> {
+    (slot < crate::ADC_SEQUENCE_MAX_LEN).then(|| T::regs().result(slot).read().result())
+}
+#[inline]
+pub fn adc_irq_enable_eos<T: Instance>(enable: bool) {
+    T::regs().ier().modify(|v| v.set_eos(enable));
+}
+#[inline]
+pub fn adc_irq_clear<T: Instance>() {
+    T::regs().icr().write(|v| {
+        v.set_eoc(false);
+        v.set_eos(false);
+        v.set_awdl(true);
+        v.set_awdh(true);
+    });
+}
+
+/// Configure a two-slot ATIM-CC4 triggered scan used by motor current loops.
+/// Register details remain inside the HAL; the application only supplies the
+/// two ADC mux channels and acquisition time.
+pub fn configure_timer_triggered<T: Instance>(
+    channels: [u8; 2],
+    sample: SampleTime,
+    clk: u8,
+    trigger: AdcTrigger,
+) {
+    let regs = T::regs();
+    regs.start().write(|v| v.set_start(false));
+    regs.sqrcfr().write(|v| {
+        v.set_sqrch(0, channels[0]);
+        v.set_sqrch(1, channels[1]);
+    });
+    regs.sample().write(|v| {
+        v.set_sqrch(0, sample as u8);
+        v.set_sqrch(1, sample as u8);
+    });
+    regs.cr().modify(|v| {
+        v.set_en(true);
+        v.set_cont(false);
+        v.set_slave(false);
+        v.set_ens(1);
+        v.set_clk(clk);
+    });
+    regs.icr().write(|v| {
+        v.set_eoc(false);
+        v.set_eos(false);
+        v.set_awdl(true);
+        v.set_awdh(true);
+    });
+    regs.ier().modify(|v| v.set_eos(true));
+    regs.trigger().write(|v| match trigger {
+        AdcTrigger::AtimCc4 => v.set_atimoc4refc(true),
+    });
+}
+
+/// Configure a continuously running two-slot scan.
+pub fn configure_continuous<T: Instance>(channels: [u8; 2], sample: SampleTime, clk: u8) {
+    let regs = T::regs();
+    regs.start().write(|v| v.set_start(false));
+    regs.sqrcfr().write(|v| {
+        v.set_sqrch(0, channels[0]);
+        v.set_sqrch(1, channels[1]);
+    });
+    regs.sample().write(|v| {
+        v.set_sqrch(0, sample as u8);
+        v.set_sqrch(1, sample as u8);
+    });
+    regs.cr().modify(|v| {
+        v.set_en(true);
+        v.set_cont(true);
+        v.set_slave(false);
+        v.set_ens(1);
+        v.set_clk(clk);
+    });
+    regs.ier().write(|v| {
+        v.set_eoc(false);
+        v.set_eos(false);
+    });
+    regs.trigger().write(|_| {});
+    regs.start().write(|v| v.set_start(true));
 }
 
 fn hardware_trigger_enabled<T: Instance>() -> bool {

@@ -15,7 +15,9 @@
 //! remain in 0..VDDA and linear output in 0.1..VDDA−0.1 V; load resistance must be
 //! at least 8 kΩ for <1% output deviation. The board must also respect the 6 mA
 //! maximum output current and all datasheet conditions. Gain is nominal. This
-//! subset does not calibrate or promise offset/accuracy. See `docs/dac-opa.md`.
+//! Calibration is exposed explicitly because current-sense front ends commonly
+//! need the vendor soft auto-zero sequence before the ADC is started. See
+//! `docs/dac-opa.md`.
 //!
 //! Shared BGR, ADC, VC and clock gates are never disabled/reset. The DAC gate is
 //! retained so a preexisting competing output can be inspected safely. No other
@@ -205,6 +207,37 @@ impl<'d, T: Instance> OpAmp<'d, T> {
             _output: output,
         })
     }
+
+    /// Enable the external-feedback amplifier while leaving its fixed package
+    /// output available to the ADC driver.
+    ///
+    /// L012 current-sense routes have a fixed OPA output (PB0/PB1). This
+    /// variant consumes only the two input pins; the output pin is intentionally
+    /// acquired by `Adc` afterwards, so the safe ownership model can represent
+    /// the analog amplifier output and ADC channel at the same time.
+    pub fn standalone_ext_adc<'a, P: NonInvertingPin<T>, N: InvertingPin<T>>(
+        &'a mut self,
+        positive: Peri<'a, P>,
+        negative: Peri<'a, N>,
+    ) -> Result<OpAmpAdc<'a, 'd, T>, Error> {
+        Self::check_output()?;
+        let mut positive = Flex::new(positive);
+        let mut negative = Flex::new(negative);
+        positive.set_as_analog();
+        negative.set_as_analog();
+        T::regs().cr().write(|w| {
+            w.set_bias(vals::Bias::Ua8);
+            w.set_mode(vals::Mode::External);
+            P::connect(w);
+            N::connect(w);
+            w.set_en(true);
+        });
+        Ok(OpAmpAdc {
+            _inner: self,
+            _positive: positive,
+            _negative: negative,
+        })
+    }
 }
 impl<T: Instance> Drop for OpAmp<'_, T> {
     fn drop(&mut self) {
@@ -219,6 +252,46 @@ pub struct OpAmpOutput<'a, 'd, T: Instance> {
     _positive: Flex<'a>,
     _negative: Option<Flex<'a>>,
     _output: Flex<'a>,
+}
+
+/// Active amplifier whose fixed output is sampled by an ADC peripheral.
+pub struct OpAmpAdc<'a, 'd, T: Instance> {
+    _inner: &'a mut OpAmp<'d, T>,
+    _positive: Flex<'a>,
+    _negative: Flex<'a>,
+}
+impl<T: Instance> OpAmpAdc<'_, '_, T> {
+    /// Run the L012 level soft auto-zero sequence and retain calibration mode.
+    /// `delay_cycles` is the post-start calibration interval at the current
+    /// core clock; the method also includes the required settling interval.
+    pub fn calibrate(&mut self, delay_cycles: u32) {
+        T::regs().cal().write(|w| {
+            w.set_calen(true);
+            w.set_calmode(vals::CalibrationMode::Level);
+            w.set_start(true);
+            w.set_softtrig(false);
+        });
+        cortex_m::asm::delay(delay_cycles);
+        T::regs().cal().modify(|w| {
+            w.set_start(false);
+            w.set_calmode(vals::CalibrationMode::Triggered);
+            w.set_softtrig(false);
+        });
+        cortex_m::asm::delay(delay_cycles.saturating_mul(10));
+    }
+    /// Whether the amplifier is currently enabled.
+    pub fn is_enabled(&self) -> bool {
+        T::regs().cr().read().en()
+    }
+    /// Whether calibration remains enabled for the calibrated offset path.
+    pub fn calibration_enabled(&self) -> bool {
+        T::regs().cal().read().calen()
+    }
+}
+impl<T: Instance> Drop for OpAmpAdc<'_, '_, T> {
+    fn drop(&mut self) {
+        T::regs().cr().modify(|w| w.set_en(false));
+    }
 }
 impl<T: Instance> Drop for OpAmpOutput<'_, '_, T> {
     fn drop(&mut self) {

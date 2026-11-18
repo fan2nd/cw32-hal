@@ -136,6 +136,46 @@ pub struct ComplementaryPwm<'d, T: ComplementaryInstance> {
     dead_time: u8,
     duties: [u32; 4],
 }
+
+/// Interrupt-side access for a PWM owner retained by the foreground. The
+/// foreground `ComplementaryPwm` remains the owner; these helpers only update
+/// preloaded compare values and the global safety gate from an ISR.
+#[inline]
+pub fn irq_moe(enable: bool) { pac::ATIM.bdtr().modify(|v| v.set_moe(enable)); }
+#[inline]
+pub fn irq_arr() -> u32 { u32::from(pac::ATIM.arr().read().arr()) + 1 }
+#[inline]
+pub fn irq_ccr(channel: Channel, duty: u16) {
+    match channel {
+        Channel::Ch1 => pac::ATIM.ccr1().write(|v| v.set_ccr1(duty)),
+        Channel::Ch2 => pac::ATIM.ccr2().write(|v| v.set_ccr2(duty)),
+        Channel::Ch3 => pac::ATIM.ccr3().write(|v| v.set_ccr3(duty)),
+        Channel::Ch4 => pac::ATIM.ccr4().write(|v| v.set_ccr4(duty)),
+    }
+}
+#[inline]
+pub fn irq_ccr_read(channel: Channel) -> u16 {
+    match channel {
+        Channel::Ch1 => pac::ATIM.ccr1().read().ccr1(),
+        Channel::Ch2 => pac::ATIM.ccr2().read().ccr2(),
+        Channel::Ch3 => pac::ATIM.ccr3().read().ccr3(),
+        Channel::Ch4 => pac::ATIM.ccr4().read().ccr4(),
+    }
+}
+#[inline]
+pub fn irq_center() {
+    pac::ATIM.cr1().modify(|v| {
+        v.set_cen(false);
+        v.set_cms(1);
+        v.set_cen(true);
+    });
+}
+#[inline]
+pub fn irq_cc4(compare: u16) {
+    pac::ATIM.ccr4().write(|v| v.set_ccr4(compare));
+    pac::ATIM.ccmr2cmp().modify(|v| { v.set_oc4pe(true); v.set_oc4m(7); });
+    pac::ATIM.ccer().modify(|v| { v.set_cc4p(false); v.set_cc4e(true); });
+}
 impl<'d, T: ComplementaryInstance> ComplementaryPwm<'d, T> {
     /// Construct a running counter with all channel gates and MOE disabled.
     /// Output polarity is active high.
