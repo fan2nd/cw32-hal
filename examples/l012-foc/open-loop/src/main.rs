@@ -26,7 +26,7 @@ use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
     cordic::Cordic,
-    gpio::{Flex, Level, Output, Speed},
+    gpio::{Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
     timer::{
@@ -211,9 +211,7 @@ async fn main(spawner: Spawner) {
 
     let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
     let mut cordic = Cordic::new(p.CORDIC).unwrap();
-    let mut cs = Flex::new(p.PF0);
-    cs.set_high();
-    cs.set_as_output(Speed::Default);
+    let cs = Output::new(p.PF0, Level::High, Speed::Default);
     let mut spi_config = spi::Config::default();
     spi_config.mode = MODE_1;
     spi_config.frequency = Hertz(4_000_000);

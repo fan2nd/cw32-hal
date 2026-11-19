@@ -182,9 +182,7 @@ async fn main(spawner: Spawner) {
     // cannot apply any voltage to the motor.
     adc::current_loop(pwm_period);
 
-    let mut cs = Flex::new(p.PF0);
-    cs.set_high();
-    cs.set_as_output(Speed::Default);
+    let cs = Output::new(p.PF0, Level::High, Speed::Default);
     let mut spi_config = spi::Config::default();
     spi_config.mode = MODE_1;
     spi_config.frequency = Hertz(4_000_000);

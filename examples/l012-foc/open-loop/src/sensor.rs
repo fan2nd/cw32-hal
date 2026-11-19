@@ -1,5 +1,5 @@
 //! Encoder and sampling timing interfaces.
-use embassy_cw32::{gpio::Flex, mode::Blocking, spi::{self, Spi}};
+use embassy_cw32::{gpio::Output, mode::Blocking, spi::{self, Spi}};
 
 pub const ENCODER_COUNTS_PER_REV: u16 = 16_384;
 
@@ -34,11 +34,11 @@ pub const BUS_MAX_MV: u32 = 16_000;
 
 pub struct Encoder<'d> {
     spi: Spi<'d, Blocking>,
-    cs: Flex<'d>,
+    cs: Output<'d>,
 }
 
 impl<'d> Encoder<'d> {
-    pub fn new(spi: Spi<'d, Blocking>, cs: Flex<'d>) -> Self {
+    pub fn new(spi: Spi<'d, Blocking>, cs: Output<'d>) -> Self {
         Self { spi, cs }
     }
 
