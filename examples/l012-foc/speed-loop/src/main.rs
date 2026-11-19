@@ -10,7 +10,7 @@ use cortex_m_rt::{exception, ExceptionFrame};
 use cw32_l012_foc_speed_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
-        POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV,
+        POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES,
         angle_delta, bus_voltage_mv, electrical_angle,
         electrical_angle_step_for_rpm, speed_rpm_from_delta,
     },
@@ -301,7 +301,7 @@ async fn main(spawner: Spawner) {
     let mut last_angle = initial_angle;
     let mut last_speed_loop_total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
     let mut speed_delta_sum = 0i32;
-    let mut speed_tick = 0u32;
+    let mut speed_ticker = Ticker::every(Duration::from_millis(1));
     // C: ENC_CalcAvrgMecSpeed keeps an 8-sample IIR average. Without this
     // filter the 16 ms SSI count window quantizes low-speed feedback between
     // positive and negative values and makes the speed PI pump iqref.
@@ -378,8 +378,7 @@ async fn main(spawner: Spawner) {
         speed_window_has_sample |= sample_valid;
         speed_delta_sum += angle_delta(mechanical_angle, last_angle);
         last_angle = mechanical_angle;
-        speed_tick += 1;
-        if speed_tick >= SPEED_LOOP_DIV {
+        speed_ticker.next().await;
             // Use the elapsed ADC/current-loop periods as the clock. SSI and
             // CORDIC are blocking operations, so a foreground pass is about
             // 1.9 ms on this build rather than the nominal 62.5 us PWM tick.
@@ -575,9 +574,7 @@ async fn main(spawner: Spawner) {
                 log_elapsed_pwm_periods -= PWM_HZ;
             }
             speed_delta_sum = 0;
-            speed_tick = 0;
-            speed_window_has_sample = false;
-        }
+        speed_window_has_sample = false;
         let angle = electrical_angle(mechanical_angle, encoder_offset);
         CURRENT_ELECTRICAL_ANGLE.store(u32::from(angle), Ordering::Relaxed);
         // Keep the hardware gate synchronized with the command transition.
