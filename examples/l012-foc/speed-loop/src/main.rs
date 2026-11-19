@@ -129,8 +129,8 @@ async fn main(spawner: Spawner) {
     // outputs remain available for ADC1 sampling.
     let mut opa_config = hal::opamp::Config::default();
     opa_config.supply_mv = 5_000;
-    let mut opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
-    let mut opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
+    let opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
+    let opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
     let mut opa1 = opa1_ctrl.standalone_ext_adc(p.PA6, p.PA7).unwrap();
     let mut opa2 = opa2_ctrl.standalone_ext_adc(p.PA4, p.PA5).unwrap();
     cortex_m::asm::delay(800);

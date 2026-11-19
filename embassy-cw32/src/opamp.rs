@@ -215,11 +215,11 @@ impl<'d, T: Instance> OpAmp<'d, T> {
     /// variant consumes only the two input pins; the output pin is intentionally
     /// acquired by `Adc` afterwards, so the safe ownership model can represent
     /// the analog amplifier output and ADC channel at the same time.
-    pub fn standalone_ext_adc<'a, P: NonInvertingPin<T>, N: InvertingPin<T>>(
-        &'a mut self,
-        positive: Peri<'a, P>,
-        negative: Peri<'a, N>,
-    ) -> Result<OpAmpAdc<'a, 'd, T>, Error> {
+    pub fn standalone_ext_adc<P: NonInvertingPin<T>, N: InvertingPin<T>>(
+        self,
+        positive: Peri<'d, P>,
+        negative: Peri<'d, N>,
+    ) -> Result<OpAmpAdc<'d, T>, Error> {
         Self::check_output()?;
         let mut positive = Flex::new(positive);
         let mut negative = Flex::new(negative);
@@ -255,12 +255,12 @@ pub struct OpAmpOutput<'a, 'd, T: Instance> {
 }
 
 /// Active amplifier whose fixed output is sampled by an ADC peripheral.
-pub struct OpAmpAdc<'a, 'd, T: Instance> {
-    _inner: &'a mut OpAmp<'d, T>,
-    _positive: Flex<'a>,
-    _negative: Flex<'a>,
+pub struct OpAmpAdc<'d, T: Instance> {
+    _inner: OpAmp<'d, T>,
+    _positive: Flex<'d>,
+    _negative: Flex<'d>,
 }
-impl<T: Instance> OpAmpAdc<'_, '_, T> {
+impl<T: Instance> OpAmpAdc<'_, T> {
     /// Run the L012 level soft auto-zero sequence and retain calibration mode.
     /// `delay_cycles` is the post-start calibration interval at the current
     /// core clock; the method also includes the required settling interval.
@@ -288,7 +288,7 @@ impl<T: Instance> OpAmpAdc<'_, '_, T> {
         T::regs().cal().read().calen()
     }
 }
-impl<T: Instance> Drop for OpAmpAdc<'_, '_, T> {
+impl<T: Instance> Drop for OpAmpAdc<'_, T> {
     fn drop(&mut self) {
         T::regs().cr().modify(|w| w.set_en(false));
     }
