@@ -21,6 +21,7 @@ use cw32_l012_foc_speed_loop::{
 };
 use cw32_l012_foc_speed_loop::{actuator::apply_duty, sensor::Encoder};
 use embassy_time::{Duration, Ticker};
+use embassy_executor::Spawner;
 use embassy_cw32::interrupt::typelevel::{ADC1, Handler};
 use embassy_cw32::{
     self as hal,
@@ -224,8 +225,17 @@ unsafe fn DefaultHandler(irqn: i16) -> ! {
     }
 }
 
+#[embassy_executor::task]
+async fn led_task(mut led: Output<'static>) {
+    let mut ticker = Ticker::every(Duration::from_millis(250));
+    loop {
+        ticker.next().await;
+        led.toggle();
+    }
+}
+
 #[embassy_executor::main]
-async fn main(_spawner: embassy_executor::Spawner) {
+async fn main(spawner: Spawner) {
     // The board supplies the MCU/VDDA from 5 V. The motor-control application
     // deliberately opts into the calibrated nominal 96 MHz HSI bus path.
     let mut system = hal::Config::default();
@@ -244,7 +254,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
     };
     // The reference board LED is active-low on PC13, matching LEDON/LEDOFF
     // in the C project: waiting blinks, alignment is solid, and run heartbeats.
-    let mut led = Output::new(p.PC13, Level::High, Speed::Default);
+    let led = Output::new(p.PC13, Level::High, Speed::Default);
+    spawner.spawn(led_task(led).unwrap());
     defmt::info!("JD4631 FOC boot: PWM={=u32}Hz", PWM_HZ);
     let common = Common::new(p.BGR, 100_000).unwrap();
     let mut adc_config = AdcConfig::default();
@@ -353,7 +364,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
     // The power stage is kept disabled until the operator deliberately brings
     // the command pot to zero. This is the arming gesture required at power-on.
     let mut state = ArmingGate::new(READY_ZERO_SAMPLES);
-    let mut wait_led_ticks = 0u32;
     let mut wait_zero_log_ticks = 0u32;
     defmt::info!("state=wait-zero: move potentiometer to zero");
     loop {
@@ -367,14 +377,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
         if state.observe(pot, POT_ZERO_COUNTS) {
             break;
         }
-        wait_led_ticks += 1;
-        if wait_led_ticks >= PWM_HZ / 4 {
-            led.toggle();
-            wait_led_ticks = 0;
-        }
         ticker.next().await;
     }
-    led.set_low();
     defmt::info!("state=align: potentiometer zero accepted");
     state.set_state(MotorState::Aligning);
 
@@ -438,7 +442,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
     defmt::info!("state=aligned: fixed torque_sign={=i16}", torque_direction_sign);
 
     state.set_state(MotorState::Running);
-    led.set_low();
     defmt::info!("state=run: speed control enabled");
     let mut speed = SpeedController::new(POT_MAX_RPM);
     let initial_angle = encoder.read_angle().unwrap_or(encoder_offset);
@@ -499,7 +502,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
         {
             set_current_output(&mut pwm, false);
             CURRENT_FAULT.store(1, Ordering::Relaxed);
-            led.set_high();
             state.set_state(MotorState::Fault);
             defmt::error!(
                 "state=fault: bus voltage={=u32}mV ia={=i16} ib={=i16} idq={=i16}/{=i16} iqref={=i16} angle={=u16} ccr={=u16}/{=u16}/{=u16} loops={=u16}",
@@ -703,7 +705,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
             }
             log_elapsed_pwm_periods = log_elapsed_pwm_periods.saturating_add(elapsed_pwm_periods);
             if log_elapsed_pwm_periods >= PWM_HZ {
-                led.toggle();
                 defmt::info!(
                     "run: pot={=u16} target={=i32} fb={=i32} iqref={=i16} idq={=i16}/{=i16} adc={=u16}/{=u16} off={=u16}/{=u16} bus={=u32}",
                     pot,

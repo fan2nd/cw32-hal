@@ -19,6 +19,7 @@ use cw32_l012_foc_open_loop::{
 use defmt_rtt as _;
 use cw32_l012_foc_open_loop::{actuator::apply_duty, sensor::Encoder};
 use embassy_time::{Duration, Ticker};
+use embassy_executor::Spawner;
 use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
@@ -104,15 +105,25 @@ fn modulation_for_rpm(target_rpm: i32) -> i32 {
             / POT_MAX_RPM)
 }
 
+#[embassy_executor::task]
+async fn led_task(mut led: Output<'static>) {
+    let mut ticker = Ticker::every(Duration::from_millis(250));
+    loop {
+        ticker.next().await;
+        led.toggle();
+    }
+}
+
 #[embassy_executor::main]
-async fn main(_spawner: embassy_executor::Spawner) {
+async fn main(spawner: Spawner) {
     let mut system = hal::Config::default();
     system.rcc.operating_conditions.min_supply_mv = 5_000;
     system.rcc.operating_conditions.max_supply_mv = 5_000;
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div1;
     system.rcc.allow_nominal_bus_overclock = true;
     let p = hal::try_init(system).unwrap();
-    let mut led = Output::new(p.PC13, Level::High, Speed::Default);
+    let led = Output::new(p.PC13, Level::High, Speed::Default);
+    spawner.spawn(led_task(led).unwrap());
     info!(
         "4621 open-loop bring-up: modulation={=i32}..{=i32}/32767",
         OPEN_LOOP_MIN_MODULATION_Q15, OPEN_LOOP_MAX_MODULATION_Q15
@@ -219,7 +230,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
 
     info!("state=wait-zero: move potentiometer to zero");
     let mut zero_samples = 0u32;
-    let mut wait_led_ticks = 0u32;
     loop {
         let pot = adc2
             .blocking_read(&mut pot_pin, SampleTime::Cycles518)
@@ -232,11 +242,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
         } else {
             zero_samples = 0;
         }
-        wait_led_ticks += 1;
-        if wait_led_ticks >= PWM_HZ / 4 {
-            led.toggle();
-            wait_led_ticks = 0;
-        }
         ticker.next().await;
     }
 
@@ -248,7 +253,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
     };
     apply_duty(&mut pwm, align);
     pwm.set_master_output_enable(true);
-    led.set_low();
     for _ in 0..ALIGNMENT_PERIODS {
         ticker.next().await;
     }
@@ -340,7 +344,6 @@ async fn main(_spawner: embassy_executor::Spawner) {
                         "open-loop: pot={=u16} target={=i32} bus={=u32}mV encoder={=u16} delta={=i32}",
                         pot, target_rpm, bus_mv, encoder_angle, encoder_delta
                     );
-                    led.toggle();
                     log_tick = 0;
                 }
             }
