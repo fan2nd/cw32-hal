@@ -3,6 +3,7 @@
 
 use core::cell::RefCell;
 mod adc;
+mod tasks;
 use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
 use cortex_m_rt::{exception, ExceptionFrame};
@@ -225,15 +226,6 @@ unsafe fn DefaultHandler(irqn: i16) -> ! {
     }
 }
 
-#[embassy_executor::task]
-async fn led_task(mut led: Output<'static>) {
-    let mut ticker = Ticker::every(Duration::from_millis(250));
-    loop {
-        ticker.next().await;
-        led.toggle();
-    }
-}
-
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     // The board supplies the MCU/VDDA from 5 V. The motor-control application
@@ -255,7 +247,7 @@ async fn main(spawner: Spawner) {
     // The reference board LED is active-low on PC13, matching LEDON/LEDOFF
     // in the C project: waiting blinks, alignment is solid, and run heartbeats.
     let led = Output::new(p.PC13, Level::High, Speed::Default);
-    spawner.spawn(led_task(led).unwrap());
+    spawner.spawn(tasks::led(led).unwrap());
     defmt::info!("JD4631 FOC boot: PWM={=u32}Hz", PWM_HZ);
     let common = Common::new(p.BGR, 100_000).unwrap();
     let mut adc_config = AdcConfig::default();

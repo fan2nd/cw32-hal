@@ -7,6 +7,8 @@
 //! checking phase order and basic commutation with a conservative modulation
 //! limit before enabling closed-loop FOC.
 
+mod tasks;
+
 use cw32_l012_foc_open_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, POT_MAX_COUNTS, POT_MAX_RPM,
@@ -105,15 +107,6 @@ fn modulation_for_rpm(target_rpm: i32) -> i32 {
             / POT_MAX_RPM)
 }
 
-#[embassy_executor::task]
-async fn led_task(mut led: Output<'static>) {
-    let mut ticker = Ticker::every(Duration::from_millis(250));
-    loop {
-        ticker.next().await;
-        led.toggle();
-    }
-}
-
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let mut system = hal::Config::default();
@@ -123,7 +116,7 @@ async fn main(spawner: Spawner) {
     system.rcc.allow_nominal_bus_overclock = true;
     let p = hal::try_init(system).unwrap();
     let led = Output::new(p.PC13, Level::High, Speed::Default);
-    spawner.spawn(led_task(led).unwrap());
+    spawner.spawn(tasks::led(led).unwrap());
     info!(
         "4621 open-loop bring-up: modulation={=i32}..{=i32}/32767",
         OPEN_LOOP_MIN_MODULATION_Q15, OPEN_LOOP_MAX_MODULATION_Q15
