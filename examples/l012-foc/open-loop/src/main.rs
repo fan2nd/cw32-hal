@@ -230,7 +230,7 @@ async fn main(spawner: Spawner) {
     info!("state=open-loop: turn pot above zero to start");
     // Continue from the same electrical vector used during alignment.
     let mut phase_accum = u32::from(ALIGNMENT_ELECTRICAL_ANGLE) << 16;
-    let mut speed_tick = 0u32;
+    let mut speed_ticker = Ticker::every(Duration::from_millis(1));
     let mut log_tick = 0u32;
     let mut command_active = false;
     let mut phase_step = 0u32;
@@ -238,9 +238,7 @@ async fn main(spawner: Spawner) {
     let mut encoder_angle = encoder.read_angle().unwrap_or(0);
     let mut encoder_delta = 0i32;
     loop {
-        ticker.next().await;
-        speed_tick += 1;
-        if speed_tick >= 16 {
+        speed_ticker.next().await;
             let next_encoder_angle = encoder.read_angle().unwrap_or(encoder_angle);
             encoder_delta += angle_delta(next_encoder_angle, encoder_angle);
             encoder_angle = next_encoder_angle;
@@ -273,9 +271,8 @@ async fn main(spawner: Spawner) {
                     info!("open-loop inhibited: bus={=u32}mV", bus_mv);
                 }
             } else {
-                // The phase accumulator advances on every PWM period below.
-                // Keep the denominator at the actual 16 kHz update rate even
-                // though the command/potentiometer is sampled every 16 ticks.
+                // The phase accumulator is updated at the speed-task cadence;
+                // the PWM peripheral holds the latest duty between updates.
                 // The board's phase order may be opposite the encoder's
                 // positive convention; start with the reverse scan for the
                 // bring-up binary and make the direction explicit here.
@@ -316,8 +313,6 @@ async fn main(spawner: Spawner) {
                     log_tick = 0;
                 }
             }
-            speed_tick = 0;
-        }
         let angle = (phase_accum >> 16) as u16 & 0x3fff;
         let modulation_q15 = modulation_for_rpm(target_rpm_active);
         apply_duty(&mut pwm, open_loop_duty(angle, modulation_q15, &mut cordic));

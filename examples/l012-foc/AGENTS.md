@@ -16,3 +16,15 @@
 - Do not build or test this PAC-backed firmware for a host target. Use the
   configured `thumbv6m-none-eabi` target and `cargo run` for hardware checks;
   host builds fail on the ARM-only vector-table section by design.
+- Do not add wrapper functions solely to produce debug logs or log register
+  state. Put diagnostic logging directly beside the control operation. Create
+  a helper only when it owns a real reusable hardware, timing, or algorithm
+  operation; logging must not be its only purpose.
+- In example code, do not call APIs with fully qualified paths beginning at
+  the library crate name, such as `hal::opamp::OpAmp::new`. Import the needed
+  module or type and call it through the local import instead, so the hardware
+  dependency remains clear and concise.
+- Act only on an explicitly stated user requirement. Before changing code,
+  identify the complete requested behavior and finish the whole change,
+  including all affected examples/modules and validation; do not leave a
+  partial implementation or a stale parallel path behind.
