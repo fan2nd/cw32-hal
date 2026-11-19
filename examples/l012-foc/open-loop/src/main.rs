@@ -7,7 +7,6 @@
 //! checking phase order and basic commutation with a conservative modulation
 //! limit before enabling closed-loop FOC.
 
-use cortex_m_rt::entry;
 use cw32_l012_foc_open_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, POT_MAX_COUNTS, POT_MAX_RPM,
@@ -18,7 +17,8 @@ use cw32_l012_foc_open_loop::{
     foc::{Duty, JD4631},
 };
 use defmt_rtt as _;
-use cw32_l012_foc_open_loop::{actuator::apply_duty, sensor::Encoder, actuator::wait_period};
+use cw32_l012_foc_open_loop::{actuator::apply_duty, sensor::Encoder};
+use embassy_time::{Duration, Ticker};
 use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
@@ -29,7 +29,7 @@ use embassy_cw32::{
     timer::{
         Channel,
         complementary_pwm::{ComplementaryPwm, ComplementaryPwmPin, Config as PwmConfig},
-        low_level::{CountingMode, Timer},
+        low_level::CountingMode,
         simple_pwm::PwmPin,
     },
 };
@@ -104,8 +104,8 @@ fn modulation_for_rpm(target_rpm: i32) -> i32 {
             / POT_MAX_RPM)
 }
 
-#[entry]
-fn main() -> ! {
+#[embassy_executor::main]
+async fn main(_spawner: embassy_executor::Spawner) {
     let mut system = hal::Config::default();
     system.rcc.operating_conditions.min_supply_mv = 5_000;
     system.rcc.operating_conditions.max_supply_mv = 5_000;
@@ -205,9 +205,7 @@ fn main() -> ! {
         af1.bkine(),
     );
 
-    let mut tick = Timer::new(p.BTIM1).unwrap();
-    tick.set_frequency(Hertz(PWM_HZ));
-    tick.start();
+    let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
     let mut cordic = Cordic::new(p.CORDIC).unwrap();
     let mut cs = Flex::new(p.PF0);
     cs.set_high();
@@ -239,7 +237,7 @@ fn main() -> ! {
             led.toggle();
             wait_led_ticks = 0;
         }
-        wait_period(&mut tick);
+        ticker.next().await;
     }
 
     info!("state=align: open-loop zero accepted");
@@ -252,7 +250,7 @@ fn main() -> ! {
     pwm.set_master_output_enable(true);
     led.set_low();
     for _ in 0..ALIGNMENT_PERIODS {
-        wait_period(&mut tick);
+        ticker.next().await;
     }
     pwm.set_master_output_enable(false);
 
@@ -267,7 +265,7 @@ fn main() -> ! {
     let mut encoder_angle = encoder.read_angle().unwrap_or(0);
     let mut encoder_delta = 0i32;
     loop {
-        wait_period(&mut tick);
+        ticker.next().await;
         speed_tick += 1;
         if speed_tick >= 16 {
             let next_encoder_angle = encoder.read_angle().unwrap_or(encoder_angle);

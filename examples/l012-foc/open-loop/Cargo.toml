@@ -7,8 +7,8 @@ publish = false
 
 [features]
 default = ["cw32l012c8t6"]
-cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6", "embassy-cw32/defmt", "cw32-metapac/cw32l012c8t6", "cw32-l012-foc-algorithms/cw32l012c8t6"]
-cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6", "embassy-cw32/defmt", "cw32-metapac/cw32l012c8u6", "cw32-l012-foc-algorithms/cw32l012c8u6"]
+cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6", "embassy-cw32/defmt", "embassy-cw32/time-driver-gtim1", "cw32-metapac/cw32l012c8t6", "cw32-l012-foc-algorithms/cw32l012c8t6"]
+cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6", "embassy-cw32/defmt", "embassy-cw32/time-driver-gtim1", "cw32-metapac/cw32l012c8u6", "cw32-l012-foc-algorithms/cw32l012c8u6"]
 
 [dependencies]
 cw32-l012-foc-algorithms = { path = "../foc-algorithms", default-features = false }
@@ -19,6 +19,8 @@ cortex-m-rt = "0.7.5"
 embedded-hal = "1.0"
 defmt = "1"
 defmt-rtt = { version = "1", features = ["disable-blocking-mode"] }
+embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "f16efeffe37581092ec184718e6fdb1620393214", features = ["platform-cortex-m", "executor-thread"] }
+embassy-time = { git = "https://github.com/embassy-rs/embassy", rev = "f16efeffe37581092ec184718e6fdb1620393214" }
 
 [build-dependencies]
 cw32-metapac = { path = "../../../cw32-metapac", default-features = false, features = ["metadata"] }

@@ -5,7 +5,7 @@ use core::cell::RefCell;
 mod adc;
 use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32, Ordering};
 use cortex_m::interrupt::Mutex;
-use cortex_m_rt::{entry, exception, ExceptionFrame};
+use cortex_m_rt::{exception, ExceptionFrame};
 use cw32_l012_foc_speed_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
@@ -19,7 +19,8 @@ use cw32_l012_foc_speed_loop::{
     },
     foc::{CurrentSampleFilter, Duty, FocController, JD4631, SpeedController},
 };
-use cw32_l012_foc_speed_loop::{actuator::apply_duty, sensor::Encoder, actuator::wait_period};
+use cw32_l012_foc_speed_loop::{actuator::apply_duty, sensor::Encoder};
+use embassy_time::{Duration, Ticker};
 use embassy_cw32::interrupt::typelevel::{ADC1, Handler};
 use embassy_cw32::{
     self as hal,
@@ -31,7 +32,7 @@ use embassy_cw32::{
     timer::{
         Channel,
         complementary_pwm::{ComplementaryPwm, ComplementaryPwmPin, Config as PwmConfig},
-        low_level::{CountingMode, Timer},
+        low_level::CountingMode,
         simple_pwm::PwmPin,
     },
 };
@@ -223,8 +224,8 @@ unsafe fn DefaultHandler(irqn: i16) -> ! {
     }
 }
 
-#[entry]
-fn main() -> ! {
+#[embassy_executor::main]
+async fn main(_spawner: embassy_executor::Spawner) {
     // The board supplies the MCU/VDDA from 5 V. The motor-control application
     // deliberately opts into the calibrated nominal 96 MHz HSI bus path.
     let mut system = hal::Config::default();
@@ -309,9 +310,7 @@ fn main() -> ! {
     // operator performs the zero-pot arming gesture below.
     pwm.set_master_output_enable(false);
 
-    let mut tick = Timer::new(p.BTIM1).unwrap();
-    tick.set_frequency(Hertz(PWM_HZ));
-    tick.start();
+    let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
     let pwm_period = pwm.get_max_duty();
     // Arm the same ADC1 EOS path used by the C project before offset
     // calibration. MOE is still low, so the ISR only drains conversions and
@@ -336,7 +335,7 @@ fn main() -> ! {
     let mut offset_b = 0u32;
     for _ in 0..16 {
         for _ in 0..(PWM_HZ / 500) {
-            wait_period(&mut tick);
+            ticker.next().await;
         }
         offset_a += u32::from(adc1.latest_result(0).unwrap_or(0));
         offset_b += u32::from(adc1.latest_result(1).unwrap_or(0));
@@ -373,7 +372,7 @@ fn main() -> ! {
             led.toggle();
             wait_led_ticks = 0;
         }
-        wait_period(&mut tick);
+        ticker.next().await;
     }
     led.set_low();
     defmt::info!("state=align: potentiometer zero accepted");
@@ -394,7 +393,7 @@ fn main() -> ! {
     CURRENT_ALIGNMENT_ACTIVE.store(1, Ordering::Release);
     pwm.set_master_output_enable(true);
     for _ in 0..ALIGNMENT_PERIODS {
-        wait_period(&mut tick);
+        ticker.next().await;
     }
     // Keep the proven static alignment vector applied while the command
     // potentiometer remains in its zero deadband. This is the C startup
@@ -411,7 +410,7 @@ fn main() -> ! {
         if AUTO_START_TEST_RPM > 0 || pot > POT_MIN_COUNTS {
             break;
         }
-        wait_period(&mut tick);
+        ticker.next().await;
     }
     let encoder_offset = encoder.read_angle().unwrap_or(0);
     // Keep the static alignment vector and MOE asserted until the first
@@ -683,7 +682,7 @@ fn main() -> ! {
                     command_active = true;
                     set_current_output(&mut pwm, true);
                     for _ in 0..4 {
-                        wait_period(&mut tick);
+                        ticker.next().await;
                     }
                     defmt::info!(
                         "run: command sample loops={=u16} idq={=i16}/{=i16} ref={=i16} ia={=i16} ib={=i16} angle={=u16} ccr={=u16}/{=u16}/{=u16}",
