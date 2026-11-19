@@ -185,29 +185,7 @@ async fn main(spawner: Spawner) {
         pwm.enable(channel);
     }
     pwm.set_master_output_enable(false);
-    let ccer = hal::pac::ATIM.ccer().read();
-    let ccmr1 = hal::pac::ATIM.ccmr1cmp().read();
-    let bdtr = hal::pac::ATIM.bdtr().read();
-    let af1 = hal::pac::ATIM.af1().read();
-    info!(
-        "pwm regs: ccer e={=bool}/{=bool}/{=bool} p={=bool}/{=bool}/{=bool} np={=bool}/{=bool}/{=bool} oc={=u8}/{=u8} bke={=bool} bkp={=bool} moe={=bool} bif={=bool} bkine={=bool}",
-        ccer.cc1e(),
-        ccer.cc2e(),
-        ccer.cc3e(),
-        ccer.cc1p(),
-        ccer.cc2p(),
-        ccer.cc3p(),
-        ccer.cc1np(),
-        ccer.cc2np(),
-        ccer.cc3np(),
-        ccmr1.oc1m(),
-        ccmr1.oc2m(),
-        bdtr.bke(),
-        bdtr.bkp(),
-        bdtr.moe(),
-        pwm.is_break_pending(),
-        af1.bkine(),
-    );
+    info!("pwm: moe={=bool} break={=bool}", pwm.get_master_output_enable(), pwm.is_break_pending());
 
     let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
     let mut cordic = Cordic::new(p.CORDIC).unwrap();
@@ -324,9 +302,9 @@ async fn main(spawner: Spawner) {
                         offset_b - ib_adc,
                         pwm.get_master_output_enable(),
                         pwm.is_break_pending(),
-                        hal::pac::ATIM.ccr1().read().ccr1() as u32,
-                        hal::pac::ATIM.ccr2().read().ccr2() as u32,
-                        hal::pac::ATIM.ccr3().read().ccr3() as u32,
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch1) as u32,
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch2) as u32,
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch3) as u32,
                     );
                 }
                 log_tick += 1;

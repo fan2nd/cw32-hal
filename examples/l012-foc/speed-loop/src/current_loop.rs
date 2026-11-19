@@ -4,7 +4,6 @@ use embassy_cw32 as hal;
 use embassy_cw32::adc::{adc_irq_clear, adc_irq_enable_eos, adc_irq_eos, adc_irq_result};
 use embassy_cw32::interrupt::typelevel::{ADC1, Handler};
 use embassy_cw32::timer::Channel;
-use embassy_cw32::timer::complementary_pwm::ComplementaryPwm;
 use cw32_l012_foc_speed_loop::hardware::sin_cos_q15_lut;
 use cw32_l012_foc_speed_loop::config::{CURRENT_TRIP_COUNTS, PROBE_VOLTAGE_LIMIT_Q15};
 use crate::global::*;
@@ -13,21 +12,6 @@ use crate::global::*;
 /// force MOE low.  Always publish the gate before asserting MOE so the ISR can
 /// never immediately undo a legitimate nonzero-pot command with the stale
 /// zero state.
-pub fn set_output(pwm: &mut ComplementaryPwm<'_, hal::peripherals::ATIM>, enable: bool) {
-    let previous = CURRENT_OUTPUT_ENABLE.load(Ordering::Acquire) != 0;
-    CURRENT_OUTPUT_ENABLE.store(u16::from(enable), Ordering::Release);
-    if previous == enable {
-        return;
-    }
-    defmt::info!("moe: request enable={=bool}", enable);
-    pwm.set_master_output_enable(enable);
-    defmt::info!(
-        "moe: applied request={=bool} readback={=bool}",
-        enable,
-        pwm.get_master_output_enable()
-    );
-}
-
 pub struct Adc1CurrentLoop;
 
 impl Handler<ADC1> for Adc1CurrentLoop {
@@ -55,7 +39,7 @@ impl Handler<ADC1> for Adc1CurrentLoop {
             return;
         }
         if CURRENT_OUTPUT_ENABLE.load(Ordering::Relaxed) == 0 {
-            hal::timer::complementary_pwm::irq_moe(false);
+            hal::timer::complementary_pwm::irq_moe::<hal::peripherals::ATIM>(false);
             adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
             return;
         }
@@ -103,16 +87,16 @@ impl Handler<ADC1> for Adc1CurrentLoop {
         let ib_q15 = i32::from(CURRENT_PHASE_B.load(Ordering::Relaxed));
         if ia_q15.abs() > CURRENT_TRIP_COUNTS || ib_q15.abs() > CURRENT_TRIP_COUNTS {
             CURRENT_FAULT.store(1, Ordering::Relaxed);
-            hal::timer::complementary_pwm::irq_moe(false);
+            hal::timer::complementary_pwm::irq_moe::<hal::peripherals::ATIM>(false);
         }
         let count = CURRENT_LOOP_COUNT.load(Ordering::Relaxed);
         CURRENT_LOOP_COUNT.store(count.wrapping_add(1), Ordering::Relaxed);
         let total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
         CURRENT_LOOP_TOTAL.store(total.wrapping_add(1), Ordering::Relaxed);
-        let period = hal::timer::complementary_pwm::irq_arr();
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch1, ((u32::from(duty.a) * period) >> 15).min(65_535) as u16);
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch2, ((u32::from(duty.b) * period) >> 15).min(65_535) as u16);
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch3, ((u32::from(duty.c) * period) >> 15).min(65_535) as u16);
+        let period = hal::timer::complementary_pwm::irq_arr::<hal::peripherals::ATIM>();
+        hal::timer::complementary_pwm::irq_ccr::<hal::peripherals::ATIM>(Channel::Ch1, ((u32::from(duty.a) * period) >> 15).min(65_535) as u16);
+        hal::timer::complementary_pwm::irq_ccr::<hal::peripherals::ATIM>(Channel::Ch2, ((u32::from(duty.b) * period) >> 15).min(65_535) as u16);
+        hal::timer::complementary_pwm::irq_ccr::<hal::peripherals::ATIM>(Channel::Ch3, ((u32::from(duty.c) * period) >> 15).min(65_535) as u16);
         adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
     }
 }

@@ -9,10 +9,10 @@ pub fn current_loop(period: u32) {
         [8, 9], SampleTime::Cycles30, 1, hal::adc::AdcTrigger::AtimCc4,
     );
     let compare = period.saturating_sub(5).min(65_535) as u16;
-    hal::timer::complementary_pwm::irq_cc4(compare);
+    hal::timer::complementary_pwm::irq_cc4::<hal::peripherals::ATIM>(compare);
     unsafe { ADC1::enable() };
     defmt::info!("current loop armed: adc1 timer-triggered scan ccr4={=u16}",
-        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch4));
+        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch4));
 }
 
 pub fn auxiliary() {

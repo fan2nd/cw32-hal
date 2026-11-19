@@ -166,7 +166,7 @@ async fn main(spawner: Spawner) {
         },
     )
     .unwrap();
-    hal::timer::complementary_pwm::irq_center();
+    hal::timer::complementary_pwm::irq_center::<hal::peripherals::ATIM>();
     for channel in [Channel::Ch1, Channel::Ch2, Channel::Ch3] {
         pwm.set_duty_cycle(channel, pwm.get_max_duty() / 2);
         pwm.enable(channel);
@@ -285,11 +285,13 @@ async fn main(spawner: Spawner) {
     let aligned_angle = electrical_angle(encoder_offset, encoder_offset);
     CURRENT_ELECTRICAL_ANGLE.store(u32::from(aligned_angle), Ordering::Relaxed);
     CURRENT_ANGLE_STEP.store(0, Ordering::Relaxed);
-    current_loop::set_output(&mut pwm, false);
+    CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
     CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
     CURRENT_RESET.store(1, Ordering::Release);
     CURRENT_IQ_REFERENCE.store(0, Ordering::Release);
-    current_loop::set_output(&mut pwm, true);
+    CURRENT_OUTPUT_ENABLE.store(1, Ordering::Release);
+            pwm.set_master_output_enable(true);
     let torque_direction_sign = ENCODER_DIRECTION_SIGN;
     defmt::info!("state=aligned: fixed torque_sign={=i16}", torque_direction_sign);
 
@@ -335,7 +337,8 @@ async fn main(spawner: Spawner) {
             command_active = false;
             no_motion_ticks = 0;
             state.set_state(MotorState::Running);
-            current_loop::set_output(&mut pwm, false);
+            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
             if was_active {
                 defmt::info!("run: potentiometer zero, output and faults cleared");
             }
@@ -344,7 +347,8 @@ async fn main(spawner: Spawner) {
             // This prevents the speed integrator from continuing to request
             // torque after a current fault.
             CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
-            current_loop::set_output(&mut pwm, false);
+            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
             continue;
         }
         let bus = adc_irq_result::<hal::peripherals::ADC2>(0).unwrap_or(0);
@@ -352,7 +356,8 @@ async fn main(spawner: Spawner) {
         if (auto_command || pot_now > POT_ZERO_COUNTS)
             && !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv)
         {
-            current_loop::set_output(&mut pwm, false);
+            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
             CURRENT_FAULT.store(1, Ordering::Relaxed);
             state.set_state(MotorState::Fault);
             defmt::error!(
@@ -364,9 +369,9 @@ async fn main(spawner: Spawner) {
                 CURRENT_IQ.load(Ordering::Relaxed),
                 CURRENT_IQ_REFERENCE.load(Ordering::Relaxed),
                 last_angle,
-                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
-                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
-                hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3),
+                hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch1),
+                hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch2),
+                hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch3),
                 CURRENT_LOOP_COUNT.load(Ordering::Relaxed)
             );
             continue;
@@ -472,7 +477,8 @@ async fn main(spawner: Spawner) {
                 }
                 command_active = false;
                 no_motion_ticks = 0;
-                current_loop::set_output(&mut pwm, false);
+                CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
             } else {
                 speed_iq_reference = speed.update_for_ticks(target_rpm, feedback_rpm, elapsed_ms);
                 holding_iq_reference = holding_torque_reference(target_rpm, POT_MAX_RPM);
@@ -501,7 +507,8 @@ async fn main(spawner: Spawner) {
                     CURRENT_FAULT.store(1, Ordering::Release);
                     command_active = false;
                     no_motion_ticks = 0;
-                    current_loop::set_output(&mut pwm, false);
+                    CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
                     defmt::error!(
                         "startup timeout: no motion for 2s, output off pot={=u16} target={=i32} feedback={=i32} iqref_before={=i16} idq={=i16}/{=i16} ia={=i16} ib={=i16} ccr={=u16}/{=u16}/{=u16}",
                         pot,
@@ -512,9 +519,9 @@ async fn main(spawner: Spawner) {
                         CURRENT_IQ.load(Ordering::Relaxed),
                         CURRENT_PHASE_A.load(Ordering::Relaxed),
                         CURRENT_PHASE_B.load(Ordering::Relaxed),
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3)
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch1),
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch2),
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch3)
                     );
                     continue;
                 }
@@ -524,7 +531,8 @@ async fn main(spawner: Spawner) {
                     // This removes the unpowered gap between encoder capture
                     // and q-axis control, which otherwise makes the startup
                     // direction depend on rotor settling and load friction.
-                    current_loop::set_output(&mut pwm, false);
+                    CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
                     CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
                     CURRENT_RESET.store(1, Ordering::Release);
                     defmt::info!(
@@ -533,7 +541,8 @@ async fn main(spawner: Spawner) {
                         target_rpm
                     );
                     command_active = true;
-                    current_loop::set_output(&mut pwm, true);
+                    CURRENT_OUTPUT_ENABLE.store(1, Ordering::Release);
+            pwm.set_master_output_enable(true);
                     for _ in 0..4 {
                         ticker.next().await;
                     }
@@ -546,12 +555,13 @@ async fn main(spawner: Spawner) {
                         CURRENT_PHASE_A.load(Ordering::Relaxed),
                         CURRENT_PHASE_B.load(Ordering::Relaxed),
                         mechanical_angle,
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch1),
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch2),
-                        hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3)
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch1),
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch2),
+                        hal::timer::complementary_pwm::irq_ccr_read::<hal::peripherals::ATIM>(Channel::Ch3)
                     );
                 } else {
-                    current_loop::set_output(&mut pwm, true);
+                    CURRENT_OUTPUT_ENABLE.store(1, Ordering::Release);
+            pwm.set_master_output_enable(true);
                 }
             }
             log_elapsed_pwm_periods = log_elapsed_pwm_periods.saturating_add(elapsed_pwm_periods);
@@ -585,7 +595,8 @@ async fn main(spawner: Spawner) {
         } else if command_active && CURRENT_FAULT.load(Ordering::Relaxed) == 0 {
             pwm.set_master_output_enable(true);
         } else if !command_active {
-            current_loop::set_output(&mut pwm, false);
+            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            pwm.set_master_output_enable(false);
         }
     }
 }
