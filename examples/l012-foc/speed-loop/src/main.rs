@@ -1,33 +1,33 @@
 #![no_std]
 #![no_main]
 
-use core::cell::RefCell;
 mod adc;
+mod global;
+mod current_loop;
 mod tasks;
-use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32, Ordering};
-use cortex_m::interrupt::Mutex;
+use core::sync::atomic::Ordering;
 use cortex_m_rt::{exception, ExceptionFrame};
 use cw32_l012_foc_speed_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, EncoderAngleTracker, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_MIN_RPM, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, SPEED_LOOP_DIV,
         angle_delta, bus_voltage_mv, electrical_angle,
-        electrical_angle_step_for_rpm, sin_cos_q15_lut, speed_rpm_from_delta,
+        electrical_angle_step_for_rpm, speed_rpm_from_delta,
     },
     control::{
         ArmingGate, MotorState, combined_torque_reference, holding_torque_reference,
         target_rpm_from_pot,
     },
-    foc::{CurrentSampleFilter, Duty, FocController, JD4631, SpeedController},
+    foc::{Duty, SpeedController},
 };
 use cw32_l012_foc_speed_loop::{actuator::apply_duty, sensor::Encoder};
+use crate::global::*;
 use embassy_time::{Duration, Ticker};
 use embassy_executor::Spawner;
-use embassy_cw32::interrupt::typelevel::{ADC1, Handler};
+
 use embassy_cw32::{
     self as hal,
-    adc::{Adc, Common, Config as AdcConfig, adc_irq_clear,
-        adc_irq_enable_eos, adc_irq_eos, adc_irq_result},
+    adc::{Adc, Common, Config as AdcConfig, adc_irq_result},
     gpio::{Flex, Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -49,14 +49,12 @@ defmt::timestamp!("{=u32}", 0u32);
 // the command potentiometer. Set to zero after the mechanical loop is proven.
 const NO_MOTION_TIMEOUT_SPEED_TICKS: u32 = 2_000; // 2 s at the 1 kHz speed loop.
 const SPEED_RAMP_STEP_RPM: i32 = 2; // Smooth command slew: 2 rpm per elapsed ms.
-const PROBE_VOLTAGE_LIMIT_Q15: i16 = 6_000;
 // The validated open-loop phase sequence produces a positive SSI-count delta
 // on this board with the present electrical-angle convention. Keep the speed
 // feedback sign positive for that direction.
 const ENCODER_DIRECTION_SIGN: i16 = 1;
 // Keep the software trip at the reference C current-loop range. Bench-supply
 // current limiting remains the external protection during bring-up.
-const CURRENT_TRIP_COUNTS: i32 = 2_000;
 // Temporary bench-test command. Keep the normal potentiometer path below;
 // this lets a hardware run start without asking the operator to touch the
 // command knob while the alignment handoff is being verified.
@@ -65,142 +63,6 @@ const AUTO_START_TEST_RPM: i32 = 0;
 // The controller is owned by the ADC EOS ISR for its whole lifetime. Keeping
 // the value in place avoids taking an Option and moving the PI state on every
 // 16 kHz sample. The main loop only publishes atomics to this fast path.
-static CURRENT_CONTROLLER: Mutex<RefCell<FocController>> =
-    Mutex::new(RefCell::new(FocController::new(JD4631)));
-static CURRENT_SAMPLE_FILTER: Mutex<RefCell<CurrentSampleFilter>> =
-    Mutex::new(RefCell::new(CurrentSampleFilter::new()));
-static CURRENT_OFFSET_A: AtomicU16 = AtomicU16::new(0);
-static CURRENT_OFFSET_B: AtomicU16 = AtomicU16::new(0);
-// Raw samples are retained for hardware bring-up diagnostics. They let the
-// log distinguish a bad ADC trigger/analog path from a control-law problem.
-static CURRENT_ADC_A: AtomicU16 = AtomicU16::new(0);
-static CURRENT_ADC_B: AtomicU16 = AtomicU16::new(0);
-static CURRENT_ELECTRICAL_ANGLE: AtomicU32 = AtomicU32::new(0);
-static CURRENT_ANGLE_STEP: AtomicI32 = AtomicI32::new(0);
-static CURRENT_IQ_REFERENCE: AtomicI16 = AtomicI16::new(0);
-static CURRENT_PHASE_A: AtomicI16 = AtomicI16::new(0);
-static CURRENT_PHASE_B: AtomicI16 = AtomicI16::new(0);
-static CURRENT_ID: AtomicI16 = AtomicI16::new(0);
-static CURRENT_IQ: AtomicI16 = AtomicI16::new(0);
-static CURRENT_RESET: AtomicU16 = AtomicU16::new(0);
-static CURRENT_LOOP_COUNT: AtomicU16 = AtomicU16::new(0);
-static CURRENT_LOOP_TOTAL: AtomicU32 = AtomicU32::new(0);
-static CURRENT_PROBE_ACTIVE: AtomicU16 = AtomicU16::new(0);
-static CURRENT_FAULT: AtomicU16 = AtomicU16::new(0);
-static CURRENT_OUTPUT_ENABLE: AtomicU16 = AtomicU16::new(0);
-static CURRENT_ALIGNMENT_ACTIVE: AtomicU16 = AtomicU16::new(0);
-
-/// The foreground owns the PWM handle, while the ADC ISR may asynchronously
-/// force MOE low.  Always publish the gate before asserting MOE so the ISR can
-/// never immediately undo a legitimate nonzero-pot command with the stale
-/// zero state.
-fn set_current_output(pwm: &mut ComplementaryPwm<'_, hal::peripherals::ATIM>, enable: bool) {
-    let previous = CURRENT_OUTPUT_ENABLE.load(Ordering::Acquire) != 0;
-    CURRENT_OUTPUT_ENABLE.store(u16::from(enable), Ordering::Release);
-    if previous == enable {
-        return;
-    }
-    defmt::info!("moe: request enable={=bool}", enable);
-    pwm.set_master_output_enable(enable);
-    defmt::info!(
-        "moe: applied request={=bool} readback={=bool}",
-        enable,
-        pwm.get_master_output_enable()
-    );
-}
-
-struct Adc1CurrentLoop;
-
-impl Handler<ADC1> for Adc1CurrentLoop {
-    unsafe fn on_interrupt() {
-        if !adc_irq_eos::<hal::peripherals::ADC1>() {
-            return;
-        }
-        // EOS is a level request on this ADC. Mask it before touching the
-        // current-loop state so a pending/sticky flag cannot immediately
-        // re-enter the handler and starve the foreground probe/speed loop.
-        adc_irq_enable_eos::<hal::peripherals::ADC1>(false);
-        let ia = adc_irq_result::<hal::peripherals::ADC1>(0).unwrap_or(0);
-        let ib = adc_irq_result::<hal::peripherals::ADC1>(1).unwrap_or(0);
-        CURRENT_ADC_A.store(ia, Ordering::Relaxed);
-        CURRENT_ADC_B.store(ib, Ordering::Relaxed);
-        adc_irq_clear::<hal::peripherals::ADC1>();
-
-        // The ADC trigger remains armed while the foreground state machine is
-        // waiting for a nonzero speed command. Keep the power stage hard-off
-        // in that state instead of allowing stale PI output to reach CCRx.
-        // During alignment the foreground owns the fixed duty vector; the
-        // current ISR must drain EOS without clearing MOE or replacing it.
-        if CURRENT_ALIGNMENT_ACTIVE.load(Ordering::Relaxed) != 0 {
-            adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
-            return;
-        }
-        if CURRENT_OUTPUT_ENABLE.load(Ordering::Relaxed) == 0 {
-            hal::timer::complementary_pwm::irq_moe(false);
-            adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
-            return;
-        }
-
-        // Predict the angle at the exact current-loop instant. The foreground
-        // SSI read periodically re-anchors this accumulator; between reads the
-        // ISR advances it by the measured electrical speed.
-        let step = CURRENT_ANGLE_STEP.load(Ordering::Relaxed) as u16;
-        let angle = CURRENT_ELECTRICAL_ANGLE
-            .load(Ordering::Relaxed)
-            .wrapping_add(u32::from(step)) as u16;
-        CURRENT_ELECTRICAL_ANGLE.store(u32::from(angle), Ordering::Relaxed);
-        let (sin, cos) = sin_cos_q15_lut(angle);
-        let iq_reference = CURRENT_IQ_REFERENCE.load(Ordering::Relaxed);
-        let (currents, duty) = cortex_m::interrupt::free(|cs| {
-            let mut filter = CURRENT_SAMPLE_FILTER.borrow(cs).borrow_mut();
-            let mut controller = CURRENT_CONTROLLER.borrow(cs).borrow_mut();
-            if CURRENT_RESET.load(Ordering::Relaxed) != 0 {
-                CURRENT_RESET.store(0, Ordering::Relaxed);
-                controller.reset();
-                filter.reset();
-            }
-            let currents = filter.sample(
-                ia,
-                ib,
-                CURRENT_OFFSET_A.load(Ordering::Relaxed),
-                CURRENT_OFFSET_B.load(Ordering::Relaxed),
-            );
-            controller.iq_reference = iq_reference;
-            controller.voltage_limit = if CURRENT_PROBE_ACTIVE.load(Ordering::Relaxed) != 0 {
-                PROBE_VOLTAGE_LIMIT_Q15
-            } else {
-                27_000
-            };
-            (currents, controller.update(currents, sin, cos))
-        });
-        CURRENT_PHASE_A.store(currents.a, Ordering::Relaxed);
-        CURRENT_PHASE_B.store(currents.b, Ordering::Relaxed);
-        cortex_m::interrupt::free(|cs| {
-            let controller = CURRENT_CONTROLLER.borrow(cs).borrow();
-            CURRENT_ID.store(controller.measured_id, Ordering::Relaxed);
-            CURRENT_IQ.store(controller.measured_iq, Ordering::Relaxed);
-        });
-        let ia_q15 = i32::from(CURRENT_PHASE_A.load(Ordering::Relaxed));
-        let ib_q15 = i32::from(CURRENT_PHASE_B.load(Ordering::Relaxed));
-        if ia_q15.abs() > CURRENT_TRIP_COUNTS || ib_q15.abs() > CURRENT_TRIP_COUNTS {
-            CURRENT_FAULT.store(1, Ordering::Relaxed);
-            hal::timer::complementary_pwm::irq_moe(false);
-        }
-        let count = CURRENT_LOOP_COUNT.load(Ordering::Relaxed);
-        CURRENT_LOOP_COUNT.store(count.wrapping_add(1), Ordering::Relaxed);
-        let total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
-        CURRENT_LOOP_TOTAL.store(total.wrapping_add(1), Ordering::Relaxed);
-        let period = hal::timer::complementary_pwm::irq_arr();
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch1, ((u32::from(duty.a) * period) >> 15).min(65_535) as u16);
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch2, ((u32::from(duty.b) * period) >> 15).min(65_535) as u16);
-        hal::timer::complementary_pwm::irq_ccr(Channel::Ch3, ((u32::from(duty.c) * period) >> 15).min(65_535) as u16);
-        adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
-    }
-}
-
-hal::bind_interrupts!(struct Irqs {
-    ADC1 => Adc1CurrentLoop;
-});
 
 #[panic_handler]
 fn panic(_panic: &core::panic::PanicInfo<'_>) -> ! {
@@ -279,7 +141,7 @@ async fn main(spawner: Spawner) {
 
     // Keep ADC1 owned for the lifetime of the firmware. Its sequence is
     // reprogrammed below to the C project's ATIM-CC4 triggered scan.
-    let adc1 = Adc::new_motor(p.ADC1, &common, Irqs, adc_config).unwrap();
+    let adc1 = Adc::new_motor(p.ADC1, &common, current_loop::Irqs, adc_config).unwrap();
     let _adc2 = Adc::new(p.ADC2, &common, adc_config).unwrap();
     adc::auxiliary();
 
@@ -425,11 +287,11 @@ async fn main(spawner: Spawner) {
     let aligned_angle = electrical_angle(encoder_offset, encoder_offset);
     CURRENT_ELECTRICAL_ANGLE.store(u32::from(aligned_angle), Ordering::Relaxed);
     CURRENT_ANGLE_STEP.store(0, Ordering::Relaxed);
-    set_current_output(&mut pwm, false);
+    current_loop::set_output(&mut pwm, false);
     CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
     CURRENT_RESET.store(1, Ordering::Release);
     CURRENT_IQ_REFERENCE.store(0, Ordering::Release);
-    set_current_output(&mut pwm, true);
+    current_loop::set_output(&mut pwm, true);
     let torque_direction_sign = ENCODER_DIRECTION_SIGN;
     defmt::info!("state=aligned: fixed torque_sign={=i16}", torque_direction_sign);
 
@@ -475,7 +337,7 @@ async fn main(spawner: Spawner) {
             command_active = false;
             no_motion_ticks = 0;
             state.set_state(MotorState::Running);
-            set_current_output(&mut pwm, false);
+            current_loop::set_output(&mut pwm, false);
             if was_active {
                 defmt::info!("run: potentiometer zero, output and faults cleared");
             }
@@ -484,7 +346,7 @@ async fn main(spawner: Spawner) {
             // This prevents the speed integrator from continuing to request
             // torque after a current fault.
             CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
-            set_current_output(&mut pwm, false);
+            current_loop::set_output(&mut pwm, false);
             continue;
         }
         let bus = adc_irq_result::<hal::peripherals::ADC2>(0).unwrap_or(0);
@@ -492,7 +354,7 @@ async fn main(spawner: Spawner) {
         if (auto_command || pot_now > POT_ZERO_COUNTS)
             && !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv)
         {
-            set_current_output(&mut pwm, false);
+            current_loop::set_output(&mut pwm, false);
             CURRENT_FAULT.store(1, Ordering::Relaxed);
             state.set_state(MotorState::Fault);
             defmt::error!(
@@ -613,7 +475,7 @@ async fn main(spawner: Spawner) {
                 }
                 command_active = false;
                 no_motion_ticks = 0;
-                set_current_output(&mut pwm, false);
+                current_loop::set_output(&mut pwm, false);
             } else {
                 speed_iq_reference = speed.update_for_ticks(target_rpm, feedback_rpm, elapsed_ms);
                 holding_iq_reference = holding_torque_reference(target_rpm, POT_MAX_RPM);
@@ -642,7 +504,7 @@ async fn main(spawner: Spawner) {
                     CURRENT_FAULT.store(1, Ordering::Release);
                     command_active = false;
                     no_motion_ticks = 0;
-                    set_current_output(&mut pwm, false);
+                    current_loop::set_output(&mut pwm, false);
                     defmt::error!(
                         "startup timeout: no motion for 2s, output off pot={=u16} target={=i32} feedback={=i32} iqref_before={=i16} idq={=i16}/{=i16} ia={=i16} ib={=i16} ccr={=u16}/{=u16}/{=u16}",
                         pot,
@@ -665,7 +527,7 @@ async fn main(spawner: Spawner) {
                     // This removes the unpowered gap between encoder capture
                     // and q-axis control, which otherwise makes the startup
                     // direction depend on rotor settling and load friction.
-                    set_current_output(&mut pwm, false);
+                    current_loop::set_output(&mut pwm, false);
                     CURRENT_ALIGNMENT_ACTIVE.store(0, Ordering::Release);
                     CURRENT_RESET.store(1, Ordering::Release);
                     defmt::info!(
@@ -674,7 +536,7 @@ async fn main(spawner: Spawner) {
                         target_rpm
                     );
                     command_active = true;
-                    set_current_output(&mut pwm, true);
+                    current_loop::set_output(&mut pwm, true);
                     for _ in 0..4 {
                         ticker.next().await;
                     }
@@ -692,7 +554,7 @@ async fn main(spawner: Spawner) {
                         hal::timer::complementary_pwm::irq_ccr_read(Channel::Ch3)
                     );
                 } else {
-                    set_current_output(&mut pwm, true);
+                    current_loop::set_output(&mut pwm, true);
                 }
             }
             log_elapsed_pwm_periods = log_elapsed_pwm_periods.saturating_add(elapsed_pwm_periods);
@@ -728,7 +590,7 @@ async fn main(spawner: Spawner) {
         } else if command_active && CURRENT_FAULT.load(Ordering::Relaxed) == 0 {
             pwm.set_master_output_enable(true);
         } else if !command_active {
-            set_current_output(&mut pwm, false);
+            current_loop::set_output(&mut pwm, false);
         }
     }
 }
