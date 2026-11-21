@@ -31,9 +31,8 @@ bind_interrupts!(struct Irqs {
     ADC1 => adc::InterruptHandler<peripherals::ADC1>;
     ADC2_DAC => adc::InterruptHandler<peripherals::ADC2>;
 });
-let common = adc::Common::new(p.BGR, 100_000)?;
-let mut adc1 = adc::Adc::new_async(p.ADC1, &common, Irqs, config)?;
-let mut adc2 = adc::Adc::new_async(p.ADC2, &common, Irqs, config)?;
+let mut adc1 = adc::Adc::new_async(p.ADC1, Irqs, config)?;
+let mut adc2 = adc::Adc::new_async(p.ADC2, Irqs, config)?;
 ```
 
 `new_async` returns `Result<Self, Error>`; callers handle construction failures explicitly. `read` returns raw 12-bit
@@ -117,8 +116,7 @@ Forgetting a future skips its destructor and promises no quiescence. Finite
 hardware writes only peripheral result registers; no ISR/DMA pointer survives into
 caller memory. The next operation repairs the peripheral explicitly.
 
-L012 never resets or disables the ADC group gate or clears shared BGR/TS enables; `Common`
-remains borrowed, and the sibling converter, comparator, OPA and DAC registers
+L012 never resets or disables the ADC group gate or clears shared BGR/TS enables; the sibling converter, comparator, OPA and DAC registers
 are preserved. ADC2's separate retained DAC-gate acquisition is described below. On
 F030/A030/F020/F003, live BGREN and its shared ADC gate are retained. F002 reserves
 BGREN/TSEN, while L031/R031/W031/L052/L083 reserve BGREN; no fabricated enable is

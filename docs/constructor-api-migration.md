@@ -6,9 +6,8 @@ public `try_new*` names and corresponding panic-on-error convenience wrappers
 are removed. Applications choose how to handle construction errors:
 
 ```rust
-let common = embassy_cw32::adc::Common::new(p.BGR, 100_000)?;
 let adc = embassy_cw32::adc::Adc::new(
-    p.ADC1, &common, embassy_cw32::adc::Config::default(),
+    p.ADC1, embassy_cw32::adc::Config::default(),
 )?;
 ```
 
@@ -19,7 +18,7 @@ calls need explicit error handling. The included bare-metal examples use
 `Result` for Blocking construction.
 Private shared initialization is named `new_inner` where it is actually shared.
 
-The affected APIs are ADC (including the L012 Common guard and BTIM-triggered
+The affected APIs are ADC (including L012 and BTIM-triggered
 ADC), SPI, I2C, timer/capture/QEI/PWM, timer triggers, CRC and watchdog
 constructors. USART already uses fallible `new` and is unchanged. GPIO and
 pin wrappers, DMA constructors, global `init`/`try_init`, and non-constructor

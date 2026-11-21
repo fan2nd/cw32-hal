@@ -9,34 +9,29 @@ package-intersection alias, through the actual `adc_cw32l012_v1` PAC.
 
 ## Ownership and shared resources
 
-The ordinary Embassy `Peri`, sealed `Instance`, typed GPIO channel and borrowed
-erasure patterns are retained. One hardware-specific divergence is explicit:
-`Common<'d>` owns the real BGR peripheral token, and each independent ADC must
-borrow that same guard for its full lifetime. It does not invent ADC_COMMON,
-ADC3, a duplicate BGR owner, or an active-driver reference count.
+ADC1 and ADC2 each own their peripheral token. Both constructors acquire the
+shared clock internally using the timeout in their ADC configuration.
 
 ```rust
 let mut p = embassy_cw32::init(Default::default());
-let common = embassy_cw32::adc::Common::new(p.BGR, 100_000);
 let mut adc1 = embassy_cw32::adc::Adc::new(
-    p.ADC1, &common, embassy_cw32::adc::Config::default());
+    p.ADC1, embassy_cw32::adc::Config::default())?;
 let mut adc2 = embassy_cw32::adc::Adc::new(
-    p.ADC2, &common, embassy_cw32::adc::Config::default());
+    p.ADC2, embassy_cw32::adc::Config::default())?;
 let a = adc1.blocking_read(&mut p.PA0, embassy_cw32::adc::SampleTime::Cycles518);
 let b = adc2.blocking_read(&mut p.PA8, embassy_cw32::adc::SampleTime::Cycles518);
 ```
 
-`Common::try_new` checks the initialized clock contract and a nonzero finite
+Driver initialization checks the initialized clock contract and a nonzero finite
 poll budget. It rejects an asserted active-low shared reset without any write.
 If APBEN1.ADC is already set, it performs no write; otherwise it enables that
 one gate with the SYSCTRL `0x5a5a` key and a bounded readback wait, preserving
 other gates. Common-clock acquisition can resume a previously gated converter;
-it is an explicit whole-group operation, performed before constructing either
-ADC. It does not reset or reconfigure either converter.
+each constructor therefore checks the group gate before accessing the ADC registers. It does not reset or reconfigure either converter.
 
 No path clears APBEN1.ADC or changes APBRST1.ADC, including common acquisition
 failure, individual constructor failure, conversion error, reconfiguration,
-individual drop and common drop. A bootloader-configured sibling is not
+individual drop. A bootloader-configured sibling is not
 considered disposable merely because there are no HAL instances yet.
 
 Each ADC constructor validates timing and reads the sibling's SLAVE bit before
@@ -53,7 +48,7 @@ therefore power BGR implicitly. Explicit BGR/TS operations only OR enable bits
 under a critical section. They preserve every existing bit. BGR and temperature
 remain enabled after use; no constructor/error/drop clears them. This preserves
 inherited comparator/OPA/other-ADC dependencies and avoids a false ownership
-claim over bootloader state. Future VC/OPA support can borrow this same guard.
+claim over bootloader state.
 
 This monotonic strategy deliberately retains power, even when all HAL ADCs are
 gone. It is not a lowest-power power-management API. A future whole-analog owner

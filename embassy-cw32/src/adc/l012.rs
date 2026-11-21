@@ -1,11 +1,9 @@
 //! CW32L012 independent 12-bit ADC1/ADC2, ordered 1–8 slot software scans.
 //!
-//! Both typed converters borrow one [`Common`] guard owning BGR. No path resets
+//! Each constructor acquires the shared ADC clock internally. No path resets
 //! either converter or disables the common ADC gate. BGR/TS enables are monotonic:
 //! constructor, error and drop preserve inherited comparator/OPA/ADC resources.
 //! Shared analog resources intentionally remain powered after all owners drop.
-//! This explicit guard and power retention differ from an ordinary standalone
-//! Embassy ADC; reclaiming shared power requires a future whole-analog owner.
 //!
 //! VDDA is the only conversion reference and must equal VDD (1.7..=5.5 V).
 //! The guaranteed minimum board supply selects the manual clock/rate bands and
@@ -373,33 +371,7 @@ impl Config {
         Err(Error::FrequencyTooLow)
     }
 }
-/// Shared ADC clock and analog-source guard, owning the real BGR singleton.
-///
-/// Both ADCs borrow this one guard. Acquisition enables the common gate but
-/// never resets either ADC. Neither this guard nor its borrowers ever disable
-/// the common gate or clear BGR/TS: a bootloader, comparator or OPA may depend
-/// on these sticky analog resources. This deliberately retains power on drop.
-/// Raw access must not reset/gate ADC, change BGR/TS or alter either converter
-/// while the corresponding HAL resources are owned.
-pub struct Common<'d> {
-    _peripheral: Peri<'d, crate::peripherals::BGR>,
-}
-impl<'d> Common<'d> {
-    /// Acquire the common clock with a finite poll budget, without reset.
-    /// An asserted shared reset is rejected without changing any register.
-    pub fn new(peripheral: Peri<'d, crate::peripherals::BGR>, timeout: u32) -> Result<Self, Error> {
-        crate::rcc::try_clocks().ok_or(Error::ClockNotInitialized)?;
-        if timeout == 0 {
-            return Err(Error::InvalidTimeout);
-        }
-        critical_section::with(|cs| clock_acquire(timeout, cs))?;
-        Ok(Self {
-            _peripheral: peripheral,
-        })
-    }
-}
-
-/// One independently owned ADC borrowing the shared analog/clock guard.
+/// One independently owned ADC.
 /// Timing/configuration errors leave ADC registers and active state untouched.
 /// Shared BGR and a preexisting clock gate are preserved (see module docs).
 pub struct Adc<'d, T: Instance, M: Mode = Blocking> {
@@ -410,7 +382,6 @@ pub struct Adc<'d, T: Instance, M: Mode = Blocking> {
     timing: Timing,
     active: bool,
     async_lifecycle: bool,
-    _common: &'d Common<'d>,
     _mode: PhantomData<M>,
 }
 impl<'d, T: Instance> Adc<'d, T, Blocking> {
@@ -423,7 +394,6 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
     /// or reserve the shared DAC interrupt.
     pub fn new(
         peripheral: Peri<'d, T>,
-        common: &'d Common<'d>,
         config: Config,
     ) -> Result<Self, Error> {
         check_fault::<T>()?;
@@ -431,6 +401,7 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
         let timing = config.timing(clocks.pclk_bounds(), 0, SampleTime::Cycles518)?;
         // Reject before constructing the RAII owner: dropping a rejected owner
         // would otherwise alter the converter during an error return.
+        critical_section::with(|cs| clock_acquire(config.timeout, cs))?;
         Self::check_sibling()?;
         let construct = || Self {
             _peripheral: peripheral,
@@ -440,7 +411,6 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
             timing,
             active: false,
             async_lifecycle: false,
-            _common: common,
             _mode: PhantomData,
         };
         let mut adc = if matches!(T::ASYNC_POLICY, AsyncPolicy::SharedDac) {
@@ -469,7 +439,6 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
     /// use the `adc_irq_*` accessors from its ISR.
     pub fn new_with_irq<I, H>(
         peripheral: Peri<'d, T>,
-        common: &'d Common<'d>,
         _irqs: I,
         config: Config,
     ) -> Result<Self, Error>
@@ -478,14 +447,13 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
         I: Binding<T::Interrupt, H> + 'd,
         H: Handler<T::Interrupt>,
     {
-        Self::new(peripheral, common, config)
+        Self::new(peripheral, config)
     }
 
     /// Motor-control ADC mode: foreground ownership plus an application-owned
     /// fast current-loop ISR binding.
     pub fn new_motor<I, H>(
         peripheral: Peri<'d, T>,
-        common: &'d Common<'d>,
         irqs: I,
         config: Config,
     ) -> Result<Self, Error>
@@ -494,16 +462,15 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
         I: Binding<T::Interrupt, H> + 'd,
         H: Handler<T::Interrupt>,
     {
-        Self::new_with_irq(peripheral, common, irqs, config)
+        Self::new_with_irq(peripheral, irqs, config)
     }
 
     /// Fallible explicit blocking constructor.
     pub fn new_blocking(
         peripheral: Peri<'d, T>,
-        common: &'d Common<'d>,
         config: Config,
     ) -> Result<Self, Error> {
-        Self::new(peripheral, common, config)
+        Self::new(peripheral, config)
     }
     /// Read the most recently completed hardware result without starting a
     /// conversion. This is intended for timer-triggered motor-control loops:
@@ -538,7 +505,7 @@ impl<'d, T: Instance> Adc<'d, T, Blocking> {
     /// Each of the 1..=8 slots independently selects a verified channel and
     /// sample time. Results preserve slot order; a channel may be repeated by
     /// referencing the same owned or borrowed `BorrowedAdcChannel` handle.
-    /// Both ADCs may remain independently owned through one `Common` guard;
+    /// Both ADCs may remain independently owned with a shared clock gate;
     /// these scans do not synchronize their sampling instants.
     ///
     /// Length, timing and sibling SLAVE checks precede ADC/BGR writes. One
@@ -692,7 +659,6 @@ impl<'d, T: AsyncInstance> Adc<'d, T, Async> {
     /// The IRQ must be bound to `InterruptHandler<T>` with `bind_interrupts!`.
     pub fn new_async(
         peripheral: Peri<'d, T>,
-        common: &'d Common<'d>,
         _irqs: impl Binding<T::Interrupt, InterruptHandler<T>> + 'd,
         config: Config,
     ) -> Result<Self, Error> {
@@ -702,6 +668,7 @@ impl<'d, T: AsyncInstance> Adc<'d, T, Async> {
         // Keep inherited-source rejection and initial masking
         // atomic with respect to a previously enabled/pending ADC vector.
         let mut adc = critical_section::with(|cs| {
+            clock_acquire(config.timeout, cs)?;
             Self::check_sibling()?;
             if inherited_async_configuration::<T>() {
                 return Err(Error::UnsupportedConfiguration);
@@ -720,7 +687,6 @@ impl<'d, T: AsyncInstance> Adc<'d, T, Async> {
                 hclk: clocks.hclk_bounds(),
                 timing,
                 active: false,
-                _common: common,
                 async_lifecycle: true,
                 _mode: PhantomData,
             };

@@ -2,8 +2,7 @@
 
 Implementation scope, 2026-10-12. L012 ADC2 extends the existing finite software
 single-read and ordered 1–8-slot scan API to shared IRQ30, `ADC2_DAC`. ADC1 keeps
-its dedicated IRQ12 policy. Both converters retain blocking operation and their
-borrowed `Common` owner. Stage91 main verification produced five standalone
+its dedicated IRQ12 policy. Both converters support blocking operation and manage their shared clock internally. Stage91 main verification produced five standalone
 ARM libraries and ten ordinary ELFs; its independent reviews are recorded below.
 At main acceptance clean replay and final54 report binding had not run.
 No hardware execution or analog qualification is claimed.
@@ -15,9 +14,8 @@ bind_interrupts!(struct Irqs {
     ADC1 => adc::InterruptHandler<peripherals::ADC1>;
     ADC2_DAC => adc::InterruptHandler<peripherals::ADC2>;
 });
-let common = adc::Common::new(p.BGR, 100_000)?;
-let mut adc1 = adc::Adc::new_async(p.ADC1, &common, Irqs, config)?;
-let mut adc2 = adc::Adc::new_async(p.ADC2, &common, Irqs, config)?;
+let mut adc1 = adc::Adc::new_async(p.ADC1, Irqs, config)?;
+let mut adc2 = adc::Adc::new_async(p.ADC2, Irqs, config)?;
 let sample = adc2.read(&mut input, sample_time).await?;
 let timing = adc2.read_sequence(&sequence, &mut output).await?;
 ```

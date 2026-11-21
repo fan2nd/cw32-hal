@@ -24,7 +24,7 @@ use embassy_time::{Duration, Ticker};
 use embassy_executor::Spawner;
 use embassy_cw32::{
     self as hal,
-    adc::{Adc, Common, Config as AdcConfig, SampleTime},
+    adc::{Adc, Config as AdcConfig, SampleTime},
     gpio::{Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -115,12 +115,11 @@ async fn main(spawner: Spawner) {
         OPEN_LOOP_MIN_MODULATION_Q15, OPEN_LOOP_MAX_MODULATION_Q15
     );
 
-    let common = Common::new(p.BGR, 100_000).unwrap();
     let mut adc_config = AdcConfig::default();
     adc_config.vdda_mv = 5_000;
     adc_config.frequency = Hertz(24_000_000);
-    let mut adc1 = Adc::new(p.ADC1, &common, adc_config).unwrap();
-    let mut adc2 = Adc::new(p.ADC2, &common, adc_config).unwrap();
+    let mut adc1 = Adc::new(p.ADC1, adc_config).unwrap();
+    let mut adc2 = Adc::new(p.ADC2, adc_config).unwrap();
     let mut ia_pin = p.PB0;
     let mut ib_pin = p.PB1;
     let mut bus_pin = p.PA8;

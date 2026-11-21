@@ -24,7 +24,7 @@ constructor, DAC-output source, dual coupling, continuous conversion, external
 trigger or DMA scan API is added by this blocking scope. ADC1/ADC2 interrupt
 reads and scans are documented separately.
 
-`Common` owns BGR and remains borrowed by both independently owned converters.
+Both converters acquire the shared clock internally and preserve shared BGR state.
 Constructors, reconfiguration and reads reject a sibling with SLAVE=1 before
 ADC/BGR writes, even if that sibling is disabled. SLAVE=1 is a request to follow
 the other converter's START; allowing it would trigger a resource the caller

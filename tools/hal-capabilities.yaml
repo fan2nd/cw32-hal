@@ -660,11 +660,11 @@ functions:
       overrides:
       - families: [CW32L012]
         peripherals: [ADC1]
-        scope: Independent L012 ADC1 software single conversion with EOS completion and a borrowed Common owner.
+        scope: Independent L012 ADC1 software single conversion with EOS completion.
       - families: [CW32L012]
         peripherals: [ADC2]
         status: partial
-        scope: Independent L012 ADC2 finite software single conversion with EOS completion, borrowed Common and checked DAC-peer admission on shared ADC2_DAC IRQ30.
+        scope: Independent L012 ADC2 finite software single conversion with EOS completion and checked DAC-peer admission on shared ADC2_DAC IRQ30.
         limitations:
         - Actual DAC DMAUDRIE1/2 must both read zero in a verified gate-on/reset-released domain before ADC2 writes or IRQ activation.
           Admission retains any acquired DAC gate; opening it may advance retained DAC activity even on later rejection.
@@ -797,12 +797,12 @@ functions:
       status: unimplemented
       scope: No maintained HAL API declaration for this mode.
       limitations:
-      - L012 converters are independently owned through Common; synchronized/slave/coupled modes are not exposed.
+      - L012 converters are independently owned with internal shared-clock acquisition; synchronized/slave/coupled modes are not exposed.
       families:
       - CW32L012
       evidence:
       - path: embassy-cw32/src/adc/l012.rs
-        anchor: pub struct Common
+        anchor: fn clock_acquire
     - id: safe_peripheral_dma
       status: unimplemented
       scope: No maintained HAL API declaration for this mode.
@@ -2054,11 +2054,11 @@ functions:
     - bgr
     evidence:
     - path: embassy-cw32/src/adc/l012.rs
-      anchor: pub struct Common
+      anchor: fn clock_acquire
     modes:
     - id: adc_shared_owner
       status: partial
-      scope: L012 ADC Common retains the BGR token and shared power.
+      scope: L012 ADC constructors acquire the shared clock internally and preserve BGR power.
       limitations:
       - Standalone reference/comparator management is absent. No standalone BGR block elsewhere does not mean
         no internal bandgap.

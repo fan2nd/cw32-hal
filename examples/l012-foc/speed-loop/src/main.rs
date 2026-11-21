@@ -27,7 +27,7 @@ use embassy_executor::Spawner;
 
 use embassy_cw32::{
     self as hal,
-    adc::{Adc, Common, Config as AdcConfig, adc_irq_result},
+    adc::{Adc, Config as AdcConfig, adc_irq_result},
     gpio::{Flex, Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -111,7 +111,6 @@ async fn main(spawner: Spawner) {
     let led = Output::new(p.PC13, Level::High, Speed::Default);
     spawner.spawn(tasks::led(led).unwrap());
     defmt::info!("JD4631 FOC boot: PWM={=u32}Hz", PWM_HZ);
-    let common = Common::new(p.BGR, 100_000).unwrap();
     let mut adc_config = AdcConfig::default();
     adc_config.vdda_mv = 5_000;
     // The default L012 clock tree is 8 MHz PCLK. 24 MHz is the requested
@@ -141,8 +140,8 @@ async fn main(spawner: Spawner) {
 
     // Keep ADC1 owned for the lifetime of the firmware. Its sequence is
     // reprogrammed below to the C project's ATIM-CC4 triggered scan.
-    let adc1 = Adc::new_motor(p.ADC1, &common, current_loop::Irqs, adc_config).unwrap();
-    let _adc2 = Adc::new(p.ADC2, &common, adc_config).unwrap();
+    let adc1 = Adc::new_motor(p.ADC1, current_loop::Irqs, adc_config).unwrap();
+    let _adc2 = Adc::new(p.ADC2, adc_config).unwrap();
     adc::auxiliary();
 
     let mut pwm = ComplementaryPwm::new(
