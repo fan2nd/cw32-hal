@@ -97,7 +97,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
             if let (Some(entry), Some(phase), Some(flash)) =
                 (lsi_target, lsi_phase.as_mut(), lsi_flash)
             {
-                entry.acknowledge(config, phase, flash, MAX_FLASH_WAIT as u8, $error, $advance)?;
+                entry.acknowledge(config, phase, flash, MAX_FLASH_WAIT as u8, $error, &mut $advance)?;
             }
         }};
     }

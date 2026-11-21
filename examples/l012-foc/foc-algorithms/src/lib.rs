@@ -9,6 +9,9 @@
 //! receives three normalized PWM duties.
 
 pub mod control;
+mod trig;
+
+pub use trig::sin_cos_q15_lut;
 
 use embassy_cw32::cordic::{q15_mul, Q15_ONE};
 const HALF_Q15: i32 = 16_384;

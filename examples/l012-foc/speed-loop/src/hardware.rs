@@ -2,7 +2,7 @@
 
 use crate::foc::{JD4631, PhaseCurrent};
 pub use crate::config::*;
-use embassy_cw32::{cordic::{Cordic, Q1_31}, peripherals};
+pub use crate::foc::sin_cos_q15_lut;
 
 /// Encoder resolution is a board/sensor choice, independent of motor data.
 /// The current L012 wiring uses the 14-bit AS5048A/MT6701-compatible frame.
@@ -58,36 +58,6 @@ pub fn electrical_angle_step_for_rpm(mechanical_rpm: i32) -> i32 {
         * i64::from(JD4631.pole_pairs)
         * 65_536;
     (numerator / i64::from(60 * PWM_HZ as i32)) as i32
-}
-
-// 1/4-wave Q1.15 lookup table. The current ISR uses this instead of the
-// blocking CORDIC call so angle prediction does not add peripheral latency.
-const SIN_QUARTER_Q15: [i16; 65] = [
-    0, 804, 1608, 2410, 3212, 4011, 4808, 5602, 6393, 7179, 7962, 8739, 9512, 10278, 11039, 11793,
-    12539, 13279, 14010, 14732, 15446, 16151, 16846, 17530, 18204, 18868, 19519, 20159, 20787,
-    21403, 22005, 22594, 23170, 23731, 24279, 24811, 25329, 25832, 26319, 26790, 27245, 27683,
-    28105, 28510, 28898, 29268, 29621, 29956, 30273, 30571, 30852, 31113, 31356, 31580, 31785,
-    31971, 32137, 32285, 32412, 32521, 32609, 32678, 32728, 32757, 32767,
-];
-
-/// Return Q1.15 sine/cosine for a 16-bit electrical angle without division or
-/// peripheral access. Linear interpolation is intentionally omitted to keep
-/// the 16 kHz current ISR bounded on Cortex-M0+.
-pub fn sin_cos_q15_lut(angle: u16) -> (i16, i16) {
-    fn quarter(index: u8) -> i16 {
-        SIN_QUARTER_Q15[index as usize]
-    }
-    fn sin(angle: u16) -> i16 {
-        let quadrant = (angle >> 14) as u8;
-        let index = ((angle & 0x3fff) >> 8) as u8;
-        match quadrant {
-            0 => quarter(index),
-            1 => quarter(64 - index),
-            2 => -quarter(index),
-            _ => -quarter(64 - index),
-        }
-    }
-    (sin(angle), sin(angle.wrapping_add(16_384)))
 }
 
 pub fn phase_step_for_rpm(target_rpm: u32) -> u32 {
@@ -173,21 +143,3 @@ pub fn speed_rpm_from_delta(delta_counts: i32, elapsed_pwm_periods: u32) -> i32 
     };
     whole.saturating_add(fraction)
 }
-
-pub fn sin_cos_q15(cordic: &mut Cordic<'_, peripherals::CORDIC>, angle: u16) -> (i16, i16) {
-    // CORDIC input is angle/pi in Q1.31. The FOC angle is the C reference's
-    // 16-bit electrical angle, so half a turn is 32768 and the conversion is
-    // a 16-bit shift.
-    let signed = if angle >= 32768 {
-        i32::from(angle) - 65536
-    } else {
-        i32::from(angle)
-    };
-    let normalized = signed << 16;
-    let waveform = cordic.sin_cos(Q1_31::from_bits(normalized), 1_024).unwrap();
-    (
-        (waveform.sin.to_bits() >> 16) as i16,
-        (waveform.cos.to_bits() >> 16) as i16,
-    )
-}
-

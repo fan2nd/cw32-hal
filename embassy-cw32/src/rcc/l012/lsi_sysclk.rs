@@ -193,6 +193,9 @@ impl LsiSysclkSnapshot {
 
     // This helper only polls. Writes and their pre-write settled guards remain
     // at their actual source-use edges in configure and finish_lsi_sysclk.
+    // Share the polling loop across clock transitions; only the field update
+    // depends on which transition is being acknowledged.
+    #[inline(never)]
     pub(super) fn acknowledge(
         self,
         config: Config,
@@ -200,7 +203,7 @@ impl LsiSysclkSnapshot {
         flash: pac::flash::regs::Cr2,
         wait: u8,
         error: Error,
-        mut advance: impl FnMut(&mut LsiSysclkPhase, LsiSysclkPhase) -> Result<bool, Error>,
+        advance: &mut dyn FnMut(&mut LsiSysclkPhase, LsiSysclkPhase) -> Result<bool, Error>,
     ) -> Result<(), Error> {
         for _ in 0..config.timeout {
             let (done, _) = self.check(config, Some(flash), wait, wait, |observed| {
@@ -310,7 +313,7 @@ pub(super) fn finish_lsi_sysclk(
         flash,
         MAX_FLASH_WAIT as u8,
         Error::ClockConfigurationTimeout,
-        |expected, observed| {
+        &mut |expected, observed| {
             expected.clock.set_hclkprs(lsi_ack_field(
                 observed.clock.hclkprs(),
                 expected.clock.hclkprs(),

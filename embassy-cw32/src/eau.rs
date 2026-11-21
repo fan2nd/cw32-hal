@@ -1,11 +1,13 @@
 //! L012 integer arithmetic accelerator. All operands and results are 32-bit.
 //!
 //! Poll budgets count status reads, not time. A timeout does not abort hardware.
-//! Subsequent operations refuse to overwrite a busy engine. Drop is nonblocking
-//! and retains its clock while busy; no reset pulse or abort is attempted.
+//! Subsequent operations refuse to overwrite a busy engine. The access value
+//! has no peripheral ownership and dropping it never changes the clock or
+//! operation state; no reset pulse or abort is attempted.
 //! See `docs/l012-math-evidence.md` for sources and verification boundaries.
 
-use crate::{Peri, PeripheralType, pac, rcc::RccPeripheral};
+use crate::{PeripheralType, pac, rcc::RccPeripheral};
+use core::marker::PhantomData;
 use pac::eau::vals::Mode;
 
 /// Startup or calculation failure.
@@ -60,14 +62,17 @@ impl SealedInstance for crate::peripherals::EAU {
 }
 impl Instance for crate::peripherals::EAU {}
 
-/// Exclusive blocking EAU owner. No software arithmetic fallback is used.
-pub struct Eau<'d, T: Instance> {
-    _peripheral: Peri<'d, T>,
+/// Blocking access to the shared EAU accelerator. Each calculation holds a
+/// critical section from the busy check through the final result read.
+/// The poll budget therefore also bounds the number of completion polls while
+/// interrupts are masked. A timed-out operation can leave the engine busy.
+pub struct Eau<T: Instance> {
+    _marker: PhantomData<T>,
 }
-impl<'d, T: Instance> Eau<'d, T> {
+impl<T: Instance> Eau<T> {
     /// Enable the gate, preserving reset and neighboring/shared resources.
     /// A busy startup leaves the gate enabled so existing work can finish.
-    pub fn new(peripheral: Peri<'d, T>) -> Result<Self, Error> {
+    pub fn new() -> Result<Self, Error> {
         if T::RCC_INFO.reset_asserted() {
             return Err(Error::HeldInReset);
         }
@@ -80,7 +85,7 @@ impl<'d, T: Instance> Eau<'d, T> {
             return Err(Error::Busy);
         }
         Ok(Self {
-            _peripheral: peripheral,
+            _marker: PhantomData,
         })
     }
     /// Observe busy without modifying hardware or reading result registers.
@@ -96,17 +101,19 @@ impl<'d, T: Instance> Eau<'d, T> {
         divisor: u32,
         polls: u32,
     ) -> Result<Division<u32>, Error> {
-        self.prepare(Mode::UnsignedDivision, polls)?;
-        let r = T::regs();
-        r.dividend().write(|w| w.set_dividend(dividend));
-        r.divisor().write(|w| w.set_divisor(divisor)); // Trigger after dividend.
-        let status = self.wait(polls)?;
-        if status.zero() {
-            return Err(Error::DivisionByZero);
-        }
-        Ok(Division {
-            quotient: r.quotient().read().quotient(),
-            remainder: r.remainder().read().remainder(),
+        critical_section::with(|_| {
+            self.prepare(Mode::UnsignedDivision, polls)?;
+            let r = T::regs();
+            r.dividend().write(|w| w.set_dividend(dividend));
+            r.divisor().write(|w| w.set_divisor(divisor)); // Trigger after dividend.
+            let status = self.wait(polls)?;
+            if status.zero() {
+                return Err(Error::DivisionByZero);
+            }
+            Ok(Division {
+                quotient: r.quotient().read().quotient(),
+                remainder: r.remainder().read().remainder(),
+            })
         })
     }
     /// Signed 32-bit division, with hardware zero-divisor and overflow reporting.
@@ -117,32 +124,36 @@ impl<'d, T: Instance> Eau<'d, T> {
         divisor: i32,
         polls: u32,
     ) -> Result<Division<i32>, Error> {
-        self.prepare(Mode::SignedDivision, polls)?;
-        let r = T::regs();
-        r.dividend().write(|w| w.set_dividend(dividend as u32));
-        r.divisor().write(|w| w.set_divisor(divisor as u32));
-        let status = self.wait(polls)?;
-        if status.zero() {
-            return Err(Error::DivisionByZero);
-        }
-        if status.ovr() {
-            return Err(Error::Overflow);
-        }
-        Ok(Division {
-            quotient: r.quotient().read().quotient() as i32,
-            remainder: r.remainder().read().remainder() as i32,
+        critical_section::with(|_| {
+            self.prepare(Mode::SignedDivision, polls)?;
+            let r = T::regs();
+            r.dividend().write(|w| w.set_dividend(dividend as u32));
+            r.divisor().write(|w| w.set_divisor(divisor as u32));
+            let status = self.wait(polls)?;
+            if status.zero() {
+                return Err(Error::DivisionByZero);
+            }
+            if status.ovr() {
+                return Err(Error::Overflow);
+            }
+            Ok(Division {
+                quotient: r.quotient().read().quotient() as i32,
+                remainder: r.remainder().read().remainder() as i32,
+            })
         })
     }
     /// Unsigned integer square root. Writing DIVIDEND triggers this operation.
     /// ZERO/OVR are inapplicable in square-root mode and are not interpreted.
     pub fn square_root(&mut self, radicand: u32, polls: u32) -> Result<SquareRoot, Error> {
-        self.prepare(Mode::SquareRoot, polls)?;
-        let r = T::regs();
-        r.dividend().write(|w| w.set_dividend(radicand));
-        self.wait(polls)?;
-        Ok(SquareRoot {
-            root: r.quotient().read().quotient(),
-            remainder: r.remainder().read().remainder(),
+        critical_section::with(|_| {
+            self.prepare(Mode::SquareRoot, polls)?;
+            let r = T::regs();
+            r.dividend().write(|w| w.set_dividend(radicand));
+            self.wait(polls)?;
+            Ok(SquareRoot {
+                root: r.quotient().read().quotient(),
+                remainder: r.remainder().read().remainder(),
+            })
         })
     }
     fn prepare(&mut self, mode: Mode, polls: u32) -> Result<(), Error> {
@@ -164,14 +175,5 @@ impl<'d, T: Instance> Eau<'d, T> {
             core::hint::spin_loop();
         }
         Err(Error::Timeout)
-    }
-}
-impl<T: Instance> Drop for Eau<'_, T> {
-    fn drop(&mut self) {
-        if !self.is_busy() {
-            critical_section::with(|cs| {
-                let _ = T::RCC_INFO.disable_with_cs(cs);
-            });
-        }
     }
 }

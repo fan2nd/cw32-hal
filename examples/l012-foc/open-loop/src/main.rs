@@ -13,7 +13,7 @@ use cw32_l012_foc_open_loop::{
     hardware::{
         ALIGNMENT_PERIODS, BUS_MAX_MV, BUS_MIN_MV, POT_MAX_COUNTS, POT_MAX_RPM,
         POT_MIN_COUNTS, POT_ZERO_COUNTS, PWM_HZ, READY_ZERO_SAMPLES, angle_delta,
-        bus_voltage_mv, sin_cos_q15,
+        bus_voltage_mv, sin_cos_q15_lut,
     },
     control::target_rpm_from_pot,
     foc::{Duty, JD4631},
@@ -25,7 +25,6 @@ use embassy_executor::Spawner;
 use embassy_cw32::{
     self as hal,
     adc::{Adc, Common, Config as AdcConfig, SampleTime},
-    cordic::Cordic,
     gpio::{Level, Output, Speed},
     spi::{self, Spi},
     time::Hertz,
@@ -68,15 +67,9 @@ fn panic(_: &core::panic::PanicInfo<'_>) -> ! {
     }
 }
 
-fn open_loop_duty(
-    angle: u16,
-    modulation_q15: i32,
-    cordic: &mut Cordic<'_, hal::peripherals::CORDIC>,
-) -> Duty {
-    // The open-loop phase accumulator is kept in the convenient 14-bit
-    // electrical-angle domain; the shared CORDIC helper uses the C reference's
-    // 16-bit full-turn domain.
-    let (sin, cos) = sin_cos_q15(cordic, angle << 2);
+fn open_loop_duty(angle: u16, modulation_q15: i32) -> Duty {
+    // Expand the 14-bit phase to the C reference's 16-bit full-turn angle.
+    let (sin, cos) = sin_cos_q15_lut(angle << 2);
     let sin = i64::from(sin);
     let cos = i64::from(cos);
     // Inverse Clarke: b/c are -alpha/2 +/- sqrt(3)*beta/2.
@@ -188,7 +181,6 @@ async fn main(spawner: Spawner) {
     info!("pwm: moe={=bool} break={=bool}", pwm.get_master_output_enable(), pwm.is_break_pending());
 
     let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
-    let mut cordic = Cordic::new(p.CORDIC).unwrap();
     let cs = Output::new(p.PF0, Level::High, Speed::Default);
     let mut spi_config = spi::Config::default();
     spi_config.mode = MODE_1;
@@ -315,7 +307,7 @@ async fn main(spawner: Spawner) {
             }
         let angle = (phase_accum >> 16) as u16 & 0x3fff;
         let modulation_q15 = modulation_for_rpm(target_rpm_active);
-        apply_duty(&mut pwm, open_loop_duty(angle, modulation_q15, &mut cordic));
+        apply_duty(&mut pwm, open_loop_duty(angle, modulation_q15));
         pwm.set_master_output_enable(command_active);
         if command_active {
             phase_accum = phase_accum.wrapping_sub(phase_step);

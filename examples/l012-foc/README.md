@@ -2,7 +2,7 @@
 
 This example ports the supplied C project to the current Embassy-style HAL. It
 uses the L012 buffered ATIM complementary PWM owner, blocking ADC1/ADC2 reads,
-blocking SPI3 for the SSI encoder, and the CORDIC for sine/cosine. The control
+blocking SPI3 for the SSI encoder, and the C reference’s Q1.15 lookup table for sine/cosine. The control
 path follows the C split: ATIM CH4 starts an ADC1 PB0/PB1 scan, the ADC1 EOS
 interrupt runs the 16 kHz current PI/Clarke/Park/SVPWM path, and the foreground
 loop performs the SSI read plus the 1 ms speed loop. The hardware loop is split

@@ -1,77 +1,199 @@
 #![no_std]
 #![no_main]
 
-//! Target-side timing of the current and speed algorithms.
+//! Target-side timing comparison for FOC arithmetic and math accelerators.
 
-use core::sync::atomic::{compiler_fence, Ordering};
-use cortex_m::{asm, peripheral::{syst::SystClkSource, Peripherals, SYST}};
+use core::sync::atomic::{Ordering, compiler_fence};
+use cortex_m::{
+    asm,
+    peripheral::{Peripherals, SYST, syst::SystClkSource},
+};
 use cortex_m_rt::entry;
-use cw32_l012_foc_algorithms::{FocController, PhaseCurrent, SpeedController, JD4631};
-use defmt::info;
-use embassy_cw32 as hal;
+use cw32_l012_foc_algorithms::{
+    FocController, JD4631, PhaseCurrent, SpeedController, sin_cos_q15_lut,
+};
+use defmt::{error, info};
 use defmt_rtt as _;
+use embassy_cw32 as hal;
+use hal::{
+    eau::{Eau, Error as EauError},
+    peripherals,
+    rcc::{self, HsiDiv},
+};
 
 const SAMPLES: u32 = 256;
+const SYSTICK_MASK: u32 = 0x00ff_ffff;
+const POLLS: u32 = 1_024;
 
 #[panic_handler]
-fn panic(_: &core::panic::PanicInfo<'_>) -> ! { loop { cortex_m::asm::wfi(); } }
-
-const CORE_HZ: u32 = 96_000_000;
-const SYSTICK_MASK: u32 = 0x00ff_ffff;
+fn panic(_: &core::panic::PanicInfo<'_>) -> ! {
+    loop {
+        cortex_m::asm::wfi();
+    }
+}
 
 #[inline(always)]
 fn elapsed_cycles(start: u32, end: u32) -> u32 {
-    // SysTick counts down and wraps at 24 bits.
     start.wrapping_sub(end) & SYSTICK_MASK
 }
 
 #[inline(never)]
-fn current(c: &mut FocController) -> u32 {
+fn time_lut(angle: u16) -> u32 {
     let start = SYST::get_current();
-    let duty = c.update(PhaseCurrent { a: 120, b: -80 }, 23_170, 23_170);
-    compiler_fence(Ordering::SeqCst);
-    core::hint::black_box(duty.a);
-    elapsed_cycles(start, SYST::get_current())
-}
-
-#[inline(never)]
-fn speed(c: &mut SpeedController) -> u32 {
-    let start = SYST::get_current();
-    let value = c.update_for_ticks(240, 180, 1);
+    let value = sin_cos_q15_lut(angle);
     compiler_fence(Ordering::SeqCst);
     core::hint::black_box(value);
     elapsed_cycles(start, SYST::get_current())
 }
 
+#[inline(never)]
+fn time_software_division(angle: u16) -> u32 {
+    let start = SYST::get_current();
+    // Keep operand preparation and division after the opening SysTick read.
+    let angle = core::hint::black_box(angle);
+    let dividend = 8_000_000u32.saturating_add(u32::from(angle));
+    let divisor = 3_000u32.saturating_add(u32::from(angle & 31));
+    let value = (dividend / divisor, dividend % divisor);
+    compiler_fence(Ordering::SeqCst);
+    core::hint::black_box(value);
+    elapsed_cycles(start, SYST::get_current())
+}
+
+#[inline(never)]
+fn time_eau(eau: &mut Eau<peripherals::EAU>, angle: u16) -> Result<u32, EauError> {
+    let start = SYST::get_current();
+    // Keep operand preparation and division after the opening SysTick read.
+    let angle = core::hint::black_box(angle);
+    let dividend = 8_000_000u32.saturating_add(u32::from(angle));
+    let divisor = 3_000u32.saturating_add(u32::from(angle & 31));
+    let value = eau.divide_unsigned(dividend, divisor, POLLS)?;
+    compiler_fence(Ordering::SeqCst);
+    core::hint::black_box(value);
+    Ok(elapsed_cycles(start, SYST::get_current()))
+}
+
+#[derive(Clone, Copy)]
+struct Stats {
+    min: u32,
+    max: u32,
+    total: u32,
+}
+impl Stats {
+    const fn new() -> Self {
+        Self {
+            min: u32::MAX,
+            max: 0,
+            total: 0,
+        }
+    }
+    fn add(&mut self, value: u32) {
+        self.min = self.min.min(value);
+        self.max = self.max.max(value);
+        self.total = self.total.saturating_add(value);
+    }
+}
+
 #[entry]
 fn main() -> ! {
-    let _ = hal::init(hal::Config::default());
+    // Match the speed-loop clock configuration on the 5 V motor-control board.
+    let mut system = hal::Config::default();
+    system.rcc.operating_conditions.min_supply_mv = 5_000;
+    system.rcc.operating_conditions.max_supply_mv = 5_000;
+    system.rcc.hsi.div = HsiDiv::Div1;
+    system.rcc.allow_nominal_bus_overclock = true;
+    if let Err(err) = hal::try_init(system) {
+        error!("RCC init failed: {:?}", err);
+        loop {
+            asm::wfi();
+        }
+    }
     let mut core = Peripherals::take().unwrap();
     core.SYST.set_clock_source(SystClkSource::Core);
     core.SYST.set_reload(SYSTICK_MASK);
     core.SYST.clear_current();
     core.SYST.enable_counter();
+    let mut eau = match Eau::<peripherals::EAU>::new() {
+        Ok(engine) => Some(engine),
+        Err(err) => {
+            error!("EAU init failed: {:?}", err);
+            None
+        }
+    };
+    let mut eau_samples = 0;
     let mut current_controller = FocController::new(JD4631);
     current_controller.iq_reference = 1_000;
     let mut speed_controller = SpeedController::new(240);
-    let mut current_total = 0u32;
-    let mut current_min = u32::MAX;
-    let mut current_max = 0;
-    let mut speed_total = 0u32;
-    let mut speed_min = u32::MAX;
-    let mut speed_max = 0;
-    for _ in 0..SAMPLES {
-        let ticks = current(&mut current_controller);
-        current_total += ticks;
-        current_min = current_min.min(ticks);
-        current_max = current_max.max(ticks);
-        let ticks = speed(&mut speed_controller);
-        speed_total += ticks;
-        speed_min = speed_min.min(ticks);
-        speed_max = speed_max.max(ticks);
+    let mut current_stats = Stats::new();
+    let mut speed_stats = Stats::new();
+    let mut lut_stats = Stats::new();
+    let mut software_div_stats = Stats::new();
+    let mut eau_stats = Stats::new();
+    for sample in 0..SAMPLES {
+        let angle = (sample as u16).wrapping_mul(257);
+        let start = SYST::get_current();
+        let duty = current_controller.update(PhaseCurrent { a: 120, b: -80 }, 23_170, 23_170);
+        compiler_fence(Ordering::SeqCst);
+        core::hint::black_box(duty.a);
+        current_stats.add(elapsed_cycles(start, SYST::get_current()));
+        let start = SYST::get_current();
+        let value = speed_controller.update_for_ticks(240, 180, 1);
+        compiler_fence(Ordering::SeqCst);
+        core::hint::black_box(value);
+        speed_stats.add(elapsed_cycles(start, SYST::get_current()));
+        lut_stats.add(time_lut(angle));
+        software_div_stats.add(time_software_division(angle));
+        if let Some(engine) = eau.as_mut() {
+            match time_eau(engine, angle) {
+                Ok(cycles) => {
+                    eau_stats.add(cycles);
+                    eau_samples += 1;
+                }
+                Err(err) => {
+                    error!("EAU division failed at sample {=u32}: {:?}", sample, err);
+                    eau = None;
+                }
+            }
+        }
     }
-    info!("algorithm timing: systick={=u32}Hz samples={=u32}", CORE_HZ, SAMPLES);
-    info!("current loop: min={=u32} max={=u32} avg_cycles={=u32} avg_us={=u32}", current_min, current_max, current_total / SAMPLES, current_total / SAMPLES / (CORE_HZ / 1_000_000));
-    info!("speed loop: min={=u32} max={=u32} avg_cycles={=u32} avg_us={=u32}", speed_min, speed_max, speed_total / SAMPLES, speed_total / SAMPLES / (CORE_HZ / 1_000_000));
-    loop { asm::wfi(); }
+    info!(
+        "algorithm timing: systick={=u32}Hz samples={=u32}",
+        rcc::clocks().hclk.0,
+        SAMPLES
+    );
+    info!(
+        "current loop: min_cycles={=u32} max_cycles={=u32} avg_cycles={=u32}",
+        current_stats.min,
+        current_stats.max,
+        current_stats.total / SAMPLES
+    );
+    info!(
+        "speed loop: min_cycles={=u32} max_cycles={=u32} avg_cycles={=u32}",
+        speed_stats.min,
+        speed_stats.max,
+        speed_stats.total / SAMPLES
+    );
+    info!(
+        "sin/cos LUT: min_cycles={=u32} max_cycles={=u32} avg_cycles={=u32}",
+        lut_stats.min,
+        lut_stats.max,
+        lut_stats.total / SAMPLES
+    );
+    info!(
+        "u32 division software: min_cycles={=u32} max_cycles={=u32} avg_cycles={=u32}",
+        software_div_stats.min,
+        software_div_stats.max,
+        software_div_stats.total / SAMPLES
+    );
+    if eau_samples > 0 {
+        info!(
+            "u32 division EAU: samples={=u32} min_cycles={=u32} max_cycles={=u32} avg_cycles={=u32}",
+            eau_samples,
+            eau_stats.min,
+            eau_stats.max,
+            eau_stats.total / eau_samples
+        );
+    }
+    loop {
+        asm::wfi();
+    }
 }

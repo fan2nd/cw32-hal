@@ -2,7 +2,7 @@
 #![no_std]
 #![no_main]
 use cortex_m_rt::entry;
-use embassy_cw32::{self as hal, eau::Eau};
+use embassy_cw32::{self as hal, eau::Eau, peripherals};
 #[panic_handler]
 fn panic(_: &core::panic::PanicInfo) -> ! {
     loop {
@@ -11,8 +11,8 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
-    let mut eau = Eau::new(p.EAU).unwrap();
+    let _p = hal::init(hal::Config::default());
+    let mut eau = Eau::<peripherals::EAU>::new().unwrap();
     // This is a read-count limit, not a deadline or operation-duration claim.
     let polls = 1024;
     loop {
