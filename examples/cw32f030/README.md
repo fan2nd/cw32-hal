@@ -151,3 +151,5 @@ dropping it waits for completion/error and discards them. A DMA error permanentl
 consumes its resources because the manual does not prove bus quiescence on TE.
 Drop can hang on stalled hardware. This example is compiled and linked, not
 flashed or claimed to validate silicon. See `docs/dma-owned-copy-evidence.md`.
+
+Motor control examples are in [f030-motor](../f030-motor/README.md).
