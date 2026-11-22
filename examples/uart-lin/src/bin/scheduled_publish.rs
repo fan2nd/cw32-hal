@@ -30,9 +30,8 @@ async fn within_slot<F: Future>(end: Instant, operation: F) -> Result<F::Output,
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 3000;
-    system.rcc.operating_conditions.max_supply_mv = 3600;
-    let p = hal::init(system);
+    system.rcc.operating_conditions.supply_mv = 3_300;
+    let p = hal::init(system).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let tx_pin = p.PA1;
     #[cfg(any(feature = "cw32l011k8t6", feature = "cw32l012c8t6", feature = "cw32l012c8u6"))]

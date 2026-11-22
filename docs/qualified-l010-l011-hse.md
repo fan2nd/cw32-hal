@@ -257,9 +257,9 @@ continue; it is not a guaranteed wall-clock deadline. The hardware 65/130 ms
 detector windows are not software duration guarantees. External loss may stop
 CPU progress when fallback is disabled. Later fallback invalidates frozen
 HSE-derived rates even if execution continues. An RCC initialization failure
-publishes no frozen clocks; `init` panics on initialization errors. A later
+returns an error without publishing frozen clocks. A later
 time-driver error can occur after RCC has already frozen clocks, as documented
-by `try_init`. Hardware may remain in a partial guarded or bridge state. Reset before retrying; rollback to a failed external source is
+by `init`. Hardware may remain in a partial guarded or bridge state. Reset before retrying; rollback to a failed external source is
 not promised.
 
 No runtime retuning, fault recovery, PLL, LSE initialization, sleep/deep-sleep

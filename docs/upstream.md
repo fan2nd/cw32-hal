@@ -50,9 +50,8 @@ multiple handlers for shared interrupt lines, conditional handlers, and unsafe
   metadata is explicit rather than fabricated.
 - Chip-level metadata and a generated PAC do not mean a tested HAL driver exists.
   Consult the coverage manifest before selecting a peripheral.
-- `try_init(Config)` validates configuration, acquires singleton ownership, and
-  configures the verified family-specific HSI path with bounded readiness polls;
-  `init` is its panicking wrapper. Stopped-HSI factory calibration uses reviewed
+- `init(Config)` validates configuration, acquires singleton ownership, and
+  configures the verified family-specific HSI path with bounded readiness polls. It returns `Result<Peripherals, rcc::Error>`. Stopped-HSI factory calibration uses reviewed
   temporary-source sequencing, with retained-RTC constraints on affected families.
   Board supply, active incoming clock and oscillator assumptions still apply.
   Hardware failure can consume ownership and leave partial clock changes; reset

@@ -598,8 +598,8 @@ impl LsiSysclkState {
         // parameters remain defined without claiming they describe a live rate.
         let pll_bounds = if entry.sources.pllen() {
             let c = config.operating_conditions;
-            if c.min_supply_mv < crate::RCC_PLL_SUPPLY_MV.0
-                || c.max_supply_mv > crate::RCC_PLL_SUPPLY_MV.1
+            if c.supply_mv < crate::RCC_PLL_SUPPLY_MV.0
+                || c.supply_mv > crate::RCC_PLL_SUPPLY_MV.1
                 || c.min_temperature_c < crate::RCC_PLL_TEMPERATURE_C.0
                 || c.max_temperature_c > crate::RCC_PLL_TEMPERATURE_C.1
             {

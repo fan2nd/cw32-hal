@@ -11,10 +11,9 @@ fn main() -> ! {
     // Example board declaration: actual supply 3.0–3.6 V, ambient -40..85 C.
     // L011 requires VDDA=VDD. PA0/PA1 inputs must stay within the supply rails.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 3000;
-    system.rcc.operating_conditions.max_supply_mv = 3600;
+    system.rcc.operating_conditions.supply_mv = 3_300;
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div8;
-    let p = hal::init(system);
+    let p = hal::init(system).unwrap();
     let mut config = Config::default();
     config.vdda_mv = 3000;
     config.frequency = Hertz(24_000_000);

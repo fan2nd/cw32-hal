@@ -15,8 +15,7 @@ fn main() -> ! {
     // These are BOARD requirements, not measurements or a chip accuracy claim.
     // Connect the qualified 24 MHz source described in README.md before boot.
     let conditions = rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -32,7 +31,7 @@ fn main() -> ! {
     config.rcc.sys = rcc::Sysclk::HEX;
     // This is an iteration budget, not a duration or clock-loss safeguard.
     config.rcc.timeout = 2_000_000;
-    let p = hal::init(config);
+    let p = hal::init(config).unwrap();
     let mut led = Output::new(p.PA0, Level::Low, Speed::Default);
     let mut uart = usart::UartTx::new_blocking(p.UART1, p.PB2, usart::Config::default()).unwrap();
     // UART baud is derived by its driver from the frozen HEX-derived PCLK.

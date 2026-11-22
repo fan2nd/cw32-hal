@@ -69,7 +69,7 @@ other FLASH programming agent may use it. Owning the peripheral or choosing the
 last page alone proves none of this. Region and erase endpoints must be page
 aligned; byte writes and reads can be unaligned.
 
-An unsafe `OperatingConditions::new(min_supply_mv, max_supply_mv, max_hclk_hz)`
+An unsafe `OperatingConditions::new(supply_mv, max_hclk_hz)`
 asserts measured/validated board bounds throughout use, including oscillator
 tolerance and supply transients, with own-datasheet temperature/power conditions.
 It checks these numeric limits:
@@ -77,8 +77,8 @@ It checks these numeric limits:
 - L010: 1.62–5.5 V; below 1.8 V at most 24 MHz, otherwise at most 48 MHz.
 - L011/L012: 1.7–5.5 V; below 1.8 V at most 24 MHz, otherwise at most 96 MHz.
 - F030/A030/L083: 1.65–5.5 V; at most 24 MHz below 1.8 V, otherwise at most 64 MHz.
-- F002/F003/F020/L031/L052: 1.65–5.5 V; at most 24 MHz when the lower supply
-  bound is below 1.8 V, otherwise at most 48 MHz.
+- F002/F003/F020/L031/L052: 1.65–5.5 V; at most 24 MHz when the supply
+  voltage is below 1.8 V, otherwise at most 48 MHz.
 - R031: 2.2–3.6 V, at most 48 MHz.
 - W031: conservatively 2.0–3.6 V, at most 48 MHz. This supports both RF LDO and
   DCDC supply modes; this initial API does not qualify the LDO-only 1.8-V case.

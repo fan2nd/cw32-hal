@@ -11,14 +11,14 @@ bounds. Choose one exact part with `--no-default-features`:
   aliases are not qualified for this mode.
 - CW32L010F8P6, CW32L010F8U6 or CW32L010Y8M6: live-entry reuse only.
   This branch declares 1.62–5.5 V and −40–85°C, leaves `Config.lse=None`, and
-  calls ordinary `try_init`. It does not start/prepare/trim LSI or command IWDT.
+  calls ordinary `init`. It does not start/prepare/trim LSI or command IWDT.
   A normal-POR error is expected. Success exposes system/bus/HSI bounds and
   acquires the existing read-only `HsiOscClock` capability; it does not change
   RTC or invent a native `LsiClock`/LSI calendar variant. Each part retains
   64 KiB Flash and 4 KiB SRAM. See the [live-only contract](../../docs/l010-live-factory-lsi-sysclk.md).
 - CW32L011K8T6 or CW32L011K8U6: own live-entry reuse only, 64 KiB Flash and
   6 KiB SRAM. The branch declares 1.7–5.5 V and −40–85°C, leaves both
-  `Config.hse=None` and `Config.lse=None`, and calls ordinary `try_init`.
+  `Config.hse=None` and `Config.lse=None`, and calls ordinary `init`.
   Original HSEEN/HSECCS/LSECCS must be zero; original software-requested,
   stable ten-bit factory LSI and HSI/LSI entry are required. Ordinary POR
   stops in the error handler. No LSI/request/IWDT preparation occurs. Success
@@ -28,7 +28,7 @@ bounds. Choose one exact part with `--no-default-features`:
   8 KiB SRAM. The branch declares 1.7–5.5 V and −40–85°C and leaves
   `Config.lse=None`. Ordinary POR is expected to stop in the error handler.
   There is no LSI preparation, calibration, software-request write or IWDT
-  operation before `try_init`. Successful initialization observes system/bus/HSI
+  operation before `init`. Successful initialization observes system/bus/HSI
   bounds and the existing read-only raw 96 MHz `HsiOscClock`; it does not
   initialize RTC. See the [own live-only contract](../../docs/l012-live-factory-lsi-sysclk.md).
 - CW32F020C6U7, CW32F030C8T7, CW32A030C8T7, CW32L031C8T6,

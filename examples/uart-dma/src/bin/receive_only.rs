@@ -33,7 +33,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let staging = cortex_m::singleton!(: [u8; 16] = [0; 16]).unwrap();
     #[cfg(not(any(example_l083, example_f020, example_four_channel)))]
     let (uart, rx_pin) = (p.UART2, p.PA3);

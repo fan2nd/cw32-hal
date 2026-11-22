@@ -27,7 +27,7 @@ static FLASH_MESSAGE: &[u8] =
 async fn main(_spawner: Spawner) {
     // Normal reset/clean-runtime startup is required. init rejects dirty DMA
     // state; it is not a recovery path for an arbitrary active bootloader.
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let staging = cortex_m::singleton!(: [u8; 32] = [0; 32]).unwrap();
     #[cfg(not(example_l083))]
     let tx_pin = p.PA2;

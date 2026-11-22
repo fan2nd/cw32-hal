@@ -6,7 +6,7 @@
 
 These are explicitly selected family backends for blocking GPIO and a
 factory-calibrated HSI final clock tree. They provide the existing Embassy-style
-`Peri`, `Config`, `init`/`try_init`, frozen `Clocks`, `Input`, `Output`,
+`Peri`, `Config`, `init`, frozen `Clocks`, `Input`, `Output`,
 `OutputOpenDrain`, `Flex`, and embedded-hal digital interfaces. UART/SPI/I2C,
 EXTI, ADC, timers, DMA, CRC, LCD and other peripheral HALs remain unavailable on
 these families. A generated peripheral singleton or PAC block is not a HAL driver.

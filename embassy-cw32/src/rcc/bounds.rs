@@ -116,7 +116,6 @@ impl ClockBounds {
         if minimum.0 == 0
             || minimum.0 > nominal.0
             || nominal.0 > maximum.0
-            || conditions.min_supply_mv > conditions.max_supply_mv
             || conditions.min_temperature_c > conditions.max_temperature_c
         {
             return None;
@@ -129,7 +128,7 @@ impl ClockBounds {
             #[cfg(any(rcc_pll, rcc_lsi_sysclk))]
             rate_only: false,
             temperature_c: (conditions.min_temperature_c, conditions.max_temperature_c),
-            supply_mv: (conditions.min_supply_mv, conditions.max_supply_mv),
+            supply_mv: (conditions.supply_mv, conditions.supply_mv),
         })
     }
     /// Multiply the original exact source numerators before any rounding.

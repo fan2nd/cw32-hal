@@ -20,7 +20,7 @@ not a claim that its silicon lacks LSI. HSI remains the default, with /6
 retained unless configured otherwise. No configuration field, schema, PAC
 layout, peripheral mode, runtime switch or low-power recovery API is added.
 
-Set `config.rcc.sys = rcc::Sysclk::LSI` before one-time `try_init(config)`.
+Set `config.rcc.sys = rcc::Sysclk::LSI` before one-time `init(config)`.
 The existing operating-condition declaration and AHB/APB dividers apply.
 Optional HSE/LSE retain their independently qualified configuration and
 ownership rules; F8U6 still lacks a qualified HSE pad route. L031 has no PLL.
@@ -86,7 +86,7 @@ configuration during the transaction. A critical section does not stop hardware
 state machines. Asynchronous clock loss, CPU stall or reset mid-transaction
 is outside the bounded software guarantee.
 
-Safe `init` and `try_init` can briefly run each entire GPIOA/B/C/F working
+Safe `init` can briefly run each entire GPIOA/B/C/F working
 clock during inspection. Sampling, filters and armed events may advance and
 be externally observable, including before an error. GPIO configuration and
 locks are preserved, and software does not clear flags, but hardware flags

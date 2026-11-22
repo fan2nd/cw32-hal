@@ -10,7 +10,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut config = hal::dac::Config::default();
     config.supply_mv = 3300;
     let mut dac = hal::dac::Dac::new(p.DAC, p.PB0, p.PB1, config).unwrap();

@@ -11,7 +11,7 @@ hal::bind_interrupts!(struct Irqs {
 });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let (tx_pin, rx_pin) = (p.PA1, p.PA0);
     #[cfg(any(

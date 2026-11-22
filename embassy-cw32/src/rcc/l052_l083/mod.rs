@@ -227,8 +227,8 @@ struct PllParameters {
 impl Pll {
     fn parameters(self, config: &Config) -> Result<PllParameters, Error> {
         let c = config.operating_conditions;
-        if c.min_supply_mv < crate::RCC_PLL_SUPPLY_MV.0
-            || c.max_supply_mv > crate::RCC_PLL_SUPPLY_MV.1
+        if c.supply_mv < crate::RCC_PLL_SUPPLY_MV.0
+            || c.supply_mv > crate::RCC_PLL_SUPPLY_MV.1
             || c.min_temperature_c < crate::RCC_PLL_TEMPERATURE_C.0
             || c.max_temperature_c > crate::RCC_PLL_TEMPERATURE_C.1
         {
@@ -376,8 +376,8 @@ impl Hse {
             return Err(Error::HseOutsideQualifiedRange);
         }
         let c = self.operating_conditions;
-        if c.min_supply_mv < crate::RCC_HSE_SUPPLY_MV.0
-            || c.max_supply_mv > crate::RCC_HSE_SUPPLY_MV.1
+        if c.supply_mv < crate::RCC_HSE_SUPPLY_MV.0
+            || c.supply_mv > crate::RCC_HSE_SUPPLY_MV.1
             || c.min_temperature_c < crate::RCC_HSE_TEMPERATURE_C.0
             || c.max_temperature_c > crate::RCC_HSE_TEMPERATURE_C.1
         {
@@ -510,8 +510,7 @@ impl Config {
                 let bounds = hse.bounds()?;
                 let board = self.operating_conditions;
                 let source = hse.operating_conditions;
-                if board.min_supply_mv < source.min_supply_mv
-                    || board.max_supply_mv > source.max_supply_mv
+                if board.supply_mv != source.supply_mv
                     || board.min_temperature_c < source.min_temperature_c
                     || board.max_temperature_c > source.max_temperature_c
                 {
@@ -553,8 +552,8 @@ impl Config {
                         return Err(Error::InvalidLseDetector);
                     }
                     let c = self.operating_conditions;
-                    if c.min_supply_mv < crate::peripherals::RTC::SUPPLY_MV.0
-                        || c.max_supply_mv > crate::peripherals::RTC::SUPPLY_MV.1
+                    if c.supply_mv < crate::peripherals::RTC::SUPPLY_MV.0
+                        || c.supply_mv > crate::peripherals::RTC::SUPPLY_MV.1
                         || c.min_temperature_c < crate::peripherals::RTC::TEMPERATURE_C.0
                         || c.max_temperature_c > crate::peripherals::RTC::TEMPERATURE_C.1
                     {
@@ -588,8 +587,8 @@ impl Config {
             #[cfg(rcc_lsi_sysclk)]
             if self.sys == Sysclk::LSI {
                 let board = self.operating_conditions;
-                if board.min_supply_mv < crate::RCC_LSI_SUPPLY_MV.0
-                    || board.max_supply_mv > crate::RCC_LSI_SUPPLY_MV.1
+                if board.supply_mv < crate::RCC_LSI_SUPPLY_MV.0
+                    || board.supply_mv > crate::RCC_LSI_SUPPLY_MV.1
                 {
                     return Err(Error::SupplyOutsideQualifiedRange);
                 }
@@ -867,11 +866,9 @@ pub enum Error {
     /// The reserved timer clock/reset did not acknowledge initialization.
     #[cfg(feature = "_time-driver")]
     TimeDriverClockFailure,
-    /// Declared minimum VDD exceeds the declared maximum.
-    InvalidSupplyRange,
     /// Declared minimum ambient TA exceeds the declared maximum.
     InvalidTemperatureRange,
-    /// Declared supply interval extends outside the factory-HSI qualification.
+    /// Declared supply voltage is outside the factory-HSI qualification.
     SupplyOutsideQualifiedRange,
     /// Declared ambient interval extends outside the factory-HSI qualification.
     TemperatureOutsideQualifiedRange,

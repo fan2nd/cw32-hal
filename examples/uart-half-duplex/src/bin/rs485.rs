@@ -6,7 +6,7 @@ use embassy_cw32::{self as hal, usart};
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let (peri, tx, rx, de) = (p.UART2, p.PA3, p.PA4, p.PB1);
     #[cfg(feature = "cw32l011k8t6")]

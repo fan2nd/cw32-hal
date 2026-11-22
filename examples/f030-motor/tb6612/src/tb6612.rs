@@ -65,7 +65,7 @@ fn sample(raw: u16, previous: &mut u16, travelled: &mut i64) {
 }
 
 pub fn run(brake: Brake) -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut standby = Output::new(p.PB2, Level::Low, Speed::Low);
     let mut in1 = Output::new(p.PB0, Level::Low, Speed::Low);
     let _in2 = Output::new(p.PB1, Level::Low, Speed::Low);

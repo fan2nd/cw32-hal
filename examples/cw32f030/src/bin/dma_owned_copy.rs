@@ -17,7 +17,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut indicator = Output::new(p.PB0, Level::Low, Speed::Low);
 
     // singleton! returns exclusive static SRAM buffers. No caller buffer or

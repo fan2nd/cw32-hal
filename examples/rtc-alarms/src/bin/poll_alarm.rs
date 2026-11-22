@@ -7,7 +7,7 @@ use embassy_cw32::{
 };
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "hsi-source")]
     let clock = hal::rcc::HsiOscClock::new(p.SYSCTRL).unwrap();
     #[cfg(not(feature = "hsi-source"))]

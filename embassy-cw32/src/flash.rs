@@ -196,18 +196,12 @@ impl OperatingConditions {
     /// driver exists. Validate interrupt and watchdog latency for blocking FLASH
     /// operations; no maximum completion time or power-failure recovery is
     /// promised. The driver cannot measure voltage or prove these conditions.
-    pub unsafe fn new(
-        min_supply_mv: u16,
-        max_supply_mv: u16,
-        max_hclk_hz: u32,
-    ) -> Result<Self, Error> {
+    pub unsafe fn new(supply_mv: u16, max_hclk_hz: u32) -> Result<Self, Error> {
         let (min, max) = crate::FLASH_SUPPLY_RANGE_MV;
-        if min_supply_mv < min
-            || max_supply_mv > max
-            || min_supply_mv > max_supply_mv
+        if !(min..=max).contains(&supply_mv)
             || max_hclk_hz == 0
             || max_hclk_hz > crate::FLASH_MAX_HCLK_HZ
-            || (min_supply_mv < crate::FLASH_LOW_VOLTAGE_THRESHOLD_MV
+            || (supply_mv < crate::FLASH_LOW_VOLTAGE_THRESHOLD_MV
                 && max_hclk_hz > crate::FLASH_LOW_VOLTAGE_MAX_HCLK_HZ)
         {
             return Err(Error::InvalidConditions);
@@ -233,13 +227,7 @@ impl OperatingConditions {
         {
             return Err(Error::InvalidConditions);
         }
-        unsafe {
-            Self::new(
-                board.min_supply_mv,
-                board.max_supply_mv,
-                clocks.hclk_bounds().maximum().0,
-            )
-        }
+        unsafe { Self::new(board.supply_mv, clocks.hclk_bounds().maximum().0) }
     }
 }
 

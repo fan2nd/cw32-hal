@@ -14,8 +14,7 @@ use embassy_cw32::{self as hal, rcc, time::Hertz};
 )))]
 pub fn config(mode: rcc::LseMode) -> hal::Config {
     let board = rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -68,8 +67,7 @@ pub fn config(mode: rcc::LseMode) -> hal::Config {
 ))]
 pub fn config(mode: rcc::LseMode) -> hal::Config {
     let board = rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };

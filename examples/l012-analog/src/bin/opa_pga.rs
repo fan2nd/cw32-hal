@@ -10,7 +10,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut config = hal::opamp::Config::default();
     config.supply_mv = 3300;
     let mut opamp = hal::opamp::OpAmp::new(p.OPA2, config).unwrap();

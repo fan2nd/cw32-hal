@@ -186,7 +186,7 @@ may retain partially changed state, requiring reset before retry; ordinary
 reset may retain LSE and POR may be needed. See the
 [L010 system contract](../../docs/l010-lse-sysclk.md),
 [native LSE handover](../../docs/qualified-l010-lse.md) and the public
-`init`/`try_init` contract before adapting these examples.
+`init` contract before adapting these examples.
 
 ## Native L011 SYSCLK examples
 
@@ -282,7 +282,7 @@ continues to borrow this same physical source with first divisor 1 and second
 16384 (total 32768). SYSCLK selection does not reset or migrate a retained
 RTC/AWT owner. See the [L011 system contract](../../docs/l011-lse-sysclk.md),
 [native L011/L012 handover](../../docs/qualified-l011-l012-lse.md) and public
-`init`/`try_init` contract before adapting these examples.
+`init` contract before adapting these examples.
 
 ## Native L012 SYSCLK examples
 
@@ -364,7 +364,7 @@ The held LSE calendar still uses SOURCE0 and actual divisors 1 and 16384 (total
 reset or migrate RTC/AWT. The fixed 1 MHz time driver rejects this source before
 singleton acquisition. See the [L012 system contract](../../docs/l012-lse-sysclk.md),
 [native L011/L012 handover](../../docs/qualified-l011-l012-lse.md) and public
-`init`/`try_init` contract before adapting these examples.
+`init` contract before adapting these examples.
 
 The Stage61 local script scope was twenty ordinary libraries and nineteen
 crystal/bypass package pairs (38 system-clock binaries). Stage62 expanded that

@@ -10,7 +10,7 @@
 
 Flash begins at 0x00000000 and SRAM at 0x20000000. Generic `cw32f003` and all
 unlisted parts remain excluded. HSI is still the default. Set
-`config.rcc.sys = rcc::Sysclk::LSI` before one-time `try_init(config)`, using
+`config.rcc.sys = rcc::Sysclk::LSI` before one-time `init(config)`, using
 the existing operating conditions, HSI/HEX configuration, AHB/APB prescalers
 and nonzero timeout. No user trim, WAIT setting, arbitrary frequency, runtime
 switching, sleep/wake restoration or clock-loss recovery API is added. F003

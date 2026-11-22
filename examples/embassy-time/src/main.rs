@@ -17,7 +17,7 @@ async fn slow_work() {
 async fn main(spawner: Spawner) {
     // Before HAL init, the global clock safely reads zero without timer MMIO.
     core::hint::black_box(Instant::now());
-    let _peripherals = hal::init(Default::default());
+    let _peripherals = hal::init(Default::default()).unwrap();
     core::hint::black_box(hal::time_driver::tick_bounds());
     spawner.spawn(slow_work().unwrap());
     loop {

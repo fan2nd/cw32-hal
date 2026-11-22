@@ -17,7 +17,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::try_init(Default::default()).unwrap_or_else(|_| examples::halt());
+    let p = hal::init(Default::default()).unwrap_or_else(|_| examples::halt());
     let tx1 = cortex_m::singleton!(: [u8; 16] = [0; 16]).unwrap_or_else(|| examples::halt());
     let rx1 = cortex_m::singleton!(: [u8; 24] = [0; 24]).unwrap_or_else(|| examples::halt());
     let mut cs1 = Output::new(p.PB0, Level::High, Speed::Default);

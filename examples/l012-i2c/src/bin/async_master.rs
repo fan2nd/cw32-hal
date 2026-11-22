@@ -45,7 +45,7 @@ async fn read_register_patterns(i2c: &mut I2c<'_, Async>) -> Result<Readings, Er
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     // Both exact packages bond PA4/PA5 (AF2) and PB0/PB1 (AF8).
     let mut primary = I2c::new_async(p.I2C1, p.PA4, p.PA5, Irqs, examples::config())
         .unwrap_or_else(|_| examples::halt());

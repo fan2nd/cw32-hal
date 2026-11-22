@@ -94,7 +94,7 @@ masters quiescent before Rust uses application memory. The incoming execution
 clock must remain electrically legal and available. Clock/pad/consumer changes
 and asynchronous loss of required sources are outside the bounded handover.
 Normal interrupt masking does not stop NMI, DMA or autonomous peripherals.
-These are visible functional limits of safe `try_init`/`init`, without a new
+These are visible functional limits of safe `init`, without a new
 hidden Rust memory-safety precondition.
 
 Own RM49/48 Figure4-1, RM498/497 Figure25-1 and DS10/9 Figure3-1 distinguish:

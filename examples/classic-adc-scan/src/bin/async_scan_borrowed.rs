@@ -18,9 +18,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
     // Board-qualified low-impedance external inputs, within 0..VDDA.
     // Supply is 3.0–3.6 V with VDDA=VDD and qualified HSI conditions.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 3000;
-    system.rcc.operating_conditions.max_supply_mv = 3600;
-    let p = hal::init(system);
+    system.rcc.operating_conditions.supply_mv = 3_300;
+    let p = hal::init(system).unwrap();
     let mut config = Config::default();
     config.vdda_mv = 3000;
     let mut adc = Adc::new_async(p.ADC, Irqs, config).unwrap();

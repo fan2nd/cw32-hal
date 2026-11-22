@@ -103,11 +103,10 @@ fn modulation_for_rpm(target_rpm: i32) -> i32 {
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 5_000;
-    system.rcc.operating_conditions.max_supply_mv = 5_000;
+    system.rcc.operating_conditions.supply_mv = 5_000;
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div1;
     system.rcc.allow_nominal_bus_overclock = true;
-    let p = hal::try_init(system).unwrap();
+    let p = hal::init(system).unwrap();
     let led = Output::new(p.PC13, Level::High, Speed::Default);
     spawner.spawn(tasks::led(led).unwrap());
     info!(

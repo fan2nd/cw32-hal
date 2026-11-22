@@ -30,7 +30,7 @@ hal::bind_interrupts!(struct Irqs {
 #[cfg(any(example_l052, example_l083))]
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut btim = Timer::<_, Async>::new_async(p.BTIM2, Irqs).unwrap();
     let mut lptim = hal::lptim::Lptim::new_async(p.LPTIM, Irqs, Default::default()).unwrap();
     btim.set_period(Prescaler::Div256, 62_500).unwrap();
@@ -56,7 +56,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
         halltim::{Config, HallPin, HallTim},
     };
 
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     // Connect push-pull Hall CH1/CH2/CH3 to PA3/PA4/PA5 (AF9) and common ground.
     // Construct the polling owner first: its own constructor masks all Hall
     // requests before BTIM3 enables the shared vector. No Hall handler is added.

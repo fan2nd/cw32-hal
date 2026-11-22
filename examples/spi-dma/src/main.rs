@@ -44,7 +44,7 @@ async fn exchange(bus: &mut impl SpiBus<u8>) {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let tx = cortex_m::singleton!(: [u8; 16] = [0; 16]).unwrap();
     let rx = cortex_m::singleton!(: [u8; 24] = [0; 24]).unwrap();
     #[cfg(any(

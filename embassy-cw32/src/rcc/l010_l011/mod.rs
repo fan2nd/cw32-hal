@@ -219,7 +219,7 @@ pub enum Sysclk {
     /// LSI; StartupOnly does not require factory LSI. The handover must permit
     /// residual timer/GPIO/IWDT/external progress and L011 PB0 AF3 raw-HSI output
     /// interruptions; concrete vetoes do not establish universal idleness. See
-    /// [`crate::init`], [`crate::try_init`], docs/l010-lse-sysclk.md and
+    /// [`crate::init`], docs/l010-lse-sysclk.md and
     /// docs/l011-lse-sysclk.md. All waits
     /// count CPU iterations while execution continues. Errors publish no clocks,
     /// retain source/pad ownership and require reset before retry; ordinary reset
@@ -284,8 +284,8 @@ impl Hse {
             return Err(Error::HseOutsideQualifiedRange);
         }
         let c = self.operating_conditions;
-        if c.min_supply_mv < crate::RCC_HSE_SUPPLY_MV.0
-            || c.max_supply_mv > crate::RCC_HSE_SUPPLY_MV.1
+        if c.supply_mv < crate::RCC_HSE_SUPPLY_MV.0
+            || c.supply_mv > crate::RCC_HSE_SUPPLY_MV.1
             || c.min_temperature_c < crate::RCC_HSE_TEMPERATURE_C.0
             || c.max_temperature_c > crate::RCC_HSE_TEMPERATURE_C.1
         {
@@ -324,7 +324,7 @@ pub struct Config {
     pub hse: Option<Hse>,
     /// Native board-qualified L010/L011 LSE. The exact qualified three L010 and
     /// two L011 packages may select it as SYSCLK.
-    /// See [`crate::init`] and [`crate::try_init`] for the required RTC_OUT/
+    /// See [`crate::init`] for the required RTC_OUT/
     /// RTC_1Hz observer disconnection and whole-GPIOB (L010) or GPIOC (L011) handover.
     /// Genuine reset entry with untouched selectors meets those functional
     /// conditions; a register image does not prove reset. Failure permanently
@@ -387,8 +387,7 @@ impl Config {
             let bounds = hse.bounds()?;
             let board = self.operating_conditions;
             let source = hse.operating_conditions;
-            if board.min_supply_mv < source.min_supply_mv
-                || board.max_supply_mv > source.max_supply_mv
+            if board.supply_mv != source.supply_mv
                 || board.min_temperature_c < source.min_temperature_c
                 || board.max_temperature_c > source.max_temperature_c
             {
@@ -602,11 +601,9 @@ pub enum Error {
     /// The reserved timer clock/reset did not acknowledge initialization.
     #[cfg(feature = "_time-driver")]
     TimeDriverClockFailure,
-    /// Declared minimum VDD exceeds the declared maximum.
-    InvalidSupplyRange,
     /// Declared minimum ambient TA exceeds the declared maximum.
     InvalidTemperatureRange,
-    /// Declared supply interval extends outside the factory-HSI qualification.
+    /// Declared supply voltage is outside the factory-HSI qualification.
     SupplyOutsideQualifiedRange,
     /// Declared ambient interval extends outside the factory-HSI qualification.
     TemperatureOutsideQualifiedRange,

@@ -12,7 +12,7 @@ fn main() -> ! {
     // Board startup or a bootloader must already have software-enabled LSI,
     // loaded its own factory trim, and reached STABLE. Ordinary POR is not enough.
     // Default system initialization keeps an HSI CPU; the RTC owns LSI separately.
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let clock = LsiClock::new(p.SYSCTRL).unwrap();
 
     // Deliberate stopped-unset provisioning: review and replace this sample time

@@ -13,7 +13,7 @@ hal::bind_interrupts!(struct Irqs {
 });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut asynchronous = I2c::new_async(p.I2C1, p.PA4, p.PA5, Irqs, examples::config())
         .unwrap_or_else(|_| examples::halt());
     let mut blocking = I2c::new_blocking(p.I2C2, p.PB0, p.PB1, examples::config())

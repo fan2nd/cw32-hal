@@ -15,7 +15,7 @@ async fn main(_spawner: Spawner) {
     // Both HSE modes use 8 MHz x4 = nominal 32 MHz, divided by 32 for
     // nominal 1 MHz ticks (or divided by 8 with low-voltage AHB /4).
     // Fractional-MHz PLL choices are not necessarily admitted by this driver.
-    let p = hal::init(cw32_pll_clock_examples::config());
+    let p = hal::init(cw32_pll_clock_examples::config()).unwrap();
     #[cfg(gpio_speed)]
     let speed = Speed::Low;
     #[cfg(not(gpio_speed))]

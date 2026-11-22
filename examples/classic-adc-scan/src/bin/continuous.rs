@@ -7,7 +7,7 @@ use embassy_cw32::{self as hal, adc::{Adc, Config, SampleTime}, time::Hertz};
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let (mut input, _other_input) = include!(concat!(env!("OUT_DIR"), "/channel-pins.rs"));
     let mut config = Config::default();
     config.vdda_mv = 3300;

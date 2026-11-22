@@ -25,7 +25,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut fast = Timer::<_, Async>::new_async(p.BTIM1, Irqs).unwrap();
     let mut medium = Timer::<_, Async>::new_async(p.BTIM2, Irqs).unwrap();
     let mut slow = Timer::<_, Async>::new_async(p.BTIM3, Irqs).unwrap();

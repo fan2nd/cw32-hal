@@ -7,7 +7,7 @@ use embassy_cw32::{self as hal, adc::{Adc, Config, Reference, SampleTime}};
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut input = p.PA0;
     let mut config = Config::default();
     config.vdda_mv = 3300;

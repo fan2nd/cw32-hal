@@ -22,10 +22,9 @@ async fn main(_spawner: embassy_executor::Spawner) {
     // Example board: nominal 3.3 V, guaranteed 3.0–3.6 V, ambient -40..85 C.
     // VDDA must equal VDD; PA0/PA8 stay within 0..VDDA. Qualify the DAC loads.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 3000;
-    system.rcc.operating_conditions.max_supply_mv = 3600;
+    system.rcc.operating_conditions.supply_mv = 3_300;
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div8;
-    let p = hal::init(system);
+    let p = hal::init(system).unwrap();
     let mut dac_config = hal::dac::Config::default();
     dac_config.supply_mv = 3300;
     let mut dac = Dac::new(p.DAC, p.PB0, p.PB1, dac_config).unwrap();

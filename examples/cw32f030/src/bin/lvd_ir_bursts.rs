@@ -16,7 +16,7 @@ fn main() -> ! {
     // CW32F030C8T7. PB9 is IR_OUT, PB0 is a low-voltage indication.
     // Use suitable external transistor/LED/current-limiting circuitry on PB9;
     // this does not drive an IR LED directly and is not a receiver protocol.
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut indicator = Output::new(p.PB0, Level::Low, Speed::Low);
     let monitor =
         LowVoltageMonitor::new_supply(p.LVD, Threshold::from_millivolts(3000).unwrap()).unwrap();

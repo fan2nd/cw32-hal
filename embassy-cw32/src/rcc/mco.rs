@@ -79,7 +79,7 @@ impl McoPrescaler {
 
 /// Explicit guarantees for the board throughout output use, not measurements.
 ///
-/// The supply interval must describe the actual PA8 I/O supply. The declaration
+/// The supply voltage must describe the actual PA8 I/O supply. The declaration
 /// must truthfully describe the same board as RCC initialization. Frozen clocks
 /// retain the source qualification range, not the earlier board declaration;
 /// compatibility with that range cannot prove consistency with the earlier one.
@@ -187,8 +187,7 @@ impl<'d> Mco<'d> {
             return Err(McoError::SourceNotCycleQualified);
         }
         let conditions = board.operating_conditions;
-        if conditions.min_supply_mv > conditions.max_supply_mv
-            || conditions.min_temperature_c > conditions.max_temperature_c
+        if conditions.min_temperature_c > conditions.max_temperature_c
             || board.max_load_pf == 0
         {
             return Err(McoError::InvalidBoardConditions);
@@ -296,8 +295,8 @@ impl Drop for Mco<'_> {
 }
 
 fn conditions_fit(c: OperatingConditions, supply: (u16, u16), temperature: (i16, i16)) -> bool {
-    c.min_supply_mv >= supply.0
-        && c.max_supply_mv <= supply.1
+    c.supply_mv >= supply.0
+        && c.supply_mv <= supply.1
         && c.min_temperature_c >= temperature.0
         && c.max_temperature_c <= temperature.1
 }

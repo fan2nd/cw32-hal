@@ -9,7 +9,7 @@ use embassy_cw32::{
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(board::config(LseMode::Bypass));
+    let p = hal::init(board::config(LseMode::Bypass)).unwrap();
     // Borrow the already configured physical SYSCLK oscillator for RTC.
     #[cfg(any(
         feature = "cw32l010f8p6",

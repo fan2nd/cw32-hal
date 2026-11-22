@@ -20,40 +20,35 @@ hal::bind_interrupts!(struct Irqs { AWT => hal::awt::InterruptHandler<hal::perip
 // F020 own LSE limits: 1650..=5500 mV, -40..=105 C.
 #[cfg(feature = "cw32f020c6u7")]
 const BOARD: OperatingConditions = OperatingConditions {
-    min_supply_mv: 3000,
-    max_supply_mv: 3600,
+    supply_mv: 3_300,
     min_temperature_c: -20,
     max_temperature_c: 70,
 };
 // F030 own LSE limits: 1650..=5500 mV, -40..=105 C.
 #[cfg(feature = "cw32f030c8t7")]
 const BOARD: OperatingConditions = OperatingConditions {
-    min_supply_mv: 3000,
-    max_supply_mv: 3600,
+    supply_mv: 3_300,
     min_temperature_c: -20,
     max_temperature_c: 70,
 };
 // A030 own LSE limits: 1650..=5500 mV, -40..=105 C.
 #[cfg(feature = "cw32a030c8t7")]
 const BOARD: OperatingConditions = OperatingConditions {
-    min_supply_mv: 3000,
-    max_supply_mv: 3600,
+    supply_mv: 3_300,
     min_temperature_c: -20,
     max_temperature_c: 70,
 };
 // L031 own LSE limits: 1650..=5500 mV, -40..=85 C.
 #[cfg(feature = "cw32l031c8t6")]
 const BOARD: OperatingConditions = OperatingConditions {
-    min_supply_mv: 3000,
-    max_supply_mv: 3600,
+    supply_mv: 3_300,
     min_temperature_c: -20,
     max_temperature_c: 70,
 };
 // R031 own LSE limits: 2200..=3600 mV, -40..=85 C.
 #[cfg(feature = "cw32r031c8u6")]
 const BOARD: OperatingConditions = OperatingConditions {
-    min_supply_mv: 3000,
-    max_supply_mv: 3600,
+    supply_mv: 3_300,
     min_temperature_c: -20,
     max_temperature_c: 70,
 };
@@ -77,7 +72,7 @@ fn board_config() -> hal::Config {
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let mut p = hal::init(board_config());
+    let mut p = hal::init(board_config()).unwrap();
     let period = Config {
         prescaler: Prescaler::Div2,
         reload: 1023,

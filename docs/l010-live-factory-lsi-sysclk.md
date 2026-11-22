@@ -67,7 +67,7 @@ system/bus changes.
 The existing platform entry boundary remains: before Rust uses application
 memory, all bus masters must already be quiescent under the runtime handover.
 Additional observer/whole-bank conditions concern functional support and add
-no hidden memory-safety duty to safe `init`/`try_init` callers.
+no hidden memory-safety duty to safe `init` callers.
 
 ## Guarded transition and failure
 
@@ -136,7 +136,7 @@ Stage73's LPTIM exact-fraction work and `cycles_for` availability remain unchang
 The existing `examples/lsi-clock` adds only the three exact L010 features,
 retaining its F030 default, dependencies and older calendar body. It declares
 the L010 supply/ambient range, requests LSI with no LSE declaration and calls
-ordinary `try_init`. It never prepares LSI or commands IWDT. Ordinary POR is
+ordinary `init`. It never prepares LSI or commands IWDT. Ordinary POR is
 expected to stop in its error handler. Success inspects frozen system, bus and
 HSI bounds and acquires read-only `HsiOscClock`; RTC is not changed.
 

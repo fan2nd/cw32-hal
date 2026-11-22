@@ -14,7 +14,7 @@ Monitoring deliberately retains existing hardware fault routes. Runtime loss can
 
 ## Public functional entry conditions
 
-Public `init` and `try_init`, linked from `Config.lse`, carry the reviewed functional handover amendment. These conditions do not turn safe calls into prose-only Rust memory-safety obligations; the existing pre-Rust bus-master and exclusive initialization boundary remains intact.
+Public `init`, linked from `Config.lse`, carry the reviewed functional handover amendment. These conditions do not turn safe calls into prose-only Rust memory-safety obligations; the existing pre-Rust bus-master and exclusive initialization boundary remains intact.
 
 When starting a disabled LSE with RTC SOURCE=0, the quiet RTC control image does not define the reserved RTC1HZ=0 output behavior. RTC_1Hz branches from the divider before the calendar, and START=0 is not a universal output gate. No dependent observer may remain on either RTC_OUT or RTC_1Hz:
 

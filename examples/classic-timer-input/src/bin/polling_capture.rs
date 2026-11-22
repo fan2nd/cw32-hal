@@ -24,7 +24,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut capture = include!(concat!(env!("OUT_DIR"), "/capture-constructor.rs"));
     capture.set_input_capture_mode(Channel::Ch1, InputCaptureMode::BothEdges);
     capture.set_input_capture_mode(Channel::Ch2, InputCaptureMode::Falling);

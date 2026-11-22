@@ -11,7 +11,7 @@ hal::bind_interrupts!(struct Irqs { BTIM2_LPTIM1 => hal::lptim::InterruptHandler
 hal::bind_interrupts!(struct Irqs { LPTIM => hal::lptim::InterruptHandler<hal::peripherals::LPTIM>; });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(example_awt)]
     let mut timer = hal::awt::Awt::new_async(p.AWT, Irqs, Default::default()).unwrap();
     #[cfg(not(example_awt))]

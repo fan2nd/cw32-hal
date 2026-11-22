@@ -135,7 +135,7 @@ point is admitted, but that does not preserve external-clock timing guarantees.
 
 ## Pin ownership and errors
 
-On success RCC publishes its source reservation before `try_init` returns the
+On success RCC publishes its source reservation before `init` returns the
 singleton set. `Flex::new` is the shared entry used by safe GPIO, alternate
 function and analog driver constructors; it checks HSE ownership before its
 first clock-gate or pad write. Crystal protects both actual pads, bypass only
@@ -154,7 +154,7 @@ are published by RCC on its failures. A second hardware initialization attempt
 without reset is unsupported and cannot recover the singleton through safe
 code. Raw PAC or unsafe token theft always lies outside this ownership contract.
 An initialized time-driver failure can occur after RCC has frozen clocks; it
-still returns no singleton set and requires reset, as documented by try_init.
+still returns no singleton set and requires reset, as documented by init.
 
 ## Physical pads and coverage
 

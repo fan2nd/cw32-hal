@@ -7,7 +7,7 @@ use embassy_futures::join::join;
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let (peri, tx, rx) = (p.UART2, p.PA3, p.PA4);
     #[cfg(feature = "cw32l011k8t6")]

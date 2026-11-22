@@ -31,8 +31,7 @@ returns `Result<Mco, McoError>`. The board argument is explicit:
 ```rust
 McoBoardConditions {
     operating_conditions: OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     },

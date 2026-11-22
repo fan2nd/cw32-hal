@@ -35,7 +35,7 @@ fn read_register_patterns(i2c: &mut I2c<'_, Blocking>) -> Result<Readings, Error
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut primary = I2c::new_blocking(p.I2C1, p.PA4, p.PA5, examples::config())
         .unwrap_or_else(|_| examples::halt());
     let mut secondary = I2c::new_blocking(p.I2C2, p.PB0, p.PB1, examples::config())

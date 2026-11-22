@@ -18,7 +18,7 @@ hal::bind_interrupts!(struct Irqs {
 });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut reference_config = hal::vref::Config::default();
     reference_config.supply_mv = 3300; // Set both declarations for the actual board.
     reference_config.source = Source::Supply;

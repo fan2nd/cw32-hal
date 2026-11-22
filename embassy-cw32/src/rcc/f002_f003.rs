@@ -187,8 +187,8 @@ impl Hex {
             return Err(Error::HexOutsideQualifiedRange);
         }
         let c = self.operating_conditions;
-        if c.min_supply_mv < crate::RCC_HEX_SUPPLY_MV.0
-            || c.max_supply_mv > crate::RCC_HEX_SUPPLY_MV.1
+        if c.supply_mv < crate::RCC_HEX_SUPPLY_MV.0
+            || c.supply_mv > crate::RCC_HEX_SUPPLY_MV.1
             || c.min_temperature_c < crate::RCC_HEX_TEMPERATURE_C.0
             || c.max_temperature_c > crate::RCC_HEX_TEMPERATURE_C.1
         {
@@ -209,7 +209,7 @@ impl Hex {
 /// A ready flag cannot qualify arbitrary inherited trim. Clock-dependent peripherals, DMA and interrupts must be
 /// quiescent, and no concurrent code (including NMI) may change the clock tree.
 ///
-/// These conditions apply when passed to `embassy_cw32::try_init` or `init`.
+/// These conditions apply when passed to `embassy_cw32::init`.
 /// This is not a runtime clock-switch or loss-clock recovery interface. See
 /// `docs/qualified-hex.md` for the complete source and retained-owner contract.
 #[non_exhaustive]
@@ -269,8 +269,7 @@ impl Config {
             let bounds = hex.bounds()?;
             let board = self.operating_conditions;
             let source = hex.operating_conditions;
-            if board.min_supply_mv < source.min_supply_mv
-                || board.max_supply_mv > source.max_supply_mv
+            if board.supply_mv != source.supply_mv
                 || board.min_temperature_c < source.min_temperature_c
                 || board.max_temperature_c > source.max_temperature_c
             {
@@ -289,8 +288,8 @@ impl Config {
             #[cfg(rcc_lsi_sysclk)]
             Sysclk::LSI => {
                 let c = self.operating_conditions;
-                if c.min_supply_mv < crate::RCC_LSI_SUPPLY_MV.0
-                    || c.max_supply_mv > crate::RCC_LSI_SUPPLY_MV.1
+                if c.supply_mv < crate::RCC_LSI_SUPPLY_MV.0
+                    || c.supply_mv > crate::RCC_LSI_SUPPLY_MV.1
                     || c.min_temperature_c < crate::RCC_LSI_TEMPERATURE_C.0
                     || c.max_temperature_c > crate::RCC_LSI_TEMPERATURE_C.1
                 {
@@ -393,11 +392,9 @@ pub enum Error {
     /// The reserved timer clock/reset did not acknowledge initialization.
     #[cfg(feature = "_time-driver")]
     TimeDriverClockFailure,
-    /// Declared minimum VDD exceeds the declared maximum.
-    InvalidSupplyRange,
     /// Declared minimum ambient TA exceeds the declared maximum.
     InvalidTemperatureRange,
-    /// Declared supply interval extends outside the factory-HSI qualification.
+    /// Declared supply voltage is outside the factory-HSI qualification.
     SupplyOutsideQualifiedRange,
     /// Declared ambient interval extends outside the factory-HSI qualification.
     TemperatureOutsideQualifiedRange,

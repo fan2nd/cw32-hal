@@ -7,8 +7,7 @@ use embassy_cw32::{self as hal, rcc};
 /// Total load includes routing, the receiver and any measurement equipment.
 pub const BOARD: rcc::McoBoardConditions = rcc::McoBoardConditions {
     operating_conditions: rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     },

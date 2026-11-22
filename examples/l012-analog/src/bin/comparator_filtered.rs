@@ -4,7 +4,7 @@ use embassy_cw32::{self as hal, comparator::{Comparator, Config, DigitalFilter}}
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut config = Config::default();
     config.supply_mv = 3300; // Set to the actual board analog supply.
     config.filter = Some(DigitalFilter::Div32Samples8);

@@ -20,7 +20,7 @@ SYSCLK contract](classic-lse-sysclk.md) reuses its factory preparation internall
 Neither capability adds runtime switching, arbitrary user trim/frequency,
 sleep/resume support or clock-loss recovery. No silicon validation is claimed.
 
-Set `config.rcc.sys = rcc::Sysclk::LSI` before `try_init(config)`. The existing
+Set `config.rcc.sys = rcc::Sysclk::LSI` before `init(config)`. The existing
 board supply/ambient declaration and AHB/APB prescalers apply. A configured HSE
 or LSE can still be initialized under its existing independent contract, after
 LSI is ready. A PLL configuration must still be selected as SYSCLK, so it cannot

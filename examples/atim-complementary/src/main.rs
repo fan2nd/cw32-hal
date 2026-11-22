@@ -26,7 +26,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let (main, complementary, break_input) =
         (PwmPin::new(p.PB4), ComplementaryPwmPin::new(p.PA4), None);

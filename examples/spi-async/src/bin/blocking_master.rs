@@ -35,7 +35,7 @@ fn exchange(bus: &mut Spi<'_, Blocking>) -> Result<Samples, spi::Error> {
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::try_init(Default::default()).unwrap_or_else(|_| examples::halt());
+    let p = hal::init(Default::default()).unwrap_or_else(|_| examples::halt());
     let (peripheral, sck, mosi, miso, cs) = examples::primary_pins!(p);
     let mut primary_cs = Output::new(cs, Level::High, examples::cs_speed());
     let mut primary = Spi::new_blocking(peripheral, sck, mosi, miso, examples::config())

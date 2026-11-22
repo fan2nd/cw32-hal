@@ -8,20 +8,20 @@ This correction builds on the source-qualified `ClockBounds` implementation. It 
 
 Every RCC backend's non-exhaustive `Config` gains `operating_conditions: rcc::OperatingConditions`:
 
-- `min_supply_mv`, `max_supply_mv`: guaranteed VDD interval, including supply tolerance.
+- `supply_mv`: board VDD in millivolts.
 - `min_temperature_c`, `max_temperature_c`: guaranteed ambient TA interval in Celsius, not junction temperature.
 
-`Config::new()` and `Config::default()` remain available. The field defaults to the selected family's full factory-HSI-qualified supply and ambient interval. Existing slow default clock configurations remain valid. A board using faster clocks should declare its actual range, for example a guaranteed 3.0–3.6 V supply, rather than claim an exact nominal 3.3 V supply without accounting for tolerance.
+`Config::new()` and `Config::default()` remain available. The field defaults to the selected family's lowest factory-HSI-qualified supply voltage and full qualified ambient interval. Existing slow default clock configurations remain valid. A board using faster clocks should set its supply voltage, for example `supply_mv = 3_300` for a 3.3 V rail. The rail must sustain the voltage required by the selected clocks throughout use.
 
 These values are assertions by the board/application, not measurements. The HAL cannot detect a board outside its declaration. Other thermal, analog-supply, regulator-mode, source, peripheral and pin requirements remain the caller's responsibility. In particular, W031 RF DCDC operation separately needs at least 2.0 V; the source's 1.8 V floor does not waive it.
 
-Before MMIO, `Config::frequencies()` and initialization reject reversed intervals, supply values outside `HSI_BOUND_SUPPLY_MV`, and ambient ranges outside `HSI_BOUND_TEMPERATURE_C`. This includes unsupported hot tails, even where general device operating tables allow a hotter low-dissipation condition. Declaring a narrower temperature range, including 25 C, deliberately does not reduce the full characterized HSI error envelope.
+Before MMIO, `Config::frequencies()` and initialization reject reversed temperature intervals, supply values outside `HSI_BOUND_SUPPLY_MV`, and ambient ranges outside `HSI_BOUND_TEMPERATURE_C`. This includes unsupported hot tails, even where general device operating tables allow a hotter low-dissipation condition. Declaring a narrower temperature range, including 25 C, deliberately does not reduce the full characterized HSI error envelope.
 
-Additive errors are `InvalidSupplyRange`, `InvalidTemperatureRange`, `SupplyOutsideQualifiedRange`, `TemperatureOutsideQualifiedRange`, `HclkTooHigh`, and `PclkTooHigh`. The public HAL `try_init()` already calls `frequencies()` before taking peripheral tokens; every RCC backend calls it before its first register read/write, including retained RTC preflight. Failed validation therefore does not consume HAL tokens or modify peripheral state.
+Additive errors are `InvalidTemperatureRange`, `SupplyOutsideQualifiedRange`, `TemperatureOutsideQualifiedRange`, `HclkTooHigh`, and `PclkTooHigh`. The public HAL `init()` already calls `frequencies()` before taking peripheral tokens; every RCC backend calls it before its first register read/write, including retained RTC preflight. Failed validation therefore does not consume HAL tokens or modify peripheral state.
 
 ## Actual HCLK and PCLK limits
 
-The conservative ceiling comes from the declared minimum supply and each family's own datasheet Table 7-4:
+The conservative ceiling comes from the declared supply voltage and each family's own datasheet Table 7-4:
 
 | Families | Below 1.8 V | At least 1.8 V |
 | --- | --- | --- |

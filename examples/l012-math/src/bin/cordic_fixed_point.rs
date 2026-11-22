@@ -14,7 +14,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut cordic = Cordic::new(p.CORDIC).unwrap();
     let quarter = Q1_31::from_bits(0x2000_0000);
     let half = Q1_31::from_bits(0x4000_0000);

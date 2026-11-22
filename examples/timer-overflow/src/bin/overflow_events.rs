@@ -19,7 +19,7 @@ include!(concat!(env!("OUT_DIR"), "/event-bindings.rs"));
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut primary = Timer::<_, Async>::new_async(
         include!(concat!(env!("OUT_DIR"), "/primary-token.rs")),
         Irqs,

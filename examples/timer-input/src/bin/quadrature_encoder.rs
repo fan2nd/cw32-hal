@@ -40,7 +40,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     #[cfg(not(feature = "time-driver"))]
     let mut gtim = {
         #[cfg(l010_input_example)]

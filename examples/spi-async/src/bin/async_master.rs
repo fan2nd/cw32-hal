@@ -62,7 +62,7 @@ async fn exchange(bus: &mut Spi<'_, Async>) -> Result<Samples, spi::Error> {
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::try_init(Default::default()).unwrap_or_else(|_| examples::halt());
+    let p = hal::init(Default::default()).unwrap_or_else(|_| examples::halt());
     let (peripheral, sck, mosi, miso, cs) = examples::primary_pins!(p);
     let mut primary_cs = Output::new(cs, Level::High, examples::cs_speed());
     let mut primary = Spi::new_async(peripheral, sck, mosi, miso, Irqs, examples::config())

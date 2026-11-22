@@ -7,8 +7,7 @@ use embassy_cw32::{
 /// Example declarations, not measurements. Replace them with qualified board data.
 pub fn config(mode: LseMode) -> hal::Config {
     let board = OperatingConditions {
-        min_supply_mv: 3000,
-        max_supply_mv: 3600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };

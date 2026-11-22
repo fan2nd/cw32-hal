@@ -13,7 +13,7 @@ ADC1 and ADC2 each own their peripheral token. Both constructors acquire the
 shared clock internally using the timeout in their ADC configuration.
 
 ```rust
-let mut p = embassy_cw32::init(Default::default());
+let mut p = embassy_cw32::init(Default::default())?;
 let mut adc1 = embassy_cw32::adc::Adc::new(
     p.ADC1, embassy_cw32::adc::Config::default())?;
 let mut adc2 = embassy_cw32::adc::Adc::new(

@@ -7,7 +7,7 @@ use embassy_cw32::{
 bind_interrupts!(struct Irqs { LVD => lvd::InterruptHandler; });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let threshold = Threshold::from_millivolts(2600).unwrap();
     let mut monitor = LowVoltageMonitor::new_supply(p.LVD, threshold).unwrap();
     // Board must qualify Vcore=1.6 V, analog settling and legal supply limits.

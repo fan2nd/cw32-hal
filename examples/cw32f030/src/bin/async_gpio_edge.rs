@@ -15,7 +15,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut led = Output::new(p.PB0, Level::Low, Speed::Low);
     let mut input = exti::ExtiInput::new(p.PA0, Pull::Up, Irqs);
 

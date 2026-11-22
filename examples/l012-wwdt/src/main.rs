@@ -9,7 +9,7 @@ use embassy_cw32::{
 bind_interrupts!(struct Irqs { WDT => hal::wdg::WindowInterruptHandler; });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let config = WindowConfig::from_counts(WindowPrescaler::Div524288, 0x7f, 0x60).unwrap();
     let mut watchdog = WindowWatchdog::new(p.WWDT, config).unwrap();
     watchdog.try_unleash().unwrap();

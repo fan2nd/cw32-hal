@@ -23,38 +23,10 @@ use embassy_cw32::{self as hal, rcc};
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    // Exact L010 declares 1.62..5.5 V and -40..85 C for live factory-LSI reuse.
-    // Exact L011/L012 declare their own 1.7..5.5 V and -40..85 C live-only envelope.
-    // R031 requires 2.2..3.6 V at -40..85 C.
-    // L031 and exact L052/L083 declare 1.65..5.5 V and -40..85 C.
-    // Other prior example parts retain 1.65..5.5 V and -40..105 C.
-    // These board declarations are not measurements. Qualify the actual board
-    // across its complete operating envelope. No external crystal or pin is used.
+    // This example assumes a 3.3 V board.
     let mut config = hal::Config::default();
     config.rcc.operating_conditions = rcc::OperatingConditions {
-        min_supply_mv: if cfg!(any(
-            feature = "cw32l010f8p6",
-            feature = "cw32l010f8u6",
-            feature = "cw32l010y8m6"
-        )) {
-            1_620
-        } else if cfg!(any(
-            feature = "cw32l011k8t6",
-            feature = "cw32l011k8u6",
-            feature = "cw32l012c8t6",
-            feature = "cw32l012c8u6"
-        )) {
-            1_700
-        } else if cfg!(feature = "cw32r031c8u6") {
-            2_200
-        } else {
-            1_650
-        },
-        max_supply_mv: if cfg!(feature = "cw32r031c8u6") {
-            3_600
-        } else {
-            5_500
-        },
+        supply_mv: 3_300,
         min_temperature_c: -40,
         max_temperature_c: if cfg!(any(
             feature = "cw32l010f8p6",
@@ -104,7 +76,7 @@ fn main() -> ! {
         config.rcc.hse = None;
         config.rcc.lse = None;
     }
-    let p = hal::try_init(config).unwrap_or_else(|error| stop(error));
+    let p = hal::init(config).unwrap_or_else(|error| stop(error));
     run(p)
 }
 

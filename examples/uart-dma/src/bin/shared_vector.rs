@@ -17,7 +17,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let tx1_staging = cortex_m::singleton!(: [u8; 32] = [0; 32]).unwrap();
     let rx1_staging = cortex_m::singleton!(: [u8; 32] = [0; 32]).unwrap();
     let tx4_staging = cortex_m::singleton!(: [u8; 32] = [0; 32]).unwrap();

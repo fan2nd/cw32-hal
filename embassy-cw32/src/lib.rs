@@ -584,15 +584,8 @@ pub struct Config {
 /// The shared DMA gate remains enabled
 /// once admitted; no safe DMA operation resets or disables it.
 ///
-/// Panics on a clock initialization error or a repeated call. Uses bounded
-/// hardware waits. The default is nominal 8 MHz HSI/HCLK/PCLK except L010/L011,
-/// which use their documented nominal 4 MHz reset clock. See the family RCC config.
-pub fn init(config: Config) -> Peripherals {
-    try_init(config).unwrap_or_else(|error| panic!("CW32 clock initialization failed: {:?}", error))
-}
-
-/// Fallible initialization with the same one-time ownership boundary and public
-/// native RTC/output-observer and whole-bank functional handover requirements as [`init`].
+/// Returns clock or timer initialization errors. Panics if peripheral
+/// singletons have already been taken. Hardware waits are bounded.
 ///
 /// Invalid configuration is rejected before taking ownership. A hardware timeout
 /// can leave clocks partially changed and consumes the singleton set; reset the
@@ -603,7 +596,7 @@ pub fn init(config: Config) -> Peripherals {
 /// before taking ownership; the whole selected timer/IRQ is then initialized
 /// before returning the remaining peripherals. See the time-driver module for the
 /// continuous-clock and strict IRQ blackout contract.
-pub fn try_init(config: Config) -> Result<Peripherals, rcc::Error> {
+pub fn init(config: Config) -> Result<Peripherals, rcc::Error> {
     let clocks = config.rcc.frequencies()?;
     #[cfg(feature = "_time-driver")]
     let timer_divisor = time_driver::validate_clock(clocks.pclk_bounds())?;

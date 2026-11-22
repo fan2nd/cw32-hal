@@ -7,7 +7,7 @@ use embassy_futures::join::join;
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let uart = examples::uart(p);
     let (mut tx, mut rx) = uart.split();
     loop {

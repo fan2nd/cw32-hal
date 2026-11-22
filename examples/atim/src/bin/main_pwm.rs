@@ -19,7 +19,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     #[cfg(feature = "cw32f003e4p7")]
     let pin = PwmPin::new(p.PB6);
     #[cfg(feature = "cw32l010f8p6")]

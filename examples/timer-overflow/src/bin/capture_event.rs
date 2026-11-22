@@ -18,7 +18,7 @@ include!(concat!(env!("OUT_DIR"), "/capture-bindings.rs"));
 static LATEST_CAPTURE: AtomicU32 = AtomicU32::new(0);
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut capture = include!(concat!(env!("OUT_DIR"), "/capture-constructor.rs"));
     capture.enable(Channel::Ch1);
     loop {

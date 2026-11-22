@@ -97,11 +97,10 @@ impl Stats {
 fn main() -> ! {
     // Match the speed-loop clock configuration on the 5 V motor-control board.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 5_000;
-    system.rcc.operating_conditions.max_supply_mv = 5_000;
+    system.rcc.operating_conditions.supply_mv = 5_000;
     system.rcc.hsi.div = HsiDiv::Div1;
     system.rcc.allow_nominal_bus_overclock = true;
-    if let Err(err) = hal::try_init(system) {
+    if let Err(err) = hal::init(system) {
         error!("RCC init failed: {:?}", err);
         loop {
             asm::wfi();

@@ -21,7 +21,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     #[cfg(any(feature = "cw32f030f6p7", feature = "cw32f030f8v7"))]
     let ch2 = None;
     #[cfg(not(any(feature = "cw32f030f6p7", feature = "cw32f030f8v7")))]

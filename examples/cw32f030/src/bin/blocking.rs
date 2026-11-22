@@ -11,7 +11,7 @@ use embassy_cw32::{
 #[cortex_m_rt::entry]
 fn main() -> ! {
     // Default clocks use nominal 8 MHz HSI/HCLK/PCLK.
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut led = Output::new(p.PB0, Level::Low, Speed::Low);
     let mut cs = Output::new(p.PA4, Level::High, Speed::Low);
     let mut uart =

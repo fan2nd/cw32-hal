@@ -8,7 +8,7 @@ use embassy_cw32::{
 hal::bind_interrupts!(struct Irqs { RTC => hal::rtc::AlarmInterruptHandler; });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let clock = hal::rcc::HsiOscClock::new(p.SYSCTRL).unwrap();
     // Provision the retained RTC before this example. HSIOSC stays running.
     let mut rtc = Rtc::attach_preserving_state(p.RTC, clock, Default::default()).unwrap();

@@ -14,7 +14,7 @@ bind_interrupts!(struct Irqs { AUTOTRIM_LCD => lcd::InterruptHandler<peripherals
 // bonded on every exact L052/L083 feature offered by this example.
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = embassy_cw32::init(Default::default());
+    let p = embassy_cw32::init(Default::default()).unwrap();
     let pins = [
         LcdPin::com::<0>(p.PA9),
         LcdPin::com::<1>(p.PA10),

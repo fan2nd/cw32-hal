@@ -26,7 +26,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut config = Config::default();
     config.vdda_mv = 3300;
     let mut adc = Adc::new_blocking(p.ADC, config).unwrap();

@@ -450,7 +450,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // measurement. Preserve larger dividers and prove the transition guard.
     let guard_hclk = old_clock.hclkprs().max(AHBPrescaler::Div8 as u8);
     let guard_pclk = old_clock.pclkprs().max(APBPrescaler::Div8 as u8);
-    let bus_max = if config.operating_conditions.min_supply_mv < crate::RCC_LOW_VOLTAGE_THRESHOLD_MV
+    let bus_max = if config.operating_conditions.supply_mv < crate::RCC_LOW_VOLTAGE_THRESHOLD_MV
     {
         crate::RCC_LOW_VOLTAGE_BUS_MAX_HZ
     } else {

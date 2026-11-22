@@ -42,9 +42,9 @@ hal::bind_interrupts!(struct Irqs {
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
     #[cfg(not(feature = "cw32f002f3p7"))]
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32f002f3p7")]
-    let p = hal::try_init(Default::default()).unwrap_or_else(|_| examples::halt());
+    let p = hal::init(Default::default()).unwrap_or_else(|_| examples::halt());
     let (peripheral, scl, sda) = examples::primary_pins!(p);
     let mut bus = I2c::new_async(peripheral, scl, sda, Irqs, examples::config())
         .unwrap_or_else(|_| examples::halt());

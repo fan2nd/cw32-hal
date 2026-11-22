@@ -15,8 +15,7 @@ fn main() -> ! {
     // Board declaration: a stable 3.95 MHz source with total +/-30 ppm bounds
     // must drive PA0 before boot. These are requirements, not measurements.
     let conditions = rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -40,7 +39,7 @@ fn main() -> ! {
         config.rcc.sys = rcc::Sysclk::HSI;
     }
     config.rcc.timeout = 2_000_000;
-    let p = hal::init(config);
+    let p = hal::init(config).unwrap();
     #[cfg(gpio_speed)]
     let speed = Speed::Low;
     #[cfg(not(gpio_speed))]

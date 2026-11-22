@@ -4,7 +4,7 @@ use cortex_m_rt::entry;
 use embassy_cw32::trng::{Config, Trng};
 #[entry]
 fn main() -> ! {
-    let p = embassy_cw32::init(Default::default());
+    let p = embassy_cw32::init(Default::default()).unwrap();
     let mut source = Trng::new(p.TRNG, Config::default()).unwrap();
     loop {
         match source.generate(100_000) {

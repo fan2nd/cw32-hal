@@ -8,7 +8,7 @@ use embassy_cw32::{
 };
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(board::config(LseMode::Oscillator));
+    let p = hal::init(board::config(LseMode::Oscillator)).unwrap();
     let clock = LseClock::new(p.SYSCTRL, p.PC14, p.PC15).unwrap();
     // Deliberate cold provisioning. Use attach_preserving_state for a retained calendar.
     let rtc =

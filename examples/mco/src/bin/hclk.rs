@@ -9,7 +9,7 @@ use embassy_cw32::{
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(board::config());
+    let p = hal::init(board::config()).unwrap();
     // PA8 AF4: C8T7 LQFP48 pin 29, F030K8T7/K8U7 pin 18.
     // /8 gives a nominal 1 MHz logical clock on each exact selection.
     // This rate check does not qualify the loaded waveform or its duty cycle.

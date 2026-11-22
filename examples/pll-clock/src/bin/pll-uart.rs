@@ -8,7 +8,7 @@ use embassy_cw32::{
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(cw32_pll_clock_examples::config());
+    let p = hal::init(cw32_pll_clock_examples::config()).unwrap();
     #[cfg(gpio_speed)]
     let speed = Speed::Low;
     #[cfg(not(gpio_speed))]

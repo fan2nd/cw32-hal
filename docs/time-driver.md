@@ -23,7 +23,7 @@ link time. There is no timer constructor, clock-switching API, channel sharing,
 `time-driver-any`, or GTIM3/GTIM4 selector. L012 GTIM3/4 share a vector and need a
 separate ownership/dispatch design.
 
-`try_init` validates the exact source/divider rational before taking the singleton
+`init` validates the exact source/divider rational before taking the singleton
 set. `UnsupportedTimeDriverClock` rejects unsupported nominal 1 MHz configurations.
 After RCC initialization it enables/resets/initializes the timer before returning
 any peripherals. A timer clock/reset failure returns `TimeDriverClockFailure`;

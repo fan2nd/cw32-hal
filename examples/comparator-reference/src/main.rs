@@ -17,7 +17,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     // Both declarations describe this example's 3.3 V board; neither measures it.
     let mut reference_config = hal::vref::Config::default();
     reference_config.supply_mv = 3300;

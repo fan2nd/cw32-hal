@@ -6,7 +6,7 @@ use embassy_cw32::{self as hal, usart};
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32l010f8p6")]
     let (peri, tx) = (p.UART2, p.PA3);
     #[cfg(feature = "cw32l011k8t6")]

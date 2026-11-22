@@ -10,7 +10,7 @@ from executable FLASH and exports partition symbols. On L010/L011/L012 the 4-KiB
 exclusive application ownership. Generic profiles and legacy F030 aliases are
 intentionally not selectable here. The exact part's RAM size remains unchanged.
 
-Replace the illustrative 3.2–3.4-V / -20..70°C board envelope with sustained,
+Replace the illustrative 3.3-V / -20..70°C board envelope with sustained,
 validated bounds. `OperatingConditions::from_rcc` uses the qualified factory-HSI
 HCLK upper bound, including tolerance, rather than its nominal frequency. Keep
 those conditions and clocks valid throughout driver use. Check watchdog and

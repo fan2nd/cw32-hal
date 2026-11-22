@@ -9,7 +9,7 @@ HSI remains the default. F002 has no RTC or dedicated LSI_OUT pad: this addition
 provides no `LsiClock`, `CalendarClock` or RTC API. The existing
 [classic factory-LSI contract](factory-lsi-sysclk.md) remains separate.
 
-Set `config.rcc.sys = rcc::Sysclk::LSI` before one-time `try_init(config)`.
+Set `config.rcc.sys = rcc::Sysclk::LSI` before one-time `init(config)`.
 Existing `operating_conditions`, `hsi`, `hex`, AHB/APB prescalers and nonzero
 `timeout` remain the complete configuration. There is no public arbitrary LSI
 frequency, user trim, WAIT adjustment, runtime switching, sleep/wake restoration

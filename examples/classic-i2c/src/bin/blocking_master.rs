@@ -36,9 +36,9 @@ fn read_register_patterns(i2c: &mut I2c<'_, Blocking>) -> Result<Readings, Error
 #[entry]
 fn main() -> ! {
     #[cfg(not(feature = "cw32f002f3p7"))]
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(feature = "cw32f002f3p7")]
-    let p = hal::try_init(Default::default()).unwrap_or_else(|_| examples::halt());
+    let p = hal::init(Default::default()).unwrap_or_else(|_| examples::halt());
     let (peripheral, scl, sda) = examples::primary_pins!(p);
     let mut primary = I2c::new_blocking(peripheral, scl, sda, examples::config())
         .unwrap_or_else(|_| examples::halt());

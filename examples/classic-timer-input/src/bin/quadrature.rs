@@ -21,7 +21,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 }
 #[entry]
 fn main() -> ! {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut encoder = include!(concat!(env!("OUT_DIR"), "/qei-constructor.rs"));
     loop {
         POSITION.store(encoder.count(), Ordering::Relaxed);

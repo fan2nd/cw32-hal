@@ -11,8 +11,7 @@ use embassy_cw32::{
 
 fn config(minimum: u32, nominal: u32, maximum: u32, retained: bool) -> Config {
     let conditions = rcc::OperatingConditions {
-        min_supply_mv: 3000,
-        max_supply_mv: 3600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };

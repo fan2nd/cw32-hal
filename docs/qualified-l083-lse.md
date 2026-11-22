@@ -66,7 +66,7 @@ UM65/64 requires at least128 LSE clocks during256 LSI clocks. For newly admitted
 
 `256 × declared_LSE_min_hz > 129 × own_factory_LSI_max_hz`.
 
-The extra edge is counting-phase margin. With max33784Hz the smallest accepted integer minimum is17024Hz; nominal remains32768Hz and bounds must contain that nominal. Both products widen u32 inputs to u64 before multiplication, and their maxima are below2^40, so arithmetic cannot overflow. This is checked by `Lse::bounds` during `Config::frequencies`, before `try_init` takes peripherals or performs RCC MMIO. A rejected loose declared envelope is insufficient qualification, not observation of a failing oscillator. Earlier eleven parts retain their prior bound checks unchanged.
+The extra edge is counting-phase margin. With max33784Hz the smallest accepted integer minimum is17024Hz; nominal remains32768Hz and bounds must contain that nominal. Both products widen u32 inputs to u64 before multiplication, and their maxima are below2^40, so arithmetic cannot overflow. This is checked by `Lse::bounds` during `Config::frequencies`, before `init` takes peripherals or performs RCC MMIO. A rejected loose declared envelope is insufficient qualification, not observation of a failing oscillator. Earlier eleven parts retain their prior bound checks unchanged.
 
 Live factory-valid LSI and WAIT are preserved. Erased factory evidence or a live mismatch rejects. A stopped mismatch requires repeated unchanged disabled/nonstable snapshots, no detector, no IRQ/history owner and no selected/active native consumer before a masked TRIM-only write. This is conservative software admission, not a vendor STOP-status guarantee. The accepted source freezes factory trim, wait, enable and stable requirements for its lifetime.
 

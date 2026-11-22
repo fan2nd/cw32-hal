@@ -67,12 +67,11 @@ impl Lse {
             c,
         )
         .ok_or(Error::InvalidLseBounds)?;
-        if c.min_supply_mv < crate::RCC_LSE_SUPPLY_MV.0
-            || c.max_supply_mv > crate::RCC_LSE_SUPPLY_MV.1
+        if c.supply_mv < crate::RCC_LSE_SUPPLY_MV.0
+            || c.supply_mv > crate::RCC_LSE_SUPPLY_MV.1
             || c.min_temperature_c < crate::RCC_LSE_TEMPERATURE_C.0
             || c.max_temperature_c > crate::RCC_LSE_TEMPERATURE_C.1
-            || board.min_supply_mv < c.min_supply_mv
-            || board.max_supply_mv > c.max_supply_mv
+            || board.supply_mv != c.supply_mv
             || board.min_temperature_c < c.min_temperature_c
             || board.max_temperature_c > c.max_temperature_c
         {

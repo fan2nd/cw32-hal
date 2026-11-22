@@ -13,16 +13,7 @@ compile_error!("fractional selects an HSI PLL pair; omit it for HSE");
 pub fn config() -> hal::Config {
     let mut config = hal::Config::default();
     config.rcc.operating_conditions = rcc::OperatingConditions {
-        min_supply_mv: if cfg!(feature = "low-voltage") {
-            1_650
-        } else {
-            3_000
-        },
-        max_supply_mv: if cfg!(feature = "low-voltage") {
-            1_790
-        } else {
-            3_600
-        },
+        supply_mv: if cfg!(feature = "low-voltage") { 1_700 } else { 3_300 },
         min_temperature_c: -20,
         max_temperature_c: 70,
     };

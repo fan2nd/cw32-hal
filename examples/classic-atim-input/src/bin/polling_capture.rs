@@ -33,7 +33,7 @@ const CHANNELS: [ClassicAtimChannel; 6] = [
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut capture = include!(concat!(env!("OUT_DIR"), "/capture-constructor.rs"));
     for channel in CHANNELS {
         capture.set_input_capture_mode(channel, InputCaptureMode::BothEdges);

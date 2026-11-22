@@ -8,7 +8,7 @@ use embassy_cw32::{
 };
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(board::config(LseMode::Oscillator));
+    let p = hal::init(board::config(LseMode::Oscillator)).unwrap();
     #[cfg(any(
         feature = "cw32l010f8p6",
         feature = "cw32l010f8u6",

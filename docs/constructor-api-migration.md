@@ -21,10 +21,12 @@ Private shared initialization is named `new_inner` where it is actually shared.
 The affected APIs are ADC (including L012 and BTIM-triggered
 ADC), SPI, I2C, timer/capture/QEI/PWM, timer triggers, CRC and watchdog
 constructors. USART already uses fallible `new` and is unchanged. GPIO and
-pin wrappers, DMA constructors, global `init`/`try_init`, and non-constructor
+pin wrappers, DMA constructors, and non-constructor
 `try_*` methods are unchanged. This is an API cleanup, not new peripheral
 qualification, altered DMA ownership, changed UART buffering or hardware
 validation.
+
+Global HAL initialization now uses `init(config) -> Result<Peripherals, rcc::Error>`. Use `init(config)?` to propagate clock errors.
 
 ## Historical source evidence
 

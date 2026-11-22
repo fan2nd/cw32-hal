@@ -16,7 +16,7 @@ fn panic(_: &core::panic::PanicInfo) -> ! {
 bind_interrupts!(struct Irqs { CORDIC => cordic::InterruptHandler<peripherals::CORDIC>; });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(hal::Config::default());
+    let p = hal::init(hal::Config::default()).unwrap();
     let mut cordic = Cordic::new(p.CORDIC).unwrap();
     let quarter = Q1_31::from_bits(0x2000_0000);
     let half = Q1_31::from_bits(0x4000_0000);

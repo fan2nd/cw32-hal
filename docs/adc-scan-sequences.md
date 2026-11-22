@@ -41,7 +41,7 @@ execution. `Config::timeout` is one finite poll budget for the whole sequence,
 not a wall-clock timeout or a fresh budget for each slot.
 
 Existing electrical constraints continue to apply: VDD on L010, tied VDDA=VDD on
-L011; declared minimum supply and actual input/source-impedance limits; the
+L011; declared supply voltage and actual input/source-impedance limits; the
 source-qualified HSI operating envelope; and L011's 4 MHz minimum ADC frequency.
 TS and BGR each require at least 40 microseconds acquisition. Their startup delay
 is separate: newly enabled TS and every scan using BGR wait 50 qualified

@@ -30,7 +30,7 @@ hal::bind_interrupts!(struct Irqs {
 
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let tx = cortex_m::singleton!(: [u8; 16] = [0; 16]).unwrap();
     let rx = cortex_m::singleton!(: [u8; 24] = [0; 24]).unwrap();
     #[cfg(feature = "cw32f020c6u7")]

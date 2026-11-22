@@ -11,7 +11,7 @@ bind_interrupts!(struct Irqs {
 });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut config = Config::default();
     config.supply_mv = 3300; // Board declaration; adjust to actual analog supply.
     let mut vc1 = Comparator::new(p.VC1, p.PA0, p.PA2, config).unwrap();

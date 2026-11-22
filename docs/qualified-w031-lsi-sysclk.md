@@ -104,7 +104,7 @@ a gate cannot undo work. Unchanged RFCLK and restored MCU gates do not guarantee
 unchanged SPI waveforms, packet continuity, RF throughput, radio idleness or
 clock continuity.
 
-These are visible functional limits of safe `try_init`/`init`, **not new hidden
+These are visible functional limits of safe `init`, **not new hidden
 Rust memory-safety preconditions**. The incoming clock and Flash latency must
 be legal, configuration ownership exclusive and retained external sources
 available. Normal interrupt masking does not stop NMI, DMA or autonomous work.

@@ -6,7 +6,7 @@ use embassy_cw32::{self as hal, usart::BufferReplaceError};
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let ring =
         cortex_m::singleton!(: [u8; examples::RING_SIZE] = [0; examples::RING_SIZE]).unwrap();
     let larger = cortex_m::singleton!(: [u8; examples::RING_SIZE * 2] =

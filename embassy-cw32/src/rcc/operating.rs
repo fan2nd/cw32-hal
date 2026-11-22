@@ -1,31 +1,27 @@
 //! Declared board conditions qualifying factory-HSI clocks and bus limits.
 use super::{Clocks, Error, HSI_BOUND_SUPPLY_MV, HSI_BOUND_TEMPERATURE_C};
 
-/// Board-guaranteed supply and ambient-temperature ranges, including tolerance.
+/// Declared board supply voltage and ambient-temperature range.
 ///
-/// These are declarations, not measurements. Actual VDD and ambient TA must
-/// remain within the supplied intervals throughout initialization and use.
+/// These are declarations, not measurements. The board must sustain the operating conditions
+/// required by the selected clock configuration throughout use.
 /// Thermal/junction, analog-supply and peripheral-specific limits still apply.
 /// A narrower interval does not tighten the factory HSI error bound.
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct OperatingConditions {
-    /// Lowest guaranteed VDD in millivolts, including supply tolerance.
-    pub min_supply_mv: u16,
-    /// Highest guaranteed VDD in millivolts, including supply tolerance.
-    pub max_supply_mv: u16,
+    /// Board supply voltage in millivolts.
+    pub supply_mv: u16,
     /// Lowest guaranteed ambient TA in degrees Celsius.
     pub min_temperature_c: i16,
     /// Highest guaranteed ambient TA in degrees Celsius.
     pub max_temperature_c: i16,
 }
 impl OperatingConditions {
-    /// Full source-qualified voltage/ambient range for the selected family.
-    /// For families supporting VDD below1.8V this selects the24MHz bus ceiling.
+    /// Default to the lowest qualified VDD and full ambient range of this family.
     pub const fn new() -> Self {
         Self {
-            min_supply_mv: HSI_BOUND_SUPPLY_MV.0,
-            max_supply_mv: HSI_BOUND_SUPPLY_MV.1,
+            supply_mv: HSI_BOUND_SUPPLY_MV.0,
             min_temperature_c: HSI_BOUND_TEMPERATURE_C.0,
             max_temperature_c: HSI_BOUND_TEMPERATURE_C.1,
         }
@@ -51,13 +47,10 @@ pub(crate) fn validate_with_bus_policy(
     clocks: Clocks,
     allow_nominal_bus_overclock: bool,
 ) -> Result<(), Error> {
-    if c.min_supply_mv > c.max_supply_mv {
-        return Err(Error::InvalidSupplyRange);
-    }
     if c.min_temperature_c > c.max_temperature_c {
         return Err(Error::InvalidTemperatureRange);
     }
-    if c.min_supply_mv < HSI_BOUND_SUPPLY_MV.0 || c.max_supply_mv > HSI_BOUND_SUPPLY_MV.1 {
+    if c.supply_mv < HSI_BOUND_SUPPLY_MV.0 || c.supply_mv > HSI_BOUND_SUPPLY_MV.1 {
         return Err(Error::SupplyOutsideQualifiedRange);
     }
     if c.min_temperature_c < HSI_BOUND_TEMPERATURE_C.0
@@ -65,7 +58,7 @@ pub(crate) fn validate_with_bus_policy(
     {
         return Err(Error::TemperatureOutsideQualifiedRange);
     }
-    let maximum = if c.min_supply_mv < crate::RCC_LOW_VOLTAGE_THRESHOLD_MV {
+    let maximum = if c.supply_mv < crate::RCC_LOW_VOLTAGE_THRESHOLD_MV {
         crate::RCC_LOW_VOLTAGE_BUS_MAX_HZ
     } else {
         crate::RCC_HIGH_VOLTAGE_BUS_MAX_HZ

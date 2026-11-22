@@ -17,7 +17,7 @@ hal::bind_interrupts!(struct Irqs {
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) {
     // Normal reset/clean-runtime startup admits safe channel ownership.
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut channel1 = match CopyChannel::new(p.DMA_CH1, Irqs) {
         Ok(channel) => channel,
         Err(_) => panic!("DMA channel 1 startup not admitted"),

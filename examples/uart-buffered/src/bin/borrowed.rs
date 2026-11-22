@@ -6,7 +6,7 @@ use embassy_cw32::{self as hal, usart::BufferedUartRx};
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut ring = [0u8; examples::RING_SIZE];
     {
         // SAFETY: the local buffer cannot move or be reused while rx borrows it.

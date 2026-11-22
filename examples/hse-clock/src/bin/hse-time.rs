@@ -17,8 +17,7 @@ async fn main(_spawner: Spawner) {
     // These are BOARD requirements, not measurements or a chip accuracy claim.
     // Connect the qualified 24 MHz source described in README.md before boot.
     let conditions = rcc::OperatingConditions {
-        min_supply_mv: 3_000,
-        max_supply_mv: 3_600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -45,7 +44,7 @@ async fn main(_spawner: Spawner) {
     // Long startup-count selection is fixed by RCC; this remains an iteration
     // budget whose elapsed time depends on the incoming/bridge clocks.
     config.rcc.timeout = 2_000_000;
-    let p = hal::init(config);
+    let p = hal::init(config).unwrap();
     #[cfg(gpio_speed)]
     let speed = Speed::Low;
     #[cfg(not(gpio_speed))]

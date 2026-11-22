@@ -3,7 +3,7 @@
 use embassy_cw32 as hal;
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     #[cfg(example_awt)]
     let mut timer = hal::awt::Awt::new(p.AWT, Default::default()).unwrap();
     #[cfg(not(example_awt))]

@@ -19,9 +19,8 @@ configuration gates. This checks the enable state regardless of SYSCLK, HSE
 mode, STABLE, or whether the RTC calendar is running. An enabled HSE may belong
 to RTC/AWT even when SYSCLK is already HSI.
 
-The error publishes no clocks and returns no peripheral tokens. `try_init`
-already took the singleton set before entering RCC, so reset before retrying;
-`init` panics on the same error. The correction never disables HSE, rewrites
+The error publishes no clocks and returns no peripheral tokens. `init`
+already took the singleton set before entering RCC, so reset before retrying. The correction never disables HSE, rewrites
 RTC, clears oscillator faults, or changes the user's clock-security policy to
 make entry succeed. The remaining HSI initialization path is unchanged.
 
@@ -42,7 +41,7 @@ this warning is not limited to driving an output.
 
 In Stage39 and the unchanged L012 code in the Stage40 HSE candidate:
 
-1. `try_init` takes the peripheral singleton set, then calls RCC `init`.
+1. `init` takes the peripheral singleton set, then calls RCC `init`.
 2. L012 `configure` accepts incoming SYSCLK encodings 0/1/3/4, preserves HSE,
    inspects only the retained RTC HSIOSC owner, and returns frozen HSI clocks.
 3. `build.rs::safe_pin` exposes PF0/PF1. L012 `clock_limits.hse` is absent, so

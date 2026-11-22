@@ -4,7 +4,7 @@ use cw32_uart_flow_control_examples as examples;
 use embassy_cw32 as hal;
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let (peri, tx, rx, rts, cts) = examples::pins!(p);
     let mut config = hal::usart::Config::default();
     config.cts_pull = hal::gpio::Pull::Up;

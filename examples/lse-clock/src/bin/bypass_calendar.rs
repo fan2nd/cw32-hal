@@ -8,7 +8,7 @@ use embassy_cw32::{
 };
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(board::config(LseMode::Bypass));
+    let p = hal::init(board::config(LseMode::Bypass)).unwrap();
     let clock = LseClock::new_bypass(p.SYSCTRL, p.PC14).unwrap();
     // Deliberate cold provisioning. Use attach_preserving_state for a retained calendar.
     let rtc =

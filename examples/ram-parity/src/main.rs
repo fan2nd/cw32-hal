@@ -14,7 +14,7 @@ pub static RAM_PARITY_DIAGNOSTIC: critical_section::Mutex<Cell<Option<Status>>> 
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let ram = Ram::new(p.RAM);
     loop {
         let observation = ram.status();

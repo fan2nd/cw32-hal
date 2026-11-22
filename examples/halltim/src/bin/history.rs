@@ -12,7 +12,7 @@ bind_interrupts!(struct Irqs {
 });
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     // Connect three push-pull Hall sensor outputs referenced to board ground.
     // PA3/PA4/PA5 are CH1/CH2/CH3 AF9 on both qualified 48-pin packages.
     let mut hall = HallTim::new(

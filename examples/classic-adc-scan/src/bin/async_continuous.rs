@@ -16,9 +16,8 @@ bind_interrupts!(struct Irqs {
 async fn main(_spawner: embassy_executor::Spawner) {
     // Actual board supply 3.0–3.6 V, VDDA=VDD, qualified HSI conditions.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 3000;
-    system.rcc.operating_conditions.max_supply_mv = 3600;
-    let p = hal::init(system);
+    system.rcc.operating_conditions.supply_mv = 3_300;
+    let p = hal::init(system).unwrap();
     let mut config = Config::default();
     config.vdda_mv = 3000;
     config.frequency = Hertz(125_000);

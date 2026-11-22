@@ -18,7 +18,7 @@ static WRAP_FLAGS: AtomicU32 = AtomicU32::new(0);
 
 #[entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut encoder = include!(concat!(env!("OUT_DIR"), "/qei-constructor.rs"));
     loop {
         POSITION.store(encoder.count(), Ordering::Relaxed);

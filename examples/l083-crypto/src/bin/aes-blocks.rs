@@ -4,7 +4,7 @@ use cortex_m_rt::entry;
 use embassy_cw32::aes::{Aes, Key};
 #[entry]
 fn main() -> ! {
-    let mut p = embassy_cw32::init(Default::default());
+    let mut p = embassy_cw32::init(Default::default()).unwrap();
     // Demonstration words only. Do not embed production keys in firmware.
     let key128 = [0x03020100, 0x07060504, 0x0b0a0908, 0x0f0e0d0c];
     let key192 = [1, 2, 3, 4, 5, 6];

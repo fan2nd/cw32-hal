@@ -7,7 +7,7 @@ use embassy_cw32::{
 
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     // 1500 prescaled cycles * 32768 raw HSIOSC cycles. This is a qualified
     // source-cycle period, not an exact one-second wall-clock deadline.
     let mut timer = AutotrimTimer::new(

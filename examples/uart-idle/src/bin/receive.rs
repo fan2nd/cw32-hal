@@ -6,7 +6,7 @@ use embassy_cw32 as hal;
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let mut uart = examples::uart(p);
     loop {
         let mut buffer = [0u8; examples::BUFFER_SIZE];

@@ -14,7 +14,7 @@ bind_interrupts!(struct Irqs { AUTOTRIM_LCD => lcd::InterruptHandler<peripherals
 // bonded on every exact L052/L083 feature offered by this example.
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
-    let p = embassy_cw32::init(Default::default());
+    let p = embassy_cw32::init(Default::default()).unwrap();
     // Both owners share one NVIC vector but acknowledge only their own source.
     let mut timer =
         autotrim::AutotrimTimer::new_async(p.AUTOTRIM, Irqs, Default::default()).unwrap();

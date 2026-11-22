@@ -25,8 +25,7 @@ fn main() -> ! {
     // Illustrative supply/temperature envelope. Replace it with actual,
     // board-qualified bounds before running. This is not a measurement.
     config.rcc.operating_conditions = hal::rcc::OperatingConditions {
-        min_supply_mv: 3200,
-        max_supply_mv: 3400,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -36,7 +35,7 @@ fn main() -> ! {
         hal::flash::OperatingConditions::from_rcc(config.rcc.operating_conditions, clocks)
     }
     .unwrap();
-    let p = hal::init(config);
+    let p = hal::init(config).unwrap();
     // Address-of the nonzero linker boundary symbols does not access FLASH.
     let start = core::ptr::addr_of!(__storage_start) as u32;
     let end = core::ptr::addr_of!(__storage_end) as u32;

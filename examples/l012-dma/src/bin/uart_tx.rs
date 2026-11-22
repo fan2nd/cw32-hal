@@ -45,7 +45,7 @@ async fn transmit(mut uart: UartTx<'static, Async>, stream: u8) {
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     let stage1 = cortex_m::singleton!(: [u8; STAGING_SIZE] = [0; STAGING_SIZE]).unwrap();
     let stage2 = cortex_m::singleton!(: [u8; STAGING_SIZE] = [0; STAGING_SIZE]).unwrap();
     let stage3 = cortex_m::singleton!(: [u8; STAGING_SIZE] = [0; STAGING_SIZE]).unwrap();

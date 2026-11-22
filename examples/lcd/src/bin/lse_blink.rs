@@ -15,8 +15,7 @@ bind_interrupts!(struct Irqs { AUTOTRIM_LCD => lcd::InterruptHandler<peripherals
 #[cortex_m_rt::entry]
 fn main() -> ! {
     let board = embassy_cw32::rcc::OperatingConditions {
-        min_supply_mv: 3000,
-        max_supply_mv: 3600,
+        supply_mv: 3_300,
         min_temperature_c: -20,
         max_temperature_c: 70,
     };
@@ -37,7 +36,7 @@ fn main() -> ! {
         poll_budget: 20_000_000,
     });
     // Example board declaration, not measured crystal accuracy.
-    let p = embassy_cw32::init(config);
+    let p = embassy_cw32::init(config).unwrap();
     let clock = embassy_cw32::rcc::LseClock::new(p.SYSCTRL, p.PC14, p.PC15).unwrap();
     let pins = [
         LcdPin::com::<0>(p.PA9),

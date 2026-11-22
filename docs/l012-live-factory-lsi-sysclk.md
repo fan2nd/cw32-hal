@@ -57,7 +57,7 @@ division remains invalid. There is no system PLL or new external fallback mode.
 
 The supported runtime/boot integration establishes safe bus-master and
 application-memory ownership before Rust starts. This is the existing platform
-entry boundary, not a hidden memory-safety duty added to safe `init`/`try_init`.
+entry boundary, not a hidden memory-safety duty added to safe `init`.
 Functional handover must permit the following progression or disconnect affected
 recipients before initialization, including before refusal and after failure.
 
@@ -172,7 +172,7 @@ The existing `examples/lsi-clock` crate/binary `cw32-lsi-clock-example` adds onl
 `cw32l012c8t6` and `cw32l012c8u6`. Its F030 default, previous features, electrical
 values, calendar behavior and dependencies remain unchanged. The new branch
 declares the own board envelope, selects LSI with no LSE declaration and calls
-ordinary `try_init`; it never prepares LSI or commands IWDT. Ordinary POR is
+ordinary `init`; it never prepares LSI or commands IWDT. Ordinary POR is
 expected to stop in its error handler. Success observes system/bus/HSI bounds
 and acquires read-only `HsiOscClock`, without changing RTC. The build script
 asserts exact 64-KiB/8-KiB regions and native raw 96-MHz RTC identity.

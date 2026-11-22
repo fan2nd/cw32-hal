@@ -93,11 +93,10 @@ async fn main(spawner: Spawner) {
     // The board supplies the MCU/VDDA from 5 V. The motor-control application
     // deliberately opts into the calibrated nominal 96 MHz HSI bus path.
     let mut system = hal::Config::default();
-    system.rcc.operating_conditions.min_supply_mv = 5_000;
-    system.rcc.operating_conditions.max_supply_mv = 5_000;
+    system.rcc.operating_conditions.supply_mv = 5_000;
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div1;
     system.rcc.allow_nominal_bus_overclock = true;
-    let p = match hal::try_init(system) {
+    let p = match hal::init(system) {
         Ok(p) => p,
         Err(error) => {
             defmt::error!("entry: RCC init failed: {:?}", error);

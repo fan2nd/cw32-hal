@@ -7,7 +7,7 @@ use embassy_cw32::{
 };
 #[cortex_m_rt::entry]
 fn main() -> ! {
-    let p = hal::init(Default::default());
+    let p = hal::init(Default::default()).unwrap();
     // PA0 is a qualified external ADC input on all five exact L010/L011 packages.
     // Connect only a board-safe voltage within 0..=VDD, with a common ground.
     let source = Btim1Update::new(p.BTIM1, Prescaler::Div64, 1000).unwrap();

@@ -85,7 +85,7 @@ cannot undo functional progress during the window.
 
 The existing platform/runtime entry establishes bus-master and application
 memory ownership before Rust. This adds no hidden memory-safety requirement
-to safe `init`/`try_init`. Functional handover must permit affected progress
+to safe `init`. Functional handover must permit affected progress
 or disconnect recipients. Critical sections do not freeze hardware; unchanged
 LSI does not promise UART baud correctness, filter duration, unchanged outputs
 or watchdog survival. L011 IWDT is LSI-clocked; no L012 RC10K fact applies.
@@ -150,7 +150,7 @@ every 32,800/D plan in pure validation before singleton acquisition/MMIO.
 The existing `examples/lsi-clock` crate and `cw32-lsi-clock-example` binary
 add only the two exact L011 features. Their linker limits remain exactly
 65,536-byte Flash and 6,144-byte SRAM. The branch declares the own envelope,
-leaves both external-source configurations absent, calls ordinary `try_init`
+leaves both external-source configurations absent, calls ordinary `init`
 and observes clocks/read-only `HsiOscClock` on success. It never prepares entry,
 commands IWDT or changes RTC. Ordinary POR follows its error handler.
 
