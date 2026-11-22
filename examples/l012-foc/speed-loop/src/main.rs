@@ -1,6 +1,9 @@
 #![no_std]
 #![no_main]
 
+#[path = "../../board_resources.rs"]
+mod board_resources;
+use board_resources::BoardResources;
 mod adc;
 mod global;
 mod current_loop;
@@ -105,9 +108,10 @@ async fn main(spawner: Spawner) {
             }
         }
     };
+    let board = BoardResources::from(p);
     // The reference board LED is active-low on PC13, matching LEDON/LEDOFF
     // in the C project: waiting blinks, alignment is solid, and run heartbeats.
-    let led = Output::new(p.PC13, Level::High, Speed::Default);
+    let led = Output::new(board.status.led, Level::High, Speed::Default);
     spawner.spawn(tasks::led(led).unwrap());
     defmt::info!("JD4631 FOC boot: PWM={=u32}Hz", PWM_HZ);
     let mut adc_config = AdcConfig::default();
@@ -118,19 +122,20 @@ async fn main(spawner: Spawner) {
     adc_config.frequency = Hertz(24_000_000);
     // The current-sense amplifier and its analog routing are established
     // before ADC1 is acquired, matching the C startup order.
-    let mut bus_pin = Flex::new(p.PA8);
+    let _current_inputs = (board.current_adc.phase_a, board.current_adc.phase_b);
+    let mut bus_pin = Flex::new(board.aux_adc.bus_voltage);
     bus_pin.set_as_analog();
-    let mut pot_pin = Flex::new(p.PA10);
+    let mut pot_pin = Flex::new(board.aux_adc.potentiometer);
     pot_pin.set_as_analog();
 
     // Configure both current-sense amplifiers through the HAL. Their fixed PB0/PB1
     // outputs remain available for ADC1 sampling.
     let mut opa_config = hal::opamp::Config::default();
     opa_config.supply_mv = 5_000;
-    let opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
-    let opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
-    let mut opa1 = opa1_ctrl.standalone_ext_adc(p.PA6, p.PA7).unwrap();
-    let mut opa2 = opa2_ctrl.standalone_ext_adc(p.PA4, p.PA5).unwrap();
+    let opa1_ctrl = hal::opamp::OpAmp::new(board.current_sense.opa_a, opa_config).unwrap();
+    let opa2_ctrl = hal::opamp::OpAmp::new(board.current_sense.opa_b, opa_config).unwrap();
+    let mut opa1 = opa1_ctrl.standalone_ext_adc(board.current_sense.positive_a, board.current_sense.negative_a).unwrap();
+    let mut opa2 = opa2_ctrl.standalone_ext_adc(board.current_sense.positive_b, board.current_sense.negative_b).unwrap();
     cortex_m::asm::delay(800);
     opa1.calibrate(100);
     opa2.calibrate(100);
@@ -139,18 +144,18 @@ async fn main(spawner: Spawner) {
 
     // Keep ADC1 owned for the lifetime of the firmware. Its sequence is
     // reprogrammed below to the C project's ATIM-CC4 triggered scan.
-    let adc1 = Adc::new_motor(p.ADC1, current_loop::Irqs, adc_config).unwrap();
-    let _adc2 = Adc::new(p.ADC2, adc_config).unwrap();
+    let adc1 = Adc::new_motor(board.current_adc.adc, current_loop::Irqs, adc_config).unwrap();
+    let _adc2 = Adc::new(board.aux_adc.adc, adc_config).unwrap();
     adc::auxiliary();
 
     let mut pwm = ComplementaryPwm::new(
-        p.ATIM,
-        Some(PwmPin::new(p.PB5)),
-        Some(ComplementaryPwmPin::new(p.PA15)),
-        Some(PwmPin::new(p.PB6)),
-        Some(ComplementaryPwmPin::new(p.PB3)),
-        Some(PwmPin::new(p.PB7)),
-        Some(ComplementaryPwmPin::new(p.PB4)),
+        board.bridge.timer,
+        Some(PwmPin::new(board.bridge.ch1)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch1n)),
+        Some(PwmPin::new(board.bridge.ch2)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch2n)),
+        Some(PwmPin::new(board.bridge.ch3)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch3n)),
         None,
         None,
         None,
@@ -180,11 +185,17 @@ async fn main(spawner: Spawner) {
     // cannot apply any voltage to the motor.
     adc::current_loop(pwm_period);
 
-    let cs = Output::new(p.PF0, Level::High, Speed::Default);
+    let cs = Output::new(board.encoder.cs, Level::High, Speed::Default);
     let mut spi_config = spi::Config::default();
     spi_config.mode = MODE_1;
     spi_config.frequency = Hertz(4_000_000);
-    let spi = Spi::new_blocking(p.SPI3, p.PB8, p.PA11, p.PC14, spi_config).unwrap();
+    let spi = Spi::new_blocking(
+        board.encoder.spi,
+        board.encoder.sck,
+        board.encoder.mosi,
+        board.encoder.miso,
+        spi_config,
+    ).unwrap();
     let mut encoder = Encoder::new(spi, cs);
 
     // The bridge stays disabled while offsets are measured and while the rotor

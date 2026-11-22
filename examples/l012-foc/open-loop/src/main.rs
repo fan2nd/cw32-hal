@@ -7,6 +7,9 @@
 //! checking phase order and basic commutation with a conservative modulation
 //! limit before enabling closed-loop FOC.
 
+#[path = "../../board_resources.rs"]
+mod board_resources;
+use board_resources::BoardResources;
 mod tasks;
 
 use cw32_l012_foc_open_loop::{
@@ -107,7 +110,8 @@ async fn main(spawner: Spawner) {
     system.rcc.hsi.div = hal::rcc::HsiDiv::Div1;
     system.rcc.allow_nominal_bus_overclock = true;
     let p = hal::init(system).unwrap();
-    let led = Output::new(p.PC13, Level::High, Speed::Default);
+    let mut board = BoardResources::from(p);
+    let led = Output::new(board.status.led, Level::High, Speed::Default);
     spawner.spawn(tasks::led(led).unwrap());
     info!(
         "4621 open-loop bring-up: modulation={=i32}..{=i32}/32767",
@@ -117,21 +121,17 @@ async fn main(spawner: Spawner) {
     let mut adc_config = AdcConfig::default();
     adc_config.vdda_mv = 5_000;
     adc_config.frequency = Hertz(24_000_000);
-    let mut adc1 = Adc::new(p.ADC1, adc_config).unwrap();
-    let mut adc2 = Adc::new(p.ADC2, adc_config).unwrap();
-    let mut ia_pin = p.PB0;
-    let mut ib_pin = p.PB1;
-    let mut bus_pin = p.PA8;
-    let mut pot_pin = p.PA10;
+    let mut adc1 = Adc::new(board.current_adc.adc, adc_config).unwrap();
+    let mut adc2 = Adc::new(board.aux_adc.adc, adc_config).unwrap();
 
     // Configure the current-sense amplifiers through the HAL; PB0/PB1 remain
     // available as ADC channels while the input pins are retained by the guards.
     let mut opa_config = hal::opamp::Config::default();
     opa_config.supply_mv = 5_000;
-    let opa1_ctrl = hal::opamp::OpAmp::new(p.OPA1, opa_config).unwrap();
-    let opa2_ctrl = hal::opamp::OpAmp::new(p.OPA2, opa_config).unwrap();
-    let mut opa1 = opa1_ctrl.standalone_ext_adc(p.PA6, p.PA7).unwrap();
-    let mut opa2 = opa2_ctrl.standalone_ext_adc(p.PA4, p.PA5).unwrap();
+    let opa1_ctrl = hal::opamp::OpAmp::new(board.current_sense.opa_a, opa_config).unwrap();
+    let opa2_ctrl = hal::opamp::OpAmp::new(board.current_sense.opa_b, opa_config).unwrap();
+    let mut opa1 = opa1_ctrl.standalone_ext_adc(board.current_sense.positive_a, board.current_sense.negative_a).unwrap();
+    let mut opa2 = opa2_ctrl.standalone_ext_adc(board.current_sense.positive_b, board.current_sense.negative_b).unwrap();
     cortex_m::asm::delay(800);
     opa1.calibrate(100);
     opa2.calibrate(100);
@@ -141,11 +141,11 @@ async fn main(spawner: Spawner) {
     let mut offset_b = 0u32;
     for _ in 0..64 {
         offset_a += u32::from(
-            adc1.blocking_read(&mut ia_pin, SampleTime::Cycles30)
+            adc1.blocking_read(&mut board.current_adc.phase_a, SampleTime::Cycles30)
                 .unwrap(),
         );
         offset_b += u32::from(
-            adc1.blocking_read(&mut ib_pin, SampleTime::Cycles30)
+            adc1.blocking_read(&mut board.current_adc.phase_b, SampleTime::Cycles30)
                 .unwrap(),
         );
     }
@@ -154,13 +154,13 @@ async fn main(spawner: Spawner) {
     info!("current offsets: ia={=i32} ib={=i32}", offset_a, offset_b);
 
     let mut pwm = ComplementaryPwm::new(
-        p.ATIM,
-        Some(PwmPin::new(p.PB5)),
-        Some(ComplementaryPwmPin::new(p.PA15)),
-        Some(PwmPin::new(p.PB6)),
-        Some(ComplementaryPwmPin::new(p.PB3)),
-        Some(PwmPin::new(p.PB7)),
-        Some(ComplementaryPwmPin::new(p.PB4)),
+        board.bridge.timer,
+        Some(PwmPin::new(board.bridge.ch1)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch1n)),
+        Some(PwmPin::new(board.bridge.ch2)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch2n)),
+        Some(PwmPin::new(board.bridge.ch3)),
+        Some(ComplementaryPwmPin::new(board.bridge.ch3n)),
         None,
         None,
         None,
@@ -179,11 +179,17 @@ async fn main(spawner: Spawner) {
     info!("pwm: moe={=bool} break={=bool}", pwm.get_master_output_enable(), pwm.is_break_pending());
 
     let mut ticker = Ticker::every(Duration::from_micros(1_000_000 / u64::from(PWM_HZ)));
-    let cs = Output::new(p.PF0, Level::High, Speed::Default);
+    let cs = Output::new(board.encoder.cs, Level::High, Speed::Default);
     let mut spi_config = spi::Config::default();
     spi_config.mode = MODE_1;
     spi_config.frequency = Hertz(4_000_000);
-    let spi = Spi::new_blocking(p.SPI3, p.PB8, p.PA11, p.PC14, spi_config).unwrap();
+    let spi = Spi::new_blocking(
+        board.encoder.spi,
+        board.encoder.sck,
+        board.encoder.mosi,
+        board.encoder.miso,
+        spi_config,
+    ).unwrap();
     let mut encoder = Encoder::new(spi, cs);
     info!("encoder: SSI3 monitor enabled");
 
@@ -191,7 +197,7 @@ async fn main(spawner: Spawner) {
     let mut zero_samples = 0u32;
     loop {
         let pot = adc2
-            .blocking_read(&mut pot_pin, SampleTime::Cycles518)
+            .blocking_read(&mut board.aux_adc.potentiometer, SampleTime::Cycles518)
             .unwrap();
         if pot <= POT_ZERO_COUNTS {
             zero_samples = zero_samples.saturating_add(1);
@@ -233,10 +239,10 @@ async fn main(spawner: Spawner) {
             encoder_delta += angle_delta(next_encoder_angle, encoder_angle);
             encoder_angle = next_encoder_angle;
             let bus = adc2
-                .blocking_read(&mut bus_pin, SampleTime::Cycles518)
+                .blocking_read(&mut board.aux_adc.bus_voltage, SampleTime::Cycles518)
                 .unwrap();
             let pot = adc2
-                .blocking_read(&mut pot_pin, SampleTime::Cycles518)
+                .blocking_read(&mut board.aux_adc.potentiometer, SampleTime::Cycles518)
                 .unwrap();
             let bus_mv = bus_voltage_mv(bus);
             let target_rpm = if FORCE_OPEN_LOOP_RPM > 0 {
@@ -271,11 +277,11 @@ async fn main(spawner: Spawner) {
                 pwm.set_master_output_enable(true);
                 if log_tick == 0 {
                     let ia_adc = i32::from(
-                        adc1.blocking_read(&mut ia_pin, SampleTime::Cycles30)
+                        adc1.blocking_read(&mut board.current_adc.phase_a, SampleTime::Cycles30)
                             .unwrap(),
                     );
                     let ib_adc = i32::from(
-                        adc1.blocking_read(&mut ib_pin, SampleTime::Cycles30)
+                        adc1.blocking_read(&mut board.current_adc.phase_b, SampleTime::Cycles30)
                             .unwrap(),
                     );
                     info!(
