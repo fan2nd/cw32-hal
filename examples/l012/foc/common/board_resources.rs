@@ -22,6 +22,7 @@ macro_rules! assign_resources {
 }
 
 assign_resources! {
+    speed_clock: SpeedClock { timer: BTIM1 },
     storage: Storage { flash: FLASH },
     current_adc: CurrentAdc {
         adc: ADC1,

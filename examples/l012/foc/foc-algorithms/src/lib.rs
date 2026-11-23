@@ -10,6 +10,7 @@
 
 pub mod calibration;
 pub mod control;
+pub mod hfi;
 mod trig;
 
 pub use trig::sin_cos_q15_lut;
@@ -264,6 +265,13 @@ impl SpeedController {
         }
     }
 
+    /// Set the gain numerators; Kp is divided by 64 and Ki by 256 per millisecond.
+    pub const fn with_gains(mut self, kp: i32, ki: i32) -> Self {
+        self.kp_gain = kp;
+        self.ki_gain = ki;
+        self
+    }
+
     pub fn reset(&mut self) {
         self.integral_scaled = 0;
         self.last_target_rpm = 0;
@@ -300,16 +308,50 @@ impl SpeedController {
         iq_min: i16,
         iq_max: i16,
     ) -> i16 {
+        let error = (target_rpm - feedback_rpm).clamp(-self.max_speed_rpm, self.max_speed_rpm);
+        self.update_error(target_rpm, i64::from(error) * 16, quarter_ms, iq_min, iq_max)
+    }
+
+    /// Bidirectional speed drive. Normalize speed error by target magnitude up to 48 rpm.
+    /// Feedback retains 1/64 rpm. At zero target request braking until the
+    /// caller's standstill gate releases MOE.
+    pub fn update_relative(
+        &mut self, target_rpm: i32, feedback_x64: i32, quarter_ms: u32, iq_limit: i16,
+        divide: impl FnOnce(i32, i32) -> i32,
+    ) -> i16 {
+        self.update_relative_in_range(target_rpm, feedback_x64, quarter_ms, -iq_limit, iq_limit, divide)
+    }
+
+    pub fn update_relative_in_range(
+        &mut self, target_rpm: i32, feedback_x64: i32, quarter_ms: u32,
+        iq_min: i16, iq_max: i16, divide: impl FnOnce(i32, i32) -> i32,
+    ) -> i16 {
+        let target = target_rpm.saturating_mul(64);
+        let percent_x16 = if target != 0 {
+            const NORMALIZATION_LIMIT_X64: i32 = 48 * 64;
+            divide(
+                target.saturating_sub(feedback_x64).saturating_mul(1600),
+                target.saturating_abs().min(NORMALIZATION_LIMIT_X64),
+            )
+        } else {
+            -feedback_x64.signum() * 1600
+        };
+        self.update_error(target_rpm, i64::from(percent_x16), quarter_ms, iq_min, iq_max)
+    }
+
+    fn update_error(
+        &mut self, target_rpm: i32, error: i64, quarter_ms: u32, iq_min: i16, iq_max: i16,
+    ) -> i16 {
         let lower = i64::from(iq_min);
         let upper = i64::from(iq_max);
-        if self.last_target_rpm > 0 && target_rpm < self.last_target_rpm {
+        if self.last_target_rpm.signum() != target_rpm.signum()
+            || target_rpm.unsigned_abs() < self.last_target_rpm.unsigned_abs() {
             // A falling command must brake immediately. Keeping the positive
             // acceleration integral here can exactly cancel the negative
             // proportional term and produce iqref=0 while overspeeding.
             self.integral_scaled = 0;
         }
         self.last_target_rpm = target_rpm;
-        let error = (target_rpm - feedback_rpm).clamp(-self.max_speed_rpm, self.max_speed_rpm);
         // Drop stale acceleration torque as soon as the measured speed is
         // above the reference.  Without this, the positive integral can keep
         // the motor accelerating for several slow-loop periods after a small
@@ -317,12 +359,12 @@ impl SpeedController {
         if (error < 0 && self.integral_scaled > 0) || (error > 0 && self.integral_scaled < 0) {
             self.integral_scaled = 0;
         }
-        let proportional = (i64::from(error) * i64::from(self.kp_gain)) >> self.kp_shift;
+        let proportional = (error * i64::from(self.kp_gain)) >> (self.kp_shift + 4);
         let elapsed = i64::from(quarter_ms.clamp(1, 400));
-        let integral_shift = self.ki_shift + 2;
+        let integral_shift = self.ki_shift + 2 + 4;
         // Accumulate before shifting, as in the C speed PI. A persistent
         // 1 rpm error must build torque even when one tick adds less than 1 count.
-        let increment = i64::from(error) * i64::from(self.ki_gain) * elapsed;
+        let increment = error * i64::from(self.ki_gain) * elapsed;
         self.integral_scaled = (i64::from(self.integral_scaled) + increment)
             .clamp(lower << integral_shift, upper << integral_shift) as i32;
         (proportional + i64::from(self.integral_scaled) / (1 << integral_shift))
@@ -376,7 +418,7 @@ impl FocController {
         svpwm_five_segment(alpha, beta)
     }
 
-    fn update_voltage(&mut self, currents: PhaseCurrent, sin_q15: i16, cos_q15: i16) -> (i32, i32) {
+    pub fn update_voltage(&mut self, currents: PhaseCurrent, sin_q15: i16, cos_q15: i16) -> (i32, i32) {
         let ia = i32::from(currents.a);
         let ib = i32::from(currents.b);
         let alpha = ia;
@@ -507,6 +549,49 @@ mod tests {
         assert_eq!(HT2806.phase_resistance_mohm, 5_000);
         assert_eq!(HT2806.phase_inductance_uh, 1_510);
         assert_eq!(HT2806.rated_current_ma, 810);
+    }
+
+    #[test]
+    fn speed_step_accelerates_and_brakes_on_the_first_half_millisecond() {
+        let mut pi = SpeedController::new(600).with_gains(125, 6);
+        let mut step = |target, feedback| {
+            pi.update_for_quarter_ms_in_range(target, feedback, 2, -200, 200)
+        };
+        assert_eq!(step(600, 0), 200);
+        assert_eq!(step(300, 600), -200);
+        assert_eq!(step(0, 300), -200);
+    }
+
+    #[test]
+    fn relative_speed_pi_scales_stall_tracking_and_braking() {
+        let step = |target, feedback| SpeedController::new(600).with_gains(125, 6)
+            .update_relative(target, feedback, 2, 200, |a, b| a / b);
+        assert_eq!(step(3, 0), 196);
+        assert_eq!(step(3, 96), step(48, 24 * 64));
+        assert_eq!(step(550, 500 * 64), 200);
+        assert_eq!(step(550, 526 * 64), 97);
+        assert_eq!(step(500, 550 * 64), -200);
+        assert_eq!(step(600, 0), 200);
+        assert!(step(3, 3 * 64 - 8) > 0);
+        assert_eq!(step(3, 3 * 64), 0);
+        assert!(step(3, 4 * 64) < 0);
+        assert!(step(0, 300 * 64) < 0);
+        assert_eq!(step(-600, 600 * 64), -200);
+        assert_eq!(step(600, -600 * 64), 200);
+        assert!(step(-30, -60 * 64) > 0);
+        assert_eq!(step(-600, -600 * 64), 0);
+    }
+
+    #[test]
+    fn speed_reference_stays_limited_during_a_low_speed_stall() {
+        let mut pi = SpeedController::new(600).with_gains(125, 6);
+        let mut step = |feedback| pi.update_relative(3, feedback, 2, 200, |a, b| a / b);
+        assert_eq!(step(0), 196);
+        for _ in 0..10 {
+            step(0);
+        }
+        assert_eq!(step(0), 200);
+        assert!(step(6 * 64) < 0);
     }
 
     #[test]

@@ -3,6 +3,8 @@
 
 //! Target-side timing comparison for FOC arithmetic and math accelerators.
 
+mod hfi;
+
 use core::sync::atomic::{Ordering, compiler_fence};
 use cortex_m::{
     asm,
@@ -192,6 +194,7 @@ fn main() -> ! {
             eau_stats.total / eau_samples
         );
     }
+    hfi::measure(eau.as_mut());
     loop {
         asm::wfi();
     }
