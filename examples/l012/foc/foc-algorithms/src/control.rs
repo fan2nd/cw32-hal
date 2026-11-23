@@ -61,6 +61,34 @@ impl ArmingGate {
     }
 }
 
+/// Complete a requested stop before accepting a fresh potentiometer start.
+#[derive(Default)]
+pub struct StopGate {
+    stopping: bool,
+    start_us: u32,
+}
+
+impl StopGate {
+    pub fn command(&mut self, request: i32, active: bool, at_zero: bool, elapsed_us: u32) -> i32 {
+        if active && request == 0 {
+            self.stopping = true;
+        }
+        if self.stopping {
+            if !active && at_zero {
+                self.stopping = false;
+            }
+            self.start_us = 0;
+            return 0;
+        }
+        if active || request == 0 {
+            self.start_us = 0;
+            return request;
+        }
+        self.start_us = self.start_us.saturating_add(elapsed_us);
+        if self.start_us >= 20_000 { request } else { 0 }
+    }
+}
+
 pub fn target_rpm_from_pot(
     pot: u16,
     zero_limit: u16,
@@ -152,4 +180,25 @@ pub fn combined_torque_reference(
     i32::from(speed_iq)
         .saturating_add(holding)
         .clamp(i32::from(i16::MIN), i32::from(i16::MAX)) as i16
+}
+
+#[cfg(test)]
+mod stop_tests {
+    use super::StopGate;
+
+    #[test]
+    fn stop_requires_bridge_off_zero_and_a_sustained_new_command() {
+        let mut gate = StopGate::default();
+        assert_eq!(gate.command(0, true, true, 500), 0);
+        assert_eq!(gate.command(123, true, false, 500), 0);
+        assert_eq!(gate.command(123, false, false, 30_000), 0);
+        assert_eq!(gate.command(0, false, true, 500), 0);
+        assert_eq!(gate.command(1, false, false, 500), 0);
+        assert_eq!(gate.command(0, false, true, 500), 0);
+        for _ in 0..39 {
+            assert_eq!(gate.command(1, false, false, 500), 0);
+        }
+        assert_eq!(gate.command(1, false, false, 500), 1);
+        assert_eq!(gate.command(123, true, false, 500), 123);
+    }
 }

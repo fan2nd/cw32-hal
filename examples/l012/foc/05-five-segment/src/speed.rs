@@ -2,7 +2,7 @@ use crate::telemetry::{Report, publish};
 use crate::{
     Analog, Bridge,
     calibration::Calibration,
-    control::{combined_torque_reference, holding_torque_reference, target_rpm_from_pot},
+    control::{StopGate, target_rpm_from_pot},
     foc::SpeedController,
     global::*,
     hardware::*,
@@ -10,11 +10,8 @@ use crate::{
     timing,
 };
 use core::sync::atomic::Ordering;
-use embassy_cw32::{self as hal, adc::adc_irq_result};
+use embassy_cw32::{self as hal, adc::adc_irq_result, eau::Eau, peripherals::EAU};
 const NO_MOTION_TIMEOUT_US: u32 = 2_000_000;
-const RAMP_MILLIRPM_PER_US: i32 = 2; // Smooth command slew: 2 rpm per elapsed ms.
-// Same commissioning current range as 02, in calibrated ADC counts.
-const IQ_LIMIT_COUNTS: i16 = 200;
 const MAX_ENCODER_INTERVAL_US: u32 = 10_000;
 const REVERSE_TRIP_RPM: i32 = 20;
 const OVERSPEED_TRIP_RPM: i32 = POT_MAX_RPM + 60;
@@ -25,14 +22,17 @@ pub(crate) struct SpeedLoop {
     encoder: Encoder<'static>,
     calibration: Calibration,
     speed: SpeedController,
+    eau: Option<Eau<EAU>>,
     sample_time_us: u32,
     last_angle: u16,
     speed_feedback_rpm_x64: i32,
     log_elapsed_us: u32,
+    stop_anchor: u16,
+    quiet_us: u32,
     command_active: bool,
     no_motion_us: u32,
-    speed_reference_millirpm: i32,
     command_rpm_latched: i32,
+    stop_gate: StopGate,
 }
 pub(crate) fn install(
     pwm: Bridge,
@@ -46,15 +46,18 @@ pub(crate) fn install(
         pwm,
         encoder,
         calibration,
-        speed: SpeedController::new(POT_MAX_RPM),
+        eau: Eau::new().ok(),
+        speed: SpeedController::new(POT_MAX_RPM).with_gains(125, 6),
         sample_time_us: timing::Timing::micros(),
         last_angle: initial_angle,
         speed_feedback_rpm_x64: 0,
         log_elapsed_us: 0,
+        stop_anchor: initial_angle,
+        quiet_us: 0,
         command_active: false,
         no_motion_us: 0,
-        speed_reference_millirpm: 0,
         command_rpm_latched: 0,
+        stop_gate: StopGate::default(),
     };
     let control = cortex_m::singleton!(: SpeedLoop = state).unwrap();
     timing::install(control);
@@ -66,37 +69,28 @@ impl SpeedLoop {
         if pot_sample.is_none() {
             CURRENT_FAULT.store(1, Ordering::Release);
         }
-        if pot_sample.is_some() && pot_now <= POT_ZERO_COUNTS {
-            // Zero is also the operator's fault-clear command. Drop the
-            // bridge immediately and clear both PI states so the next command
-            // starts from a known condition.
-            let was_active = self.command_active || CURRENT_FAULT.load(Ordering::Relaxed) != 0;
+        if CURRENT_FAULT.load(Ordering::Acquire) != 0 {
             CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
             self.pwm.set_master_output_enable(false);
-            self.speed.reset();
-            self.speed_feedback_rpm_x64 = 0;
-            self.speed_reference_millirpm = 0;
-            self.command_rpm_latched = 0;
             CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
-            CURRENT_FAULT.store(0, Ordering::Relaxed);
-            CURRENT_RESET.store(1, Ordering::Release);
             self.command_active = false;
-            self.no_motion_us = 0;
-            if was_active {
+            if pot_sample.is_some() && pot_now <= POT_ZERO_COUNTS {
+                self.speed.reset();
+                self.speed_feedback_rpm_x64 = 0;
+                self.command_rpm_latched = 0;
+                self.stop_gate = StopGate::default();
+                self.no_motion_us = 0;
+                CURRENT_RESET.store(1, Ordering::Release);
+                CURRENT_FAULT.store(0, Ordering::Release);
                 publish(Report::Stopped);
             }
-        } else if CURRENT_FAULT.load(Ordering::Relaxed) != 0 {
-            // Hold the bridge off until the operator returns the pot to zero.
-            // This prevents the speed integrator from continuing to request
-            // torque after a current fault.
-            CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
-            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
-            self.pwm.set_master_output_enable(false);
             return;
         }
+        // A zero command can still be actively braking.
+        let check_drive = self.command_active || pot_now > POT_ZERO_COUNTS;
         let bus = adc_irq_result::<hal::peripherals::ADC2>(0).unwrap_or(0);
         let bus_mv = bus_voltage_mv(bus);
-        if pot_now > POT_ZERO_COUNTS && !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv) {
+        if check_drive && !(BUS_MIN_MV..=BUS_MAX_MV).contains(&bus_mv) {
             CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
             self.pwm.set_master_output_enable(false);
             CURRENT_FAULT.store(1, Ordering::Relaxed);
@@ -118,7 +112,7 @@ impl SpeedLoop {
                 + 2,
         );
         let timing_fault = elapsed_us == 0 || elapsed_us > MAX_ENCODER_INTERVAL_US;
-        if pot_now > POT_ZERO_COUNTS
+        if check_drive
             && (sample.is_err() || (self.command_active && (timing_fault || delta.abs() > limit)))
         {
             CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
@@ -151,7 +145,7 @@ impl SpeedLoop {
             SPEED_PERIOD_US
         };
         // At 3 rpm a 500 us sample advances only 0 or 1 encoder count.
-        // Keep fractional rpm through the filter and round only at the PI input.
+        // Keep fractional rpm through the filter and round only for integer-rpm consumers.
         let raw_rpm_x64 = if self.command_active {
             delta * 234_375 / elapsed_us as i32
         } else {
@@ -169,57 +163,43 @@ impl SpeedLoop {
             Ordering::Relaxed,
         );
         let pot = pot_now;
-        let mapped_command_rpm = target_rpm_from_pot(
-            pot,
-            POT_ZERO_COUNTS,
-            POT_MIN_COUNTS,
-            POT_MAX_COUNTS,
-            POT_MIN_RPM,
-            POT_MAX_RPM,
-        );
-        let command_rpm = if pot <= POT_ZERO_COUNTS {
+        if pot <= POT_ZERO_COUNTS {
             self.command_rpm_latched = 0;
-            0
-        } else if pot <= POT_MIN_COUNTS {
-            // Keep the previous nonzero command in the C deadband. A
-            // genuine stop still requires returning to POT_ZERO_COUNTS.
-            self.command_rpm_latched
-        } else {
-            self.command_rpm_latched = mapped_command_rpm;
-            mapped_command_rpm
-        };
-        // Keep the speed reference equal to the operator command. The
-        // static-friction feed-forward below supplies starting torque;
-        // raising a 30 rpm command to an artificial 120 rpm kick makes
-        // the motor overshoot before the speed loop can take control.
-        let ramp_step = RAMP_MILLIRPM_PER_US * control_us as i32;
-        let distance = command_rpm * 1000 - self.speed_reference_millirpm;
-        if command_rpm == 0 {
-            self.speed_reference_millirpm = 0;
-        } else {
-            self.speed_reference_millirpm += distance.clamp(-ramp_step, ramp_step);
+        } else if pot > POT_MIN_COUNTS {
+            self.command_rpm_latched = target_rpm_from_pot(
+                pot, POT_ZERO_COUNTS, POT_MIN_COUNTS, POT_MAX_COUNTS, 0, POT_MAX_RPM,
+            );
         }
-        let target_rpm = (self.speed_reference_millirpm + 500) / 1000;
-        // Keep the bridge off throughout the complete command deadband.
-        // Previously pot=151..200 entered the current loop with a zero
-        // speed reference, so ADC offset/noise was converted into holding
-        // current even though the operator had not requested motion.
-        if target_rpm == 0 {
-            // A zero command is an explicit stop request. Clear the speed
-            // integrator so a previous positive command cannot restart the
-            // motor while the pot is still at zero, and remove MOE so the
-            // current loop cannot turn ADC noise into holding torque.
+        let target_rpm = self.stop_gate.command(
+            self.command_rpm_latched, self.command_active, pot <= POT_ZERO_COUNTS, control_us,
+        );
+        // Require a quiet encoder window as well as low speed in either direction.
+        if !self.command_active
+            || target_rpm != 0
+            || filtered.abs() > 64
+            || angle_delta(mechanical_angle, self.stop_anchor).abs() > 2
+        {
+            self.stop_anchor = mechanical_angle;
+            self.quiet_us = 0;
+        } else {
+            self.quiet_us += elapsed_us;
+        }
+        if target_rpm == 0 && (!self.command_active || self.quiet_us >= 20_000) {
             self.speed.reset();
             CURRENT_IQ_REFERENCE.store(0, Ordering::Relaxed);
+            self.speed_feedback_rpm_x64 = 0;
+            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
+            self.pwm.set_master_output_enable(false);
             if self.command_active {
-                publish(Report::Deadband { pot });
+                publish(Report::Deadband {
+                    pot,
+                    moe: self.pwm.get_master_output_enable(),
+                });
             }
             self.command_active = false;
             self.no_motion_us = 0;
-            CURRENT_OUTPUT_ENABLE.store(0, Ordering::Release);
-            self.pwm.set_master_output_enable(false);
         } else {
-            if filtered >= (target_rpm * 32).min(5 * 64) {
+            if target_rpm == 0 || filtered >= (target_rpm * 32).min(5 * 64) {
                 self.no_motion_us = 0;
             } else {
                 self.no_motion_us = self.no_motion_us.saturating_add(control_us);
@@ -245,21 +225,28 @@ impl SpeedLoop {
                 });
                 return;
             }
-            let speed_iq_reference = self.speed.update_for_quarter_ms_in_range(
-                target_rpm,
-                feedback_rpm,
-                SPEED_PERIOD_US / 250,
-                -IQ_LIMIT_COUNTS,
-                IQ_LIMIT_COUNTS,
-            );
-            let holding_iq_reference = holding_torque_reference(target_rpm, POT_MAX_RPM);
-            let iq_reference = combined_torque_reference(
-                speed_iq_reference,
-                holding_iq_reference,
-                target_rpm,
-                feedback_rpm,
-            )
-            .clamp(-IQ_LIMIT_COUNTS, IQ_LIMIT_COUNTS);
+            let iq_reference = if target_rpm == 0 {
+                // Taper braking near rest so feedback noise cannot demand full reverse torque.
+                self.speed.reset();
+                (-filtered.min(raw_rpm_x64).max(0) * i32::from(IQ_LIMIT_COUNTS) / (5 * 64))
+                    .clamp(-i32::from(IQ_LIMIT_COUNTS), i32::from(IQ_LIMIT_COUNTS))
+                    as i16
+            } else {
+                self.speed.update_relative(
+                    target_rpm,
+                    filtered,
+                    SPEED_PERIOD_US / 250,
+                    IQ_LIMIT_COUNTS,
+                    |numerator, denominator| {
+                        if let Some(eau) = self.eau.as_mut() {
+                            if let Ok(result) = eau.divide_signed(numerator, denominator, 32) {
+                                return result.quotient;
+                            }
+                        }
+                        numerator / denominator
+                    },
+                )
+            };
             CURRENT_IQ_REFERENCE.store(
                 self.calibration.electrical_iq(iq_reference),
                 Ordering::Relaxed,
@@ -283,6 +270,7 @@ impl SpeedLoop {
                 .saturating_add(if self.command_active { elapsed_us } else { 0 });
         if self.log_elapsed_us >= 1_000_000 {
             publish(Report::Running {
+                moe: self.pwm.get_master_output_enable(),
                 pot,
                 target_rpm,
                 feedback_rpm,

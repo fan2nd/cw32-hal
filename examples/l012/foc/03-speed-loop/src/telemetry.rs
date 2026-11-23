@@ -26,6 +26,7 @@ pub(crate) enum Report {
         elapsed_us: u32,
     },
     Deadband {
+        moe: bool,
         pot: u16,
     },
     MotionFault {
@@ -38,6 +39,7 @@ pub(crate) enum Report {
         target_rpm: i32,
     },
     Running {
+        moe: bool,
         pot: u16,
         target_rpm: i32,
         feedback_rpm: i32,
@@ -97,8 +99,8 @@ pub fn report() {
             limit,
             elapsed_us
         ),
-        Report::Deadband { pot } => {
-            defmt::info!("run: command deadband, bridge off pot={=u16}", pot)
+        Report::Deadband { pot, moe } => {
+            defmt::info!("run: stopped pot={=u16} moe={=bool}", pot, moe)
         }
         Report::MotionFault {
             target_rpm,
@@ -116,6 +118,7 @@ pub fn report() {
             target_rpm
         ),
         Report::Running {
+            moe,
             pot,
             target_rpm,
             feedback_rpm,
@@ -131,7 +134,8 @@ pub fn report() {
             offset_b,
             bus_mv,
         } => defmt::info!(
-            "run: pot={=u16} target={=i32} fb={=i32} iqref={=i16} idq={=i16}/{=i16} mech14={=u16} elec16={=u16} adc_angle16={=u16} adc={=u16}/{=u16} off={=u16}/{=u16} bus={=u32}",
+            "run: moe={=bool} pot={=u16} target={=i32} fb={=i32} iqref={=i16} idq={=i16}/{=i16} mech14={=u16} elec16={=u16} adc_angle16={=u16} adc={=u16}/{=u16} off={=u16}/{=u16} bus={=u32}",
+            moe,
             pot,
             target_rpm,
             feedback_rpm,

@@ -1,11 +1,15 @@
 //! Shared state between the SysTick outer loop and the ADC current-loop ISR.
-use crate::foc::{CurrentSampleFilter, FocController, JD4631};
+use crate::foc::{CurrentSampleFilter, FocController, JD4631, MotorParameters};
 use core::cell::RefCell;
 use core::sync::atomic::{AtomicI16, AtomicI32, AtomicU16, AtomicU32};
 use cortex_m::interrupt::Mutex;
 
 pub static CURRENT_CONTROLLER: Mutex<RefCell<FocController>> =
-    Mutex::new(RefCell::new(FocController::new(JD4631)));
+    Mutex::new(RefCell::new(FocController::new(MotorParameters {
+        current_kp_gain: 2_500,
+        current_ki_gain: 64,
+        ..JD4631
+    })));
 pub static CURRENT_SAMPLE_FILTER: Mutex<RefCell<CurrentSampleFilter>> =
     Mutex::new(RefCell::new(CurrentSampleFilter::new()));
 pub static CURRENT_OFFSET_A: AtomicU16 = AtomicU16::new(0);
