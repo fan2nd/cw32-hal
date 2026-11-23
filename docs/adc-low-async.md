@@ -206,7 +206,7 @@ register or electrical evidence.
 
 ## Examples and qualification boundary
 
-The ordinary [ADC examples](../examples/adc-scan/README.md) include a single async
+The ordinary [ADC examples](../examples/shared/adc-scan/README.md) include a single async
 read and an eight-slot borrowed mixed-source scan, with timeout/select composition
 and reuse. Their optional `async` feature selects the same pinned executor/time/
 futures revision and the existing GTIM1 time driver. It reserves GTIM1 and its IRQ;

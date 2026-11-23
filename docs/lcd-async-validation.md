@@ -47,7 +47,7 @@ Source SHA-256:
 
 - `embassy-cw32/src/lcd.rs`:
   `0a96df0d3d2634b7a3988d15e6ccf1db404be4cafd0494e830804373386edc8c`
-- `examples/lcd/src/bin/async.rs`:
+- `examples/shared/lcd/src/bin/async.rs`:
   `b52960cabb4aa157fb4a0862f5560e08993f3c44a3e9e0e4c602fed4cd89a5d3`
 
 The async LCD example also constructs the qualified AUTOTRIM async counter

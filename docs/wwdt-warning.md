@@ -26,6 +26,6 @@ feeds, stops, resets or gates a running watchdog. Keep the clock, gate and bindi
 valid until reset. One counter tick remains after POV; IRQ/task delivery before
 reset is not guaranteed.
 
-The example in `examples/l012-wwdt` selects one exact package and intentionally
+The example in `examples/shared/l012-wwdt` selects one exact package and intentionally
 never feeds, so execution causes reset. It is not a late-feed or persistence
 strategy. Hardware timing and shared-source coexistence require board acceptance.

@@ -137,7 +137,7 @@ deep-sleep entry or resume, or clock-loss recovery is implemented. DeepSleep
 stops HSE/HSIOSC and wakeup may select HSI 8 MHz (RM PDF 51/72); preserving a wake
 register is not a resume protocol.
 
-`examples/hse-clock` builds genuine crystal and bypass firmware for all three
+`examples/shared/hse-clock` builds genuine crystal and bypass firmware for all three
 exact L052 packages using UART 1 PA8 and PB0 LED activity. The board declares
 3.0–3.6 V,−20..70 °C and actual oscillator endpoints. UART timing uses frozen
 PCLK; the busy delay is not calibrated wall time. Production ARM compilation

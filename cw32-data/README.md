@@ -77,3 +77,13 @@ The independently rewritten schema and macros retain factual ancestry records
 in `../docs/upstream-file-provenance.json`. Old unresolved predecessor snapshots
 are excluded. Neither that replacement nor the project license files constitute
 legal clearance for external material.
+
+## Package-neutral firmware targets
+
+Family input manifests list interchangeable order codes under `firmware_targets`.
+Generation compares the completed chip records, excluding the order code and
+physical package tables. Memory, bonded GPIOs, peripheral routes and capabilities
+must match. The generated `data/package-groups/` index maps each shared feature
+to its exact package records. For example, select `cw32l012c8` in HAL or PAC
+for either CW32L012C8T6 or CW32L012C8U6. Use the exact order code in
+`data/chips/` to look up physical pin numbers.

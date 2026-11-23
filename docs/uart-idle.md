@@ -69,7 +69,7 @@ R1W0 fields. Each own SDK states RDR reads do not clear RC. RXIDLE bit3 differs
 from TIMOV bit6; the programmable timer formula is not an idle timeout.
 Source identities and page pairs are in [the source evidence](uart-idle-evidence.json).
 
-The [ordinary examples](../examples/uart-idle/README.md) use combined receive on
+The [ordinary examples](../examples/shared/uart-idle/README.md) use combined receive on
 three exact packages and split concurrent I/O on L012. Compilation and linkage
 establish their software integration only, not hardware event order,
 throughput, injected errors, cancellation execution or waveform behavior.

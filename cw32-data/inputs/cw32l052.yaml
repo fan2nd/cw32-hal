@@ -1,4 +1,6 @@
 schema_version: 1
+firmware_targets:
+  CW32L052R8: [CW32L052R8S6, CW32L052R8T6]
 spi_metadata: cw32-data/spi.yaml
 source:
   path: sources/vendor/CW32L052.svd

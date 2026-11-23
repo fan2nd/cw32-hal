@@ -139,7 +139,7 @@ is now explicit in the source record. Shared schema ancestry is unchanged.
 
 ## Verification
 
-`examples/l012-adc-scan` provides two genuine exact-part firmware examples.
+`examples/l012/adc-scan` provides two genuine exact-part firmware examples.
 Both link for both exact packages, producing four ELF32 ARM executables.
 The alias and exact parts compile the production HAL in bare, rt+defmt and
 rt+defmt+time-driver-gtim1 combinations. Builds use the official installed Rust

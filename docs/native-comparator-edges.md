@@ -30,7 +30,7 @@ The existing canonical native CR0/CR1/SR field layouts provide typed IE,
 RISEIE/FALLIE/HIGHIE and W0C INTF access. The L012 protocol remains as described
 in [analog edge waits](l012-analog-edge-waits.md).
 
-The three-feature example is `examples/comparator-reference/src/bin/edges.rs`.
+The three-feature example is `examples/shared/comparator-reference/src/bin/edges.rs`.
 It keeps the existing qualified divider/pin routes and waits on both comparators.
 Local builds and tests were not run. IRQ races, cancellation/forgetting, sibling
 independence and actual board timing remain pending acceptance.

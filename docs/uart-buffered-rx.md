@@ -332,11 +332,11 @@ and cancellation semantics. Existing [staged DMA](uart-dma-rx.md) ownership,
 retention and quarantine remain separate. No combined buffered RX/DMA TX
 constructor is added. RF and low-power UART remain deferred.
 
-The [buffered application crate](../examples/uart-buffered/README.md) has nine
+The [buffered application crate](../examples/shared/uart-buffered/README.md) has nine
 firmware binaries: `receive`, `split`, `rx_only`, `flow_control`,
 `shared_vector`, `replace_buffer`, `idle_notify`, `idle_queue` and the synchronous `borrowed` lifetime example. Its selected
 routes use current exact-package authority. The
-existing [flow-control examples](../examples/uart-flow-control/README.md) remain
+existing [flow-control examples](../examples/shared/uart-flow-control/README.md) remain
 ordinary unbuffered applications; their earlier results are not buffered results.
 
 Current source evidence is recorded in

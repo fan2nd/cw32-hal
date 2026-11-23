@@ -1,0 +1,8 @@
+//! Motor and analog front-end parameters.
+
+pub const ENCODER_COUNTS_PER_REV: u16 = 16_384;
+pub const ADC_REFERENCE_MV: u32 = 5_000;
+pub const ADC_FULL_SCALE: u32 = 4_095;
+pub const BUS_DIVIDER_RATIO: u32 = 11; // C project: RV1=1, RV2=10.
+pub const BUS_MIN_MV: u32 = 8_000;
+pub const BUS_MAX_MV: u32 = 16_000;

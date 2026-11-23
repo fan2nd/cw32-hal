@@ -97,7 +97,7 @@ can stop, so bounded register polling is not a wall-clock progress guarantee.
 
 No runtime changes, PLL configuration, DeepSleep entry/resume, RF behavior,
 clock-loss recovery, silicon validation, flashing or firmware execution are
-included. `examples/hex-clock` contains real PB0/PB1 UART/LED programs for all
+included. `examples/shared/hex-clock` contains real PB0/PB1 UART/LED programs for all
 five exact packages. Production ARM builds and data/PAC/source checks are the
 verification boundary; no HAL tests, mocks or register simulation are added.
 

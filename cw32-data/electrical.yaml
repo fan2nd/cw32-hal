@@ -11,8 +11,8 @@ policies:
   docs/flash-next-batch-audit.json: 4b1b53537ca8b1002c69c188e4a190503482615e3df952c6ace1fa22f8d5cf6a
   docs/flash-lock-access-corrections.json: b95077d192a91159f4b7fadc30c58ffa11a806a433be1e07224421a3e1245155
   docs/adc-low-sequence-audit.md: 890b7a30297733cf0eec09f3d21230ffac647fef091f68705e989f233a598934
-  docs/adc-l012-dual-ownership.md: 59c69c5a29b989b585fca01efc35c46c952a9769ed786b4cc5e18ccbb80284d8
-  docs/flash-storage.md: 4d66fa26d3c9ec07cb372013cc4ebaa2f25c4c881c435b047e9f4736803e2738
+  docs/adc-l012-dual-ownership.md: 22a6f3d728ac94a8c905186ed617f6f2e1cbe71960c53228b61a11f7b4fe69ae
+  docs/flash-storage.md: b717c50a0026fcf24b7787a907af9a893b26472c96ff266205784bd30a6bbf5d
   docs/flash-breadth-source-review.json: ba1bd996418f11a5d2420c651bf7df5c1e019b16e7e70969dfe64158f8949345
   docs/flash-remaining-evidence.json: 500eaef78a0ae2273854b0d1e994e738ddb689899c05a0dd147e93b8b6fa84b7
   cw32-data/hse-qualified.yaml: 59dfb9446394b833dbffb4fa1aa8886adf88dd4668046cd266f95ccf665165d4

@@ -71,7 +71,7 @@ Final source SHA-256:
 
 - `embassy-cw32/src/usart.rs`:
   `2207f9830bbf436952a3a194dc53b7fe54d7f01d8919141cc852c56dfb5e879d`
-- `examples/uart-buffered/src/bin/borrowed.rs`:
+- `examples/shared/uart-buffered/src/bin/borrowed.rs`:
   `dbd650c3fbda1e5021b871f29f248940564af3f0c0b1cadbc896934a39cbee44`
 
 ## Not validated

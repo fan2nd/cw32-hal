@@ -22,7 +22,7 @@ External transceiver controls, arbitration, collision handling, response content
 oscillator tolerance and deadlines belong to the application. UART flush proves
 neither external bus release nor LIN response timing.
 
-`examples/uart-lin/src/bin/respond.rs` uses UART1 PA1/PA0 on L010F8P6 and PA2/PA3
+`examples/shared/uart-lin/src/bin/respond.rs` uses UART1 PA1/PA0 on L010F8P6 and PA2/PA3
 on L011K8T6/L012C8T6/L012C8U6. A deliberately configured test network must assign
 IDs 0x12 (two bytes) and 0x13 (three bytes), both with enhanced checksum,
 exclusively to this publisher. The example calls `respond_once`, which waits

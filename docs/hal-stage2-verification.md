@@ -62,7 +62,7 @@ library compilation, not a logging transport or a defmt-enabled firmware link.
 
 ## Linked firmware
 
-Both binaries in [`examples/cw32f030`](../examples/cw32f030/README.md) were fully
+Both binaries in [`examples/f030/basic`](../examples/f030/basic/README.md) were fully
 linked with the exact C8T7 64 KiB FLASH / 8 KiB SRAM map:
 
 - `blocking`: 4,380 bytes FLASH and 24 bytes static RAM.
@@ -88,7 +88,7 @@ DMA cancellation limitations are documented alongside the examples.
 - The only warning in this checkpoint is an unused GPIO alternate open-drain
   helper reserved for subsequent I2C integration.
 - A snapshot export initially omitted the example's nested Cargo configuration.
-  Restoring `examples/cw32f030/.cargo/config.toml` fixed the export; the complete
+  Restoring `examples/f030/basic/.cargo/config.toml` fixed the export; the complete
   regression above then passed. Source archives must retain that file while
   excluding the repository-root Cargo cache. The script now checks its presence.
 - `./d` was unchanged. These HAL results complement the separate data/PAC source,

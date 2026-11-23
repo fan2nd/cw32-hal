@@ -161,7 +161,7 @@ Writing START or releasing ACCESS is not presented as an abort/quiescence proof.
 See the frozen receipt packet for ordinary ARM builds of all 47 RTC selections
 plus F002/F003, and real Cortex-M firmware links for preserving attachment,
 explicit initialization and deliberate setting on one exact package per family.
-The [firmware examples](../examples/rtc-calendar/README.md) use PA4 as an example
+The [firmware examples](../examples/shared/rtc-calendar/README.md) use PA4 as an example
 indicator output, with generated package/GPIO selection. No firmware was flashed.
 No HAL tests, simulator harnesses or mock-register execution were introduced.
 

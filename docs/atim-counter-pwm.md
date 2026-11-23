@@ -129,6 +129,6 @@ separately in `verification-logs/atim/final-clean-sources/`.
 
 The latest explicit user direction removes HAL tests and test harnesses; this
 batch adds none. Its source/provenance validators remain metadata audits. The
-complete firmware examples in `examples/atim` cover eleven exact packages and
+complete firmware examples in `examples/shared/atim` cover eleven exact packages and
 document their actual output pads. Independent production/source review is
 required before integration; its final acceptance is tied to frozen file hashes.

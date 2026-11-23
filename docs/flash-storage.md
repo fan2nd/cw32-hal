@@ -117,7 +117,7 @@ __storage_end = ORIGIN(STORAGE) + LENGTH(STORAGE);
 The application still must inspect its actual linker map, load image, references,
 DMA usage, bootloader policy, and board conditions before making either unsafe
 assertion. Linker symbols and RAM capacity do not qualify a real board.
-The real [storage example](../examples/flash-storage/README.md) derives its
+The real [storage example](../examples/shared/flash-storage/README.md) derives its
 reservation from each exact part's memory metadata and demonstrates this linker
 boundary. It is destructive firmware and must not be run without the board and
 partition review. The earlier 25 selected examples were built and their ELF boundaries

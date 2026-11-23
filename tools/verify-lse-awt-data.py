@@ -268,7 +268,7 @@ def check_data(proof, data):
 
 def check_declarations(proof):
     example = proof["example"]
-    assert example["manifest"] == "examples/low-power-timers/Cargo.toml"
+    assert example["manifest"] == "examples/shared/low-power-timers/Cargo.toml"
     manifest = tomllib.loads((ROOT / example["manifest"]).read_text())
     assert manifest["package"]["name"] == example["package"] == "cw32-low-power-timer-examples"
     assert example["marker_feature"] == "lse-awt" and manifest["features"]["lse-awt"] == []

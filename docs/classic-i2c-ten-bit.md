@@ -42,7 +42,7 @@ paths. Read-start inserts an additional repeated START after the low byte; each
 new wait is inside the existing guard. No pointers are installed in the ISR.
 There is no new DMA, slave, GPIO recovery, automatic retry or timing guarantee.
 
-`examples/classic-i2c` adds `ten_bit_master` with the existing package-qualified
+`examples/shared/classic-i2c` adds `ten_bit_master` with the existing package-qualified
 primary pin routes. It attempts one write/read at illustrative address 0x2a5 and
 parks. The board must provide a matching ten-bit target and external pull-ups.
 Source review only: no local compilation, tests, generation or board execution.

@@ -1,0 +1,24 @@
+[package]
+name = "cw32f030-motor-tb6612"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+# This firmware intentionally has its own dependency resolution and profiles.
+[workspace]
+
+[dependencies]
+embassy-cw32 = { path = "../../../../embassy-cw32", features = ["cw32f030c8t7"] }
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+
+[profile.dev]
+opt-level = "s"
+debug = 2
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+debug = 2

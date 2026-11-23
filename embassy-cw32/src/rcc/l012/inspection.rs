@@ -5,7 +5,7 @@ use super::{Config, Error};
 use super::Sysclk;
 
 // Retained non-target paths retain the original inspection/error contract.
-pub(super) fn inspect_retained<R>(
+pub(super) fn inspect_retained<const HSI_ONLY: bool, R>(
     config: Config,
     cs: critical_section::CriticalSection<'_>,
     monitor_hse: bool,
@@ -13,7 +13,7 @@ pub(super) fn inspect_retained<R>(
     read: impl FnOnce() -> R,
 ) -> Result<R, Error> {
     #[cfg(rcc_lsi_sysclk)]
-    if config.sys == Sysclk::LSI {
+    if !HSI_ONLY && config.sys == Sysclk::LSI {
         if info.reset_asserted() {
             return Err(Error::ClockConfigurationTimeout);
         }
@@ -45,7 +45,7 @@ pub(super) fn inspect_retained<R>(
         return result.ok_or(Error::ClockConfigurationTimeout);
     }
     #[cfg(rcc_lse)]
-    if config.sys == Sysclk::LSE {
+    if !HSI_ONLY && config.sys == Sysclk::LSE {
         return lse_target_inspect(config, cs, info, monitor_hse, read);
     }
     let _ = monitor_hse;

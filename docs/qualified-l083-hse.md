@@ -149,7 +149,7 @@ tokens after verified RCC clocks were published.
 
 ## Production coverage and limits
 
-`examples/hse-clock` declares both crystal and bypass on every modeled exact
+`examples/shared/hse-clock` declares both crystal and bypass on every modeled exact
 L083 part using the existing PA8 UART1/PB0 LED paths. `ci/check-hal.sh` includes
 all ten L083 firmware links, the normal alias/exact-part L052 library
 matrix, existing HSE families, and L052/L083 GTIM1 time-driver + rt + defmt compilation.

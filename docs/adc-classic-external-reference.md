@@ -42,7 +42,7 @@ supply bounds apply without inventing an internal-reference headroom rule.
 F003/F020 retain their own internal-reference and BGR behavior. ExRef itself
 never requests BGR; an independently requested internal channel still may.
 
-`external_reference_f002` in `examples/classic-adc-scan` uses F002F3P7 PB4 as
+`external_reference_f002` in `examples/shared/classic-adc-scan` uses F002F3P7 PB4 as
 reference and PA0 as input. It declares a board minimum 3.3 V VDD and requires
 a settled external reference, with input bounded by that reference. The example
 switches to supply and back while keeping PB4 owned. It performs no calibration

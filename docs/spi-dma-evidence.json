@@ -23,7 +23,7 @@
       "sha256": "a17c70ca67f3f7bec024ad19805db9c596b2c62c0440708f07e8514ebc12172d",
       "bytes": 9391
     },
-    "examples/spi-dma/src/main.rs": {
+    "examples/shared/spi-dma/src/main.rs": {
       "sha256": "60019f9c4f15fedbcc45f8a31486fae4acdd03cf8b3bcc838c9508b5853bd6dc",
       "bytes": 2634
     }

@@ -9,10 +9,15 @@ from current_targets import is_retired, retired_targets
 ROOT = Path(__file__).resolve().parents[1]
 DATA = ROOT / 'cw32-data/data'
 expected = {}
+groups = {}
 for file in sorted((ROOT / 'cw32-data/inputs').glob('*.yaml')):
     source = yaml.safe_load(file.read_text())
     if source.get('quarantine') or is_retired(source['line']):
         continue
+    family_groups = source.get('firmware_targets', {})
+    if family_groups:
+        assert json.loads((DATA / 'package-groups' / (source['line'] + '.json')).read_text()) == family_groups
+        groups.update(family_groups)
     chips = source['chips']
     if source.get('parts_catalog'):
         catalog_parts = yaml.safe_load((ROOT / source['parts_catalog']).read_text())['parts']
@@ -24,7 +29,12 @@ for file in sorted((ROOT / 'cw32-data/inputs').glob('*.yaml')):
 actual = {p.stem: p for p in (DATA / 'chips').glob('*.json')}
 assert set(actual) == set(expected), {'unexpected': sorted(actual.keys()-expected.keys()), 'missing': sorted(expected.keys()-actual.keys())}
 features = tomllib.loads((ROOT / 'cw32-metapac/Cargo.toml').read_text())['features']
-assert {name for name in features if name.startswith('cw32')} == {name.lower() for name in expected}
+assert {name for name in features if name.startswith('cw32')} == {name.lower() for name in expected.keys() | groups.keys()}
+hal = tomllib.loads((ROOT / 'embassy-cw32/Cargo.toml').read_text())['features']
+for group, members in groups.items():
+    assert features[group.lower()] == [members[0].lower()]
+    assert hal[group.lower()] == [f'cw32-metapac/{group.lower()}']
+    assert all(member in actual for member in members)
 instances = total_interrupts = register_templates = 0
 for name, path in actual.items():
     chip = json.loads(path.read_text())
@@ -65,6 +75,7 @@ for name, path in actual.items():
 register_templates = len(list((DATA / 'registers').glob('*.json')))
 print(json.dumps({
     'chip_features': len(expected),
+    'package_neutral_groups': len(groups),
     'chip_peripheral_instances': instances,
     'chip_interrupt_entries': total_interrupts,
     'register_templates': register_templates,

@@ -62,7 +62,7 @@ pub use l010_l011::*;
 #[cfg(rcc_cw32l012_v1)]
 mod l012;
 #[cfg(rcc_cw32l012_v1)]
-pub(crate) use l012::init as init_backend;
+use l012::init as init_backend;
 #[cfg(rcc_cw32l012_v1)]
 pub use l012::*;
 
@@ -139,7 +139,23 @@ static LSE_PADS: critical_section::Mutex<core::cell::Cell<(bool, bool)>> =
 ///
 /// Safety: the caller owns initialization; no DMA, NMI or other code may mutate
 /// clock or pad state during the sequence. Backends retain the inherited LSE.
-pub(crate) unsafe fn init(config: Config) -> Result<(), Error> {
+pub(crate) unsafe fn init(config: Config, clocks: Clocks) -> Result<(), Error> {
+    #[cfg(rcc_cw32l012_v1)]
+    let backend = |config| unsafe { init_backend::<false>(config, clocks) };
+    #[cfg(not(rcc_cw32l012_v1))]
+    let backend = |config| {
+        let _ = clocks;
+        unsafe { init_backend(config) }
+    };
+    init_with(config, backend)
+}
+
+#[cfg(rcc_cw32l012_v1)]
+pub(crate) unsafe fn init_hsi(config: Config, clocks: Clocks) -> Result<(), Error> {
+    init_with(config, |config| unsafe { init_backend::<true>(config, clocks) })
+}
+
+fn init_with(config: Config, backend: impl FnOnce(Config) -> Result<(), Error>) -> Result<(), Error> {
     critical_section::with(|cs| {
         let inherited = crate::rcc_lse_owned_pads();
         let retained = LSE_PADS.borrow(cs).get();
@@ -154,7 +170,7 @@ pub(crate) unsafe fn init(config: Config) -> Result<(), Error> {
             retained.0 || inherited.0 || requested.0,
             retained.1 || inherited.1 || requested.1,
         ));
-        unsafe { init_backend(config) }
+        backend(config)
     })
 }
 

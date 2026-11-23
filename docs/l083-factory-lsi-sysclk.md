@@ -255,12 +255,12 @@ all for `thumbv6m-none-eabi`, with the existing locks and `--locked --offline`:
 
 | Main ELF | Exact features / binary |
 |---|---|
-| `examples/lsi-clock`, five L083 parts | each exact chip plus `defmt`; `cw32-lsi-clock-example` |
-| `examples/lsi-clock`, L052R8S6 | `cw32l052r8s6,defmt`; `cw32-lsi-clock-example` |
-| `examples/pll-clock`, RCT6 | `cw32l083rct6`; `pll-uart` |
-| `examples/pll-clock`, RCS6 | `cw32l083rcs6,hse-crystal`; `pll-uart` |
-| `examples/lse-sysclk`, MCT6 | `cw32l083mct6,defmt`; `crystal` |
-| `examples/rtc-calendar`, VCT6 | `cw32l083vct6`; `preserve_calendar` |
+| `examples/shared/lsi-clock`, five L083 parts | each exact chip plus `defmt`; `cw32-lsi-clock-example` |
+| `examples/shared/lsi-clock`, L052R8S6 | `cw32l052r8s6,defmt`; `cw32-lsi-clock-example` |
+| `examples/shared/pll-clock`, RCT6 | `cw32l083rct6`; `pll-uart` |
+| `examples/shared/pll-clock`, RCS6 | `cw32l083rcs6,hse-crystal`; `pll-uart` |
+| `examples/shared/lse-sysclk`, MCT6 | `cw32l083mct6,defmt`; `crystal` |
+| `examples/shared/rtc-calendar`, VCT6 | `cw32l083vct6`; `preserve_calendar` |
 
 All main ELFs use release. Clean replay uses RCT6/VCT6 release libraries with
 `defmt,time-driver-gtim1`, and RCT6/MCT6/VCT6 release LSI ELFs with `defmt`:

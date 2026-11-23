@@ -80,4 +80,4 @@ normal ARM production builds for all four L010 feature selections, unaffected
 family builds, and genuine `cascade`/`triggered_conversion` firmware links for
 all three exact L010 packages. No HAL tests, models, harnesses or mocks are used.
 Firmware was not flashed or executed. Run the standalone examples documented in
-`examples/trigger-routing/README.md`; the normal `ci/check-hal.sh` includes them.
+`examples/shared/trigger-routing/README.md`; the normal `ci/check-hal.sh` includes them.

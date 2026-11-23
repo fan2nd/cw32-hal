@@ -40,7 +40,7 @@ disabled by default; spike suppression is not promised in that setting. The
 remain applicable and unchanged.
 
 The family alias is a library selection with no exact memory/package map.
-[Ordinary executable examples](../examples/l012-i2c/README.md) admit exactly
+[Ordinary executable examples](../examples/l012/i2c/README.md) admit exactly
 CW32L012C8T6 (LQFP48) and CW32L012C8U6 (QFN48), using each selected part's 64 KiB
 Flash and 8 KiB RAM. Both binaries use I2C1 PA4/PA5 AF2 and I2C2 PB0/PB1 AF8;
 both packages bond those pairs at positions 14/15 and 18/19. This qualifies the

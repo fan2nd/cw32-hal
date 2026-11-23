@@ -100,15 +100,23 @@ impl CounterRegisters for pac::atim::Atim {
     fn counter_configure(self, timing: Timing) {
         reconfigure_counter(self, timing);
     }
+    #[cfg(atim_buffered)]
+    fn counter_start(self, _timing: Timing) {
+        self.cr1().modify(|v| v.set_cen(true));
+    }
+    #[cfg(atim_classic)]
     fn counter_start(self, timing: Timing) {
         let control = Self::stopped_control(timing);
-        #[cfg(atim_classic)]
         let control = control | (u32::from(self.cr().read().uie()) << 10);
         self.write_control(control | 1);
     }
+    #[cfg(atim_buffered)]
+    fn counter_stop(self, _timing: Timing) {
+        self.cr1().modify(|v| v.set_cen(false));
+    }
+    #[cfg(atim_classic)]
     fn counter_stop(self, timing: Timing) {
         let control = Self::stopped_control(timing);
-        #[cfg(atim_classic)]
         let control = control | (u32::from(self.cr().read().uie()) << 10);
         self.write_control(control);
     }

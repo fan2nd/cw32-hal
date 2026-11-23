@@ -432,7 +432,7 @@ CW32L010F8P6、CW32L010F8U6、CW32L010Y8M6 使用自身 `CW32L010_UserManual_CN_
 
 三款只按标称32768Hz、每周期板级边界、1.62–5.5V及−40…85°C资格化。StartupOnly 要求继承LSECCS为0且保持0，失钟后STABLE可能仍为1；MonitoredExistingRoutes 要求合法、已稳定且trim/wait不变的LSI，上界36080Hz，满足 `256 × LSE_min_hz > 129 × 36080`。原生CCS可自动请求LSI，因此LSIEN=0不等于没有运行监测；该路径不冷启动或校准LSI。既有保护、IRQ及定时器故障路由刻意保留，不承诺隔离或经过时间连续性。
 
-RTC source0的新源启动另需公开的RTC_OUT/RTC_1Hz观察者移交与整个GPIOB工作窗口契约；配置门尝试有界恢复，恢复失败明确报错；休眠定时器工作门不为检查打开。三款原生LSE/HSI日历例程位于 `examples/l010-lse-clock`。三份共享模型采用已接受的可选原生事实扩展；11份许可头文件、43个硬件原件加2个discovery-only条目与发布边界均不变。
+RTC source0的新源启动另需公开的RTC_OUT/RTC_1Hz观察者移交与整个GPIOB工作窗口契约；配置门尝试有界恢复，恢复失败明确报错；休眠定时器工作门不为检查打开。三款原生LSE/HSI日历例程位于 `examples/shared/l010-lse-clock`。三份共享模型采用已接受的可选原生事实扩展；11份许可头文件、43个硬件原件加2个discovery-only条目与发布边界均不变。
 
 
 ### L011/L012 四个精确封装的自身原件与原生契约
@@ -508,7 +508,7 @@ StartupOnly继续允许合法冷启动，不增加原厂LSI前置条件。既有
 
 DS PDF28–29/书页25–26绑定两款PC14输入/PC15输出为脚2/3；旁路只用PC14。DS PDF48/45保留100kHz上限，与RM PDF51/50允许1MHz的差异不默默消解；波形仍需0.7VDDIO高/0.3VDDIO低阈值、至少450ns高低脉宽、至多50ns边沿及45–55%占空。DS PDF50/47的1.50s晶体启动仅为典型值。例程保持独立Level2/Level10、16384周期、StartupOnly，声明3.0–3.6V、−20…70°C及每周期32766–32770Hz，须实际板级资格化。两款使用自身生成memory与显式link.x；无crate/依赖升级。LSE最后选择后不写CR0，故障/brake/IRQ路由保留；失钟可停CPU，错误不发布时钟且需复位，不保证回滚、RTC迁移/连续性或故障回退时限。
 
-Stage62本地脚本计划范围为22个普通库、21组晶振/旁路SYSCLK固件（42个二进制）及既有4条其他来源回归命令；这些是待执行范围，不是已通过数量。原有实际执行收据不覆盖或重写，逐次实际子集另记。`examples/l010-lse-clock`的既有L011辅助晶体/旁路/HSIOSC日历例程是脚本之外的保留验证入口；本次无新增测试、编译探针、hosted CI或实板运行。
+Stage62本地脚本计划范围为22个普通库、21组晶振/旁路SYSCLK固件（42个二进制）及既有4条其他来源回归命令；这些是待执行范围，不是已通过数量。原有实际执行收据不覆盖或重写，逐次实际子集另记。`examples/shared/l010-lse-clock`的既有L011辅助晶体/旁路/HSIOSC日历例程是脚本之外的保留验证入口；本次无新增测试、编译探针、hosted CI或实板运行。
 
 
 ### 两个 L012 精确封装的 init-only LSE SYSCLK
@@ -529,7 +529,7 @@ ADC共享门自身CN84/58及EN89/63明确为配置兼工作门：开启后ADC1/A
 
 两款PC14/PC15分别为脚3/4，旁路只持有PC14。原生Level2/Level10、16384周期、StartupOnly与3.0–3.6V、−20…70°C、每周期32766–32770Hz均为须实板资格化的显式声明，不是测量结果。DS100kHz旁路上限不被RM1MHz替换；波形仍需45–55%占空、至少450ns高低脉宽与至多50ns边沿，1.50s晶体启动仅典型（DS55/52、57–58/54–55）。既有原生LSE与HSIOSC日历源/分频保留，SYSCLK切换不迁移RTC/AWT；固定1MHz time-driver在取所有权前拒绝。失钟使冻结时钟失效，错误不发布新时钟且须复位。
 
-既有 `examples/lse-sysclk` 仅新增两款feature，复用原生晶体/旁路与自身生成FLASH/RAM、显式link.x；此前21款配置、引脚和依赖不变。本地 `ci/check-lse-sysclk.sh` 计划范围为24个普通库、23组晶体/旁路SYSCLK固件（46个二进制）及原4条回归命令，数字不是已执行结果。原 `examples/l010-lse-clock` 两款L012辅助晶体/旁路/HSIOSC日历仍为独立保留检查入口，不新建workspace、probe、HAL测试、harness、hosted CI或实板验证。
+既有 `examples/shared/lse-sysclk` 仅新增两款feature，复用原生晶体/旁路与自身生成FLASH/RAM、显式link.x；此前21款配置、引脚和依赖不变。本地 `ci/check-lse-sysclk.sh` 计划范围为24个普通库、23组晶体/旁路SYSCLK固件（46个二进制）及原4条回归命令，数字不是已执行结果。原 `examples/shared/l010-lse-clock` 两款L012辅助晶体/旁路/HSIOSC日历仍为独立保留检查入口，不新建workspace、probe、HAL测试、harness、hosted CI或实板验证。
 
 
 ## Exact CW32L052 factory-LSI SYSCLK

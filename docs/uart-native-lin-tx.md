@@ -47,7 +47,7 @@ existing canonical native UART layout supplies the typed command fields.
 The ordinary send-control chapter describes two high bits after a break; this
 API does not use that prose as a complete LIN timing qualification.
 
-`examples/uart-lin` supports L010F8P6 UART1 PA1 and L011K8T6 UART1 PA2 using
+`examples/shared/uart-lin` supports L010F8P6 UART1 PA1 and L011K8T6 UART1 PA2 using
 canonical serial AF routes. L012C8T6/C8U6 use UART1 PA2 and UART2 PA7;
 UART2 runs the blocking path on a second independently connected transceiver.
 The L012 own manual uses UARTx=1,2,3 without the L010/L011 UART1-only note;

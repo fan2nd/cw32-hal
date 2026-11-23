@@ -223,12 +223,12 @@ Each ELF uses `cargo build --release --locked --target thumbv6m-none-eabi
 
 | Row | Manifest | Features | Binary |
 | --- | --- | --- | --- |
-| E1 | `examples/lsi-clock/Cargo.toml` | `cw32w031r8u6,defmt` | `cw32-lsi-clock-example` |
-| E2 | `examples/lse-sysclk/Cargo.toml` | `cw32w031r8u6` | `crystal` |
-| E3 | `examples/rtc-calendar/Cargo.toml` | `cw32w031r8u6` | `preserve_calendar` |
-| E4 | `examples/hse-clock/Cargo.toml` | `cw32w031r8u6` | `crystal` |
-| E5 | `examples/lsi-clock/Cargo.toml` | `cw32l031c8t6,defmt` | `cw32-lsi-clock-example` |
-| E6 | `examples/lse-sysclk/Cargo.toml` | `cw32r031c8u6` | `crystal` |
+| E1 | `examples/shared/lsi-clock/Cargo.toml` | `cw32w031r8u6,defmt` | `cw32-lsi-clock-example` |
+| E2 | `examples/shared/lse-sysclk/Cargo.toml` | `cw32w031r8u6` | `crystal` |
+| E3 | `examples/shared/rtc-calendar/Cargo.toml` | `cw32w031r8u6` | `preserve_calendar` |
+| E4 | `examples/shared/hse-clock/Cargo.toml` | `cw32w031r8u6` | `crystal` |
+| E5 | `examples/shared/lsi-clock/Cargo.toml` | `cw32l031c8t6,defmt` | `cw32-lsi-clock-example` |
+| E6 | `examples/shared/lse-sysclk/Cargo.toml` | `cw32r031c8u6` | `crystal` |
 
 At main acceptance, clean replay had not run. Final-package completion requires
 a separate clean receipt for regenerated frozen source and only **L1

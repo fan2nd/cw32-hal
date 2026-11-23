@@ -59,7 +59,7 @@ For trait-qualified calls with no data argument, use
 by `impl SpiBus<u8>` require no change. This mirrors the already generic
 blocking trait surface.
 
-`examples/spi-async/src/bin/async_master.rs` retains byte exchanges; the separate
+`examples/shared/spi-async/src/bin/async_master.rs` retains byte exchanges; the separate
 `async_words.rs` binary adds 4-, 9- and 16-bit exchanges on each existing bus.
 Splitting the binaries avoids combining all word monomorphizations in the
 smallest FLASH configurations. This is loopback

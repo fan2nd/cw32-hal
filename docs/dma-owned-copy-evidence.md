@@ -186,7 +186,7 @@ requires callers to establish quiescence independently before memory reuse on
 error. No additional L083 DMA integration is inferred merely because
 51 request routes exist in the authored hardware metadata.
 
-`examples/l083-dma` is actual firmware for all five exact parts. It uses u16
+`examples/l083/dma` is actual firmware for all five exact parts. It uses u16
 blocking copy and concurrent disjoint u8/u32 copies on channels 2/3, binds the
 real shared interrupt, compares returned buffers and reuses the owners. PB0 is
 bonded on each selected package and only serves as a completion indicator;

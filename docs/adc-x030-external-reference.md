@@ -44,7 +44,7 @@ Source evidence:
 - Existing GPIO Flex analog setup/teardown and ADC lifecycle remain the owners
   of their register programming; no external reference is inferred on L010/L011/L012.
 
-The `external_reference` binary in `examples/classic-adc-scan` is restricted to
+The `external_reference` binary in `examples/shared/classic-adc-scan` is restricted to
 F030C8T7. It reads PA0 against a board-provided PB0 reference and demonstrates
 reconfiguration without releasing the reference pin. No compilation, generation,
 tests or board run was performed. Package gating, invalid-reference rejection,

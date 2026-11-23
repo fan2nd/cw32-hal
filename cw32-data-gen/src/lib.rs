@@ -148,6 +148,8 @@ pub struct Input {
     pub die: String,
     pub chip_prefix: String,
     #[serde(default)]
+    pub firmware_targets: BTreeMap<String, Vec<String>>,
+    #[serde(default)]
     pub gpio_dir_pin_fields: bool,
     #[serde(default)]
     pub register_aliases: Vec<RegisterAlias>,
@@ -1073,6 +1075,32 @@ fn generate_inner(
                 &output.join("chips").join(format!("{}.json", chip.name)),
                 &json,
             )?;
+        }
+        if !input.firmware_targets.is_empty() {
+            let mut assigned = BTreeSet::new();
+            for (target, members) in &input.firmware_targets {
+                ensure!(members.len() >= 2 && !chips.iter().any(|c| &c.name == target),
+                    "invalid package-neutral target {target}");
+                let mut reference = None;
+                for name in members {
+                    ensure!(assigned.insert(name) && name.starts_with(target)
+                        && chips.iter().any(|c| &c.name == name && c.packages.len() == 1),
+                        "invalid or duplicate package {name} in {target}");
+                    let path = output.join("chips").join(format!("{name}.json"));
+                    let mut chip: serde_json::Value = serde_json::from_slice(&fs::read(path)?)?;
+                    let object = chip.as_object_mut().unwrap();
+                    object.remove("name");
+                    object.remove("packages");
+                    if let Some(first) = &reference {
+                        ensure!(first == &chip, "{name} differs from other firmware targets in {target}");
+                    } else {
+                        reference = Some(chip);
+                    }
+                }
+            }
+            let groups = output.join("package-groups");
+            fs::create_dir_all(&groups)?;
+            write_json(&groups.join(format!("{}.json", input.line)), &input.firmware_targets)?;
         }
     }
     if let Some(capture) = &access_capture {

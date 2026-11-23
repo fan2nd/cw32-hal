@@ -41,7 +41,7 @@ L052 has independent run `drive`/`amplitude` and
 `mode` are installed while stopped, before enable. Neither analog bank is
 rewritten at STABLE; the precise hardware phase-switch instant is unspecified.
 No universal board-independent preset is qualified. The
-[ordinary crystal/bypass examples](../examples/lse-sysclk/README.md) deliberately
+[ordinary crystal/bypass examples](../examples/shared/lse-sysclk/README.md) deliberately
 declare different startup and run values so that the independent fields remain
 visible; each value still needs board qualification. Exact reuse compares both
 banks, even in bypass.

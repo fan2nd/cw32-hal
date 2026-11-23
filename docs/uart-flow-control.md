@@ -94,7 +94,7 @@ python3 tests/verify_uart_flow_control_sources.py --sources /path/to/cw32-source
 ```
 
 The production ARM matrix covers all 54 selections with `rt` and `rt,defmt`.
-Six genuine firmware applications in `examples/uart-flow-control` link on seven
+Six genuine firmware applications in `examples/shared/uart-flow-control` link on seven
 exact packages, covering each UART register revision and the L083 shared-vector
 binding. Their echo variants split ownership; sender/receiver variants use the
 new independent constructors. The source-data audits recheck original official

@@ -16,10 +16,10 @@ The same method supports a one-slot sequence. Existing `blocking_read` uses that
 path and restores a single-slot configuration after a longer scan.
 
 An example with owned channels is in
-[`scan_owned.rs`](../examples/adc-scan/src/bin/scan_owned.rs). An eight-slot
+[`scan_owned.rs`](../examples/shared/adc-scan/src/bin/scan_owned.rs). An eight-slot
 example uses borrowed external pins, both internal sources, repeated channels,
 and a following single conversion in
-[`scan_borrowed.rs`](../examples/adc-scan/src/bin/scan_borrowed.rs). These are real
+[`scan_borrowed.rs`](../examples/shared/adc-scan/src/bin/scan_borrowed.rs). These are real
 standalone Cortex-M firmware images. They were linked, never flashed or run.
 
 ## Timing and ownership

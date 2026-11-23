@@ -218,7 +218,7 @@ current canonical split above and this new record supply current authority.
 
 ### Verification boundary
 
-The [ordinary `lse_events` firmware](../examples/low-power-timers/README.md)
+The [ordinary `lse_events` firmware](../examples/shared/low-power-timers/README.md)
 first uses a real Blocking LSE owner through reborrowed tokens, polls for a
 bounded iteration count and drops regardless of event arrival. It then
 reacquires `LseClock` and constructs an Async owner with the typed AWT binding.

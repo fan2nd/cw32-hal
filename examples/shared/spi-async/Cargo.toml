@@ -1,0 +1,57 @@
+[package]
+name = "cw32-spi-async-examples"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+autobins = false
+
+[workspace]
+
+[features]
+default = []
+cw32f020c6u7 = ["embassy-cw32/cw32f020c6u7", "cw32-metapac/cw32f020c6u7"]
+cw32f002f3p7 = ["embassy-cw32/cw32f002f3p7", "cw32-metapac/cw32f002f3p7"]
+cw32f003e4p7 = ["embassy-cw32/cw32f003e4p7", "cw32-metapac/cw32f003e4p7"]
+cw32l010f8p6 = ["embassy-cw32/cw32l010f8p6", "cw32-metapac/cw32l010f8p6"]
+cw32l011k8t6 = ["embassy-cw32/cw32l011k8t6", "cw32-metapac/cw32l011k8t6"]
+cw32l012c8t6 = ["embassy-cw32/cw32l012c8t6", "cw32-metapac/cw32l012c8t6"]
+cw32l012c8u6 = ["embassy-cw32/cw32l012c8u6", "cw32-metapac/cw32l012c8u6"]
+cw32l031c8t6 = ["embassy-cw32/cw32l031c8t6", "cw32-metapac/cw32l031c8t6"]
+cw32r031c8u6 = ["embassy-cw32/cw32r031c8u6", "cw32-metapac/cw32r031c8u6"]
+cw32l052c8t6 = ["embassy-cw32/cw32l052c8t6", "cw32-metapac/cw32l052c8t6"]
+
+[[bin]]
+name = "async_master"
+path = "src/bin/async_master.rs"
+
+[[bin]]
+name = "async_words"
+path = "src/bin/async_words.rs"
+
+[[bin]]
+name = "blocking_master"
+path = "src/bin/blocking_master.rs"
+
+[dependencies]
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt"] }
+embassy-executor = { git = "https://github.com/embassy-rs/embassy", rev = "f16efeffe37581092ec184718e6fdb1620393214", features = ["platform-cortex-m", "executor-thread"] }
+embedded-hal = "1.0.0"
+embedded-hal-async = "1.0.0"
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+
+[build-dependencies]
+cw32-metapac = { path = "../../../cw32-metapac", default-features = false, features = ["metadata"] }
+
+[profile.dev]
+opt-level = "s"
+debug = 0
+incremental = false
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+debug = 0
+incremental = false

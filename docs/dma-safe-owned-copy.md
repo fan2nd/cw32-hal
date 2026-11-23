@@ -269,7 +269,7 @@ package. Existing source/data/PAC evidence validators are retained. No HAL test,
 mock register bank, synthetic API compile probe, firmware execution, flash,
 silicon, throughput or liveness claim is made.
 
-The [F020 firmware](../examples/f020-dma/README.md) has separate owned-copy
+The [F020 firmware](../examples/f020/dma/README.md) has separate owned-copy
 and staged-TX binaries for each of the three exact parts. Stage84 main passed
 15 actual ARM library builds and 16 ELF links; generation and five finite
 source gates passed in documented segments. Independent runtime and
@@ -279,7 +279,7 @@ had not run; final-package completion requires a separate final-source
 retains warning/failure history and the generated delta. These software
 checks do not establish hardware behavior.
 
-The [four-channel firmware](../examples/four-channel-dma/README.md) separately
+The [four-channel firmware](../examples/shared/four-channel-dma/README.md) separately
 exercises all four physical channels and u8/u16/u32 copies with clean-owner
 reuse, plus the eleven exact package TX selections. Stage85 main passed six
 standalone ARM library builds and 21 ELF links, all 27 commands exiting zero
@@ -318,4 +318,4 @@ and a CSR prefix also matched CSRCADDR. The precise corrections preserve full
 source identity and all five CSR access assertions; no original or hardware
 fact was changed. At main acceptance clean had not run; final-package completion
 requires a separate final-source two-library/four-ELF clean receipt.
-See [the own-L012 contract](l012-dma-owned.md) and [ordinary firmware](../examples/l012-dma/README.md).
+See [the own-L012 contract](l012-dma-owned.md) and [ordinary firmware](../examples/l012/dma/README.md).

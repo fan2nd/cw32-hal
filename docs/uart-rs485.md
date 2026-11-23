@@ -27,7 +27,7 @@ Cancellation can transmit a prefix; automatic DE service remains active. Drop
 can truncate a frame. Application turn-taking, receiver enable, transceiver
 timing, termination and electrical limits require board-specific handling.
 
-`examples/uart-half-duplex` includes a one-shot `rs485` transmitter using UART2
+`examples/shared/uart-half-duplex` includes a one-shot `rs485` transmitter using UART2
 PA3/PA4/PB1 on L010F8P6, UART3 PA4/PA5/PB4 on L011K8T6, or UART1 PA2/PA3/PA1
 on L012C8T6/C8U6 (TX/RX/DE). L010 PB1 must not be reserved for LSE.
 These additions are source-reviewed and release-built; see

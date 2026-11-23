@@ -232,7 +232,7 @@ STM32's reset/suspend behavior is not evidence for equivalent CW32 cancellation.
 
 ## Production verification boundary
 
-[The real UART TX example](../examples/uart-dma-tx/README.md) consumes a singleton
+[The real UART TX example](../examples/shared/uart-dma-tx/README.md) consumes a singleton
 staging allocation, sends flash and ordinary local slices longer than staging,
 and calls write/flush repeatedly. Its local metadata-derived linker script and
 the exact x030/L083 package selections are included in `ci/check-hal.sh`. The linked ELF
@@ -247,7 +247,7 @@ the exact source snapshot that was checked; the Stage84 outcomes below do
 not establish a silicon run. No HAL test/harness, synthetic
 register model, firmware execution, throughput or liveness result is supplied.
 
-The [separate F020 firmware](../examples/f020-dma/README.md) selects UART1/PA8
+The [separate F020 firmware](../examples/f020/dma/README.md) selects UART1/PA8
 and UART2/PA2 on C6/K6, UART2/PA6 and UART3/PA2 on F6, and both physical
 DMA vectors. Stage84 main passed 15 actual ARM libraries and 16 ELF links;
 all F020 rows and all ELF links were warning-free. Generation and five finite
@@ -258,7 +258,7 @@ had not run; final-package completion requires a separate final-source
 for the full warning/failure history and limits. This scope does not add
 F020 rows to the existing cumulative HAL recipe.
 
-The [four-channel firmware](../examples/four-channel-dma/README.md) selects the
+The [four-channel firmware](../examples/shared/four-channel-dma/README.md) selects the
 31 TX endpoints above using private 32-byte stages, repeated flash/local input
 longer than staging, and a separate wire flush. Stage85 main passed six
 standalone ARM library builds and 21 ELF links, all 27 commands exiting zero
@@ -306,4 +306,4 @@ and a CSR prefix also matched CSRCADDR. The precise corrections preserve full
 source identity and all five CSR access assertions; no original or hardware
 fact was changed. At main acceptance clean had not run; final-package completion
 requires a separate final-source two-library/four-ELF clean receipt.
-See [the own-L012 contract](l012-dma-owned.md) and [ordinary firmware](../examples/l012-dma/README.md).
+See [the own-L012 contract](l012-dma-owned.md) and [ordinary firmware](../examples/l012/dma/README.md).

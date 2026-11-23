@@ -1,0 +1,16 @@
+[package]
+name = "cw32-l012-foc-algorithms"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[profile.dev]
+opt-level = "s"
+debug = 0
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+debug = 2

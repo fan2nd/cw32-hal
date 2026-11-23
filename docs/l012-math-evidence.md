@@ -4,7 +4,7 @@ This implementation is a source-reviewed blocking HAL, not a silicon validation.
 Only `cw32l012`, `cw32l012c8t6`, and `cw32l012c8u6` expose these modules. The generic
 selection supports peripheral arithmetic but cannot link an application without
 an independently known memory map. The two exact parts have genuine firmware
-examples under `examples/l012-math`.
+examples under `examples/l012/math`.
 
 ## Authorities
 

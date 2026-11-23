@@ -15,7 +15,10 @@ import tomllib
 ROOT = Path(__file__).resolve().parents[1]
 PAC = ROOT / 'cw32-metapac'
 features = tomllib.loads((PAC / 'Cargo.toml').read_text())['features']
-chips = sorted(feature for feature in features if feature.startswith('cw32'))
+chips = sorted(name for name, deps in features.items() if name.startswith('cw32') and not deps)
+groups = {}
+for path in (ROOT / 'cw32-data/data/package-groups').glob('*.json'):
+    groups.update(json.loads(path.read_text()))
 expected = {}
 for path in sorted((ROOT / 'cw32-data/data/chips').glob('*.json')):
     chip = json.loads(path.read_text())
@@ -84,6 +87,11 @@ with tempfile.TemporaryDirectory(prefix='cw32-module-selection-') as temp:
             assert f'cargo:rustc-env=CW32_METAPAC_PAC_PATH=chips/{chip}/pac.rs\n' in result.stdout
             assert f'cargo:rustc-env=CW32_METAPAC_METADATA_PATH=chips/{chip}/metadata.rs\n' in result.stdout
             assert ('cargo:rustc-link-search=' in result.stdout) == runtime
+        for group, members in groups.items():
+            for selection in [[group, members[0]], members, [group, *members]]:
+                env = base_env | {'CARGO_FEATURE_' + name: '1' for name in selection}
+                result = subprocess.run([str(binary)], env=env, text=True, capture_output=True, check=True)
+                assert f'CW32_METAPAC_PAC_PATH=chips/{members[0].lower()}/pac.rs' in result.stdout
         for selection, message in [([], 'No cw32xx Cargo feature enabled'), (chips[:2], 'Multiple cw32xx Cargo features enabled')]:
             env = base_env | {'CARGO_FEATURE_' + chip.upper().replace('-', '_'): '1' for chip in selection}
             result = subprocess.run([str(binary)], env=env, text=True, capture_output=True)

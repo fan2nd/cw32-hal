@@ -19,7 +19,7 @@ are not aliases for L031.
 - `embassy-cw32/`: ownership, type-level interrupts, and implemented HAL drivers
 
 - `tools/`: capability declarations, source audits and source packaging.
-- `examples/`: firmware examples with per-package pin and memory configuration.
+- [`examples/`](examples/README.md): firmware examples with per-package pin and memory configuration.
 
 Authored hardware YAML is authoritative. Vendor imports produce review
 candidates rather than replacing it. The root Cargo workspace contains schema

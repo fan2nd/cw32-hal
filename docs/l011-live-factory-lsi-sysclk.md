@@ -147,7 +147,7 @@ missing cycle qualification, including zero dead time. Ordinary rate-based
 timers are not universally prohibited. The fixed 1-MHz time driver rejects
 every 32,800/D plan in pure validation before singleton acquisition/MMIO.
 
-The existing `examples/lsi-clock` crate and `cw32-lsi-clock-example` binary
+The existing `examples/shared/lsi-clock` crate and `cw32-lsi-clock-example` binary
 add only the two exact L011 features. Their linker limits remain exactly
 65,536-byte Flash and 6,144-byte SRAM. The branch declares the own envelope,
 leaves both external-source configurations absent, calls ordinary `init`
@@ -177,13 +177,13 @@ All ELFs use `cargo build --release --locked --target thumbv6m-none-eabi
 
 | Row | Manifest | Binary | Features |
 | --- | --- | --- | --- |
-| M-E1 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l011k8t6,defmt |
-| M-E2 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l011k8u6,defmt |
-| M-E3 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6,defmt |
-| M-E4 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8t6,defmt |
-| M-E5 | examples/hse-clock/Cargo.toml | crystal | cw32l011k8t6 |
-| M-E6 | examples/lse-sysclk/Cargo.toml | crystal | cw32l011k8t6 |
-| M-E7 | examples/rtc-calendar/Cargo.toml | preserve_calendar | cw32l011k8t6 |
+| M-E1 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l011k8t6,defmt |
+| M-E2 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l011k8u6,defmt |
+| M-E3 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6,defmt |
+| M-E4 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8t6,defmt |
+| M-E5 | examples/shared/hse-clock/Cargo.toml | crystal | cw32l011k8t6 |
+| M-E6 | examples/shared/lse-sysclk/Cargo.toml | crystal | cw32l011k8t6 |
+| M-E7 | examples/shared/rtc-calendar/Cargo.toml | preserve_calendar | cw32l011k8t6 |
 
 Independent final-source clean is exactly M-L2/M-L5/M-E2/M-E3: two libraries
 plus two ELFs after fresh generation, with no copied generated or target

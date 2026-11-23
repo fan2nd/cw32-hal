@@ -65,6 +65,8 @@ impl core::error::Error for ConfigError {}
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[non_exhaustive]
 pub enum Error {
+    /// A bounded blocking transfer exhausted its polling budget.
+    PollTimeout,
     /// Another master was detected on the bus.
     ModeFault,
     /// A received frame overwrote unread data.
@@ -94,6 +96,7 @@ pub enum Error {
 impl core::fmt::Display for Error {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str(match self {
+            Self::PollTimeout => "SPI polling timeout",
             Self::ModeFault => "SPI mode fault",
             Self::Overrun => "SPI receive overrun",
             Self::Underrun => "SPI transmit underrun",
@@ -119,7 +122,7 @@ impl embedded_hal::spi::Error for Error {
             Self::ModeFault => ErrorKind::ModeFault,
             Self::Overrun => ErrorKind::Overrun,
             Self::ChipSelectFault => ErrorKind::ChipSelectFault,
-            Self::Underrun => ErrorKind::Other,
+            Self::Underrun | Self::PollTimeout => ErrorKind::Other,
             #[cfg(spi_async_pio)]
             Self::PioBusy => ErrorKind::Other,
             #[cfg(spi_dma)]

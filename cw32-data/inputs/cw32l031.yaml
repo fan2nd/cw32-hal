@@ -1,4 +1,7 @@
 schema_version: 1
+firmware_targets:
+  CW32L031K8: [CW32L031K8U6, CW32L031K8V6]
+  CW32L031C8: [CW32L031C8T6, CW32L031C8U6]
 spi_metadata: cw32-data/spi.yaml
 source:
   path: sources/vendor/CW32L031.svd

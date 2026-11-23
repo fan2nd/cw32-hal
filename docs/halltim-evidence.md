@@ -83,4 +83,4 @@ Replay source/data qualification with:
 
     python3 tests/verify_halltim_evidence.py --sources /path/to/pinned/sources
 
-The normal firmware is [examples/halltim](../examples/halltim/README.md).
+The normal firmware is [examples/l012/halltim](../examples/l012/halltim/README.md).

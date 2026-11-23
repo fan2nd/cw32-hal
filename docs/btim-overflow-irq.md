@@ -176,7 +176,7 @@ ELFs, with all 39 commands exiting zero. It comprises thirteen family libraries
 plus three feature-boundary libraries; thirteen `btim_events`, three shared-owner
 `btim_shared`, and seven existing compatibility links for trigger/ADC, PWM,
 polling, capture, QEI and complementary PWM owners. The new programs live in
-[the existing example crate](../examples/low-power-timers/README.md). The matrix
+[the existing example crate](../examples/shared/low-power-timers/README.md). The matrix
 ran serially using the existing shared target, retaining actual artifacts and
 HAL OUT_DIR output per row. Its 1,353 source files and all 905 retained generated
 files stayed unchanged. This is an unchanged-output comparison; no main

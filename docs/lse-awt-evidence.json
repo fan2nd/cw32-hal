@@ -1116,7 +1116,7 @@
     "Hardware validation"
   ],
   "example": {
-    "manifest": "examples/low-power-timers/Cargo.toml",
+    "manifest": "examples/shared/low-power-timers/Cargo.toml",
     "package": "cw32-low-power-timer-examples",
     "marker_feature": "lse-awt",
     "bin": "lse_events",

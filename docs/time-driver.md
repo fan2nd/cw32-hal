@@ -193,7 +193,7 @@ and buffered BTIM0x41. No unrelated PAC field is changed.
 
 `ci/check-time-driver.py` performs production ARM feature builds, expected-invalid
 feature selections, generated resource ownership checks, and real firmware links.
-`examples/embassy-time` uses the actual pinned Embassy executor and Timer with two
+`examples/shared/embassy-time` uses the actual pinned Embassy executor and Timer with two
 concurrent tasks and deadlines both within and beyond the 16-bit counter period.
 No HAL tests, mock MMIO, test-only adapter, or firmware execution are involved.
 Receipt manifests retain final source hashes and every compile/link log. They

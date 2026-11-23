@@ -142,10 +142,10 @@ working time/wake source; losing futures are dropped. Progress needs running
 clocks, enabled interrupts, a correct typed binding and eventual executor service.
 There is no maximum IRQ, scheduling or whole-operation latency guarantee.
 
-[The L012 examples](../examples/l012-adc-scan/README.md) include independent
+[The L012 examples](../examples/l012/adc-scan/README.md) include independent
 ADC1/ADC2 single reads and eight-slot mixed-source scans, select/timeout
 cancellation and reuse, and concurrent direct-loading DAC output. The existing
-blocking binaries remain separate. [The classic examples](../examples/classic-adc-scan/README.md)
+blocking binaries remain separate. [The classic examples](../examples/shared/classic-adc-scan/README.md)
 cover all ten lines using generated package routes, full-length ordered scans,
 internal supply single reads and cancellation/reuse. Their optional `async`
 feature uses the existing executor/time/futures pin and family-appropriate GTIM

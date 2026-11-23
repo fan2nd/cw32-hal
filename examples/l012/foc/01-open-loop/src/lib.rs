@@ -1,0 +1,14 @@
+#![no_std]
+
+pub mod actuator;
+pub mod config;
+pub mod param;
+pub mod hardware;
+pub mod board_resources {
+    include!("../../common/board_resources.rs");
+}
+pub mod sensor;
+pub use cw32_l012_foc_algorithms as foc;
+pub use cw32_l012_foc_algorithms::control;
+
+pub use foc::calibration;

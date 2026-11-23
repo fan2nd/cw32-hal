@@ -176,7 +176,7 @@ unpends a sibling's vector. Existing L083 shared-UART behavior is unchanged.
 
 ## Application and verification boundary
 
-The existing [UART DMA firmware](../examples/uart-dma/README.md) covers combined
+The existing [UART DMA firmware](../examples/shared/uart-dma/README.md) covers combined
 and standalone receive through ordinary local caller arrays. For all fourteen
 new exact parts its main uses UART2 PA6/AF2 TX and PA7/AF2 RX. F020 uses TX CH2
 and RX CH1 with separate IRQs; the four-channel cohort uses TX CH3 and RX CH2

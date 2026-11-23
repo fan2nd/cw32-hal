@@ -179,7 +179,7 @@ from the selected-LSI refusal in pure preflight.
 
 ## Example and finite verification evidence
 
-The existing [LSI example](../examples/lsi-clock/README.md) adds the exact
+The existing [LSI example](../examples/shared/lsi-clock/README.md) adds the exact
 feature, linker guard and RTC branch. R031 declarations explicitly use
 2200–3600 mV and −40–85°C and require actual board qualification; prior example
 envelopes are unchanged. The demonstration epoch/new-or-preserved calendar
@@ -205,13 +205,13 @@ manifest, exact `--features` and explicit `--bin`.
 
 | ELF | Manifest | Features | Binary |
 | --- | --- | --- | --- |
-| E1 | `examples/lsi-clock/Cargo.toml` | `cw32r031c8u6,defmt` | `cw32-lsi-clock-example` |
-| E2 | `examples/rtc-calendar/Cargo.toml` | `cw32r031c8u6` | `preserve_calendar` |
-| E3 | `examples/lse-clock/Cargo.toml` | `cw32r031c8u6` | `crystal_calendar` |
-| E4 | `examples/lse-sysclk/Cargo.toml` | `cw32r031c8u6` | `crystal` |
-| E5 | `examples/hse-clock/Cargo.toml` | `cw32r031c8u6` | `crystal` |
-| E6 | `examples/lsi-clock/Cargo.toml` | `cw32l031c8t6,defmt` | `cw32-lsi-clock-example` |
-| E7 | `examples/lse-sysclk/Cargo.toml` | `cw32w031r8u6` | `crystal` |
+| E1 | `examples/shared/lsi-clock/Cargo.toml` | `cw32r031c8u6,defmt` | `cw32-lsi-clock-example` |
+| E2 | `examples/shared/rtc-calendar/Cargo.toml` | `cw32r031c8u6` | `preserve_calendar` |
+| E3 | `examples/shared/lse-clock/Cargo.toml` | `cw32r031c8u6` | `crystal_calendar` |
+| E4 | `examples/shared/lse-sysclk/Cargo.toml` | `cw32r031c8u6` | `crystal` |
+| E5 | `examples/shared/hse-clock/Cargo.toml` | `cw32r031c8u6` | `crystal` |
+| E6 | `examples/shared/lsi-clock/Cargo.toml` | `cw32l031c8t6,defmt` | `cw32-lsi-clock-example` |
+| E7 | `examples/shared/lse-sysclk/Cargo.toml` | `cw32w031r8u6` | `crystal` |
 
 Package completion requires one clean final-source replay: reproduce generated
 data/PAC first, then exactly **one release library and two ELFs**, L1/E1/E2

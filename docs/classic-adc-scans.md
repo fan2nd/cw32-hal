@@ -100,7 +100,7 @@ calibrated physical units, simultaneous sampling and RF changes.
 
 ## Firmware verification
 
-`examples/classic-adc-scan` contains ordinary exact-package firmware for both
+`examples/shared/classic-adc-scan` contains ordinary exact-package firmware for both
 borrowed and owned channels. Each program selects two reviewed bonded inputs,
 alternates them through the full hardware sequence length and performs a normal
 supply/3 single read between scans. The build emits the actual input routes and

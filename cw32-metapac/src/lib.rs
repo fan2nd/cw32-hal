@@ -6,6 +6,9 @@
 #![doc(html_no_source)]
 #![doc = include_str!("../README.md")]
 
+/// Package-neutral firmware feature, or the selected chip when it has no group.
+pub const FIRMWARE_TARGET: &str = env!("CW32_FIRMWARE_TARGET");
+
 pub mod common;
 
 #[cfg(feature = "pac")]

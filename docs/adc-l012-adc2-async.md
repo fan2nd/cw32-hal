@@ -139,7 +139,7 @@ driver, not a caller assertion passed to this constructor.
 
 ## Examples, evidence and acceptance
 
-The existing [ordinary L012 firmware examples](../examples/l012-adc-scan/README.md)
+The existing [ordinary L012 firmware examples](../examples/l012/adc-scan/README.md)
 use both async ADCs concurrently with direct DAC outputs. `async_single` reads
 ADC1 PA0 and ADC2 PA8; `async_scan_borrowed` uses full eight-slot external/internal
 sequences, repeated channels, select cancellation and immediate reuse. PB0/PB1

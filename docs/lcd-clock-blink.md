@@ -67,7 +67,7 @@ claim. A software test is not hardware or optical validation.
 
 ## Example and validation
 
-`examples/lcd/src/bin/lse_blink.rs` shows held PC14/PC15 crystal ownership,
+`examples/shared/lcd/src/bin/lse_blink.rs` shows held PC14/PC15 crystal ownership,
 explicit board assumptions and 32-frame blink/event intervals. The existing
 blocking and async binaries keep one-frame behavior; async calls handle Result.
 Use actual exact package features and the repository's release example build.

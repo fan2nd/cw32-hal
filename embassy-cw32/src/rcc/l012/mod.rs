@@ -321,11 +321,18 @@ impl Config {
     /// temperature or frequency is measured. A stable, legal incoming clock and
     /// appropriate incoming FLASH latency remain initialization preconditions.
     pub fn frequencies(&self) -> Result<Clocks, Error> {
+        self.source_frequencies::<false>()
+    }
+
+    pub(crate) fn source_frequencies<const HSI_ONLY: bool>(&self) -> Result<Clocks, Error> {
         if self.timeout == 0 {
             return Err(Error::InvalidTimeout);
         }
-        let hsi = HSI_FREQ / self.hsi.div.divisor();
-        let hse = if let Some(hse) = self.hse {
+        let sys = if HSI_ONLY { Sysclk::HSI } else { self.sys };
+        let hse_request = if HSI_ONLY { None } else { self.hse };
+        #[cfg(rcc_lse)]
+        let lse_request = if HSI_ONLY { None } else { self.lse };
+        let hse = if let Some(hse) = hse_request {
             let bounds = hse.bounds()?;
             let board = self.operating_conditions;
             let source = hse.operating_conditions;
@@ -346,18 +353,17 @@ impl Config {
             None
         };
         #[cfg(all(rcc_lsi_sysclk, rcc_lse))]
-        if self.sys == Sysclk::LSI && self.lse.is_some() {
+        if sys == Sysclk::LSI && lse_request.is_some() {
             return Err(Error::UnsupportedLsiLseConfiguration);
         }
         #[cfg(rcc_lse)]
-        let lse = self
-            .lse
+        let lse = lse_request
             .map(|c| {
                 c.bounds(self.operating_conditions)
                     .map(|bounds| (c, bounds))
             })
             .transpose()?;
-        let source = match self.sys {
+        let source = match sys {
             Sysclk::HSI => crate::rcc::ClockBounds::hsi(self.hsi.div.divisor()),
             Sysclk::HSE => hse.ok_or(Error::HseNotConfigured)?,
             #[cfg(rcc_lsi_sysclk)]
@@ -379,7 +385,7 @@ impl Config {
             }
         };
         let clocks = Clocks {
-            hsi,
+            hsi: HSI_FREQ / self.hsi.div.divisor(),
             sys: source.nominal(),
             hclk: source.divided_by(self.ahb_pre.divisor()).nominal(),
             pclk: source
@@ -391,7 +397,7 @@ impl Config {
                 self.ahb_pre.divisor() * self.apb_pre.divisor(),
             ],
             source,
-            hse: self.hse.map(|hse| hse.mode),
+            hse: hse_request.map(|hse| hse.mode),
             #[cfg(rcc_lse)]
             lse,
         };
@@ -401,25 +407,27 @@ impl Config {
             self.allow_nominal_bus_overclock,
         )?;
         // Validate the requested retained HSI as a possible system source too.
-        crate::rcc::operating::validate_with_bus_policy(
-            self.operating_conditions,
-            Clocks {
-                source: crate::rcc::ClockBounds::hsi(self.hsi.div.divisor()),
-                ..clocks
-            },
-            self.allow_nominal_bus_overclock,
-        )?;
+        if sys != Sysclk::HSI {
+            crate::rcc::operating::validate_with_bus_policy(
+                self.operating_conditions,
+                Clocks {
+                    source: crate::rcc::ClockBounds::hsi(self.hsi.div.divisor()),
+                    ..clocks
+                },
+                self.allow_nominal_bus_overclock,
+            )?;
+        }
         // LSE target admission takes no bus-divider retention credit for the
         // full effective HSI/24 fallback. Other source contracts stay unchanged.
         let fallback_dividers = clocks.dividers;
         #[cfg(rcc_lse)]
-        let fallback_dividers = if self.sys == Sysclk::LSE {
+        let fallback_dividers = if sys == Sysclk::LSE {
             [self.hsi.div.divisor(), 1, 1]
         } else {
             fallback_dividers
         };
         #[cfg(rcc_lsi_sysclk)]
-        let fallback_dividers = if self.sys == Sysclk::LSI {
+        let fallback_dividers = if sys == Sysclk::LSI {
             [self.hsi.div.divisor(), 1, 1]
         } else {
             fallback_dividers
@@ -617,12 +625,12 @@ pub fn clocks() -> Clocks {
 /// Safety: the caller must own the device initialization sequence. No other
 /// code, including DMA or NMI handlers, may change or depend on clock registers
 /// during this call. Normal interrupts are masked for the complete sequence.
-pub(crate) unsafe fn init(config: Config) -> Result<(), Error> {
+pub(crate) unsafe fn init<const HSI_ONLY: bool>(config: Config, clocks: Clocks) -> Result<(), Error> {
     critical_section::with(|cs| {
         if CLOCKS.borrow(cs).get().is_some() {
             return Err(Error::AlreadyInitialized);
         }
-        let clocks = configure(config, cs)?;
+        let clocks = configure::<HSI_ONLY>(config, clocks, cs)?;
         CLOCKS.borrow(cs).set(Some(clocks));
         Ok(())
     })

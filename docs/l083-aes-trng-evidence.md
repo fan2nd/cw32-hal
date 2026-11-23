@@ -112,6 +112,6 @@ schema types and fixtures are unchanged.
 `tests/verify_l083_crypto_evidence.py` validates only source, typed IR, member
 provenance and metadata. It neither runs nor models HAL hardware. Ordinary
 optimized thumbv6m library builds and genuine firmware examples provide compile
-and link evidence. `examples/l083-crypto` contains a hardware word-round-trip
+and link evidence. `examples/l083/crypto` contains a hardware word-round-trip
 application and a raw TRNG sampling application. Source audits, compilation and
 linking do not establish silicon correctness, byte interoperability or entropy.

@@ -1,4 +1,6 @@
 schema_version: 1
+firmware_targets:
+  CW32L010F8: [CW32L010F8P6, CW32L010F8U6]
 trigger_metadata: cw32-data/triggers/cw32l010.yaml
 spi_metadata: cw32-data/spi.yaml
 source:

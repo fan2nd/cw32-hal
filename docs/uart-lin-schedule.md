@@ -150,7 +150,7 @@ bus recovery is inferred. Table-switch cases were source-reviewed only.
 
 ## UART and timer integration example
 
-`examples/uart-lin/src/bin/scheduled_publish.rs` combines the cursor, UART1
+`examples/shared/uart-lin/src/bin/scheduled_publish.rs` combines the cursor, UART1
 `LinTransmitter` and GTIM1-backed Embassy time under the existing `timed` feature.
 It selects the same package-qualified TX pins as the other LIN examples and
 retains default HSI/PCLK with declared 3.0–3.6 V board supply conditions.

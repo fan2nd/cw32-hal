@@ -1,6 +1,23 @@
 use super::*;
 
 impl<'d> Spi<'d, Blocking, Master> {
+    /// Transfer in place with one retry budget shared by all idle, TX and RX waits.
+    /// On timeout the PIO controller is cleared and re-enabled before returning.
+    pub fn blocking_transfer_in_place_bounded<W: Word>(
+        &mut self, words: &mut [W], mut retries: u32,
+    ) -> Result<(), Error> {
+        let result = self.transfer_in_place_with(words, &mut || {
+            retries = retries.checked_sub(1).ok_or(Error::PollTimeout)?;
+            Ok(())
+        });
+        if matches!(result, Err(Error::PollTimeout)) {
+            self.peripheral.info.enable(false);
+            self.peripheral.info.clear();
+            self.peripheral.info.enable(true);
+        }
+        result
+    }
+
     /// Create a blocking bus, returning an error before any hardware changes if
     /// the clock or requested frequency is invalid.
     ///
@@ -370,17 +387,26 @@ impl<M: PeriMode> Spi<'_, M, Master> {
     }
 
     fn wait_idle(&mut self) -> Result<(), Error> {
+        self.wait_idle_with(&mut || Ok(()))
+    }
+
+    fn wait_idle_with(&mut self, retry: &mut impl FnMut() -> Result<(), Error>) -> Result<(), Error> {
         loop {
             let status = self.status()?;
             if status.txe() && !status.busy() {
                 return Ok(());
             }
+            retry()?;
             core::hint::spin_loop();
         }
     }
 
     pub(super) fn prepare<W: Word>(&mut self) -> Result<(), Error> {
-        self.wait_idle()?;
+        self.prepare_with::<W>(&mut || Ok(()))
+    }
+
+    fn prepare_with<W: Word>(&mut self, retry: &mut impl FnMut() -> Result<(), Error>) -> Result<(), Error> {
+        self.wait_idle_with(retry)?;
         if self.word_bits != W::BITS {
             self.peripheral.info.enable(false);
             self.peripheral
@@ -399,8 +425,9 @@ impl<M: PeriMode> Spi<'_, M, Master> {
         Ok(())
     }
 
-    fn exchange<W: Word>(&mut self, word: W) -> Result<W, Error> {
+    fn exchange<W: Word>(&mut self, word: W, retry: &mut impl FnMut() -> Result<(), Error>) -> Result<W, Error> {
         while !self.status()?.txe() {
+            retry()?;
             core::hint::spin_loop();
         }
         self.peripheral
@@ -409,6 +436,7 @@ impl<M: PeriMode> Spi<'_, M, Master> {
             .dr()
             .write(|v| v.set_dr(word.into_u16()));
         while !self.status()?.rxne() {
+            retry()?;
             core::hint::spin_loop();
         }
         Ok(W::from_u16(self.peripheral.info.regs.dr().read().dr()))
@@ -425,7 +453,7 @@ impl<M: PeriMode> Spi<'_, M, Master> {
         }
         self.prepare::<W>()?;
         for index in 0..count {
-            let received = self.exchange(write.get(index).copied().unwrap_or_default())?;
+            let received = self.exchange(write.get(index).copied().unwrap_or_default(), &mut || Ok(()))?;
             if let Some(word) = read.get_mut(index) {
                 *word = received;
             }
@@ -438,14 +466,18 @@ impl<M: PeriMode> Spi<'_, M, Master> {
         self.check_pio()?;
         #[cfg(spi_dma)]
         self.check_dma()?;
+        self.transfer_in_place_with(words, &mut || Ok(()))
+    }
+
+    fn transfer_in_place_with<W: Word>(&mut self, words: &mut [W], retry: &mut impl FnMut() -> Result<(), Error>) -> Result<(), Error> {
         if words.is_empty() {
             return Ok(());
         }
-        self.prepare::<W>()?;
+        self.prepare_with::<W>(retry)?;
         for word in words {
-            *word = self.exchange(*word)?;
+            *word = self.exchange(*word, retry)?;
         }
-        self.wait_idle()
+        self.wait_idle_with(retry)
     }
 }
 

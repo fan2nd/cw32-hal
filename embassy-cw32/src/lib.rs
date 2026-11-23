@@ -597,15 +597,34 @@ pub struct Config {
 /// before returning the remaining peripherals. See the time-driver module for the
 /// continuous-clock and strict IRQ blackout contract.
 pub fn init(config: Config) -> Result<Peripherals, rcc::Error> {
-    let clocks = config.rcc.frequencies()?;
+    init_with(config, config.rcc.frequencies()?, |rcc, clocks| unsafe { rcc::init(rcc, clocks) })
+}
+
+/// Initialize an L012 firmware whose requested SYSCLK is HSI and which does
+/// not request HSE or LSE. Uses the same clock handover and error checks as
+/// [`init`], without linking transitions to externally requested sources.
+/// Incompatible requests are rejected before acquiring peripherals.
+#[cfg(rcc_cw32l012_v1)]
+pub fn init_hsi(config: Config) -> Result<Peripherals, rcc::Error> {
+    if config.rcc.sys != rcc::Sysclk::HSI || config.rcc.hse.is_some() {
+        return Err(rcc::Error::InvalidClockSource);
+    }
+    #[cfg(rcc_lse)]
+    if config.rcc.lse.is_some() {
+        return Err(rcc::Error::InvalidClockSource);
+    }
+    init_with(config, config.rcc.source_frequencies::<true>()?, |rcc, clocks| unsafe { rcc::init_hsi(rcc, clocks) })
+}
+
+fn init_with(
+    config: Config,
+    clocks: rcc::Clocks,
+    initialize_clocks: impl FnOnce(rcc::Config, rcc::Clocks) -> Result<(), rcc::Error>,
+) -> Result<Peripherals, rcc::Error> {
     #[cfg(feature = "_time-driver")]
     let timer_divisor = time_driver::validate_clock(clocks.pclk_bounds())?;
-    #[cfg(not(feature = "_time-driver"))]
-    let _ = clocks;
     let peripherals = Peripherals::take();
-    unsafe {
-        rcc::init(config.rcc)?;
-    }
+    initialize_clocks(config.rcc, clocks)?;
     #[cfg(feature = "_time-driver")]
     time_driver::init(timer_divisor)?;
     #[cfg(any(dma_v1, dma_cw32f020_v1, dma_cw32l031_v1, dma_cw32l012_v1))]

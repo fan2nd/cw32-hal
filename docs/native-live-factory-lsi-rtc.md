@@ -199,7 +199,7 @@ continuous loss detection, recovery, or ordinary-POR success guarantee.
 
 ## Example and fixed verification scope
 
-The ordinary [`live_lsi_calendar`](../examples/rtc-calendar/README.md) binary
+The ordinary [`live_lsi_calendar`](../examples/shared/rtc-calendar/README.md) binary
 requires one exact chip feature and `native-lsi-source`. It uses default HSI
 initialization, read-only LSI acquisition, explicit stopped-unset initialization,
 and `black_box` retention of `now()` and the two bounds. It uses no GPIO,
@@ -215,10 +215,10 @@ compile evidence only.
   `firmware/Cargo.toml -p embassy-cw32`; dev `cw32l011k8t6,rt,defmt`;
   release each generic `cw32l010`, `cw32l011`, `cw32l012` with `rt`; release
   `cw32f030c8t7,rt`. Total: twelve actual library builds passed.
-- Main ELFs: release `examples/rtc-calendar/Cargo.toml --bin live_lsi_calendar`
+- Main ELFs: release `examples/shared/rtc-calendar/Cargo.toml --bin live_lsi_calendar`
   with `PART,native-lsi-source` for `cw32l010f8p6`, `cw32l011k8t6`,
-  `cw32l012c8t6`; existing `examples/l010-lse-clock/Cargo.toml --bin hsi_calendar`
-  with each same part; existing `examples/rtc-calendar/Cargo.toml
+  `cw32l012c8t6`; existing `examples/shared/l010-lse-clock/Cargo.toml --bin hsi_calendar`
+  with each same part; existing `examples/shared/rtc-calendar/Cargo.toml
   --bin preserve_calendar --features cw32f030c8t7`. Total: seven ELF links passed.
 - Separate final-source clean replay: release `cw32l010f8p6,rt` and
   `cw32l011k8t6,rt` libraries, plus one new `live_lsi_calendar` link for each.

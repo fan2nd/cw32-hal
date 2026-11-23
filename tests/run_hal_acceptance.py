@@ -12,10 +12,10 @@ import subprocess
 import tomllib
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLES = '''uart-lin uart-buffered uart-idle uart-ninebit uart-half-duplex
-uart-flow-control classic-i2c l012-i2c classic-adc-scan adc-scan l012-adc-scan
-l012-analog l012-wwdt halltim comparator comparator-reference classic-timer-input
-classic-atim-input timer-input low-power-timers'''.split()
+EXAMPLES = '''shared/uart-lin shared/uart-buffered shared/uart-idle shared/uart-ninebit shared/uart-half-duplex
+shared/uart-flow-control shared/classic-i2c l012/i2c shared/classic-adc-scan shared/adc-scan l012/adc-scan
+l012/analog shared/l012-wwdt l012/halltim shared/comparator shared/comparator-reference shared/classic-timer-input
+shared/classic-atim-input shared/timer-input shared/low-power-timers'''.split()
 HOSTS = '''cw32a030c8t7 cw32f002f3p7 cw32f003e4p7 cw32f020c6u7 cw32f030c8t7
 cw32l010f8p6 cw32l011k8t6 cw32l012c8t6 cw32l031c8t6 cw32l052c8t6
 cw32l083mct6 cw32r031c8u6'''.split()
@@ -41,8 +41,9 @@ def commands(stage):
                          '--features', f'{chip},rt,defmt,time-driver-{timer}',
                          '--target', 'thumbv6m-none-eabi']
     else:
-        for example in EXAMPLES:
-            manifest = f'examples/{example}/Cargo.toml'
+        for directory in EXAMPLES:
+            example = Path(directory).name
+            manifest = f'examples/{directory}/Cargo.toml'
             for chip in features(manifest):
                 if not chip.startswith('cw32'):
                     continue
@@ -53,9 +54,10 @@ def commands(stage):
                     selected.append('idle-notify')
                 if example == 'classic-adc-scan':
                     selected.append('async-gtim' if chip.startswith(('cw32f002', 'cw32f003')) else 'async-gtim1')
-                if example in ('adc-scan', 'l012-adc-scan'):
+                if example == 'adc-scan':
                     selected.append('async')
-                yield f'{example}-{chip}', ['cargo', 'build', '--offline', '--locked',
+                label = directory.removeprefix('shared/').replace('/', '-')
+                yield f'{label}-{chip}', ['cargo', 'build', '--offline', '--locked',
                      '--manifest-path', manifest, '--no-default-features', '--features',
                      ','.join(selected), '--target', 'thumbv6m-none-eabi', '--bins', '--release']
 

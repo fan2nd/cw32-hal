@@ -66,7 +66,7 @@ additional build commands:
 - `low-power-timers` and `trigger-routing`: L010F8P6 each.
 - `low-power-timers --bin btim_shared`: L012C8T6 and L052C8T6, each with
   `btim-shared`, covering both edited conditional branches.
-- `examples/cw32f030`: one command builds `--bin blocking --bin lvd_ir_bursts`,
+- `examples/f030/basic`: one command builds `--bin blocking --bin lvd_ir_bursts`,
   from that directory so its linker configuration is loaded. An earlier run
   from the repository root lacked the linker script and is not counted.
 

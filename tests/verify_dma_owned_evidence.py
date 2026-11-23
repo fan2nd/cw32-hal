@@ -1368,14 +1368,14 @@ for name in classic_families:
 
 # Manifest/capability declarations describe the advertised surface only. Actual
 # ARM links and implementation ownership review remain separate acceptance work.
-manifest = tomllib.loads((ROOT / 'examples/uart-dma/Cargo.toml').read_text())
+manifest = tomllib.loads((ROOT / 'examples/shared/uart-dma/Cargo.toml').read_text())
 assert manifest['package']['name'] == 'cw32-uart-dma-example'
 old_features = {'cw32f030c8t7', 'cw32a030c8t7', 'cw32l083rbt6', 'cw32l083rcs6', 'cw32l083rct6', 'cw32l083mct6', 'cw32l083vct6'}
 assert {f for f in manifest['features'] if f.startswith('cw32')} == (classic_features - {'cw32w031r8u6'}) | old_features
 for feature in (classic_features - {'cw32w031r8u6'}) | old_features:
     assert {f'embassy-cw32/{feature}', f'cw32-metapac/{feature}'} <= set(manifest['features'][feature])
-assert (ROOT / 'examples/uart-dma/src/main.rs').is_file()
-assert (ROOT / 'examples/uart-dma/src/bin/receive_only.rs').is_file()
+assert (ROOT / 'examples/shared/uart-dma/src/main.rs').is_file()
+assert (ROOT / 'examples/shared/uart-dma/src/bin/receive_only.rs').is_file()
 assert manifest['package'].get('autobins', True)
 assert manifest['bin'] == [{'name': 'shared_vector', 'path': 'src/bin/shared_vector.rs', 'required-features': ['l083']}]
 for dependency in ('embassy-executor', 'embassy-futures'):
@@ -1755,7 +1755,7 @@ four_tokens(spi_pages['CW32W031', 'datasheet'][13], ['4.4.4', 'RF',
 
 # These are declarations only; links, ownership, cancellation, wakeup and silicon
 # behavior require independent acceptance and are never inferred from HAL text.
-manifest = tomllib.loads((ROOT / 'examples/spi-dma/Cargo.toml').read_text())
+manifest = tomllib.loads((ROOT / 'examples/shared/spi-dma/Cargo.toml').read_text())
 assert manifest['package']['name'] == 'cw32-spi-dma-example' and manifest['package'].get('autobins', True)
 representatives = {'cw32f020c6u7', 'cw32l031c8t6', 'cw32l052c8t6', 'cw32r031c8u6'}
 assert {f for f in manifest['features'] if f.startswith('cw32')} == old_features | representatives
@@ -1765,8 +1765,8 @@ for feature in old_features | representatives:
     assert ('spi2-example' in manifest['features'][feature]) == (feature.startswith('cw32l083') or feature in {'cw32f020c6u7', 'cw32l052c8t6'})
 assert manifest['features']['l083'] == manifest['features']['spi2-example'] == []
 assert manifest['bin'] == [{'name': 'spi2_flash_id', 'path': 'src/bin/spi2_flash_id.rs', 'required-features': ['spi2-example']}]
-assert (ROOT / 'examples/spi-dma/src/main.rs').is_file()
-assert (ROOT / 'examples/spi-dma/src/bin/spi2_flash_id.rs').is_file()
+assert (ROOT / 'examples/shared/spi-dma/src/main.rs').is_file()
+assert (ROOT / 'examples/shared/spi-dma/src/bin/spi2_flash_id.rs').is_file()
 assert manifest['dependencies']['embassy-executor']['rev'] == 'f16efeffe37581092ec184718e6fdb1620393214'
 mode = next(m for m in capabilities['functions']['spi']['modes'] if m['id'] == 'safe_peripheral_dma')
 assert mode['status'] == 'experimental_partial'
@@ -2128,7 +2128,7 @@ assert all(p == {'maximum_frequency': 24000000, 'minimum_divisor': 2} for p in c
 
 # Declared example surfaces only. Ordinary firmware links and source review own
 # all method bodies, cancellation, complete handler binding and owner retention.
-manifest = tomllib.loads((ROOT / 'examples/l012-spi-dma/Cargo.toml').read_text())
+manifest = tomllib.loads((ROOT / 'examples/l012/spi-dma/Cargo.toml').read_text())
 assert manifest['package']['name'] == 'cw32-l012-spi-dma-examples' and manifest['package']['autobins'] is False
 assert set(manifest['features']) == {'default', 'cw32l012c8t6', 'cw32l012c8u6'}
 assert manifest['features']['default'] == []
@@ -2138,15 +2138,15 @@ assert manifest['bin'] == [{'name': name, 'path': f'src/bin/{name}.rs'} for name
     ('spi1_dma_pio23', 'spi2_dma_pio3', 'spi3_dma_pio2', 'spi23_dma_pio1')]
 assert manifest['dependencies']['embassy-executor']['rev'] == 'f16efeffe37581092ec184718e6fdb1620393214'
 assert manifest['build-dependencies']['cw32-metapac']['features'] == ['metadata']
-assert (ROOT / 'examples/l012-spi-dma/build.rs').is_file()
+assert (ROOT / 'examples/l012/spi-dma/build.rs').is_file()
 for binary in manifest['bin']:
-    assert (ROOT / 'examples/l012-spi-dma' / binary['path']).is_file()
-pio_manifest = tomllib.loads((ROOT / 'examples/spi-async/Cargo.toml').read_text())
+    assert (ROOT / 'examples/l012/spi-dma' / binary['path']).is_file()
+pio_manifest = tomllib.loads((ROOT / 'examples/shared/spi-async/Cargo.toml').read_text())
 for feature in l012_features:
     assert set(pio_manifest['features'][feature]) == {f'embassy-cw32/{feature}', f'cw32-metapac/{feature}'}
 assert pio_manifest['bin'] == [{'name': name, 'path': f'src/bin/{name}.rs'} for name in ('async_master', 'async_words', 'blocking_master')]
-assert (ROOT / 'examples/spi-async/src/bin/async_words.rs').is_file()
-assert (ROOT / 'examples/spi-async/build.rs').is_file()
+assert (ROOT / 'examples/shared/spi-async/src/bin/async_words.rs').is_file()
+assert (ROOT / 'examples/shared/spi-async/build.rs').is_file()
 mode = next(m for m in capabilities['functions']['spi']['modes'] if m['id'] == 'safe_peripheral_dma')
 assert len(set(mode['implemented_families'])) == 8
 assert sum(len(clock_profiles[name]['peripherals']) for name in mode['implemented_families']) == 15

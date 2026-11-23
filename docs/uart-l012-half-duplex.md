@@ -56,7 +56,7 @@ lossless reception or hardware validation is claimed.
 
 ## Examples and software checks
 
-`examples/uart-half-duplex` supplies blocking and async request/one-byte-response
+`examples/shared/uart-half-duplex` supplies blocking and async request/one-byte-response
 initiators for C8T6 and C8U6. Wire UART1 PA2 to a compatible half-duplex peer,
 add an external pull-up and common ground. RXD PA3 is unused. These examples
 are not full-duplex TX-to-RX loopback tests and do not implement the peer.

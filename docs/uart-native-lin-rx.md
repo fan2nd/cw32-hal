@@ -34,7 +34,7 @@ Own-manual evidence, hashes pinned in `sources/evidence-sources.json`:
 | L011 CN1.1 | §16.3.4.2 p408/PDF409 | p424/PDF425 |
 | L012 CN1.4 | §21.3.4.2 p464/PDF490 | p484/PDF510 |
 
-`examples/uart-lin/src/bin/receive.rs` uses UART1 PA0 on L010F8P6 and PA3 on
+`examples/shared/uart-lin/src/bin/receive.rs` uses UART1 PA0 on L010F8P6 and PA3 on
 L011K8T6/L012C8T6/L012C8U6, following canonical AF routes. It observes events at
 19,200 baud through a board-configured external transceiver and never responds.
 It feeds the table-driven assembler described in [LIN encoding](uart-lin-encoding.md),

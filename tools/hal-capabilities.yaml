@@ -152,8 +152,8 @@ functions:
       evidence:
       - path: embassy-cw32/src/usart/lin/duplex.rs
         anchor: pub async fn respond_once_with_echo
-      - path: examples/uart-lin/src/bin/respond_with_echo.rs
-      - path: examples/uart-lin/src/bin/timed_respond_with_echo.rs
+      - path: examples/shared/uart-lin/src/bin/respond_with_echo.rs
+      - path: examples/shared/uart-lin/src/bin/timed_respond_with_echo.rs
       - path: docs/uart-native-lin-duplex.md
     - id: lin_schedule_budget
       status: partial
@@ -179,7 +179,7 @@ functions:
       - path: embassy-cw32/src/usart/lin/schedule.rs
         anchor: pub struct LinScheduleCursor
       - path: docs/uart-lin-schedule.md
-      - path: examples/uart-lin/src/bin/scheduled_publish.rs
+      - path: examples/shared/uart-lin/src/bin/scheduled_publish.rs
     - id: lin_response_encoding
       status: partial
       scope: Native transmitter PID parity, classic/enhanced checksum and immutable owned response encoding.
@@ -458,7 +458,7 @@ functions:
         anchor: pub fn new_async
       - path: docs/spi-async-pio.md
       - path: docs/spi-async-word-widths.md
-      - path: examples/spi-async/src/bin/async_master.rs
+      - path: examples/shared/spi-async/src/bin/async_master.rs
     - id: safe_peripheral_dma
       status: experimental_partial
       scope: Safe paired full-duplex master byte DMA and async SpiBus with private static TX/RX SRAM staging on F030/A030/L083, thirteen exact F020/L031/L052/R031 parts and native SPI1/SPI2/SPI3 on exactly CW32L012C8T6/C8U6; Stage94 native main has separate software acceptance; at main acceptance final-source clean had not run and requires its own receipt, separate from historical Stage93 acceptance.
@@ -508,8 +508,8 @@ functions:
       - path: docs/spi-dma.md
       - path: docs/classic-spi-dma-evidence.json
       - path: docs/l012-spi-dma-evidence.json
-      - path: examples/spi-dma/src/main.rs
-      - path: examples/l012-spi-dma/src/bin/spi23_dma_pio1.rs
+      - path: examples/shared/spi-dma/src/main.rs
+      - path: examples/l012/spi-dma/src/bin/spi23_dma_pio1.rs
       facts:
       - dma_channels
   i2c:
@@ -766,7 +766,7 @@ functions:
       - path: embassy-cw32/src/adc/classic.rs
         anchor: pub async fn read_continuous
       - path: docs/adc-classic-continuous.md
-      - path: examples/classic-adc-scan/src/bin/async_continuous.rs
+      - path: examples/shared/classic-adc-scan/src/bin/async_continuous.rs
     - id: continuous_irq_triggered_scan
       status: unimplemented
       scope: No maintained HAL API declaration for this mode.
@@ -2349,7 +2349,7 @@ functions:
       - path: embassy-cw32/src/rcc/f002_f003.rs
       - path: embassy-cw32/src/rcc/hsi_48mhz.rs
         anchor: fn prepare_factory_lsi
-      - path: examples/lsi-clock/src/main.rs
+      - path: examples/shared/lsi-clock/src/main.rs
         anchor: config.rcc.sys = rcc::Sysclk::LSI
     - id: external_low_speed_sysclk
       status: partial
@@ -2476,7 +2476,7 @@ functions:
         anchor: LSE_SYSCLK_MONITOR
       - path: embassy-cw32/src/rcc/hsi_48mhz.rs
         anchor: LSE_SYSCLK_LSI
-      - path: examples/lse-sysclk/src/lib.rs
+      - path: examples/shared/lse-sysclk/src/lib.rs
         anchor: config.rcc.sys = rcc::Sysclk::LSE
     - id: external_high_speed
       status: partial
@@ -2743,8 +2743,8 @@ functions:
         anchor: pub struct Mco
       - path: cw32-data/mco-qualified.yaml
       - path: docs/f030-owned-mco.md
-      - path: examples/mco/src/bin/hclk.rs
-      - path: examples/mco/src/bin/pclk.rs
+      - path: examples/shared/mco/src/bin/hclk.rs
+      - path: examples/shared/mco/src/bin/pclk.rs
     - id: power_sleep_wakeup
       status: unimplemented
       scope: No maintained HAL API declaration for this mode.

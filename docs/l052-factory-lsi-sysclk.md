@@ -212,7 +212,7 @@ or low-power restoration is promised.
 
 ## Finite software acceptance and clean-package requirement
 
-The [ordinary LSI example](../examples/lsi-clock/README.md) extends its existing
+The [ordinary LSI example](../examples/shared/lsi-clock/README.md) extends its existing
 RTC branch for exactly these three features, asserts 64 KiB/8 KiB and RTC
 presence, retains `-Tlink.x`, and declares 1.65–5.5 V/−40–85°C. It keeps the
 default HSI divider and enables no Embassy time driver. Lockfiles and
@@ -232,13 +232,13 @@ firmware/Cargo.toml -p embassy-cw32 --lib --target thumbv6m-none-eabi
 
 The eight completed main release/locked/thumbv6m ELFs used `--no-default-features`:
 
-1. `examples/lsi-clock`, bin `cw32-lsi-clock-example`: each exact L052
+1. `examples/shared/lsi-clock`, bin `cw32-lsi-clock-example`: each exact L052
    feature with `defmt` (three).
-2. `examples/hse-clock`, `cw32l052c8t6`, bin `crystal` (one).
-3. `examples/lse-sysclk`, `cw32l052r8s6`, bin `crystal` (one).
-4. `examples/rtc-calendar`, `cw32l052r8t6`, bin `preserve_calendar` (one).
-5. `examples/pll-clock`, `cw32l083rct6`, bin `pll-uart` (one).
-6. `examples/lsi-clock`, `cw32l031c8u6`, bin `cw32-lsi-clock-example` (one).
+2. `examples/shared/hse-clock`, `cw32l052c8t6`, bin `crystal` (one).
+3. `examples/shared/lse-sysclk`, `cw32l052r8s6`, bin `crystal` (one).
+4. `examples/shared/rtc-calendar`, `cw32l052r8t6`, bin `preserve_calendar` (one).
+5. `examples/shared/pll-clock`, `cw32l083rct6`, bin `pll-uart` (one).
+6. `examples/shared/lsi-clock`, `cw32l031c8u6`, bin `cw32-lsi-clock-example` (one).
 
 One clean extraction of the final deterministic source ZIP repeats only the
 C8T6/R8S6 release libraries and all three new LSI ELFs (two plus three).

@@ -164,11 +164,10 @@ pub fn irq_ccr_read<T: ComplementaryInstance>(channel: Channel) -> u16 {
 }
 #[inline]
 pub fn irq_center<T: ComplementaryInstance>() {
-    pac::ATIM.cr1().modify(|v| {
-        v.set_cen(false);
-        v.set_cms(1);
-        v.set_cen(true);
-    });
+    let cr1 = pac::ATIM.cr1();
+    cr1.modify(|v| v.set_cen(false));
+    cr1.modify(|v| v.set_cms(1));
+    cr1.modify(|v| v.set_cen(true));
 }
 #[inline]
 pub fn irq_cc4<T: ComplementaryInstance>(compare: u16) {

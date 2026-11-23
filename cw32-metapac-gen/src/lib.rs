@@ -421,6 +421,29 @@ impl Gen {
         for name in &chip_core_names {
             writeln!(&mut contents, "{} = []", name.to_ascii_lowercase()).unwrap();
         }
+        // Only advertise groups whose complete package data is in this render.
+        let mut groups = BTreeMap::<String, Vec<String>>::new();
+        let group_dir = self.opts.data_dir.join("package-groups");
+        if group_dir.exists() {
+            for entry in fs::read_dir(group_dir).unwrap() {
+                let path = entry.unwrap().path();
+                let family: BTreeMap<String, Vec<String>> =
+                    serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+                for (target, members) in family {
+                    if members.iter().all(|name| self.opts.chips.contains(name)) {
+                        groups.insert(target.to_ascii_lowercase(),
+                            members.iter().map(|s| s.to_ascii_lowercase()).collect());
+                    }
+                }
+            }
+        }
+        let mut table = String::from("pub const PACKAGE_GROUPS: &[(&str, &[&str])] = &[\n");
+        for (target, members) in &groups {
+            writeln!(&mut contents, "{target} = [{:?}]", members[0]).unwrap();
+            writeln!(table, "({target:?}, &{members:?}),").unwrap();
+        }
+        table.push_str("];\n");
+        fs::write(self.opts.out_dir.join("package_groups.rs"), table).unwrap();
         fs::write(self.opts.out_dir.join("Cargo.toml"), contents).unwrap();
 
         // Generate src/all_chips.rs

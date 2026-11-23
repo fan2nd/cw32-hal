@@ -162,7 +162,7 @@ rate-derived spacing between observed access-window checks. LPI2C waveform
 proof, buffered complementary PWM, AUTOTRIM, HALLTIM and LPTIM are not newly
 qualified for these families.
 
-The firmware in `examples/pll-clock` exercises normal UART/GPIO and Embassy
+The firmware in `examples/shared/pll-clock` exercises normal UART/GPIO and Embassy
 GTIM applications for one exact package in each family, alongside the L083
 selections. HSI defaults and `fractional` pairs are unchanged; `hse-crystal`
 and `hse-bypass` choose the 8 MHz ±50 ppm ×4 board declaration. Compilation,

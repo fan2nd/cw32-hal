@@ -6,7 +6,14 @@ Normal generation reads the reviewed `cw32-data/registers` YAML. Regenerate
 from the repository root with `./d gen-all`; vendor imports write separate
 review candidates with `./d import-registers`.
 
-Select exactly one chip feature. `cw32f030` is the generic die without a memory
+Select one firmware target. For example, `cw32l012c8` covers both C8T6 and
+C8U6 and is also the HAL feature. The generated package groups are listed in
+`../cw32-data/data/package-groups/`. Exact part features remain available.
+Selecting a group (including via dependency feature unification) uses the
+first member's PAC and exact metadata name. Both exact features of a group
+can also be enabled together. Physical pin numbers remain in the individual
+package records. The public `FIRMWARE_TARGET` constant identifies the shared
+firmware target regardless of which compatible feature enabled it. `cw32f030` is the generic die without a memory
 size claim. C8/K8/F8/F6 features add datasheet-backed memory regions; they do not
 resolve package bonding or alternate-function routes. `pac` is enabled by
 default; `metadata` exposes `cw32_metapac::metadata::METADATA`; `rt` emits vector

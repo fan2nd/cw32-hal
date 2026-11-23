@@ -33,11 +33,11 @@ Consequently the accepted safety behavior is retained: exclusive unsafe region o
 | `embassy-cw32/src/lib.rs` | `9e469381e4806768a5df280a793a31722932969cc560471f838bbeb79b0aa0e9` |
 | `embassy-cw32/src/flash/mod.rs` | `ec2283f73295c5d748cf2ee616300a617c3943a44b6cdae35f8ad1fe381dea1e` |
 | `embassy-cw32/src/flash/backend.rs` | `98b8bd62175292c6786ff8cf3189fb6515b0e116d27f045ec587f927ce8d953b` |
-| `examples/flash-storage/Cargo.toml` | `aec81dcfcf68c7f9d52a8c3e00b8a4ee569c39a2cc4a3f0e29b6204993dcdafa` |
-| `examples/flash-storage/Cargo.lock` | `0323ed756061e14bd2e78e96c161f6b8ec1d5232d1637f2ed650d9fe3175b6fc` |
-| `examples/flash-storage/build.rs` | `ce62aa478924fb8456687ea71f32c368071c3944a3e21ec065e87af689dfe0da` |
-| `examples/flash-storage/src/main.rs` | `b58073ad0f191c865af70eff5c353fe27263ac51ec94796627875980323b6e6a` |
-| `examples/flash-storage/README.md` | `54daf746bb33d48c06d12a15bf468bbfc875102793669cc4f2c618e5b64c5082` |
+| `examples/shared/flash-storage/Cargo.toml` | `aec81dcfcf68c7f9d52a8c3e00b8a4ee569c39a2cc4a3f0e29b6204993dcdafa` |
+| `examples/shared/flash-storage/Cargo.lock` | `0323ed756061e14bd2e78e96c161f6b8ec1d5232d1637f2ed650d9fe3175b6fc` |
+| `examples/shared/flash-storage/build.rs` | `ce62aa478924fb8456687ea71f32c368071c3944a3e21ec065e87af689dfe0da` |
+| `examples/shared/flash-storage/src/main.rs` | `b58073ad0f191c865af70eff5c353fe27263ac51ec94796627875980323b6e6a` |
+| `examples/shared/flash-storage/README.md` | `54daf746bb33d48c06d12a15bf468bbfc875102793669cc4f2c618e5b64c5082` |
 
 ## Verification boundary
 

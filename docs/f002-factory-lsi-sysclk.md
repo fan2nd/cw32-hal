@@ -153,7 +153,7 @@ SHA-256 is `6d0c5c37d069e5b4e33d394b0be6c53938868e9375e7b4bbbbdd40d62bb9d506`.
 The SDK `cw32f002_rcc.h:133` and `cw32f002_rcc.c:301–306` corroborate the factory
 halfword; the SDK's whole-register/WAIT assignment is not copied.
 
-The [ordinary example](../examples/lsi-clock/README.md) uses the exact packages'
+The [ordinary example](../examples/shared/lsi-clock/README.md) uses the exact packages'
 16 KiB Flash and 2 KiB SRAM from own DS tables 3-1 and 6-1, release LTO and an
 explicit `-Tlink.x`. Generic aliases are not firmware targets. Ordinary
 compilation/linking, generated-data assertions and static source review do not

@@ -38,7 +38,7 @@ def main():
         for retained in [False, True]:
             selected = chip + ',l010-low-hse' + (',retained-hse' if retained else '')
             commands.append(['cargo', 'build', '--offline', '--locked', '--release',
-                '--manifest-path', 'examples/hse-clock/Cargo.toml', '--no-default-features',
+                '--manifest-path', 'examples/shared/hse-clock/Cargo.toml', '--no-default-features',
                 '--features', selected, '--bin', 'bypass-low', '--target', 'thumbv6m-none-eabi'])
         for index, command in enumerate(commands):
             log = out / f'l010-bypass-{chip}-{index}.log'

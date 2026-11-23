@@ -40,7 +40,7 @@ abort-latency proof. Shared BGR and inherited clock ownership are retained.
 Later single/scan/continuous reads initialize afresh. Results arriving after
 the requested prefix has been collected are discarded during retirement.
 
-`examples/classic-adc-scan/src/bin/continuous.rs` collects 32 samples from the
+`examples/shared/classic-adc-scan/src/bin/continuous.rs` collects 32 samples from the
 first package-qualified generated input and consumes them only on success.
 It then attempts a single internal supply read after continuous retirement.
 The family audit also describes `read_continuous`, the IRQ-driven equivalent.

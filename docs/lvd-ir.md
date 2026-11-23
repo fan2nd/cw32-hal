@@ -115,7 +115,7 @@ silently enabled to advertise broader coverage.
   pages. LVD threshold and source tables were read independently per family.
 - Both generators run normally. All 54 chip/family features passed a normal
   `cargo build -p embassy-cw32 --target thumbv6m-none-eabi --features <chip>`.
-- `examples/cw32f030/src/bin/lvd_ir_bursts.rs` links a real Cortex-M0+ ELF using
+- `examples/f030/basic/src/bin/lvd_ir_bursts.rs` links a real Cortex-M0+ ELF using
   the existing HAL timer drivers as separately owned signal sources, IR on PB9,
   and polling LVD supply indication on PB0. The link used explicit target and
   `-Tlink.x`; it is not a test harness and has not been executed on a board.

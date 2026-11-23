@@ -1,4 +1,6 @@
 schema_version: 1
+firmware_targets:
+  CW32F002F3: [CW32F002F3P7, CW32F002F3U7]
 spi_metadata: cw32-data/spi.yaml
 source:
   path: sources/vendor/CW32F002.svd

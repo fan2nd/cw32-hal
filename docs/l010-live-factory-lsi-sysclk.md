@@ -133,7 +133,7 @@ Stage73's LPTIM exact-fraction work and `cycles_for` availability remain unchang
 
 ## Example and finite acceptance
 
-The existing `examples/lsi-clock` adds only the three exact L010 features,
+The existing `examples/shared/lsi-clock` adds only the three exact L010 features,
 retaining its F030 default, dependencies and older calendar body. It declares
 the L010 supply/ambient range, requests LSI with no LSE declaration and calls
 ordinary `init`. It never prepares LSI or commands IWDT. Ordinary POR is
@@ -160,13 +160,13 @@ Each ELF uses `cargo build --release --locked --target thumbv6m-none-eabi
 
 | Main ELF | Manifest | Binary | Exact features |
 | --- | --- | --- | --- |
-| 1 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6,defmt |
-| 2 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8u6,defmt |
-| 3 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010y8m6,defmt |
-| 4 | examples/lse-sysclk/Cargo.toml | crystal | cw32l010f8p6 |
-| 5 | examples/rtc-calendar/Cargo.toml | preserve_calendar | cw32l010f8p6 |
-| 6 | examples/hse-clock/Cargo.toml | crystal | cw32l011k8t6 |
-| 7 | examples/rtc-calendar/Cargo.toml | preserve_calendar | cw32f030c8t7 |
+| 1 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6,defmt |
+| 2 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8u6,defmt |
+| 3 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010y8m6,defmt |
+| 4 | examples/shared/lse-sysclk/Cargo.toml | crystal | cw32l010f8p6 |
+| 5 | examples/shared/rtc-calendar/Cargo.toml | preserve_calendar | cw32l010f8p6 |
+| 6 | examples/shared/hse-clock/Cargo.toml | crystal | cw32l011k8t6 |
+| 7 | examples/shared/rtc-calendar/Cargo.toml | preserve_calendar | cw32f030c8t7 |
 
 The clean ceiling is exactly release library rows1/8 and ELF rows1/7 from the
 final source-only package in a separate clean source/target. Prior generated

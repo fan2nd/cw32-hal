@@ -148,7 +148,7 @@ when generated executable/data outputs remain identical.
 |---|---|
 | `embassy-cw32/src/usart.rs` | `afd22f29ce426e57bbce9b61db86373b55f026ba4e3953981282670318753d87` |
 | `embassy-cw32/src/dac.rs` | `d650942650a75ec9f06dbefd7c0963262ac3d5d4a0341dd7128f9718ef893aca` |
-| `examples/uart-half-duplex/src/bin/async_turns.rs` | `53297313bab153d1997c5e8263273d00a3c99fdf9cd7d410873af7f165d11e53` |
-| `examples/uart-half-duplex/src/bin/blocking.rs` | `f0dcc649253f63806ed7f51cbef4ec8d51d4bc1d837a26b3ed103400704a6d5d` |
-| `examples/l012-analog/src/bin/dac_split.rs` | `ff148d4dd3ee184352a8a79ee252cf13186037cbe14c1ae8fd5089daab0a350f` |
-| `examples/l012-analog/src/bin/dac_software_trigger.rs` | `d2ce2777f9f21c874cf8203216610f71ab88ff22d387175eaaa55b125c4a802b` |
+| `examples/shared/uart-half-duplex/src/bin/async_turns.rs` | `53297313bab153d1997c5e8263273d00a3c99fdf9cd7d410873af7f165d11e53` |
+| `examples/shared/uart-half-duplex/src/bin/blocking.rs` | `f0dcc649253f63806ed7f51cbef4ec8d51d4bc1d837a26b3ed103400704a6d5d` |
+| `examples/l012/analog/src/bin/dac_split.rs` | `ff148d4dd3ee184352a8a79ee252cf13186037cbe14c1ae8fd5089daab0a350f` |
+| `examples/l012/analog/src/bin/dac_software_trigger.rs` | `d2ce2777f9f21c874cf8203216610f71ab88ff22d387175eaaa55b125c4a802b` |

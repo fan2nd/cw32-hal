@@ -13,7 +13,7 @@ BTIM3/HALLTIM. Existing capture, overflow and clear semantics remain those in
 
 Bind `halltim::InterruptHandler<peripherals::HALLTIM>` and the BTIM3 handler
 in the same `BTIM3_HALLTIM` dispatch when both sources are enabled. The example
-`examples/halltim/src/bin/async_capture.rs` compiles this paired binding.
+`examples/l012/halltim/src/bin/async_capture.rs` compiles this paired binding.
 The handler checks RAM waiting state before register access; it masks only
 CAPIE and wakes outside the critical section. It never clears CAPF/OVF or reads
 WIDTH/STATE. The future delegates sampling to unchanged `try_capture`.

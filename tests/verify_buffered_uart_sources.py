@@ -443,7 +443,7 @@ def example_routes(evidence, family_data):
 
 
 def example_manifest():
-    directory = 'examples/uart-buffered/'
+    directory = 'examples/shared/uart-buffered/'
     manifest = read_toml(directory + 'Cargo.toml')
     assert manifest['package']['autobins'] is False and manifest['package']['publish'] is False
     assert manifest['package']['name'] == 'cw32-uart-buffered-example'
@@ -464,17 +464,17 @@ def example_manifest():
         assert entry.get('required-features', []) == required
     dependencies = manifest['dependencies']
     assert set(dependencies) == {'embassy-cw32', 'embassy-executor', 'embassy-futures', 'cortex-m', 'cortex-m-rt', 'embedded-io-async'}
-    assert dependencies['embassy-cw32'] == {'path': '../../embassy-cw32', 'default-features': False, 'features': ['rt']}
+    assert dependencies['embassy-cw32'] == {'path': '../../../embassy-cw32', 'default-features': False, 'features': ['rt']}
     for name in ['embassy-executor', 'embassy-futures']:
         assert dependencies[name]['git'] == 'https://github.com/embassy-rs/embassy' and dependencies[name]['rev'] == EMBASSY_REV
     assert dependencies['embassy-executor']['features'] == ['platform-cortex-m', 'executor-thread']
     assert dependencies['cortex-m'] == {'version': '0.7.7', 'features': ['critical-section-single-core']}
     assert dependencies['cortex-m-rt'] == '0.7.5' and dependencies['embedded-io-async'] == '0.7.0'
-    assert manifest['build-dependencies'] == {'cw32-metapac': {'path': '../../cw32-metapac', 'default-features': False, 'features': ['metadata']}}
+    assert manifest['build-dependencies'] == {'cw32-metapac': {'path': '../../../cw32-metapac', 'default-features': False, 'features': ['metadata']}}
     assert manifest['profile']['dev'] == {'opt-level': 's', 'debug': 0, 'incremental': False}
     assert manifest['profile']['release'] == {'opt-level': 's', 'lto': True, 'codegen-units': 1, 'debug': 0, 'incremental': False}
     identity = lambda p: (p['name'], p['version'], p.get('source'), p.get('checksum'))
-    existing = {identity(p) for path in ['firmware/Cargo.lock', 'examples/uart-idle/Cargo.lock']
+    existing = {identity(p) for path in ['firmware/Cargo.lock', 'examples/shared/uart-idle/Cargo.lock']
                 for p in read_toml(path)['package'] if 'source' in p}
     lock = read_toml(directory + 'Cargo.lock')['package']
     assert all(identity(p) in existing for p in lock if 'source' in p), 'new or changed locked external dependency'
@@ -591,7 +591,8 @@ def current_capability_boundary(evidence, modes):
     example = boundary['baseline_example_manifest']
     assert example['path'] == 'examples/uart-buffered/Cargo.toml'
     # Reverse only the reviewed additive examples; keep the historical receipt immutable.
-    manifest = (ROOT / example['path']).read_text()
+    manifest = (ROOT / 'examples/shared/uart-buffered/Cargo.toml').read_text()
+    manifest = manifest.replace('path = "../../../', 'path = "../../')
     additions = ['idle-notify = []\n']
     for name in ('idle_queue', 'idle_notify', 'replace_buffer'):
         entry = f'[[bin]]\nname = "{name}"\npath = "src/bin/{name}.rs"\n'

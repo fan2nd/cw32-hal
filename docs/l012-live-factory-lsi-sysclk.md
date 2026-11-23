@@ -168,7 +168,7 @@ only. Existing L010/L011 strict-consumer guards and other RCC backends are prese
 
 ## Example
 
-The existing `examples/lsi-clock` crate/binary `cw32-lsi-clock-example` adds only
+The existing `examples/shared/lsi-clock` crate/binary `cw32-lsi-clock-example` adds only
 `cw32l012c8t6` and `cw32l012c8u6`. Its F030 default, previous features, electrical
 values, calendar behavior and dependencies remain unchanged. The new branch
 declares the own board envelope, selects LSI with no LSE declaration and calls
@@ -199,12 +199,12 @@ Each ELF uses `cargo build --release --locked --target thumbv6m-none-eabi
 
 | Main ELF | Manifest | Binary | Feature |
 | --- | --- | --- | --- |
-| 1 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8t6 |
-| 2 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8u6 |
-| 3 | examples/lse-sysclk/Cargo.toml | crystal | cw32l012c8t6 |
-| 4 | examples/rtc-calendar/Cargo.toml | preserve_calendar | cw32l012c8t6 |
-| 5 | examples/hse-clock/Cargo.toml | crystal | cw32l012c8u6 |
-| 6 | examples/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6 |
+| 1 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8t6 |
+| 2 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l012c8u6 |
+| 3 | examples/shared/lse-sysclk/Cargo.toml | crystal | cw32l012c8t6 |
+| 4 | examples/shared/rtc-calendar/Cargo.toml | preserve_calendar | cw32l012c8t6 |
+| 5 | examples/shared/hse-clock/Cargo.toml | crystal | cw32l012c8u6 |
+| 6 | examples/shared/lsi-clock/Cargo.toml | cw32-lsi-clock-example | cw32l010f8p6 |
 
 The independent final-source clean ceiling is exactly library rows 1/5 and ELF
 rows 1/6, in a clean source/target after fresh generation. Capture actual command

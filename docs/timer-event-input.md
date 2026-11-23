@@ -131,10 +131,10 @@ table, silicon validation or maximum external edge-rate guarantee is inferred.
 
 ## Examples and acceptance boundary
 
-[The counter example](../examples/timer-overflow/README.md) owns a GTIM plus
+[The counter example](../examples/shared/timer-overflow/README.md) owns a GTIM plus
 ATIM where present, only GTIM on F002/F020, and GTIM3/GTIM4/ATIM on L012. L012
 also executes an Embassy time consumer while GTIM1 remains reserved. The
-[native input examples](../examples/classic-atim-input/README.md) poll six real
+[native input examples](../examples/shared/classic-atim-input/README.md) poll six real
 bonded halves and a CH1A/CH1B pair; F003 uses PB6/PB5 AF4, retaining debug PA5
 exclusion. Build scripts validate actual GLOBAL IRQs or qualified input routes
 and emit every region of one exact package memory map. They do not enlarge RAM

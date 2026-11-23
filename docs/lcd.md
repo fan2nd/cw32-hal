@@ -114,7 +114,7 @@ pinned PDFs and checks all ten family/exact-chip projections, RAM domains,
 source locks and normalized register-reuse fingerprints. Schema fixtures and
 independent generated-vs-SVD parity cover the new optional facts and removals.
 
-The ordinary `examples/lcd` firmware walks COM/SEG crosspoints on eight explicitly
+The ordinary `examples/shared/lcd` firmware walks COM/SEG crosspoints on eight explicitly
 wired pads. It requires compatible glass and board voltage assumptions, links
 against generated exact-package memory maps, and is not a HAL test harness.
 Detailed compiler/link outcomes are in `lcd-receipts`; the main integration task
@@ -148,6 +148,6 @@ applies only to synchronous startup/frame polling. Source-clock loss can leave
 an async wait pending indefinitely; an application can select against its own
 timeout and drop the wait. Completion still proves only observation of a frame,
 not atomic pixel presentation or analogue settling. No hardware validation is
-claimed. `examples/lcd/src/bin/async.rs` demonstrates these APIs on the same
+claimed. `examples/shared/lcd/src/bin/async.rs` demonstrates these APIs on the same
 qualified package routes and explicit board/glass assumptions as the blocking
 example.

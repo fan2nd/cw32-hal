@@ -77,7 +77,7 @@ every command boundary, and check explicit low-valued ten-bit addresses,
 out-of-range addresses, empty reads/writes and the 256-byte read limit. Mock
 backend checks do not validate registers, interrupt timing or silicon.
 
-`examples/l012-i2c/src/bin/ten_bit_master.rs` demonstrates both traits and both
+`examples/l012/i2c/src/bin/ten_bit_master.rs` demonstrates both traits and both
 typed transaction methods on separate I2C buses. Address 0x2a5 is an example,
 not an assertion that a particular device exists there; configure suitable
 hardware before running. Existing seven-bit binaries remain unchanged.

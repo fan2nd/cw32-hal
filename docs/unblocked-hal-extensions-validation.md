@@ -134,10 +134,10 @@ commands. Historical source-evidence receipts are not rewritten as new tests.
 | `embassy-cw32/src/timer/classic_input.rs` | `6d10ea6a37236440b408f2c0972b35f272601efb7c3d3b40875f1cc6cd50d089` |
 | `embassy-cw32/src/timer/low_level.rs` | `5894d7c4d58e8071821f4fcb93eb7134cc8f358fdbb624719fced5ac4dfade8f` |
 | `embassy-cw32/src/timer/overflow.rs` | `62a61fa6a8ca08a636a508c1a1d834003e08115056a8a71c62b6516a3736e4b6` |
-| `examples/spi-async/src/bin/async_master.rs` | `f0cb8d150f2f7828e53d04053c5427b1b7be8580bc010cef8dbe899670bd3655` |
-| `examples/spi-async/src/bin/async_words.rs` | `ee5ef4a07f25f20df7911433acd94a11956fa325da004cf93e1f1fe7c3499a0e` |
-| `examples/spi-dma/src/bin/spi2_flash_id.rs` | `bd527628220a1d1804b00c78040b134ef6e2437b8f88b1a1f7733f3e8249e014` |
-| `examples/timer-overflow/src/bin/capture_event.rs` | `796409841a1623cb29f8a9ff71e99c2acf9aecfba873f4204de8a6e3ce58a325` |
-| `examples/timer-overflow/build.rs` | `fa96f6fa87ebb5a2d892912fe15f3dada65d997ed8523d531218692dec2e5ea5` |
-| `examples/lcd/src/bin/async.rs` | `b52960cabb4aa157fb4a0862f5560e08993f3c44a3e9e0e4c602fed4cd89a5d3` |
-| `examples/autotrim-counter/src/bin/async.rs` | `2ebe9e543121350f96acb688c4a5d07fa87cdff1c7ecad59288311e8b576978d` |
+| `examples/shared/spi-async/src/bin/async_master.rs` | `f0cb8d150f2f7828e53d04053c5427b1b7be8580bc010cef8dbe899670bd3655` |
+| `examples/shared/spi-async/src/bin/async_words.rs` | `ee5ef4a07f25f20df7911433acd94a11956fa325da004cf93e1f1fe7c3499a0e` |
+| `examples/shared/spi-dma/src/bin/spi2_flash_id.rs` | `bd527628220a1d1804b00c78040b134ef6e2437b8f88b1a1f7733f3e8249e014` |
+| `examples/shared/timer-overflow/src/bin/capture_event.rs` | `796409841a1623cb29f8a9ff71e99c2acf9aecfba873f4204de8a6e3ce58a325` |
+| `examples/shared/timer-overflow/build.rs` | `fa96f6fa87ebb5a2d892912fe15f3dada65d997ed8523d531218692dec2e5ea5` |
+| `examples/shared/lcd/src/bin/async.rs` | `b52960cabb4aa157fb4a0862f5560e08993f3c44a3e9e0e4c602fed4cd89a5d3` |
+| `examples/shared/autotrim-counter/src/bin/async.rs` | `2ebe9e543121350f96acb688c4a5d07fa87cdff1c7ecad59288311e8b576978d` |

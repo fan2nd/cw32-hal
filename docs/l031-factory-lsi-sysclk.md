@@ -262,7 +262,7 @@ observations, not microseconds; loss of the execution clock may prevent return.
 
 ## Finite verification plan, not execution receipts
 
-The [ordinary LSI firmware](../examples/lsi-clock/README.md) reuses its RTC
+The [ordinary LSI firmware](../examples/shared/lsi-clock/README.md) reuses its RTC
 branch, selects the own −40–85°C envelope and asserts real 64 KiB/8 KiB linker
 bounds. No time driver is enabled in that example. Cargo.lock, dependency
 versions and hosted CI workflows are unchanged.
@@ -285,12 +285,12 @@ actual library build.
 The focused main firmware matrix is exactly ten release/locked/thumbv6m ELFs,
 all with `--no-default-features`:
 
-1. `examples/lsi-clock`: each exact L031 part with defmt (three).
-2. `examples/lse-sysclk`: C8T6 `crystal`, F8U6 `bypass`, R031C8U6 `crystal`
+1. `examples/shared/lsi-clock`: each exact L031 part with defmt (three).
+2. `examples/shared/lse-sysclk`: C8T6 `crystal`, F8U6 `bypass`, R031C8U6 `crystal`
    and W031R8U6 `crystal` (four).
-3. `examples/rtc-calendar`: C8T6 `preserve_calendar` on default HSI (one).
-4. `examples/lse-clock`: C8T6 `crystal_calendar` with auxiliary LSE (one).
-5. `examples/hse-clock`: C8T6 `crystal` (one).
+3. `examples/shared/rtc-calendar`: C8T6 `preserve_calendar` on default HSI (one).
+4. `examples/shared/lse-clock`: C8T6 `crystal_calendar` with auxiliary LSE (one).
+5. `examples/shared/hse-clock`: C8T6 `crystal` (one).
 
 One clean replay from the final frozen source covers C8T6/F8U6 representative
 release libraries (two) and the three new LSI ELFs (three), with the same

@@ -235,7 +235,7 @@ additions or deletions. The three schema models, generated metadata template
 and runtime implementation apart from its first scope-comment line remain
 unchanged. Historical generated hashes are not permanent source-checker gates.
 
-[The examples](../examples/mco/README.md) retain the same /8 programs and explicit
+[The examples](../examples/shared/mco/README.md) retain the same /8 programs and explicit
 matching init/output board declarations. Each selected exact part uses its
 64 KiB Flash / 8 KiB SRAM map and explicit `link.x`. The current `./d check-mco`
 recipe has seven release `rt,defmt` libraries: F030K8T7, F030K8U7, A030C8T7,

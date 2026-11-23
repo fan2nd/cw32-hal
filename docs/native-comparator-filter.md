@@ -30,6 +30,6 @@ Each own table assigns 1..15 to /1×2, /1×4, /1×8, /2×6, /2×8,
 /32×8 respectively. FLTCLK=1 selects PCLK. Tables were read and visually
 reviewed; canonical per-family register layouts remain unchanged.
 
-`examples/l012-analog/src/bin/comparator_filtered.rs` uses VC1 PA0/PA2 with
+`examples/l012/analog/src/bin/comparator_filtered.rs` uses VC1 PA0/PA2 with
 /32×8 filtering. Local compilation and tests remain prohibited; register
 readback failure, shared-resource behavior and board timing acceptance are pending.

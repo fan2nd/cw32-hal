@@ -13,7 +13,7 @@ The earlier `uart-spi-api-validation.md` remains a receipt for its earlier stage
   Installing this toolchain did not change the production toolchain.
 - Validated `embassy-cw32/src/usart.rs` SHA-256:
   `7b96baccdd2eed883a6f177dd3cb6d1b8206cf43374cc4907262ada4210b6b88`.
-- Validated `examples/uart-buffered/src/bin/split.rs` SHA-256:
+- Validated `examples/shared/uart-buffered/src/bin/split.rs` SHA-256:
   `5d287701cdf12123c5c679e0d247e81180109b40f285f20094ed0edd89739ec6`.
 
 ## Completed software checks

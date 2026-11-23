@@ -56,9 +56,9 @@ bytes are preserved in the final source package and expected publication tree.
 The validation worktree's original `todo.md` was not overwritten.
 
 The only post-validation candidate edits are current-count corrections in
-`README.md`, `examples/four-channel-dma/README.md`,
-`examples/low-power-timers/README.md`,
-`examples/lse-sysclk/README.md`, and `examples/spi-dma/README.md`, plus this
+`README.md`, `examples/shared/four-channel-dma/README.md`,
+`examples/shared/low-power-timers/README.md`,
+`examples/shared/lse-sysclk/README.md`, and `examples/shared/spi-dma/README.md`, plus this
 append-only integration note. All other 141 publication paths and every
 non-documentation staged source/test input retain their validated SHA-256
 fingerprints. The original 147-path publication inventory, receipt, package,

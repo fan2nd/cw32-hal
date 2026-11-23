@@ -165,7 +165,7 @@ package metadata owns availability. PC15's digital HSE_OUT is not OSC_OUT.
 F020 shares the GPIO register form but uses its real SYSCTRL register block and
 its typed HSE.FREQ field; x030 uses HSE.FREQRANGE.
 
-Genuine crystal and bypass UART/LED firmware lives in `examples/hse-clock` for
+Genuine crystal and bypass UART/LED firmware lives in `examples/shared/hse-clock` for
 F020C6U7, F030C8T7 and A030C8T7. It requires real qualified board sources and is
 only compile/linked in verification. No firmware execution, HAL test, mock,
 register simulator or synthetic compile harness is part of this batch.

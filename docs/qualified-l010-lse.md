@@ -50,4 +50,4 @@ The native `CalendarClock` variants are `HsiOsc` and `Lse`. `CalendarClock::new(
 
 RTC source selection, preset divider writes, readback admission and calendar tick bounds follow the held clock. LSE uses source0, PSC1=0 and PSC2=0x3fff, giving nominal two-Hz TICKCLK and one-Hz calendar transitions. Its complete board envelope remains attached to those bounds. The HSI source retains its previous qualification and safe exact-factor attach rule. A successful read is a point-in-time configuration/startup check, especially under StartupOnly, and never an uninterrupted-time guarantee.
 
-The ordinary examples in `examples/l010-lse-clock` contain crystal, bypass and HSI calendar binaries. Linking and ELF checks are software evidence; oscillator loading/startup, bypass electrical conditions and silicon fault timing still require board validation.
+The ordinary examples in `examples/shared/l010-lse-clock` contain crystal, bypass and HSI calendar binaries. Linking and ELF checks are software evidence; oscillator loading/startup, bypass electrical conditions and silicon fault timing still require board validation.

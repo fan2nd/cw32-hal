@@ -137,7 +137,7 @@ still returning no peripheral tokens. This is a distinct documented failure case
 ## Scope and validation
 
 Real crystal/bypass UART/LED examples add exact L031C8T6, R031C8U6 and W031R8U6
-packages to `examples/hse-clock`. The existing HSI-only QFN20 build remains
+packages to `examples/shared/hse-clock`. The existing HSI-only QFN20 build remains
 required. Normal ARM library/example builds validate compiled production paths;
 no firmware execution, HAL unit test, register simulator or mock is claimed.
 Selected-source PCLK supplies UART's nominal baud calculation; its

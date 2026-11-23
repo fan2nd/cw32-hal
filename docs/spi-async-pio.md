@@ -287,7 +287,7 @@ commands 1, 2, 4, 5, 6 and 7, for seven commands total including generation. All
 must identify the final exported source; main acceptance does not substitute for
 it or retrospectively claim that it had already run.
 
-The ordinary [SPI examples](../examples/spi-async/README.md) supplied exact-package
+The ordinary [SPI examples](../examples/shared/spi-async/README.md) supplied exact-package
 async use and blocking compatibility; the existing DMA examples supplied
 regression links. No new aggregate check, CI matrix, HAL test, synthetic lifecycle
 probe, host model, firmware execution, hardware timing, low-power or RF validation

@@ -157,7 +157,7 @@ reset behavior does not prove CW32 early stopping. See the actual
 and [async Read contract](https://docs.rs/embedded-io-async/0.7.0/embedded_io_async/trait.Read.html)
 for immediate empty and short-read requirements.
 
-[Real full-duplex and standalone RX firmware](../examples/uart-dma/README.md)
+[Real full-duplex and standalone RX firmware](../examples/shared/uart-dma/README.md)
 uses exact F030C8T7/A030C8T7, all five L083 selections and the fourteen
 classic selections above. Their separate [Stage92 main results](classic-uart-dma-rx.md#application-and-verification-boundary)
 cover fourteen combined and five selected standalone classic images. Earlier ARM

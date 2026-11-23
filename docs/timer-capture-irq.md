@@ -78,7 +78,7 @@ wall-clock timeout or stopped-clock wake guarantee is made.
 
 ## Example and verification status
 
-`examples/timer-overflow/src/bin/capture_event.rs` uses an exact generated
+`examples/shared/timer-overflow/src/bin/capture_event.rs` uses an exact generated
 CAP1/CH1 route and GLOBAL IRQ binding, waits for an external edge, gates capture,
 reads the latest timestamp, acknowledges classic status and resumes capture.
 It produces no stimulus and does not assume loopback. The generated

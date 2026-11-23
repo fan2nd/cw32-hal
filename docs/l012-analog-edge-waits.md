@@ -61,7 +61,7 @@ analog readiness or real-time latency guarantee is added. L012 comparator
 `Readiness` remains `Unknown`. Qualify settling and the board's voltage limits
 separately. LVD thresholds retain the documented Vcore=1.6 V assumption.
 
-Examples `examples/l012-analog/src/bin/{lvd_edges,comparator_edges,
+Examples `examples/l012/analog/src/bin/{lvd_edges,comparator_edges,
 comparator_divider_edges}.rs` exercise the API and both shared comparator
 vectors. The comparator examples use four concurrent waits, then sample output
 separately; this is not a simultaneous voltage snapshot. Startup transients may

@@ -140,7 +140,7 @@ Native DMA has four physical channels: CH1/2 share DMACH12 IRQ9 and CH3/4
 share DMACH34 IRQ10; IRQ11 remains CORDIC. At most two full-duplex DMA owners
 can coexist. A third controller may use borrowed PIO. Every owner retains its
 pair; dropping one does not admit its channels for another owner. The
-[native example deployments](../examples/l012-spi-dma/README.md) are separate
+[native example deployments](../examples/l012/spi-dma/README.md) are separate
 firmware images, preserve all constructed bus/CS owners and exercise both
 mixed PIO/DMA peers and two simultaneous reserved DMA pairs.
 
@@ -354,4 +354,4 @@ Generated PAC/chip outputs are build evidence, excluded from source archives.
 The initial x030 implementation/source identities and source locators are recorded in
 `docs/spi-dma-evidence.json`; external run receipts separately identify the
 frozen build inputs and actual firmware ELFs. The real example is
-[examples/spi-dma](../examples/spi-dma/README.md). No firmware was executed.
+[examples/shared/spi-dma](../examples/shared/spi-dma/README.md). No firmware was executed.

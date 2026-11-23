@@ -127,7 +127,7 @@ recording register stand-ins. It is not a silicon simulator or IRQ timing test.
 The constructor refusal order and IRQ/ownership behavior also require source
 review; helper success alone does not certify those paths.
 
-`examples/uart-ninebit` contains separate ordinary blocking and async split-owner
+`examples/shared/uart-ninebit` contains separate ordinary blocking and async split-owner
 loopback firmware for C8T6/C8U6, UART1 PA2(TX)/PA3(RX). Build/link and public API
 matrix results are recorded in the batch validation receipt after execution.
 No hardware loopback, physical frame timing, sustained-throughput or electrical

@@ -1,0 +1,40 @@
+[package]
+name = "cw32-lse-clock-examples"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+[workspace]
+[features]
+default = ["cw32f030c8t7"]
+cw32f030c8t7 = ["embassy-cw32/cw32f030c8t7", "cw32-metapac/cw32f030c8t7"]
+cw32a030c8t7 = ["embassy-cw32/cw32a030c8t7", "cw32-metapac/cw32a030c8t7"]
+cw32f020c6u7 = ["embassy-cw32/cw32f020c6u7", "cw32-metapac/cw32f020c6u7"]
+cw32l031c8t6 = ["embassy-cw32/cw32l031c8t6", "cw32-metapac/cw32l031c8t6"]
+cw32l031c8u6 = ["embassy-cw32/cw32l031c8u6", "cw32-metapac/cw32l031c8u6"]
+cw32l031f8u6 = ["embassy-cw32/cw32l031f8u6", "cw32-metapac/cw32l031f8u6"]
+cw32r031c8u6 = ["embassy-cw32/cw32r031c8u6", "cw32-metapac/cw32r031c8u6"]
+cw32l052c8t6 = ["embassy-cw32/cw32l052c8t6", "cw32-metapac/cw32l052c8t6"]
+cw32l052r8s6 = ["embassy-cw32/cw32l052r8s6", "cw32-metapac/cw32l052r8s6"]
+cw32l052r8t6 = ["embassy-cw32/cw32l052r8t6", "cw32-metapac/cw32l052r8t6"]
+
+cw32l083rbt6 = ["embassy-cw32/cw32l083rbt6", "cw32-metapac/cw32l083rbt6"]
+cw32l083rct6 = ["embassy-cw32/cw32l083rct6", "cw32-metapac/cw32l083rct6"]
+cw32l083rcs6 = ["embassy-cw32/cw32l083rcs6", "cw32-metapac/cw32l083rcs6"]
+cw32l083mct6 = ["embassy-cw32/cw32l083mct6", "cw32-metapac/cw32l083mct6"]
+cw32l083vct6 = ["embassy-cw32/cw32l083vct6", "cw32-metapac/cw32l083vct6"]
+
+[dependencies]
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt"] }
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+[build-dependencies]
+cw32-metapac = { path = "../../../cw32-metapac", default-features = false, features = ["metadata"] }
+[profile.dev]
+opt-level = "s"
+debug = 0
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+debug = 0

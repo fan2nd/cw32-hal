@@ -175,7 +175,7 @@ def main() -> None:
     subprocess.run([sys.executable, str(ROOT / "tests/test_module_layout.py")], cwd=ROOT, stdout=sys.stderr, check=True)
     files = collect_files(ROOT)
     validate_distribution(ROOT, files)
-    assert any(str(relative) == "examples/cw32f030/.cargo/config.toml" for relative, _ in files)
+    assert any(str(relative) == "examples/f030/basic/.cargo/config.toml" for relative, _ in files)
     assert any(str(relative) == "firmware/Cargo.toml" for relative, _ in files)
     assert any(str(relative) == "firmware/Cargo.lock" for relative, _ in files)
     assert any(str(relative) == "cw32-metapac-gen/res/Cargo.toml" for relative, _ in files)

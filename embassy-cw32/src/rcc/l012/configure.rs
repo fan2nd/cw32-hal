@@ -9,17 +9,22 @@ use super::{
     L012HseTarget, Sysclk, MAX_FLASH_WAIT,
 };
 
-pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_>) -> Result<Clocks, Error> {
-    let mut clocks = config.frequencies()?;
+pub(super) fn configure<const HSI_ONLY: bool>(config: Config, mut clocks: Clocks, cs: critical_section::CriticalSection<'_>) -> Result<Clocks, Error> {
+    // Keep the statically admitted requests separate from the hardware
+    // snapshots: inherited sources must still be inspected and preserved.
+    let sys = if HSI_ONLY { Sysclk::HSI } else { config.sys };
+    let hse_request = if HSI_ONLY { None } else { config.hse };
+    #[cfg(rcc_lse)]
+    let lse_request = if HSI_ONLY { None } else { config.lse };
     let r = pac::SYSCTRL;
     let old_sources = r.cr1().read();
     #[cfg(not(rcc_lsi_sysclk))]
     let live_lsi_target = false;
     #[cfg(rcc_lsi_sysclk)]
-    let live_lsi_target = config.sys == Sysclk::LSI;
+    let live_lsi_target = sys == Sysclk::LSI;
     // Keep the Stage41 no-write refusal for any undeclared inherited HSE,
     // including HSE retained only for RTC/AWT while SYSCLK is another source.
-    if !live_lsi_target && old_sources.hseen() && config.hse.is_none() {
+    if !live_lsi_target && old_sources.hseen() && hse_request.is_none() {
         return Err(Error::InheritedHseEnabled);
     }
     let old_clock = r.cr0().read();
@@ -29,7 +34,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     let old_lse = r.lse().read();
     // Immutable target identity precedes native preflight and every gate write.
     #[cfg(rcc_lse)]
-    let lse_target = (config.sys == Sysclk::LSE).then(|| LseSysclkSnapshot {
+    let lse_target = (sys == Sysclk::LSE).then(|| LseSysclkSnapshot {
         clock: old_clock,
         sources: old_sources,
         hsi: old_hsi,
@@ -101,7 +106,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
             }
         }};
     }
-    if live_lsi_target && old_sources.hseen() && config.hse.is_none() {
+    if live_lsi_target && old_sources.hseen() && hse_request.is_none() {
         return Err(Error::InheritedHseEnabled);
     }
     #[cfg(rcc_lse)]
@@ -119,10 +124,10 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     } else {
         hse_target
     };
-    let monitor_hse = config.hse.is_some() || old_sources.hseen() || old_sources.hseccs();
+    let monitor_hse = hse_request.is_some() || old_sources.hseen() || old_sources.hseccs();
     let monitor_lse = old_sources.lseen() || old_sources.lseccs();
     #[cfg(rcc_lse)]
-    let monitor_lse = monitor_lse || config.lse.is_some();
+    let monitor_lse = monitor_lse || lse_request.is_some();
     check_external_faults(monitor_hse, monitor_lse)?;
     #[cfg(rcc_lsi_sysclk)]
     if let Some(entry) = lsi_target {
@@ -167,8 +172,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         entry.unchanged_sources(config, false, false)?;
     }
     #[cfg(rcc_lse)]
-    let lse_admission = config
-        .lse
+    let lse_admission = lse_request
         .map(|c| crate::rcc::lse::preflight(c, cs, l012_sysclk))
         .transpose();
     #[cfg(rcc_lse)]
@@ -187,7 +191,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // Inspect actual central gates, restore their incoming state, never reset.
     // SOURCE owns RTC/AWT's raw clock even when the calendar START bit is zero.
     lsi_guard!();
-    let retained_result = inspect_retained(
+    let retained_result = inspect_retained::<HSI_ONLY, _>(
         config,
         cs,
         monitor_hse,
@@ -220,7 +224,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     if rtc_source == 1 && !preserve_hse {
         return Err(Error::HseClockInUse);
     }
-    if let Some(hse) = config.hse {
+    if let Some(hse) = hse_request {
         if preserve_hse {
             lsi_guard!();
             let parameters = hse_parameters_match(hse);
@@ -249,7 +253,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // PSC1 also feeds AWT through RTCCLKD; START=0 never releases the source.
     // Its actual input/divisor must satisfy the own <=1 MHz requirement.
     let rtc_upper = match rtc_source {
-        1 => config.hse.ok_or(Error::HseClockInUse)?.max_freq.0,
+        1 => hse_request.ok_or(Error::HseClockInUse)?.max_freq.0,
         3 => crate::rcc::ClockBounds::hsi(1).maximum().0,
         _ => 0, // Unchanged legal LSE/LSI are already below this ceiling.
     };
@@ -261,7 +265,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // inspection, including before EN refusal; restoration cannot undo it.
     // The separate platform bus-master/memory-ownership boundary still applies.
     lsi_guard!();
-    let retained_result = inspect_retained(
+    let retained_result = inspect_retained::<HSI_ONLY, _>(
         config,
         cs,
         monitor_hse,
@@ -297,7 +301,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // All four comparators share VC's gate. Every CR2 bit is a blank-trigger
     // enable, and blank duration uses PCLK independently of filter selection.
     lsi_guard!();
-    let retained_result = inspect_retained(
+    let retained_result = inspect_retained::<HSI_ONLY, _>(
         config,
         cs,
         monitor_hse,
@@ -334,7 +338,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     // OPA static amplification is preserved; calibration uses PCLK even when
     // AZRUN is low, so enabled/armed calibration is independently refused.
     lsi_guard!();
-    let retained_result = inspect_retained(
+    let retained_result = inspect_retained::<HSI_ONLY, _>(
         config,
         cs,
         monitor_hse,
@@ -354,7 +358,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         return Err(Error::OpaClockInUse);
     }
     lsi_guard!();
-    let retained_result = inspect_retained(
+    let retained_result = inspect_retained::<HSI_ONLY, _>(
         config,
         cs,
         monitor_hse,
@@ -411,7 +415,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
                 (crate::peripherals::I2C2::RCC_INFO, pac::I2C2),
             ] {
                 lsi_guard!();
-                let result = inspect_retained(config, cs, monitor_hse, info, || {
+                let result = inspect_retained::<HSI_ONLY, _>(config, cs, monitor_hse, info, || {
                     let master = u8::from(i2c.mcr0().read().clksrc());
                     let slave = u8::from(i2c.scr0().read().clksrc());
                     matches!(master, 1 | 3) || matches!(slave, 1 | 3)
@@ -428,7 +432,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     }
     let ccs_unchanged = |after_lse: bool| {
         #[cfg(rcc_lse)]
-        let expected_lse = if after_lse { config.lse } else { None };
+        let expected_lse = if after_lse { lse_request } else { None };
         #[cfg(rcc_lse)]
         let (lseen, lseccs) = expected_lse
             .map_or((old_sources.lseen(), old_sources.lseccs()), |c| {
@@ -879,7 +883,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         )?;
     }
     lsi_guard!();
-    if let Some(hse) = config.hse.filter(|_| !preserve_hse) {
+    if let Some(hse) = hse_request.filter(|_| !preserve_hse) {
         // Fresh start only: both stopped indicators must still be clear before
         // any pad/configuration write. Never stop an inherited enabled HSE.
         lsi_guard!();
@@ -1017,7 +1021,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         return finish_lsi_sysclk(config, clocks, entry, phase, flash, cs);
     }
     #[cfg(rcc_lse)]
-    if let (Some(lse), Some(admission)) = (config.lse, lse_admission) {
+    if let (Some(lse), Some(admission)) = (lse_request, lse_admission) {
         if let (Some(entry), Some(flash)) = (lse_target, target_flash) {
             entry.prepared_sources(config, trim, needs_lsi, false)?;
             entry.clock_matches(ClockSource::Hsi, guard_hclk, guard_pclk)?;
@@ -1049,7 +1053,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     if let (Some(entry), Some(flash)) = (lse_target, target_flash) {
         return finish_lse_sysclk(config, clocks, entry, flash, trim, needs_lsi, cs);
     }
-    let sysclk = match config.sys {
+    let sysclk = match sys {
         Sysclk::HSI => ClockSource::Hsi,
         Sysclk::HSE => ClockSource::Hse,
         #[cfg(rcc_lsi_sysclk)]
@@ -1125,7 +1129,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     let final_lsi = r.lsi().read();
     let lse_preserved = r.lse().read().0 == old_lse.0;
     #[cfg(rcc_lse)]
-    let lse_preserved = if config.lse.is_some() {
+    let lse_preserved = if lse_request.is_some() {
         crate::rcc::lse::preserved_register(old_lse.0)
     } else {
         lse_preserved
@@ -1138,7 +1142,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         || !final_hsi.stable()
         || final_hsi.trim() != trim
         || final_hsi.div() != config.hsi.div as u8
-        || final_sources.hseen() != (config.hse.is_some() || old_sources.hseen())
+        || final_sources.hseen() != (hse_request.is_some() || old_sources.hseen())
         || final_sources.lsien() != old_sources.lsien()
         || final_lsi.trim() != old_lsi.trim()
         || final_lsi.waitcycle() != old_lsi.waitcycle()
@@ -1148,7 +1152,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
     {
         return Err(Error::ClockConfigurationTimeout);
     }
-    if let Some(hse) = config.hse {
+    if let Some(hse) = hse_request {
         if !final_hse.stable()
             || !hse_parameters_match(hse)?
             || !crate::rcc_hse_pins_match(
@@ -1173,7 +1177,7 @@ pub(super) fn configure(config: Config, cs: critical_section::CriticalSection<'_
         }
     }
     #[cfg(rcc_lse)]
-    if let Some(lse) = config.lse {
+    if let Some(lse) = lse_request {
         crate::rcc::lse::verify(lse, cs, false)?;
     }
     // Pad inspection may have opened/restored a gate; recheck fault/mux at freeze.

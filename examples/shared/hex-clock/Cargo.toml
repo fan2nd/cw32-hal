@@ -1,0 +1,28 @@
+[package]
+name = "cw32-hex-clock-examples"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+[workspace]
+[features]
+default = ["cw32f002f3p7"]
+cw32f002f3p7 = ["embassy-cw32/cw32f002f3p7", "cw32-metapac/cw32f002f3p7"]
+cw32f002f3u7 = ["embassy-cw32/cw32f002f3u7", "cw32-metapac/cw32f002f3u7"]
+cw32f003e4p7 = ["embassy-cw32/cw32f003e4p7", "cw32-metapac/cw32f003e4p7"]
+cw32f003f4p7 = ["embassy-cw32/cw32f003f4p7", "cw32-metapac/cw32f003f4p7"]
+cw32f003f4u7 = ["embassy-cw32/cw32f003f4u7", "cw32-metapac/cw32f003f4u7"]
+[dependencies]
+embassy-cw32 = { path = "../../../embassy-cw32", default-features = false, features = ["rt"] }
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+[build-dependencies]
+cw32-metapac = { path = "../../../cw32-metapac", default-features = false, features = ["metadata"] }
+[profile.dev]
+opt-level = "s"
+debug = 0
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1
+debug = 0

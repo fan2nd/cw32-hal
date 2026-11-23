@@ -268,7 +268,7 @@ establish a resume protocol.
 
 ## Exact firmware and verification boundary
 
-[`examples/hse-clock`](../examples/hse-clock/README.md) supplies real Cortex-M
+[`examples/shared/hse-clock`](../examples/shared/hse-clock/README.md) supplies real Cortex-M
 entry points and selected-part linker memory for all five exact features.
 Both `crystal` (16 MHz) and `bypass` (24 MHz) use a board-declared ±30 ppm source,
 VDD 3.0–3.6 V and ambient −20–70 °C. L010 uses UART1 PA6 and LED PA3; L011 uses
