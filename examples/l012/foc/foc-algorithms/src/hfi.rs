@@ -253,6 +253,13 @@ impl Tracker {
         }
     }
 
+    /// Resume injection with an electrical speed supplied by a running observer.
+    pub fn from_motion(angle: u16, electrical_step_per_ms: i32) -> Self {
+        let mut tracker = Self::new(angle);
+        tracker.step_q8 = electrical_step_per_ms.clamp(-12500, 12500) * 16;
+        tracker
+    }
+
     pub fn angle(&self) -> u16 {
         (self.angle_q8 >> 8) as u16
     }

@@ -9,6 +9,7 @@
 //! receives three normalized PWM duties.
 
 pub mod calibration;
+pub mod bemf;
 pub mod control;
 pub mod hfi;
 mod trig;
