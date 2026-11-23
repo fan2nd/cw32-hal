@@ -59,7 +59,7 @@ impl Handler<ADC1> for Adc1CurrentLoop {
         CURRENT_APPLIED_ANGLE.store(angle, Ordering::Relaxed);
         let (sin, cos) = sin_cos_q15_lut(angle);
         let iq_reference = CURRENT_IQ_REFERENCE.load(Ordering::Relaxed);
-        let (currents, duty) = cortex_m::interrupt::free(|cs| {
+        let duty = cortex_m::interrupt::free(|cs| {
             let mut filter = CURRENT_SAMPLE_FILTER.borrow(cs).borrow_mut();
             let mut controller = CURRENT_CONTROLLER.borrow(cs).borrow_mut();
             if CURRENT_RESET.load(Ordering::Relaxed) != 0 {
@@ -73,27 +73,28 @@ impl Handler<ADC1> for Adc1CurrentLoop {
                 CURRENT_OFFSET_A.load(Ordering::Relaxed),
                 CURRENT_OFFSET_B.load(Ordering::Relaxed),
             );
+            if currents.a.unsigned_abs() > CURRENT_TRIP_COUNTS
+                || currents.b.unsigned_abs() > CURRENT_TRIP_COUNTS
+            {
+                CURRENT_FAULT.store(1, Ordering::Release);
+                hal::timer::complementary_pwm::irq_moe::<hal::peripherals::ATIM>(false);
+                return None;
+            }
             controller.iq_reference = iq_reference;
             controller.voltage_limit = if CURRENT_PROBE_ACTIVE.load(Ordering::Relaxed) != 0 {
                 PROBE_VOLTAGE_LIMIT_Q15
             } else {
                 27_000
             };
-            (currents, controller.update_five_segment(currents, sin, cos))
-        });
-        CURRENT_PHASE_A.store(currents.a, Ordering::Relaxed);
-        CURRENT_PHASE_B.store(currents.b, Ordering::Relaxed);
-        cortex_m::interrupt::free(|cs| {
-            let controller = CURRENT_CONTROLLER.borrow(cs).borrow();
+            let duty = controller.update_five_segment(currents, sin, cos);
             CURRENT_ID.store(controller.measured_id, Ordering::Relaxed);
             CURRENT_IQ.store(controller.measured_iq, Ordering::Relaxed);
+            Some(duty)
         });
-        let ia_q15 = i32::from(CURRENT_PHASE_A.load(Ordering::Relaxed));
-        let ib_q15 = i32::from(CURRENT_PHASE_B.load(Ordering::Relaxed));
-        if ia_q15.abs() > CURRENT_TRIP_COUNTS || ib_q15.abs() > CURRENT_TRIP_COUNTS {
-            CURRENT_FAULT.store(1, Ordering::Relaxed);
-            hal::timer::complementary_pwm::irq_moe::<hal::peripherals::ATIM>(false);
-        }
+        let Some(duty) = duty else {
+            adc_irq_enable_eos::<hal::peripherals::ADC1>(true);
+            return;
+        };
         let total = CURRENT_LOOP_TOTAL.load(Ordering::Relaxed);
         CURRENT_LOOP_TOTAL.store(total.wrapping_add(1), Ordering::Relaxed);
         let period = hal::timer::complementary_pwm::irq_arr::<hal::peripherals::ATIM>();
