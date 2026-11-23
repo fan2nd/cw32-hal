@@ -172,9 +172,14 @@ pub(super) fn configure<const HSI_ONLY: bool>(config: Config, mut clocks: Clocks
         entry.unchanged_sources(config, false, false)?;
     }
     #[cfg(rcc_lse)]
-    let lse_admission = lse_request
-        .map(|c| crate::rcc::lse::preflight(c, cs, l012_sysclk))
-        .transpose();
+    let lse_admission = if HSI_ONLY {
+        // Exclude the LSE transition code from the HSI-only firmware at link time.
+        Ok(None)
+    } else {
+        lse_request
+            .map(|c| crate::rcc::lse::preflight(c, cs, l012_sysclk))
+            .transpose()
+    };
     #[cfg(rcc_lse)]
     if let Some(entry) = lse_target {
         if let Err(
@@ -1021,7 +1026,7 @@ pub(super) fn configure<const HSI_ONLY: bool>(config: Config, mut clocks: Clocks
         return finish_lsi_sysclk(config, clocks, entry, phase, flash, cs);
     }
     #[cfg(rcc_lse)]
-    if let (Some(lse), Some(admission)) = (lse_request, lse_admission) {
+    if !HSI_ONLY && let (Some(lse), Some(admission)) = (lse_request, lse_admission) {
         if let (Some(entry), Some(flash)) = (lse_target, target_flash) {
             entry.prepared_sources(config, trim, needs_lsi, false)?;
             entry.clock_matches(ClockSource::Hsi, guard_hclk, guard_pclk)?;
@@ -1177,7 +1182,7 @@ pub(super) fn configure<const HSI_ONLY: bool>(config: Config, mut clocks: Clocks
         }
     }
     #[cfg(rcc_lse)]
-    if let Some(lse) = lse_request {
+    if !HSI_ONLY && let Some(lse) = lse_request {
         crate::rcc::lse::verify(lse, cs, false)?;
     }
     // Pad inspection may have opened/restored a gate; recheck fault/mux at freeze.
