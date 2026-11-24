@@ -9,7 +9,9 @@ pub struct Window {
 }
 
 pub struct Sampler {
-    window: Window,
+    windows: [Window; 2],
+    write: usize,
+    ready: Option<u16>,
     count: u8,
     first: PhaseCurrent,
 }
@@ -17,32 +19,55 @@ pub struct Sampler {
 impl Sampler {
     pub const fn new() -> Self {
         Self {
-            window: Window {
+            windows: [Window {
                 volts: [0; 2],
                 amps: [0; 2],
                 delta: [0; 2],
-            },
+            }; 2],
+            write: 0,
+            ready: None,
             count: 0,
             first: PhaseCurrent { a: 0, b: 0 },
         }
     }
-    pub fn sample(&mut self, duty: Duty, i: PhaseCurrent) -> Option<Window> {
-        let (a, b, c) = (i32::from(duty.a), i32::from(duty.b), i32::from(duty.c));
-        self.window.volts[0] += a - b;
-        self.window.volts[1] += b - c;
-        self.window.amps[0] += i32::from(i.a);
-        self.window.amps[1] += i32::from(i.b);
-        self.count += 1;
-        if self.count < 16 {
-            return None;
+
+    /// ADC writes in place. At the carrier boundary only flip buffers; BTIM
+    /// copies the completed window later, before reusing it for acquisition.
+    pub fn push(&mut self, tick: u16, duty: Duty, i: PhaseCurrent) {
+        let w = &mut self.windows[self.write];
+        let ab = i32::from(duty.a) - i32::from(duty.b);
+        let bc = i32::from(duty.b) - i32::from(duty.c);
+        if self.count == 0 {
+            w.volts = [ab, bc];
+            w.amps = [i32::from(i.a), i32::from(i.b)];
+        } else {
+            w.volts[0] += ab;
+            w.volts[1] += bc;
+            w.amps[0] += i32::from(i.a);
+            w.amps[1] += i32::from(i.b);
         }
-        self.count = 0;
-        self.window.delta = [
-            i32::from(i.a) - i32::from(self.first.a),
-            i32::from(i.b) - i32::from(self.first.b),
-        ];
-        self.first = i;
-        Some(core::mem::take(&mut self.window))
+        self.count += 1;
+        if self.count == 16 {
+            w.delta = [
+                i32::from(i.a) - i32::from(self.first.a),
+                i32::from(i.b) - i32::from(self.first.b),
+            ];
+            self.first = i;
+            self.count = 0;
+            self.ready = Some(tick);
+            self.write ^= 1;
+        }
+    }
+
+    pub fn take(&mut self) -> Option<(u16, Window)> {
+        self.ready
+            .take()
+            .map(|tick| (tick, self.windows[self.write ^ 1]))
+    }
+
+    pub fn sample(&mut self, duty: Duty, i: PhaseCurrent) -> Option<Window> {
+        self.push(0, duty, i);
+        self.take().map(|(_, frame)| frame)
     }
 }
 
@@ -126,6 +151,53 @@ fn angle_of(x: i32, y: i32) -> u16 {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[test]
+    fn finished_window_survives_writes_to_the_next_buffer() {
+        let mut sampler = Sampler::new();
+        for tick in 1..=36 {
+            sampler.push(
+                tick,
+                Duty {
+                    a: tick,
+                    b: 0,
+                    c: 0,
+                },
+                PhaseCurrent {
+                    a: tick as i16,
+                    b: 0,
+                },
+            );
+            if tick == 20 || tick == 36 {
+                let (end, window) = sampler.take().unwrap();
+                assert_eq!(end, tick - 4);
+                let sum = (i32::from(end) * 2 - 15) * 8;
+                assert_eq!(window.volts, [sum, 0]);
+                assert_eq!(window.amps, [sum, 0]);
+                assert_eq!(window.delta, [16, 0]);
+                assert!(sampler.take().is_none());
+            }
+        }
+    }
+
+    #[test]
+    fn reverse_wind_needs_the_opposite_flux_pole() {
+        let mut observer = Bemf::new();
+        let mut sampler = Sampler::new();
+        let mut rotor = 0u16;
+        for _ in 0..4000 {
+            let (sin, cos) = crate::sin_cos_q15_lut(rotor);
+            let duty = crate::svpwm(-i32::from(sin) / 2, i32::from(cos) / 2);
+            if let Some(w) = sampler.sample(duty, PhaseCurrent { a: 0, b: 0 }) {
+                observer.update(w, 12000);
+            }
+            rotor = rotor.wrapping_add(225);
+        }
+        assert!(observer.valid);
+        assert!((observer.rpm() - 300).abs() < 5);
+        let error = observer.angle().wrapping_add(32768).wrapping_sub(rotor) as i16;
+        assert!(error.unsigned_abs() < 1200);
+    }
+
     #[test]
     fn tracks_negative_rotation_from_pwm_alone() {
         let mut obs = Bemf::new();

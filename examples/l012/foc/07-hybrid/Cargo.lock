@@ -267,6 +267,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "hybrid"
+version = "0.1.0"
+dependencies = [
+ "cortex-m",
+ "cortex-m-rt",
+ "cw32-l012-foc-algorithms",
+ "cw32-metapac",
+ "defmt 1.2.0",
+ "embassy-cw32",
+ "embedded-hal 1.0.0",
+ "rtt-target",
+]
+
+[[package]]
 name = "itoa"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -361,20 +375,6 @@ name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-
-[[package]]
-name = "hybrid"
-version = "0.1.0"
-dependencies = [
- "cortex-m",
- "cortex-m-rt",
- "cw32-l012-foc-algorithms",
- "cw32-metapac",
- "defmt 1.2.0",
- "embassy-cw32",
- "embedded-hal 1.0.0",
- "rtt-target",
-]
 
 [[package]]
 name = "serde"

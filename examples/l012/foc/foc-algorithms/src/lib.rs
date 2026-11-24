@@ -12,6 +12,8 @@ pub mod calibration;
 pub mod bemf;
 pub mod control;
 pub mod hfi;
+pub mod drag;
+pub mod weakening;
 mod trig;
 
 pub use trig::sin_cos_q15_lut;
@@ -403,6 +405,17 @@ impl FocController {
     pub fn reset(&mut self) {
         self.id_pi.reset();
         self.iq_pi.reset();
+    }
+
+    /// Transfer the voltage PI integrators from fixed alpha/beta axes to rotor d/q
+    /// when catching a spinning motor. Both axes use the same voltage scale.
+    pub fn enter_rotor_frame(&mut self, sin: i16, cos: i16) {
+        let alpha = self.id_pi.integral >> 15;
+        let beta = self.iq_pi.integral >> 15;
+        let (sin, cos) = (i32::from(sin), i32::from(cos));
+        let limit = self.id_pi.limit << 15;
+        self.id_pi.integral = (alpha * cos + beta * sin).clamp(-limit, limit);
+        self.iq_pi.integral = (beta * cos - alpha * sin).clamp(-limit, limit);
     }
 
     /// One current-loop update. `sin_q15` and `cos_q15` describe the rotor

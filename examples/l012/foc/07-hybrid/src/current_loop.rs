@@ -1,8 +1,9 @@
 //! ADC1 owns both current control and the injection waveform. No SSI data enters this module.
 use crate::foc::{
     self, Duty, FocController, JD4631, PhaseCurrent, SpeedController,
-    bemf::{Bemf, Sampler, Window},
+    bemf::{Bemf, Sampler},
     control::target_rpm_from_pot,
+    drag::{Drag, HANDOFF_RPM},
     hfi::{Scan, StandstillWindow, Tracker, nearest_axis_angle},
 };
 use core::{
@@ -28,7 +29,6 @@ const ELECTRICAL_DIRECTION: i16 = -1;
 
 // 0 = HFI, 1 = BEMF, 2 = BEMF controlling while HFI reacquires.
 pub static OBSERVER: AtomicU16 = AtomicU16::new(0);
-static SAMPLES: Mutex<RefCell<Option<(u16, Window)>>> = Mutex::new(RefCell::new(None));
 static EMF_ANGLE: AtomicU16 = AtomicU16::new(0);
 static EMF_STEP: AtomicI32 = AtomicI32::new(0);
 static EMF_RPM: AtomicI32 = AtomicI32::new(0);
@@ -36,7 +36,7 @@ static EMF_VALID: AtomicBool = AtomicBool::new(false);
 static EMF_TIME: AtomicU16 = AtomicU16::new(0);
 
 pub fn observe(observer: &mut Bemf) {
-    let frame = interrupt::free(|cs| SAMPLES.borrow(cs).borrow_mut().take());
+    let frame = interrupt::free(|cs| DRIVE.borrow(cs).borrow_mut().sampler.take());
     if STATE.load(Acquire) != 3 {
         *observer = Bemf::new();
         EMF_VALID.store(false, Release);
@@ -66,6 +66,7 @@ pub static ANGLE: AtomicU16 = AtomicU16::new(0);
 pub static STATE: AtomicU16 = AtomicU16::new(0);
 pub static FAULT: AtomicU16 = AtomicU16::new(0);
 pub static RPM: AtomicI32 = AtomicI32::new(0);
+static SETTLE_MS: AtomicU16 = AtomicU16::new(0);
 pub static TARGET: AtomicI32 = AtomicI32::new(0);
 pub static IQ: AtomicI16 = AtomicI16::new(0);
 pub static CONTRAST: AtomicI32 = AtomicI32::new(0);
@@ -184,6 +185,13 @@ pub fn supervise(speed: &mut SpeedController) {
     } else {
         requested
     };
+    // During the first closed-loop second, keep the speed command at or below
+    // the catch speed. Zero and lower operator commands still take effect.
+    let remaining = SETTLE_MS.load(Relaxed);
+    let target = if remaining > 0 {
+        SETTLE_MS.store(remaining - 1, Relaxed);
+        target.min(HANDOFF_RPM)
+    } else { target };
     TARGET.store(target, Release);
     if target > 0 && STATE.load(Acquire) == 3 && FAULT.load(Acquire) == 0 {
         // Limit the PI itself during sensorless handover to avoid integral windup.
@@ -201,6 +209,7 @@ pub fn supervise(speed: &mut SpeedController) {
 }
 
 struct Drive {
+    drag: Drag,
     eau: Option<Eau<EAU>>,
     scan: Scan,
     tracker: Tracker,
@@ -218,6 +227,7 @@ struct Drive {
     copy_axis: usize,
 }
 static DRIVE: Mutex<RefCell<Drive>> = Mutex::new(RefCell::new(Drive {
+    drag: Drag::new(),
     eau: None,
     scan: Scan::new(),
     tracker: Tracker::new(0),
@@ -261,6 +271,8 @@ impl Drive {
                 self.consistent_ms = 0;
                 self.bad_ms = 0;
                 self.phase_offset = 0;
+                self.drag = Drag::new();
+                SETTLE_MS.store(0, Relaxed);
                 OBSERVER.store(0, Relaxed);
                 self.scan = Scan::new();
                 ALIGN_FIELD.store(0, Relaxed);
@@ -303,6 +315,24 @@ impl Drive {
                     }
                     Ok(foc::svpwm(0, 0))
                 }
+            }
+            2 if target >= HANDOFF_RPM && SCAN_ROUNDS == 0 => {
+                self.tracker = Tracker::new(0);
+                STATE.store(10, Release);
+                Ok(foc::svpwm(0, 0))
+            }
+            10 => {
+                let output = self.drag.tick(phase, &mut self.tracker)?;
+                if let Some(rpm) = output.rpm { RPM.store(rpm, Relaxed); }
+                ANGLE.store(self.tracker.angle(), Relaxed);
+                if output.ready {
+                    self.drag.prime(&mut self.current, &self.tracker);
+                    SETTLE_MS.store(1200, Relaxed);
+                    self.ticks = 0;
+                    STATE.store(3, Release);
+                }
+                self.applied = foc::svpwm(output.voltage.0, output.voltage.1);
+                Ok(self.applied)
             }
             state @ (2 | 7) => {
                 let (axis, v, done) = self.scan.sample(phase);
@@ -386,11 +416,7 @@ impl Drive {
                     self.observing = true;
                 }
                 if self.observing {
-                    if let Some(frame) = self.sampler.sample(self.applied, phase) {
-                        interrupt::free(|cs| {
-                            *SAMPLES.borrow(cs).borrow_mut() = Some((tick, frame))
-                        });
-                    }
+                    self.sampler.push(tick, self.applied, phase);
                 }
                 let carrier = if mode == 1 {
                     0
@@ -406,13 +432,16 @@ impl Drive {
                         })
                         .ok_or(7u16)?
                 };
-                let hfi_angle = self.tracker.angle();
-                let age = tick.wrapping_sub(EMF_TIME.load(Relaxed));
-                let step = EMF_STEP.load(Relaxed);
-                let emf_angle = EMF_ANGLE
-                    .load(Relaxed)
-                    .wrapping_add_signed((step * i32::from(age.min(32)) / 16) as i16);
-                let valid = EMF_VALID.load(Acquire) && age <= 32;
+                let injection_axis = self.tracker.angle();
+                let hfi_angle = injection_axis.wrapping_add(self.drag.pole_offset);
+                // With HFI in control the EMF estimate is only needed on
+                // the 1 ms agreement check, away from carrier demodulation.
+                let (step, emf_angle, valid) = if mode != 0 || window {
+                    let age = tick.wrapping_sub(EMF_TIME.load(Relaxed));
+                    let step = EMF_STEP.load(Relaxed);
+                    let angle = EMF_ANGLE.load(Relaxed).wrapping_add_signed((step * i32::from(age.min(32)) / 16) as i16);
+                    (step, angle, EMF_VALID.load(Acquire) && age <= 32)
+                } else { (0, 0, false) };
                 let mut source = mode;
                 if window {
                     let emf_rpm = EMF_RPM.load(Relaxed);
@@ -437,6 +466,7 @@ impl Drive {
                         }
                     }
                     if mode == 1 && (emf_rpm <= 280 || (target < 320 && emf_rpm <= 360)) {
+                        self.drag.pole_offset = 0;
                         self.tracker = Tracker::from_motion(emf_angle, step);
                         source = 2;
                         self.consistent_ms = 0;
@@ -502,7 +532,7 @@ impl Drive {
                     let (a, b) = voltage(angle, carrier);
                     return Ok(foc::svpwm(a, b));
                 }
-                self.current.iq_reference = ELECTRICAL_DIRECTION * IQ.load(Acquire);
+                (self.current.id_reference, self.current.iq_reference) = self.drag.references(0, ELECTRICAL_DIRECTION * IQ.load(Acquire));
                 let (sin, cos) = foc::sin_cos_q15_lut(angle);
                 let (a, b) = self.current.update_voltage(
                     if mode == 1 {
@@ -513,7 +543,14 @@ impl Drive {
                     sin,
                     cos,
                 );
-                let (ha, hb) = voltage(hfi_angle, if source == 1 { 0 } else { carrier });
+                let (a, b) = self.drag.blend(a, b);
+                let (ha, hb) = if source == 1 {
+                    (0, 0)
+                } else if injection_axis == angle {
+                    (i32::from(cos) * carrier >> 15, i32::from(sin) * carrier >> 15)
+                } else {
+                    voltage(injection_axis, carrier)
+                };
                 self.applied = foc::svpwm(a + ha, b + hb);
                 Ok(self.applied)
             }

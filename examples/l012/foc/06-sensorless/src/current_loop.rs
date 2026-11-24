@@ -2,8 +2,10 @@
 use crate::foc::{
     self, Duty, FocController, JD4631, PhaseCurrent, SpeedController,
     control::target_rpm_from_pot,
+    drag::{Drag, HANDOFF_RPM},
     hfi::{Scan, StandstillWindow, Tracker, nearest_axis_angle},
 };
+use crate::pulse_sweep::{Response, Sweep, VOLTS};
 use core::{
     cell::RefCell,
     sync::atomic::{AtomicBool, AtomicI16, AtomicI32, AtomicU16, Ordering::*},
@@ -46,33 +48,48 @@ pub static FAULT_STATE: AtomicU16 = AtomicU16::new(0);
 pub static FAULT_RPM: AtomicI32 = AtomicI32::new(0);
 pub static ISR_CYCLES: AtomicI32 = AtomicI32::new(0);
 
-// Set to zero to use normal sensorless startup. In this build every start is scan-only.
-const FIELD_ANGLES: [u16; 6] = [0, 10922, 21845, 32768, 43690, 54613];
-const ROUNDS_PER_POSITION: usize = 6;
-const AUTO_INDEX_DIAGNOSTIC: bool = false;
-pub const SCAN_ROUNDS: usize = if AUTO_INDEX_DIAGNOSTIC {
+// Disable the bench diagnostic to run the normal sensorless speed loop.
+const FIELD_ANGLES: [u16; 12] = [
+    0, 5461, 10923, 16384, 21845, 27307, 32768, 38229, 43691, 49152, 54613, 60075,
+];
+pub fn probe_axis(round: usize) -> u16 {
+    FIELD_ANGLES[round / ROUNDS_PER_POSITION] & 0x7fff
+}
+pub const ROUNDS_PER_POSITION: usize = 3;
+#[derive(Clone, Copy, PartialEq, Eq)]
+#[allow(dead_code)]
+pub enum Mode {
+    Drag,
+    StaticScan,
+    Speed,
+}
+pub const MODE: Mode = Mode::Drag;
+pub const DRAG_STATE: u16 = 10;
+pub const SCAN_ROUNDS: usize = if matches!(MODE, Mode::StaticScan) {
     FIELD_ANGLES.len() * ROUNDS_PER_POSITION
 } else {
     0
 };
 #[derive(Clone, Copy)]
 pub struct Round {
-    pub raw_start: u16,
-    pub raw_end: u16,
-    pub positive: [i16; 12],
-    pub negative: [i16; 12],
+    pub angle: u16,
+    pub contrast: i32,
+    pub polarity: i32,
+    pub positive: Response,
+    pub negative: Response,
 }
-const EMPTY: Round = Round {
-    raw_start: u16::MAX,
-    raw_end: u16::MAX,
-    positive: [0; 12],
-    negative: [0; 12],
-};
-static RECORDS: Mutex<RefCell<[Round; SCAN_ROUNDS]>> =
-    Mutex::new(RefCell::new([EMPTY; SCAN_ROUNDS]));
+static RECORDS: Mutex<RefCell<[Round; SCAN_ROUNDS]>> = Mutex::new(RefCell::new(
+    [Round {
+        angle: 0,
+        contrast: 0,
+        polarity: 0,
+        positive: [[0; 3]; VOLTS.len()],
+        negative: [[0; 3]; VOLTS.len()],
+    }; SCAN_ROUNDS],
+));
 pub static ROUND_COUNT: AtomicU16 = AtomicU16::new(0);
-pub static RAW_LOG_ANGLE: AtomicU16 = AtomicU16::new(u16::MAX);
-static SCAN_DONE: AtomicBool = AtomicBool::new(false);
+pub static RUN_ID: AtomicU16 = AtomicU16::new(0);
+pub static SCAN_DONE: AtomicBool = AtomicBool::new(false);
 pub fn record(index: usize) -> Round {
     interrupt::free(|cs| RECORDS.borrow(cs).borrow()[index])
 }
@@ -93,6 +110,7 @@ fn trip(code: u16) {
 
 // BTIM1 also catches a missing ADC trigger while the bridge is enabled.
 static START_IQ_LIMIT: AtomicI16 = AtomicI16::new(0);
+static CLOSED_MS: AtomicU16 = AtomicU16::new(0);
 static LAST_COUNT: AtomicU16 = AtomicU16::new(0);
 static ZERO_TICKS: AtomicU16 = AtomicU16::new(0);
 static ARMED: AtomicBool = AtomicBool::new(false);
@@ -110,6 +128,33 @@ pub fn supervise(speed: &mut SpeedController) {
     LAST_COUNT.store(count, Relaxed);
     if STATE.load(Acquire) != 0 && !(8..=24).contains(&delta) {
         trip(1);
+    }
+    if MODE != Mode::Speed {
+        if FAULT.load(Acquire) != 0 || SCAN_DONE.load(Acquire) {
+            TARGET.store(0, Release);
+            return;
+        }
+        let mv = u32::from(adc_irq_result::<ADC2>(0).unwrap_or(0)) * 55000 / 4095;
+        if !(8000..=16000).contains(&mv) {
+            trip(3);
+            return;
+        }
+        if MODE == Mode::Drag && STATE.load(Acquire) == 3 {
+            let ms = CLOSED_MS.load(Relaxed) + 1;
+            CLOSED_MS.store(ms, Relaxed);
+            if ms >= 3200 {
+                irq_moe::<ATIM>(false);
+                SCAN_DONE.store(true, Release);
+                TARGET.store(0, Release);
+                return;
+            }
+            let target = if ms < 1200 { 96 } else { 160 };
+            TARGET.store(target, Release);
+            update_speed(speed, target);
+        } else {
+            TARGET.store(if MODE == Mode::Drag { 96 } else { 1 }, Release);
+        }
+        return;
     }
     let Some(pot) = adc_irq_result::<ADC2>(1) else {
         trip(2);
@@ -152,41 +197,45 @@ pub fn supervise(speed: &mut SpeedController) {
     };
     TARGET.store(target, Release);
     if target > 0 && STATE.load(Acquire) == 3 && FAULT.load(Acquire) == 0 {
-        // Limit the PI itself during sensorless handover to avoid integral windup.
-        let limit = (START_IQ_LIMIT.load(Relaxed) + 2).min(200);
-        START_IQ_LIMIT.store(limit, Relaxed);
-        let rpm = RPM.load(Relaxed);
-        // Taper reverse torque as the rotor approaches the requested speed. The HFI speed
-        // estimate lags the shaft during hard braking on this board.
-        let brake_limit = (((rpm - target).clamp(0, 160) * 200 / 160) as i16).min(limit);
-        IQ.store(
-            speed.update_relative_in_range(target, rpm * 64, 4, -brake_limit, limit, |a, b| a / b),
-            Release,
-        );
+        update_speed(speed, target);
     }
+}
+
+fn update_speed(speed: &mut SpeedController, target: i32) {
+    // Limit the PI itself during sensorless handover to avoid integral windup.
+    let limit = (START_IQ_LIMIT.load(Relaxed) + 2).min(200);
+    START_IQ_LIMIT.store(limit, Relaxed);
+    let rpm = RPM.load(Relaxed);
+    // Taper reverse torque as the rotor approaches the requested speed. The HFI speed
+    // estimate lags the shaft during hard braking on this board.
+    let brake_limit = (((rpm - target).clamp(0, 160) * 200 / 160) as i16).min(limit);
+    IQ.store(
+        speed.update_relative_in_range(target, rpm * 64, 4, -brake_limit, limit, |a, b| a / b),
+        Release,
+    );
 }
 
 struct Drive {
     eau: Option<Eau<EAU>>,
     scan: Scan,
+    sweep: Sweep,
     tracker: Tracker,
     standstill: StandstillWindow,
     current: FocController,
     ticks: u16,
     stalled: u16,
-    raw_start: u16,
-    copy_axis: usize,
+    drag: Drag,
 }
 static DRIVE: Mutex<RefCell<Drive>> = Mutex::new(RefCell::new(Drive {
     eau: None,
     scan: Scan::new(),
+    sweep: Sweep::new(0),
     tracker: Tracker::new(0),
     standstill: StandstillWindow::new(),
     current: FocController::new(JD4631),
     ticks: 0,
     stalled: 0,
-    raw_start: u16::MAX,
-    copy_axis: 0,
+    drag: Drag::new(),
 }));
 
 pub fn init_eau() {
@@ -212,9 +261,10 @@ impl Drive {
                 self.current.reset();
                 self.current.iq_reference = 0;
                 ROUND_COUNT.store(0, Release);
-                self.raw_start = RAW_LOG_ANGLE.load(Relaxed);
+                RUN_ID.store(RUN_ID.load(Relaxed).wrapping_add(1), Release);
                 self.ticks = 0;
                 self.stalled = 0;
+                self.drag = Drag::new();
                 CONTRAST.store(0, Relaxed);
                 POLARITY.store(0, Relaxed);
                 STATE.store(1, Release);
@@ -223,8 +273,32 @@ impl Drive {
             1 => {
                 // One neutral preload has latched since the previous EOS.
                 irq_moe::<ATIM>(true);
-                STATE.store(if SCAN_ROUNDS == 0 { 2 } else { 6 }, Release);
+                self.tracker = Tracker::new(0);
+                STATE.store(
+                    match MODE {
+                        Mode::Drag => DRAG_STATE,
+                        Mode::StaticScan => 6,
+                        Mode::Speed if target >= HANDOFF_RPM => DRAG_STATE,
+                        Mode::Speed => 2,
+                    },
+                    Release,
+                );
                 Ok(foc::svpwm(0, 0))
+            }
+            DRAG_STATE => {
+                let output = self
+                    .drag
+                    .tick(phase, &mut self.tracker)
+                    .map_err(|code| if code == 14 { 13 } else { code })?;
+                if let Some(rpm) = output.rpm {
+                    RPM.store(rpm, Relaxed);
+                }
+                ANGLE.store(self.tracker.angle(), Relaxed);
+                if output.ready {
+                    self.ticks = 0;
+                    STATE.store(3, Release);
+                }
+                Ok(foc::svpwm(output.voltage.0, output.voltage.1))
             }
             state @ (4 | 6) => {
                 // Use the same 25% stationary voltage vector as 01.
@@ -242,7 +316,6 @@ impl Drive {
                     Ok(foc::svpwm(a, b))
                 } else {
                     if self.ticks >= 12800 {
-                        self.raw_start = RAW_LOG_ANGLE.load(Relaxed);
                         STATE.store(if state == 4 { 7 } else { 2 }, Release);
                     }
                     Ok(foc::svpwm(0, 0))
@@ -254,8 +327,18 @@ impl Drive {
                     CONTRAST.store(result.contrast, Relaxed);
                     POLARITY.store(result.polarity, Relaxed);
                     if SCAN_ROUNDS != 0 {
-                        self.copy_axis = 0;
-                        STATE.store(5, Release);
+                        let index = usize::from(ROUND_COUNT.load(Relaxed));
+                        interrupt::free(|cs| {
+                            RECORDS.borrow(cs).borrow_mut()[index] = Round {
+                                angle: result.angle,
+                                contrast: result.contrast,
+                                polarity: result.polarity,
+                                positive: [[0; 3]; VOLTS.len()],
+                                negative: [[0; 3]; VOLTS.len()],
+                            }
+                        });
+                        self.sweep = Sweep::new(probe_axis(index));
+                        STATE.store(9, Release);
                         return Ok(foc::svpwm(0, 0));
                     }
                     if result.contrast < 6 {
@@ -287,35 +370,35 @@ impl Drive {
                 let (a, b) = voltage(axis, v);
                 Ok(foc::svpwm(a, b))
             }
+            9 => {
+                let (volts, done) = self.sweep.sample(phase);
+                if done {
+                    let index = usize::from(ROUND_COUNT.load(Relaxed));
+                    interrupt::free(|cs| {
+                        let mut rows = RECORDS.borrow(cs).borrow_mut();
+                        rows[index].positive = self.sweep.positive;
+                        rows[index].negative = self.sweep.negative;
+                    });
+                    STATE.store(5, Release);
+                }
+                let (a, b) = voltage(self.sweep.axis, volts);
+                Ok(foc::svpwm(a, b))
+            }
             5 => {
                 let index = usize::from(ROUND_COUNT.load(Relaxed));
-                let (p, n) = self.scan.axis_response(self.copy_axis);
-                let end = RAW_LOG_ANGLE.load(Relaxed);
-                interrupt::free(|cs| {
-                    let mut records = RECORDS.borrow(cs).borrow_mut();
-                    let row = &mut records[index];
-                    row.positive[self.copy_axis] = p;
-                    row.negative[self.copy_axis] = n;
-                    row.raw_start = self.raw_start;
-                    row.raw_end = end;
-                });
-                self.copy_axis += 1;
-                if self.copy_axis == 12 {
-                    ROUND_COUNT.store((index + 1) as u16, Release);
-                    if index + 1 == SCAN_ROUNDS {
-                        irq_moe::<ATIM>(false);
-                        SCAN_DONE.store(true, Release);
-                        TARGET.store(0, Release);
-                        STATE.store(0, Release);
+                ROUND_COUNT.store((index + 1) as u16, Release);
+                if index + 1 == SCAN_ROUNDS {
+                    irq_moe::<ATIM>(false);
+                    SCAN_DONE.store(true, Release);
+                    TARGET.store(0, Release);
+                    STATE.store(0, Release);
+                } else {
+                    self.scan = Scan::new();
+                    if (index + 1) % ROUNDS_PER_POSITION == 0 {
+                        self.ticks = 0;
+                        STATE.store(6, Release);
                     } else {
-                        self.scan = Scan::new();
-                        self.raw_start = end;
-                        if (index + 1) % ROUNDS_PER_POSITION == 0 {
-                            self.ticks = 0;
-                            STATE.store(6, Release);
-                        } else {
-                            STATE.store(2, Release);
-                        }
+                        STATE.store(2, Release);
                     }
                 }
                 Ok(foc::svpwm(0, 0))
@@ -332,7 +415,8 @@ impl Drive {
                         a / b
                     })
                     .ok_or(7u16)?;
-                let angle = self.tracker.angle();
+                let injection_axis = self.tracker.angle();
+                let angle = injection_axis.wrapping_add(self.drag.pole_offset);
                 ANGLE.store(angle, Relaxed);
                 self.ticks = self.ticks.wrapping_add(1);
                 if self.ticks % 16 == 0 {
@@ -379,7 +463,8 @@ impl Drive {
                 let (a, b) = self
                     .current
                     .update_voltage(self.tracker.fundamental, sin, cos);
-                let (ha, hb) = voltage(angle, carrier);
+                let (a, b) = self.drag.blend(a, b);
+                let (ha, hb) = voltage(injection_axis, carrier);
                 Ok(foc::svpwm(a + ha, b + hb))
             }
         }

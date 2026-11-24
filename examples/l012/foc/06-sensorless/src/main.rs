@@ -6,6 +6,8 @@ pub mod board_resources {
 }
 pub mod adc;
 mod current_loop;
+mod diagnostic;
+mod pulse_sweep;
 mod sensor;
 mod timing;
 use crate::{board_resources::BoardResources, current_loop::*, sensor::connect, timing::Timing};
@@ -194,13 +196,13 @@ fn main() -> ! {
         halt();
     }
     init_eau();
-    defmt::info!(
-        "06 HFI: return pot to zero, then raise to start; auto-index scan rounds={=usize}",
-        SCAN_ROUNDS
-    );
+    if MODE == Mode::Drag { diagnostic::drag(&mut encoder, &mut timing); }
+    if SCAN_ROUNDS != 0 {
+        diagnostic::run(&mut encoder, &mut timing);
+    }
+    defmt::info!("06 HFI: return pot to zero, then raise to start");
     READY.store(true, Ordering::Release);
     let mut last_idle_fault = None;
-    let mut reported = 0;
     // Keep a short trace only in thread mode. Neither ISR consumes encoder data.
     let mut motion = [None::<(u32, u16, i32)>; 5];
     let mut next_motion = 0;
@@ -224,35 +226,15 @@ fn main() -> ! {
         }
         if now.wrapping_sub(last_report) >= 100_000 {
             last_report = now;
-            let raw_angle = encoder.read_angle().ok();
-            RAW_LOG_ANGLE.store(raw_angle.unwrap_or(u16::MAX), Ordering::Relaxed);
-            let complete = usize::from(ROUND_COUNT.load(Ordering::Acquire));
             let state = STATE.load(Ordering::Acquire);
             let target = TARGET.load(Ordering::Acquire);
             if state != 0 || target != 0 {
                 last_idle_fault = None;
-                if SCAN_ROUNDS != 0 {
-                    reported = 0;
-                    continue;
-                }
                 if state == 3 && now.wrapping_sub(last_live) >= 500_000 {
                     last_live = now;
                     let rpm = RPM.load(Ordering::Relaxed);
                     let _ = writeln!(live, "target={target} rpm={rpm}");
                 }
-                continue;
-            }
-            if reported < complete {
-                let r = record(reported);
-                reported += 1;
-                defmt::info!(
-                    "scan round={=usize} raw_start={=u16} raw_end={=u16} positive={=?} negative={=?}",
-                    reported,
-                    r.raw_start,
-                    r.raw_end,
-                    &r.positive,
-                    &r.negative
-                );
                 continue;
             }
             let fault = FAULT.load(Ordering::Acquire);
