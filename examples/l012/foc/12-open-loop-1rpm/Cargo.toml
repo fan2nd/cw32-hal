@@ -1,0 +1,29 @@
+[package]
+name = "open-loop-1rpm"
+build = "../firmware-build.rs"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+cw32-l012-foc-algorithms = { path = "../foc-algorithms" }
+embassy-cw32 = { path = "../../../../embassy-cw32", default-features = false, features = ["cw32l012c8", "rt", "defmt"] }
+cortex-m = { version = "0.7.7", features = ["critical-section-single-core"] }
+cortex-m-rt = "0.7.5"
+embedded-hal = "1.0"
+defmt = "1"
+defmt-rtt = { version = "1", features = ["disable-blocking-mode"] }
+
+[build-dependencies]
+cw32-metapac = { path = "../../../../cw32-metapac", default-features = false, features = ["cw32l012c8", "metadata"] }
+
+[profile.dev]
+opt-level = "s"
+debug = 0
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+debug = 2
