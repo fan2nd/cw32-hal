@@ -1,0 +1,3 @@
+[build]
+target = "host-tuple"
+target-dir = "desktop/target"

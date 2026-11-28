@@ -25,6 +25,8 @@ pub(super) struct RxDma {
     capacity: usize,
     _staging: PhantomData<&'static mut [u8]>,
     request: crate::dma::Request,
+    #[cfg(uart_cw32l012_v1)]
+    checked_frames: bool,
     pub(super) phase: RxDmaPhase,
 }
 
@@ -34,6 +36,7 @@ impl RxDma {
         channel: crate::dma::Channel<'static>,
         staging: &'static mut [u8],
         request: crate::dma::Request,
+        #[cfg(uart_cw32l012_v1)] checked_frames: bool,
     ) -> Self {
         let capacity = staging.len();
         let staging = staging.as_mut_ptr();
@@ -43,22 +46,40 @@ impl RxDma {
             capacity,
             _staging: PhantomData,
             request,
+            #[cfg(uart_cw32l012_v1)]
+            checked_frames,
             phase: RxDmaPhase::Idle,
         }
     }
 
-    fn line_error(status: regs::Isr) -> Option<Error> {
+    pub(super) fn line_error(status: regs::Isr) -> Option<Error> {
+        #[cfg(uart_cw32l012_v1)]
+        if status.ore() { return Some(Error::Overrun); }
         if status.pe() {
             Some(Error::Parity)
         } else if status.fe() {
             Some(Error::Framing)
         } else {
+            #[cfg(uart_cw32l012_v1)]
+            if status.ne() { return Some(Error::Noise); }
             None
         }
     }
 
+    fn in_flight_error(&self, status: regs::Isr) -> Option<Error> {
+        #[cfg(uart_cw32l012_v1)]
+        let status = {
+            let mut observed = status;
+            if self.checked_frames { observed.set_ore(false); }
+            observed
+        };
+        Self::line_error(status)
+    }
+
     fn merge_error(previous: Option<Error>, observed: Option<Error>) -> Option<Error> {
         match (previous, observed) {
+            #[cfg(uart_cw32l012_v1)]
+            (Some(Error::Overrun), _) | (_, Some(Error::Overrun)) => Some(Error::Overrun),
             (Some(Error::Parity), _) | (_, Some(Error::Parity)) => Some(Error::Parity),
             (Some(error), _) | (_, Some(error)) => Some(error),
             _ => None,
@@ -69,6 +90,8 @@ impl RxDma {
     // stale RC as an extra byte or read RDR on a DMA completion/error path.
     fn acknowledge(regs: pac::uart::Uart, status: regs::Isr) {
         let mut command = regs::Icr::write_noop();
+        #[cfg(uart_cw32l012_v1)]
+        { command.set_ne(!status.ne()); command.set_ore(!status.ore()); }
         command.set_rc(!status.rc());
         command.set_pe(!status.pe());
         command.set_fe(!status.fe());
@@ -102,9 +125,13 @@ impl RxDma {
             }
             if cx.is_some() && !error_reported {
                 regs.ier()
-                    .modify(|w| WaitEvent::ReceiveErrors.set_enabled(w, true));
+                    .modify(|w| {
+                        WaitEvent::ReceiveErrors.set_enabled(w, true);
+                        #[cfg(uart_cw32l012_v1)]
+                        if self.checked_frames { w.set_ore(false); }
+                    });
             }
-            line_error = Self::merge_error(line_error, Self::line_error(regs.isr().read()));
+            line_error = Self::merge_error(line_error, self.in_flight_error(regs.isr().read()));
             match self.channel.poll_hardware_complete(None) {
                 Poll::Ready(Err(error)) => {
                     regs.ier()
@@ -123,7 +150,7 @@ impl RxDma {
                         return Poll::Ready(Err(Error::DmaQuarantined));
                     }
                     let status = regs.isr().read();
-                    line_error = Self::merge_error(line_error, Self::line_error(status));
+                    line_error = Self::merge_error(line_error, self.in_flight_error(status));
                     regs.ier()
                         .modify(|w| WaitEvent::Receive.set_enabled(w, false));
                     Self::acknowledge(regs, status);
@@ -304,7 +331,7 @@ impl UartRx<'static, Async> {
         info.prepare::<T>(config, baud);
         let mut rx =
             Self::from_pin::<T, RX>(rx, info, baud.actual, config.rx_pull, config.data_bits);
-        rx.dma = Some(RxDma::new(channel, staging, D::REQUEST));
+        rx.dma = Some(RxDma::new(channel, staging, D::REQUEST, #[cfg(uart_cw32l012_v1)] config.dma_rx_checked_frames));
         critical_section::with(|_| info.regs.cr1().modify(|w| w.set_rxen(true)));
         unsafe { T::Interrupt::enable() };
         Ok(rx)
@@ -361,7 +388,7 @@ impl Uart<'static, Async> {
             request: DT::REQUEST,
             phase: TxDmaPhase::Idle,
         });
-        rx.dma = Some(RxDma::new(rx_channel, rx_staging, DR::REQUEST));
+        rx.dma = Some(RxDma::new(rx_channel, rx_staging, DR::REQUEST, #[cfg(uart_cw32l012_v1)] config.dma_rx_checked_frames));
         critical_section::with(|_| {
             info.regs.cr1().modify(|w| {
                 w.set_txen(true);

@@ -128,6 +128,12 @@ impl<'d> UartRx<'d, Async> {
         if buffer.is_empty() {
             return Ok(0);
         }
+        #[cfg(uart_dma_rx)]
+        if let Some(dma) = self.dma.as_mut() {
+            dma.check_complete(self.info.regs, self.state)?;
+            let copied = dma.copy_ready(buffer);
+            if copied != 0 { return Ok(copied); }
+        }
         let regs = self.info.regs;
         critical_section::with(|_| {
             regs.ier()

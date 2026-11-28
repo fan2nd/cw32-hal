@@ -1101,8 +1101,12 @@ pub(crate) fn init(attempts: u32) {
             let default = pac::DMA.isr().read().0 == 0
                 && (0..crate::DMA_CHANNEL_COUNT as u8).all(|index| {
                     let regs = channel_regs(index);
+                    let count = regs.cnt().read().0;
+                    // L012 silicon can power up with REPEAT=1 and CNT=0.
+                    // Keep every other descriptor, flag and ownership check.
+                    let count_reset = count == 0 || (cfg!(dma_cw32l012_v1) && count == 0x0001_0000);
                     let descriptor_default = regs.csr().read().0 == 0
-                        && regs.cnt().read().0 == 0
+                        && count_reset
                         && regs.srcaddr().read().srcaddr() == 0
                         && regs.dstaddr().read().dstaddr() == 0
                         && regs.trig().read().0 == 0;

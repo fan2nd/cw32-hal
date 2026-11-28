@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>L012 伺服调试</title><link rel="stylesheet" href="style.css">
+<main>
+<header><h1>L012 伺服调试</h1><span id="connection">串口未连接</span><button id="connect">连接串口</button></header>
+<section class="status"><span>设备模式 <b id="deviceMode">—</b></span><span>功率桥 <b id="bridge">未知</b></span><strong id="alarm"></strong></section>
+<nav aria-label="视图"><button aria-pressed="true" id="control">控制</button><button aria-pressed="false" id="tuning">调参</button><button aria-pressed="false" id="waveTab">电流</button><button id="waveRelease" hidden disabled>释放</button></nav>
+<section id="waves" hidden aria-label="电流波形">
+<div class="waveTools"><strong id="waveState">实时 · 最近 1 s</strong><span id="loss"></span><select id="span" aria-label="显示时长" hidden><option value="2000">1 s</option><option value="400">200 ms</option><option value="100">50 ms</option></select><input id="pan" aria-label="冻结窗口位置" type="range" min="0" max="0" value="0" hidden><button id="freeze">冻结</button></div>
+<div class="plot"><div>三相电流 <small>ADC 计数</small><span id="phaseLegend"></span></div><canvas id="phases" aria-label="三相电流图"></canvas></div>
+<div class="plot"><div>PWM 指令占空比 <span id="pwmLegend"></span></div><canvas id="pwm" aria-label="三相 PWM 指令占空比图"></canvas></div>
+<div class="plot"><div>dq 电流 <small>电气坐标 · ADC 计数</small><span id="dqLegend"></span></div><canvas id="dq" aria-label="dq 电流图"></canvas></div>
+<div id="timeAxis"></div></section>
+<form id="editor">
+<div id="modeRow"><label for="mode">指令模式</label><select id="mode"><option value="1">位置</option><option value="2">速度</option><option value="3">力矩</option><option value="4">MIT</option></select></div>
+<div id="fields"></div>
+<footer><output id="notice" aria-live="polite">等待连接</output><button type="submit" id="apply" disabled>应用并使能</button><button type="button" id="release" disabled>释放</button></footer>
+</form>
+<section class="feedback" aria-label="设备反馈"><div>多圈位置 <small>°</small><b id="angle">—</b></div><div>实测速度 <small>rpm</small><b id="rpm">—</b></div><div>实测 Iq <small>计数</small><b id="iq">—</b></div></section>
+</main><dialog id="error"><p id="reason"></p><button autofocus onclick="this.parentElement.close()">确定</button></dialog>
+<script src="wave.js"></script><script src="panel.js"></script></html>

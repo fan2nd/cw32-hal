@@ -100,6 +100,8 @@ impl WaitEvent {
             Self::TxComplete => ier.set_tc(enabled),
             #[cfg(uart_dma_rx)]
             Self::ReceiveErrors => {
+                #[cfg(uart_cw32l012_v1)]
+                { ier.set_ne(enabled); ier.set_ore(enabled); }
                 ier.set_rc(false);
                 ier.set_fe(enabled);
                 ier.set_pe(enabled);
@@ -139,7 +141,7 @@ impl WaitEvent {
             #[cfg(any(uart_cw32l010_v1, uart_cw32l012_v1))]
             Self::ReceiveLin => receive_event(status) || status.rxbrk(),
             #[cfg(uart_dma_rx)]
-            Self::ReceiveErrors => status.pe() || status.fe(),
+            Self::ReceiveErrors => RxDma::line_error(status).is_some(),
         }
     }
 }

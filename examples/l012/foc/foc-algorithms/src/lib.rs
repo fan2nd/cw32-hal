@@ -402,6 +402,18 @@ impl FocController {
         }
     }
 
+    /// Update d/q gains independently while retaining both integrator states.
+    pub fn set_current_gains(&mut self, gains: [u16; 4]) {
+        self.id_pi.kp_gain = gains[0].into();
+        self.id_pi.ki_gain = gains[1].into();
+        self.iq_pi.kp_gain = gains[2].into();
+        self.iq_pi.ki_gain = gains[3].into();
+    }
+
+    pub fn current_gains(&self) -> [i32; 4] {
+        [self.id_pi.kp_gain, self.id_pi.ki_gain, self.iq_pi.kp_gain, self.iq_pi.ki_gain]
+    }
+
     pub fn reset(&mut self) {
         self.id_pi.reset();
         self.iq_pi.reset();

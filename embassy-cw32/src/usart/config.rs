@@ -69,6 +69,12 @@ impl DataBits {
 pub struct Config {
     /// Requested baud rate in bits per second.
     pub baudrate: u32,
+    /// Accept ORE during an active L012 RX DMA block. DMA reads RDR but RC
+    /// stays set across bytes. Only use with self-synchronizing, checked frames:
+    /// an actual overwritten byte cannot be distinguished from sticky RC.
+    /// Framing, parity, noise, pre-transfer overruns and DMA errors still fail.
+    #[cfg(all(uart_dma_rx, uart_cw32l012_v1))]
+    pub dma_rx_checked_frames: bool,
     /// Data bits. Nine-bit payloads require the L010/L011/L012 ordinary PIO u16 APIs.
     pub data_bits: DataBits,
     /// Parity bit configuration. Nine data bits plus parity are unsupported.
@@ -91,6 +97,8 @@ impl Default for Config {
     fn default() -> Self {
         Self {
             baudrate: 115_200,
+            #[cfg(all(uart_dma_rx, uart_cw32l012_v1))]
+            dma_rx_checked_frames: false,
             data_bits: DataBits::DataBits8,
             parity: Parity::ParityNone,
             stop_bits: StopBits::STOP1,

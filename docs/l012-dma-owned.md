@@ -74,11 +74,14 @@ does not require software SOFTSRC completion. Flush separately waits for TXBUSY0
 Cancellation/forget retains the current chunk; a later write or flush settles it
 before reuse. Error or unresolved Drop retains staging, channel, UART/pin/config
 and clocks. Clean Drop need not flush the final frame. Gaps, CPU copy overhead,
-unbounded waiting and no throughput guarantee remain. No RX/combined DMA UART,
+unbounded waiting and no throughput guarantee remain. The original TX qualification did not include RX/combined DMA UART,
 circular/restart API, early abort, other unqualified requests or buffered-plus-DMA
 owner is added. Existing ordinary/buffered/idle RX paths remain independent.
-The separate UART RX RC/ORE proof remains blocked; SPI DR-read-clear semantics
-do not qualify UART RX.
+The L012 UART driver now also exposes finite RX and combined RX/TX for the servo example.
+The native CN V1.4 manual §21.7.1.6 (p475) configures byte RDR-to-SRAM block DMA,
+channel EN before DMARX, and closes the request on TC. RX selectors are 0/2/4.
+The staged receiver checks ORE/NE as well as PE/FE and discards errored chunks.
+RC/ORE behavior at full wire speed has not been verified on the servo board.
 
 ## Stage94 finite paired SPI
 

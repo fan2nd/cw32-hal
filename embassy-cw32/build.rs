@@ -577,7 +577,7 @@ fn main() {
         "CW32F020" => Some((3, "v1", true)),
         "CW32L031" | "CW32R031" => Some((3, "cw32l031_v1", true)),
         "CW32L052" => Some((3, "cw32l052_v1", true)),
-        "CW32L012" => Some((3, "cw32l012_v1", false)),
+        "CW32L012" => Some((3, "cw32l012_v1", true)),
         _ => None,
     };
     let spi_dma_profile = match metadata.line {
@@ -2770,6 +2770,10 @@ fn qualify_l012_dma() {
         assert_eq!(tx[0].dma, Some("DMA"));
         assert!(selector < 64);
         assert!(tx[0].channel.is_none() && tx[0].dmamux.is_none() && tx[0].remap.is_empty());
+        let rx = uart.dma_channels.iter().find(|r| r.signal == "RX").unwrap();
+        assert_eq!((rx.request, rx.dma), (Some(selector - 1), Some("DMA")));
+        field(fields(regs, "RDR", 0x24, ir::Access::Read), "RDR", 0, 9, None);
+        field(fields(regs, "CR2", 4, ir::Access::ReadWrite), "DMARX", 6, 1, None);
         let tdr = fields(regs, "TDR", 0x28, ir::Access::Write);
         assert_eq!(tdr.len(), 3);
         field(tdr, "TDR", 0, 9, None);

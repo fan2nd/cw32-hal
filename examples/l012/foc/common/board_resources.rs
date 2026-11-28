@@ -22,6 +22,7 @@ macro_rules! assign_resources {
 }
 
 assign_resources! {
+    servo_uart: ServoUart { uart: UART3, tx: PA1, rx: PA0, tx_dma: DMA_CH1, rx_dma: DMA_CH2 },
     speed_clock: SpeedClock { timer: BTIM1 },
     storage: Storage { flash: FLASH },
     current_adc: CurrentAdc {
